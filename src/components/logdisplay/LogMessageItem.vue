@@ -13,6 +13,7 @@
       :variant="isDark ? undefined : 'tonal'"
       :color="logToUserColor(log, userName)"
       density="compact"
+      width="95%"
     >
       <template #title>
         <div class="d-flex align-center ga-2">
@@ -98,7 +99,7 @@
       <NewLogMessage
         v-if="isEditing"
         mode="edit"
-          :inline="true"
+        :inline="true"
         :note-group="noteGroup"
         :initial-text="log.text"
         :initial-log-level="editedLogLevel"

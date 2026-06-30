@@ -27,21 +27,21 @@
     >
       <template #default="{ item }">
         <DateSeparator v-if="item.type === 'dateSeparator'" :date="item.date" />
-          <LogItem
-            v-else-if="item.type === 'logItem'"
-            :logs="item.logs"
-            :taskRuns="taskRuns"
-            :disseminations="disseminations"
-            :disseminationStatus="disseminationStatus"
-            :userName="preferredUsername"
-            :noteGroup="noteGroup"
-            v-model:expanded="expandedItems[item.logs[0].taskRunId]"
-            @disseminate-log="disseminateLog"
-            @delete-log="deleteLog"
-            @edit-log="editLog"
-            @acknowledge-log="acknowledgeLog"
-            @unacknowledge-log="unacknowledgeLog"
-          />
+        <LogItem
+          v-else-if="item.type === 'logItem'"
+          :logs="item.logs"
+          :taskRuns="taskRuns"
+          :disseminations="disseminations"
+          :disseminationStatus="disseminationStatus"
+          :userName="preferredUsername"
+          :noteGroup="noteGroup"
+          v-model:expanded="expandedItems[item.logs[0].taskRunId]"
+          @disseminate-log="disseminateLog"
+          @delete-log="deleteLog"
+          @edit-log="editLog"
+          @acknowledge-log="acknowledgeLog"
+          @unacknowledge-log="unacknowledgeLog"
+        />
       </template>
     </v-virtual-scroll>
     <div class="pa-2">
@@ -103,7 +103,12 @@ import NewLogMessage from '@/components/logdisplay/NewLogMessage.vue'
 import { refDebounced } from '@vueuse/core'
 import { configManager } from '@/services/application-config'
 import { useLogDisplayLogs } from '@/services/useLogDisplayLogs'
-import { filterLog, getLogDisseminationKey, getManualFilters, getSystemFilters } from '@/lib/log/utils'
+import {
+  filterLog,
+  getLogDisseminationKey,
+  getManualFilters,
+  getSystemFilters,
+} from '@/lib/log/utils'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import { useLogDisplay } from '@/services/useLogDisplay'
 import { useCurrentUser } from '@/services/useCurrentUser'
@@ -252,7 +257,7 @@ async function disseminateLog(
     transformRequestFn: createTransformRequestFn(),
   })
   const request: LogDisplayLogsActionRequest = {
-    logDisplayId: props.logDisplay.id,
+    logDisplayId: props.settings.logDisplayId,
     actionId: dissemination.id,
     logMessage: log.text,
     logLevel: log.level,
@@ -278,7 +283,6 @@ async function disseminateLog(
     success: true,
   }
 }
-
 
 async function deleteLog(log: LogMessage) {
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
