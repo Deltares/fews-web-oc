@@ -210,16 +210,8 @@ function acknowledgedLogToColor(log: LogMessage) {
   background-color: var(--log-card-bg);
   background-image: linear-gradient(
     rgba(var(--v-theme-surface), 1),
-    rgba(var(--v-theme-surface), 0.5),
-    rgba(var(--v-theme-surface), 0.6)
-  );
-}
-
-.log-message-card.v-theme--dark {
-  background-image: linear-gradient(
-    rgba(var(--v-theme-surface), 1),
-    rgba(var(--v-theme-surface), 0.1),
-    rgba(var(--v-theme-surface), 0)
+    rgba(var(--v-theme-surface), 0.6),
+    rgba(var(--v-theme-surface), 0.5)
   );
 }
 
@@ -238,23 +230,11 @@ function acknowledgedLogToColor(log: LogMessage) {
   max-width: 100%;
 }
 
-.edit-message-textarea {
-  width: 100%;
-}
-
 .current-user-message {
   margin-left: auto;
 }
 
 .other-message {
   margin-right: auto;
-}
-
-.level-label {
-  display: flex;
-  align-items: center;
-  justify-content: start;
-  column-gap: 0.25em;
-  width: 6.5em;
 }
 </style>
