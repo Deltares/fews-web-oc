@@ -1,50 +1,80 @@
 <template>
-  <SidePanelContent :title="t('sidePanel.logDisplay')" @close="emit('close')">
-    <div class="d-flex align-center pa-2 ga-2">
-      <LogTypeFilter v-if="manualFilters.length && systemFilters.length" v-model="selectedLogTypes" />
-      <v-spacer />
-      <PeriodFilterControl v-model="period" />
-    </div>
-    <div class="w-100">
+  <SidePanelContent
+    :title="t('sidePanel.logDisplay')"
+    @close="emit('close')"
+    class="h-100"
+  >
+    <div class="d-flex align-center w-100">
+      <div v-if="!isSearchVisible" class="d-flex pa-2 ga-2 w-100 align-center">
+        <v-btn density="compact" icon @click="toggleSearch" class="ms-1">
+          <v-icon>mdi-magnify</v-icon>
+        </v-btn>
+        <LogTypeFilter
+          v-if="manualFilters.length && systemFilters.length"
+          v-model="selectedLogTypes"
+        />
+        <v-spacer />
+        <PeriodFilterControl v-model="period" :hasAllOption="false" />
+      </div>
       <v-text-field
+        v-else
+        ref="searchField"
         v-model="search"
         placeholder="Search"
-        prepend-inner-icon="mdi-magnify"
         variant="outlined"
-        rounded
         clearable
+        single-line
         hide-details
-        class="px-2 pb-1"
+        class="px-1 py-1"
         density="compact"
-      />
+        @keydown.esc="toggleSearch"
+      >
+        <template #prepend-inner>
+          <v-icon color="blue" @click="toggleSearch">mdi-magnify</v-icon>
+        </template>
+      </v-text-field>
     </div>
-    <div class="d-flex py-2 mx-auto">
-      <LogLevelFilter v-model="selectedLevels" />
+    <div class="position-relative d-flex flex-1-1 overflow-y-auto">
+      <div
+        class="log-level-filter-overlay d-flex w-100 justify-center py-2"
+        :class="{ hidden: shouldHideFilter && !isSearchVisible }"
+        @mouseenter="handleFilterMouseEnter"
+        @mouseleave="handleFilterMouseLeave"
+      >
+        <v-sheet>
+          <LogLevelFilter v-model="selectedLevels" />
+        </v-sheet>
+      </div>
+      <v-virtual-scroll
+        ref="virtualScroll"
+        class="w-100 px-1 pb-1"
+        :items="groupedByTaskRunId"
+        :item-height="50"
+        @scroll="handleScroll"
+      >
+        <template #default="{ item }">
+          <DateSeparator
+            v-if="item.type === 'dateSeparator'"
+            :date="item.date"
+          />
+          <LogItem
+            v-else-if="item.type === 'logItem'"
+            :logs="item.logs"
+            :taskRuns="taskRuns"
+            :disseminations="disseminations"
+            :disseminationStatus="disseminationStatus"
+            :userName="preferredUsername"
+            :noteGroup="noteGroup"
+            v-model:expanded="expandedItems[item.logs[0].taskRunId]"
+            @disseminate-log="disseminateLog"
+            @delete-log="deleteLog"
+            @edit-log="editLog"
+            @acknowledge-log="acknowledgeLog"
+            @unacknowledge-log="unacknowledgeLog"
+          />
+        </template>
+      </v-virtual-scroll>
     </div>
-    <v-virtual-scroll
-      class="d-flex flex-1-1 flex-column h-100 px-1 pb-1"
-      :items="groupedByTaskRunId"
-      :item-height="50"
-    >
-      <template #default="{ item }">
-        <DateSeparator v-if="item.type === 'dateSeparator'" :date="item.date" />
-        <LogItem
-          v-else-if="item.type === 'logItem'"
-          :logs="item.logs"
-          :taskRuns="taskRuns"
-          :disseminations="disseminations"
-          :disseminationStatus="disseminationStatus"
-          :userName="preferredUsername"
-          :noteGroup="noteGroup"
-          v-model:expanded="expandedItems[item.logs[0].taskRunId]"
-          @disseminate-log="disseminateLog"
-          @delete-log="deleteLog"
-          @edit-log="editLog"
-          @acknowledge-log="acknowledgeLog"
-          @unacknowledge-log="unacknowledgeLog"
-        />
-      </template>
-    </v-virtual-scroll>
     <div class="pa-2">
       <NewLogMessage
         v-if="noteGroup"
@@ -53,7 +83,7 @@
       />
     </div>
     <v-divider />
-    <v-footer class="d-flex flex-0">
+    <v-footer class="d-flex flex-0-0">
       <div class="refresh-container ms-3">
         Last updated: {{ lastUpdatedString }}
       </div>
@@ -74,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import {
@@ -158,6 +188,10 @@ const maxCount = ref<number>(20000)
 const selectedLevels = ref<LogLevel[]>([...logLevels])
 const selectedLogTypes = ref<LogType[]>([...logTypes])
 const expandedItems = ref<Record<string, boolean>>({})
+const isSearchVisible = ref<boolean>(false)
+const searchField = ref<HTMLElement | null>(null)
+const shouldHideFilter = ref<boolean>(false)
+let hideTimeout: ReturnType<typeof setTimeout> | null = null
 
 const requestDebounce = 500
 
@@ -175,7 +209,6 @@ const baseFilters = computed(() => {
   const end = new Date(
     now.value.getTime() + (period.value?.endOffsetSeconds ?? 0) * 1000,
   )
-  console.log('Base filters', start, end)
   const startTime = convertJSDateToFewsPiParameter(start)
   const endTime = convertJSDateToFewsPiParameter(end)
   return {
@@ -202,7 +235,6 @@ const systemFilters = computed(() => {
 
 // To keep requests in sync between manual and system logs
 const filters = computed(() => {
-  console.log('Filters', manualFilters.value, systemFilters.value)
   const hasManual = logDisplay.value?.manualLog
   const hasSystem = logDisplay.value?.systemLog
   if (
@@ -353,9 +385,62 @@ function refreshLogs() {
   now.value = new Date()
 }
 
+async function toggleSearch() {
+  isSearchVisible.value = !isSearchVisible.value
+  if (!isSearchVisible.value) {
+    search.value = undefined
+  } else {
+    await nextTick()
+    ;(searchField.value as any)?.$el?.querySelector('input')?.focus()
+  }
+}
+
+function handleScroll(event: Event) {
+  if (hideTimeout) {
+    clearTimeout(hideTimeout)
+  }
+  hideTimeout = setTimeout(() => {
+    shouldHideFilter.value = true
+  }, 1000)
+}
+
+function handleFilterMouseEnter() {
+  shouldHideFilter.value = false
+  if (hideTimeout) {
+    clearTimeout(hideTimeout)
+  }
+}
+
+function handleFilterMouseLeave() {
+  if (hideTimeout) {
+    clearTimeout(hideTimeout)
+  }
+  hideTimeout = setTimeout(() => {
+    shouldHideFilter.value = true
+  }, 1000)
+}
+
 const lastUpdatedString = computed<string>(() => {
   const lastUpdated = lastUpdatedTimestamp.value
   if (lastUpdated === null) return '—'
   return new Date(lastUpdated).toLocaleString()
 })
 </script>
+
+<style scoped>
+.log-level-filter-overlay {
+  position: absolute;
+  bottom: 0;
+  z-index: 10;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.log-level-filter-overlay.hidden {
+  opacity: 0;
+}
+
+.filter-spacer {
+  height: 50px;
+  min-height: 50px;
+}
+</style>
