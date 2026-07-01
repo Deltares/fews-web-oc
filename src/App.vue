@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, watchEffect } from 'vue'
+import { computed, onMounted, watch, watchEffect } from 'vue'
 import DefaultLayout from './layouts/DefaultLayout.vue'
 import EmptyLayout from './layouts/EmptyLayout.vue'
 import Alerts from '@/components/general/Alerts.vue'
@@ -52,6 +52,10 @@ useTaskRunMonitorStore()
 const permissionsStore = usePermissionsStore()
 // Initialise FEWS system time authority.
 useSystemTimeStore()
+
+onMounted(() => {
+  userSettingsStore.initializeWithWebResources()
+})
 
 const layoutComponent = computed(() => {
   if (globalThis.location.href.includes('/embed/')) {
