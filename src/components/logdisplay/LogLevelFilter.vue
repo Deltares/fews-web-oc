@@ -13,7 +13,6 @@
       :color="item.color"
       :prepend-icon="item.icon"
       class="text-label-large"
-      height="32px"
       size="small"
     >
       {{ item.title }}
