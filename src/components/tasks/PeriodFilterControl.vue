@@ -17,7 +17,7 @@
     </template>
     <v-list density="compact">
       <v-list-item
-        v-for="option in options"
+        v-for="option in activeOptions"
         :key="option.id"
         :title="option.title"
         :active="selectedOption?.id === option.id"
@@ -30,6 +30,13 @@
 import SelectIcon from '@/components/general/SelectIcon.vue'
 import type { RelativePeriod } from '@/lib/period'
 import { computed, ref, watchEffect } from 'vue'
+
+interface Props {
+  hasAllOption?: boolean
+}
+
+const { hasAllOption = true } = defineProps<Props>()
+
 
 const period = defineModel<RelativePeriod | null>({ required: true })
 
@@ -68,6 +75,15 @@ const options: RelativePeriodOption[] = [
     numSecondsBack: null,
   },
 ] as const
+
+const activeOptions = computed(() => {
+  if (hasAllOption) {
+    return options
+  } else {
+    return options.filter((option) => option.numSecondsBack !== null)
+  }
+})
+
 
 const selectedOption = ref<RelativePeriodOption>()
 
