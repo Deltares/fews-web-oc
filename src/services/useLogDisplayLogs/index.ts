@@ -80,6 +80,8 @@ export function useLogDisplayLogs(
     system: LogDisplayLogsFilter[]
   }>,
   customFilter?: (log: LogMessage) => boolean,
+  reverseOrder: MaybeRefOrGetter<boolean> = false,
+  includeTaskRunContext: MaybeRefOrGetter<boolean> = true,
 ) {
   const systemLogMessages = shallowRef<LogMessage[]>([])
   const manualLogMessages = shallowRef<LogMessage[]>([])
@@ -97,9 +99,11 @@ export function useLogDisplayLogs(
     ) {
       return []
     }
-    return [...manualLogMessages.value, ...systemLogMessages.value].toSorted(
-      (a, b) => b.entryTime.localeCompare(a.entryTime),
-    )
+    const _reverseOrder = toValue(reverseOrder)
+    const combinedLogs = [...manualLogMessages.value, ...systemLogMessages.value]
+    return _reverseOrder
+      ? combinedLogs.toSorted((a, b) => a.entryTime.localeCompare(b.entryTime))
+      : combinedLogs.toSorted((a, b) => b.entryTime.localeCompare(a.entryTime))
   })
 
   const isLoading = computed(
@@ -186,9 +190,18 @@ export function useLogDisplayLogs(
     // and then we filter the log messages based on those taskRuns.
     const filteredTaskRunIds = new Set<string>()
 
+    const _includeTaskRunContext = toValue(includeTaskRunContext)
+
     logMessages.value
       .filter((log) => (customFilter ? customFilter(log) : true))
       .forEach((log) => filteredTaskRunIds.add(log.taskRunId))
+
+    if (!_includeTaskRunContext) {
+      return logMessages.value.filter((log) =>
+        customFilter ? customFilter(log) : true,
+      )
+    }
+
     return logMessages.value.filter(
       (log) =>
         (customFilter ? customFilter(log) : true) ||

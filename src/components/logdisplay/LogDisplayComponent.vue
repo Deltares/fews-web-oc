@@ -291,10 +291,13 @@ const customFilter = (log: LogMessage) =>
     ),
   )
 
+// FIXME: Filtering for manual logs only works with includeTaskRunContext = false
 const { logMessages, isLoading, groupedByTaskRunId } = useLogDisplayLogs(
   baseUrl,
   () => debouncedFilters.value,
   customFilter,
+  false,
+  true,
 )
 
 const taskRunIds = computed(() => {

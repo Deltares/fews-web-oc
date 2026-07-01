@@ -223,18 +223,27 @@ const filters = computed(() => {
 
 const debouncedFilters = refDebounced(filters, requestDebounce)
 
-const customFilter = (message: LogMessage) =>
-  filterLog(
-    message,
-    debouncedSelectedLevels.value,
-    debouncedSelectedLogTypes.value ? [debouncedSelectedLogTypes.value] : [],
-    debouncedSearch.value,
-    taskRuns.value,
-    workflows,
+const customFilter = (log: LogMessage) =>
+  Boolean(
+    filterLog(
+      log,
+      debouncedSelectedLevels.value,
+      debouncedSelectedLogTypes.value,
+      debouncedSearch.value,
+      taskRuns.value,
+      workflows,
+    ),
   )
 
+// FIXME: Filtering for manual logs only works with includeTaskRunContext = false
 const { logMessages, isLoading, lastUpdatedTimestamp, groupedByTaskRunId } =
-  useLogDisplayLogs(baseUrl, () => debouncedFilters.value, customFilter)
+  useLogDisplayLogs(
+    baseUrl,
+    () => debouncedFilters.value,
+    customFilter,
+    false,
+    false,
+  )
 
 const taskRunIds = computed(() => {
   const _taskRunIds = logMessages.value.map((logs) => logs.taskRunId)
