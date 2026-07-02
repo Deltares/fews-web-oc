@@ -29,7 +29,7 @@ export function useLogDisplay(
 
     try {
       const _logDisplayId = toValue(logDisplayId)
-      if (_logDisplayId === undefined) {
+      if (!_logDisplayId) {
         logDisplay.value = undefined
         return
       }

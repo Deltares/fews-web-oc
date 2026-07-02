@@ -47,6 +47,11 @@
       v-if="activeSidePanelType === sidePanel.type"
       :is="sidePanel.component"
       :topology-node="topologyNode"
+      v-bind="
+        sidePanel.type === 'logDisplay'
+          ? { settings: settingsForSidePanel() }
+          : {}
+      "
       @close="closeSidePanel()"
     />
   </template>
@@ -73,12 +78,13 @@ import BtnGroup from '@/components/general/BtnGroup.vue'
 import ThresholdsButton from '@/components/thresholds/ThresholdsButton.vue'
 
 import ImportStatusSidePanel from '@/components/sidepanel/ImportStatusSidePanel.vue'
+import LogSidePanel from '@/components/sidepanel/LogSidePanel.vue'
 import MoreInfoSidePanel from '@/components/sidepanel/MoreInfoSidePanel.vue'
 import NonCurrentDataSidePanel from '@/components/sidepanel/NonCurrentDataSidePanel.vue'
 import RunTasksSidePanel from '@/components/sidepanel/RunTasksSidePanel.vue'
+import ShareSidePanel from '@/components/sidepanel/ShareSidePanel.vue'
 import TaskOverviewSidePanel from '@/components/sidepanel/TaskOverviewSidePanel.vue'
 import ThresholdsSidePanel from '@/components/sidepanel/ThresholdsSidePanel.vue'
-import ShareSidePanel from '@/components/sidepanel/ShareSidePanel.vue'
 
 const { t } = useI18n()
 const configStore = useConfigStore()
@@ -98,7 +104,7 @@ const emit = defineEmits<Emits>()
 // FIXME: Remove 'share' once SidePanel configuration is implemented for it.
 type GeneralSidePanelType = Exclude<
   keyof SidePanelConfig | 'share',
-  'exportStatus' | 'logDisplay'
+  'exportStatus'
 >
 type SpecialSidePanelType = 'thresholds'
 type SidePanelType = GeneralSidePanelType | SpecialSidePanelType
@@ -130,6 +136,11 @@ const generalSidePanels: GeneralSidePanel[] = [
     component: RunTasksSidePanel,
   },
   {
+    type: 'logDisplay',
+    icon: 'mdi-message-text-clock',
+    component: LogSidePanel,
+  },
+  {
     type: 'documentFile',
     icon: 'mdi-information-outline',
     component: MoreInfoSidePanel,
@@ -150,6 +161,12 @@ const enabledGeneralSidePanels = computed<GeneralSidePanel[]>(() => {
       sidePanel.type === 'share' || sidePanelConfig?.[sidePanel.type]?.enabled,
   )
 })
+
+function settingsForSidePanel(): { logDisplayId: string } {
+  const sidePanelConfig = configStore.general.sidePanel
+  return { logDisplayId: sidePanelConfig?.logDisplay?.logDisplayId ?? '' }
+}
+
 const hasMultipleEnabledSidePanels = computed<boolean>(
   () => enabledGeneralSidePanels.value.length > 1,
 )

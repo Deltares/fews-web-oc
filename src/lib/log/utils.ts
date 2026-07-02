@@ -30,7 +30,7 @@ export function filterLog(
   search: string | undefined,
   taskRuns: TaskRun[],
   workflows: WorkflowItem[],
-) {
+): boolean {
   switch (log.type) {
     case 'system':
       if (levels.length > 0 && !levels.includes(log.level)) return false
@@ -55,13 +55,14 @@ export function filterLog(
   const taskRunUser = taskRun?.userId?.toLowerCase()
   const title = getTitleForLog(log, '', taskRuns, workflows)?.toLowerCase()
   return (
-    !searchText ||
-    user?.includes(searchText) ||
-    eventCode?.includes(searchText) ||
-    text.includes(searchText) ||
-    taskRunId?.includes(searchText) ||
-    title?.includes(searchText) ||
-    taskRunUser?.includes(searchText)
+    (!searchText ||
+      user?.includes(searchText) ||
+      eventCode?.includes(searchText) ||
+      text.includes(searchText) ||
+      taskRunId?.includes(searchText) ||
+      title?.includes(searchText) ||
+      taskRunUser?.includes(searchText)) ??
+    false
   )
 }
 
@@ -144,9 +145,9 @@ export function logToUser(log: LogMessage, userName: string) {
   return isLogMessageByCurrentUser(log, userName) ? 'You' : log.user
 }
 
-export function logToUserColor(log: LogMessage, userName: string) {
+export function logToUserColor(log: LogMessage, userName: string, opacity = 1) {
   const user = logToUser(log, userName)
-  return nameToNiceColor(user ?? '')
+  return nameToNiceColor(user ?? '', opacity)
 }
 
 export function isLogMessageByCurrentUser(log: LogMessage, userName: string) {
@@ -264,13 +265,17 @@ const niceColors = [
   '#0091EA',
 ]
 
-function nameToNiceColor(name: string) {
+function nameToNiceColor(name: string, opacity: number) {
   let hash = 0
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  for (const char of name) {
+    hash = (char.codePointAt(0) ?? 0) + ((hash << 5) - hash)
   }
-  let index = Math.abs(hash) % niceColors.length
-  return niceColors[index]
+  const index = Math.abs(hash) % niceColors.length
+  const alphaHex = Math.round(Math.min(Math.max(opacity, 0), 1) * 255)
+    .toString(16)
+    .padStart(2, '0')
+    .toUpperCase()
+  return `${niceColors[index]}${alphaHex}`
 }
 
 export function getLogDisseminationKey(

@@ -1,7 +1,12 @@
 <template>
   <v-card border flat density="compact">
-    <v-card-text class="py-2 h-100">
-      <div class="d-flex gap-2 align-center">
+    <div class="pa-0 h-100 log-item">
+      <v-card
+        flat
+        class="d-flex align-center px-2 ga-2 w-100"
+        @click="onExpansionPanelToggle"
+        @dblclick.prevent
+      >
         <v-tooltip>
           <template #activator="{ props }">
             <v-icon
@@ -14,38 +19,61 @@
           </template>
           <span>{{ getStringForStatus(taskRun?.status) }}</span>
         </v-tooltip>
-        <div class="d-flex flex-column user-select-text cursor-pointer">
+        <div
+          class="py-2 w-100 user-select-text cursor-pointer"
+          style="max-width: calc(100% - 40px)"
+        >
           <div class="d-flex align-center ga-2">
-            <v-list-item-title>
+            <v-list-item-title class="text-truncate">
               {{ title }}
             </v-list-item-title>
-            <v-card-subtitle class="pa-0">{{
+            <v-card-subtitle class="pa-0 wide-only">{{
               toHumanReadableDateTime(entryTime)
             }}</v-card-subtitle>
           </div>
-          <v-card-subtitle class="pa-0">
-            T0: {{ toHumanReadableDateTime(taskRun?.timeZeroTimestamp) }}
-          </v-card-subtitle>
+          <div class="d-flex align-center ga-2 flex-wrap">
+            <div class="d-flex flex-column ga-1">
+              <v-card-subtitle class="pa-0 narrow-only">{{
+                toHumanReadableDateTime(entryTime)
+              }}</v-card-subtitle>
+              <v-card-subtitle class="pa-0">
+                T0: {{ toHumanReadableDateTime(taskRun?.timeZeroTimestamp) }}
+              </v-card-subtitle>
+            </div>
+            <div
+              class="d-flex align-center ga-2 flex-wrap ms-auto log-item__chips-wrap"
+            >
+              <template
+                v-for="level in manualLogLevels.toReversed()"
+                :key="level"
+              >
+                <v-chip
+                  v-if="levelCount[logLevelToPiLogLevel(level)]"
+                  :prepend-icon="levelToIcon(level)"
+                  :text="levelCount[logLevelToPiLogLevel(level)].toString()"
+                  :color="levelToColor(level)"
+                  label
+                  density="compact"
+                  class="ms-0"
+                />
+              </template>
+            </div>
+          </div>
         </div>
-        <v-spacer />
-        <template v-for="level in manualLogLevels.toReversed()">
-          <v-chip
-            v-if="levelCount[logLevelToPiLogLevel(level)]"
-            :prepend-icon="levelToIcon(level)"
-            :text="levelCount[logLevelToPiLogLevel(level)].toString()"
-            :color="levelToColor(level)"
-            label
-            density="compact"
-            class="ms-2"
-          />
-        </template>
-      </div>
-      <DataTable
-        v-if="expanded && taskRun"
-        class="mt-4"
-        :tableData="tableData"
-      />
-    </v-card-text>
+      </v-card>
+      <slot
+        name="expansion"
+        :expanded="expanded"
+        :logs="logs"
+        :taskRun="taskRun"
+      >
+        <DataTable
+          v-if="expanded && taskRun"
+          class="mt-4 wide-only"
+          :tableData="tableData"
+        />
+      </slot>
+    </div>
   </v-card>
 </template>
 
@@ -58,7 +86,7 @@ import {
   logLevelToPiLogLevel,
   manualLogLevels,
 } from '@/lib/log'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import {
   toDateAbsDifferenceString,
   toDateRangeString,
@@ -77,12 +105,11 @@ interface Props {
   entryTime?: string
   taskRun?: TaskRun
   logs: LogMessage[]
-  expanded: boolean
 }
 
 const props = defineProps<Props>()
 
-const emit = defineEmits(['disseminateLog'])
+const expanded = ref(false)
 
 const levelCount = computed(() =>
   props.logs.reduce(
@@ -167,4 +194,35 @@ function getColorForStatus(status: string | undefined) {
     ? getColorForTaskStatus(status)
     : 'yellow-darken-1'
 }
+
+function onExpansionPanelToggle(event: MouseEvent) {
+  const selectedText = globalThis.getSelection?.()?.toString().trim()
+
+  // Do not toggle when click concludes a text selection gesture.
+  if (selectedText) return
+
+  // Ignore subsequent clicks in a double-click sequence.
+  if (event.detail > 1) return
+  expanded.value = !expanded.value
+}
 </script>
+
+<style scoped>
+.log-item {
+  container-type: inline-size;
+}
+
+.narrow-only {
+  display: none;
+}
+
+@container (max-width: 600px) {
+  .wide-only {
+    display: none;
+  }
+
+  .narrow-only {
+    display: inherit;
+  }
+}
+</style>

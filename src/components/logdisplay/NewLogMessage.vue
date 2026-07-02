@@ -1,22 +1,31 @@
 <template>
   <v-card
-    ref="composerCardRef"
     flat
     border
-    :class="['new-log-card', `new-log-card--${levelToColor(newLogLevel)}`]"
+    class="w-100"
+    :class="[
+      'new-log-card',
+      { 'new-log-card--inline': props.inline },
+      `new-log-card--${levelToColor(newLogLevel)}`,
+    ]"
     density="compact"
     @mouseup="handleClick"
     @focusin="handleFocusIn"
   >
     <v-card-actions v-if="showExpandedUi" class="pt-0">
-      <v-menu location="bottom start">
+      <v-menu
+        v-if="props.noteGroup || props.mode === 'edit'"
+        location="bottom start"
+      >
         <template #activator="{ props: menuProps }">
           <v-btn
             v-bind="menuProps"
             variant="tonal"
             size="small"
+            :prepend-icon="levelToIcon(newLogLevel)"
             append-icon="mdi-menu-down"
             :color="levelToColor(newLogLevel)"
+            class="text-label-large"
           >
             {{ levelToTitle(newLogLevel) }}
           </v-btn>
@@ -41,11 +50,12 @@
     </v-card-actions>
     <div class="d-flex" :class="showExpandedUi ? 'flex-column' : 'flex-row'">
       <v-textarea
-        ref="messageTextareaRef"
         v-model="text"
         :placeholder="
-          props.noteGroup?.note.messageTemplate.message ??
-          'Enter log message...'
+          props.mode === 'edit'
+            ? 'Edit log message...'
+            : (props.noteGroup?.note.messageTemplate?.message ??
+              'Enter log message...')
         "
         :rows="1"
         :max-rows="Math.max(maxLines, 5)"
@@ -70,8 +80,8 @@
       />
       <div class="d-flex align-center ma-2">
         <span
-          class="text-medium-emphasis text-label-medium"
           v-if="showExpandedUi"
+          class="text-medium-emphasis text-label-medium"
         >
           {{ lineCount }}/{{ maxLines }} lines, {{ charCount }}/{{ maxChars }}
           characters per line
@@ -83,9 +93,10 @@
           :color="levelToColor(newLogLevel)"
           :disabled="!text.trim() || isError || isPosting"
           :loading="isPosting"
-          @click="saveNewMessage"
-          >Send</v-btn
+          @click="saveMessage"
         >
+          {{ saveButtonLabel }}
+        </v-btn>
       </div>
     </div>
   </v-card>
@@ -94,6 +105,7 @@
 <script setup lang="ts">
 import {
   levelToColor,
+  levelToIcon,
   levelToTitle,
   manualLogLevels,
   type ManualLogLevel,
@@ -106,25 +118,46 @@ import {
   PiWebserviceProvider,
   type ForecasterNoteGroup,
 } from '@deltares/fews-pi-requests'
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, ref } from 'vue'
+
+type LogEditorMode = 'create' | 'edit'
+
+type SavePayload = {
+  text: string
+  logLevel: ManualLogLevel
+}
 
 interface Props {
   noteGroup?: ForecasterNoteGroup
+  mode?: LogEditorMode
+  initialText?: string
+  initialLogLevel?: ManualLogLevel
+  saveButtonLabel?: string
+  inline?: boolean
 }
-const props = defineProps<Props>()
-const emit = defineEmits(['newNote'])
+const props = withDefaults(defineProps<Props>(), {
+  mode: 'create',
+  initialText: '',
+  initialLogLevel: 'INFO',
+  saveButtonLabel: 'Send',
+  inline: false,
+})
+const emit = defineEmits<{
+  newNote: []
+  save: [payload: SavePayload]
+  discard: []
+}>()
 
 const maxLines = computed(() => props.noteGroup?.note.maxNumberOfLines ?? 0)
 const maxChars = computed(
   () => props.noteGroup?.note.maxNumberOfCharactersInLine ?? 0,
 )
 
-const text = ref('')
-const newLogLevel = ref<ManualLogLevel>('INFO')
+const text = ref(props.initialText)
+const newLogLevel = ref<ManualLogLevel>(props.initialLogLevel)
 const postErrorMessage = ref<string>()
 const isPosting = ref(false)
 const isUiExpanded = ref(false)
-const messageTextareaRef = useTemplateRef('messageTextareaRef')
 
 const lineCount = computed(() => text.value.split('\n').length)
 const charCount = computed(() =>
@@ -157,24 +190,23 @@ function expandUi() {
   isUiExpanded.value = true
 }
 
-function focusTextarea() {
-  const textareaComponent = messageTextareaRef.value
-  if (textareaComponent?.focus) {
-    textareaComponent.focus()
-  }
-}
-
 async function handleClick(event: MouseEvent) {
   expandUi()
-  focusTextarea()
 }
 
 async function handleFocusIn(event: FocusEvent) {
   expandUi()
-  focusTextarea()
 }
 
-async function saveNewMessage() {
+async function saveMessage() {
+  if (props.mode === 'edit') {
+    emit('save', {
+      text: text.value,
+      logLevel: newLogLevel.value as ManualLogLevel,
+    })
+    return
+  }
+
   if (!props.noteGroup) return
   postErrorMessage.value = undefined
   isPosting.value = true
@@ -195,23 +227,27 @@ async function saveNewMessage() {
 }
 
 function discard() {
-  text.value = ''
-  newLogLevel.value = 'INFO'
+  text.value = props.mode === 'edit' ? props.initialText : ''
+  newLogLevel.value = props.initialLogLevel
   postErrorMessage.value = undefined
   isUiExpanded.value = false
   const activeEl = document.activeElement
   if (activeEl instanceof HTMLElement) {
     activeEl.blur()
   }
+  emit('discard')
 }
 
 const showExpandedUi = computed(
   () =>
+    props.mode === 'edit' ||
     isUiExpanded.value ||
     !!text.value.trim() ||
     isPosting.value ||
     !!postErrorMessage.value,
 )
+
+const saveButtonLabel = computed(() => props.saveButtonLabel)
 
 async function postNewLogMessage(
   noteGroupId: string,
@@ -241,17 +277,17 @@ async function postNewLogMessage(
   -webkit-tap-highlight-color: transparent;
 }
 
-.new-log-card--info:focus-within {
+.new-log-card:not(.new-log-card--inline).new-log-card--info:focus-within {
   border-color: rgb(var(--v-theme-info));
   box-shadow: 0 0 0 1px rgb(var(--v-theme-info));
 }
 
-.new-log-card--warning:focus-within {
+.new-log-card:not(.new-log-card--inline).new-log-card--warning:focus-within {
   border-color: rgb(var(--v-theme-warning));
   box-shadow: 0 0 0 1px rgb(var(--v-theme-warning));
 }
 
-.new-log-card--error:focus-within {
+.new-log-card:not(.new-log-card--inline).new-log-card--error:focus-within {
   border-color: rgb(var(--v-theme-error));
   box-shadow: 0 0 0 1px rgb(var(--v-theme-error));
 }

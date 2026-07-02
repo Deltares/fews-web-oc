@@ -94,7 +94,6 @@ const emit = defineEmits<LogActionEmit>()
 
 <style scoped>
 .virtual-table {
-  max-height: 500px;
   background-color: transparent;
 }
 
