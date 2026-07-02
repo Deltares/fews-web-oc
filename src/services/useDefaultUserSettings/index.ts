@@ -43,9 +43,9 @@ export async function fetchWebResourcesDefaultUserSettings(): Promise<
       normalizedPayload,
     )
     if (!payloadIsValid) {
-      const errors = [...Value.Errors(DefaultUserSettingsSchema, normalizedPayload)].map(
-        (error) => error.message,
-      )
+      const errors = [
+        ...Value.Errors(DefaultUserSettingsSchema, normalizedPayload),
+      ].map((error) => error.message)
       console.warn(
         '[useDefaultUserSettings] payload does not fully match schema:',
         errors,
@@ -68,8 +68,8 @@ export async function fetchWebResourcesDefaultUserSettings(): Promise<
 
     const schemaInvalidCount = overrides.length - schemaValidOverrides.length
     if (schemaInvalidCount > 0) {
-      const firstInvalid = overrides.find((override) =>
-        !Value.Check(DefaultUserSettingSchema, override),
+      const firstInvalid = overrides.find(
+        (override) => !Value.Check(DefaultUserSettingSchema, override),
       )
       const firstInvalidErrors = firstInvalid
         ? [...Value.Errors(DefaultUserSettingSchema, firstInvalid)].map(

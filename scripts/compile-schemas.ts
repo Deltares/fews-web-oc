@@ -7,7 +7,11 @@ import { DefaultUserSettingsSchema } from '../src/schemas/default-user-settings.
 const currentDir = dirname(fileURLToPath(import.meta.url))
 const projectRoot = resolve(currentDir, '..')
 
-const schemaOutputPath = join(projectRoot, 'schemas', 'default-user-settings.schema.json')
+const schemaOutputPath = join(
+  projectRoot,
+  'schemas',
+  'default-user-settings.schema.json',
+)
 
 const jsonSchemaOutput = {
   $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -16,6 +20,10 @@ const jsonSchemaOutput = {
 
 mkdirSync(dirname(schemaOutputPath), { recursive: true })
 
-writeFileSync(schemaOutputPath, `${JSON.stringify(jsonSchemaOutput, null, 2)}\n`, 'utf8')
+writeFileSync(
+  schemaOutputPath,
+  `${JSON.stringify(jsonSchemaOutput, null, 2)}\n`,
+  'utf8',
+)
 
 console.log(`Schema written to ${schemaOutputPath}`)
