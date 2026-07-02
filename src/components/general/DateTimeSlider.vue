@@ -113,6 +113,7 @@ import { DateTime } from 'luxon'
 import { useI18n } from 'vue-i18n'
 
 import { findDateIndex } from '@/lib/utils/dates'
+import { systemTimeAuthority } from '@/services/system-time'
 
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/antd.css'
@@ -291,7 +292,7 @@ function stopFollowTimer(): void {
 }
 
 function setDateToNow(): void {
-  const now = props.now ?? new Date(Date.now())
+  const now = props.now ?? systemTimeAuthority.now()
   dateIndex.value = findDateIndex(props.dates, now)
 }
 
