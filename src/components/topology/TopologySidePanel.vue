@@ -48,7 +48,9 @@
       :is="sidePanel.component"
       :topology-node="topologyNode"
       v-bind="
-        sidePanel.type === 'logDisplay' ? { settings: settingsForSidePanel() } : {}
+        sidePanel.type === 'logDisplay'
+          ? { settings: settingsForSidePanel() }
+          : {}
       "
       @close="closeSidePanel()"
     />
