@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { DefaultUserSettingsSchema } from '../src/schemas/default-user-settings.typebox'
+import { DefaultUserSettingsSchema } from '../src/schemas/default-user-settings.typebox.ts'
 
 const currentDir = dirname(fileURLToPath(import.meta.url))
 const projectRoot = resolve(currentDir, '..')
