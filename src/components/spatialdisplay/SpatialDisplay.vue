@@ -59,8 +59,6 @@
 import {
   computed,
   defineAsyncComponent,
-  onMounted,
-  onUnmounted,
   ref,
   useTemplateRef,
   watch,
@@ -142,8 +140,11 @@ const filterOptions = computed(() => {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { layerCapabilities, times, timesDefault, startPolling, stopPolling } =
-  useWmsLayerCapabilities(baseUrl, () => props.layerName, taskRunId)
+const { layerCapabilities, times, timesDefault } = useWmsLayerCapabilities(
+  baseUrl,
+  () => props.layerName,
+  taskRunId,
+)
 
 function getDisplayEnabledFromLocationAttributes(
   locations: Location[],
@@ -363,14 +364,6 @@ function closeTimeSeriesDisplay(): void {
   maximized.value = false
   emit('navigate', { name: 'SpatialDisplay' })
 }
-
-onMounted(() => {
-  startPolling(60_000)
-})
-
-onUnmounted(() => {
-  stopPolling()
-})
 
 watch(locations, () => {
   if (
