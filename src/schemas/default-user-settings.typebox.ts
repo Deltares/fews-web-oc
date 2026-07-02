@@ -1,6 +1,9 @@
 import { Type, type Static } from '@sinclair/typebox'
 
-export const DefaultUserSettingValueSchema = Type.Union([Type.String(), Type.Boolean()])
+export const DefaultUserSettingValueSchema = Type.Union([
+  Type.String(),
+  Type.Boolean(),
+])
 
 export const DefaultUserSettingSchema = Type.Object(
   {
@@ -9,7 +12,7 @@ export const DefaultUserSettingSchema = Type.Object(
     enabled: Type.Optional(Type.Boolean()),
     favorite: Type.Optional(Type.Boolean()),
   },
-  { additionalProperties: false }
+  { additionalProperties: false },
 )
 
 export const DefaultUserSettingsSchema = Type.Object(
@@ -17,7 +20,7 @@ export const DefaultUserSettingsSchema = Type.Object(
     $schema: Type.Optional(Type.String()),
     settings: Type.Array(DefaultUserSettingSchema),
   },
-  { additionalProperties: false }
+  { additionalProperties: false },
 )
 
 export type DefaultUserSetting = Static<typeof DefaultUserSettingSchema>

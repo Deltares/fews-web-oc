@@ -2,9 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "type": "object",
-  "required": [
-    "settings"
-  ],
+  "required": ["settings"],
   "properties": {
     "$schema": {
       "type": "string"
@@ -14,10 +12,7 @@
       "items": {
         "additionalProperties": false,
         "type": "object",
-        "required": [
-          "id",
-          "value"
-        ],
+        "required": ["id", "value"],
         "properties": {
           "id": {
             "type": "string"
