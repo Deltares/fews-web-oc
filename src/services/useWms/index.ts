@@ -47,8 +47,6 @@ export interface UseWmsReturn {
   loading: Ref<boolean>
 }
 
-const WMS_CAPABILITIES_POLLING_INTERVAL = 60_000
-
 export function useWmsLayerCapabilities(
   baseUrl: string,
   layerName: MaybeRefOrGetter<string>,
@@ -131,8 +129,7 @@ export function useWmsLayerCapabilities(
       await refresh()
     },
     {
-      policies: ['onSystemTick', 'onVisibilityResume', 'onInterval'],
-      intervalMs: WMS_CAPABILITIES_POLLING_INTERVAL,
+      policies: ['onSystemTick', 'onVisibilityResume'],
     },
   )
 
