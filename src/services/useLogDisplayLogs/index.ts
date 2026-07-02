@@ -82,7 +82,6 @@ export function useLogDisplayLogs(
   }>,
   customFilter?: (log: LogMessage) => boolean,
   reverseOrder: MaybeRefOrGetter<boolean> = false,
-  includeTaskRunContext: MaybeRefOrGetter<boolean> = true,
 ) {
   const systemLogMessages = shallowRef<LogMessage[]>([])
   const manualLogMessages = shallowRef<LogMessage[]>([])
@@ -190,26 +189,18 @@ export function useLogDisplayLogs(
 
   const filteredLogMessages = computed(() => {
     // Filter log messages based on selected levels, types, search text, task runs, and workflows
-    // We filter in two passes, first we find which taskRuns have any logs that match the filter criteria
-    // and then we filter the log messages based on those taskRuns.
+    // We filter in two passes: first we find which taskRuns have any logs that match the filter criteria
+    // and then we filter the log messages based on those taskRuns to include context.
     const filteredTaskRunIds = new Set<string>()
-
-    const _includeTaskRunContext = toValue(includeTaskRunContext)
 
     logMessages.value
       .filter((log) => (customFilter ? customFilter(log) : true))
       .forEach((log) => filteredTaskRunIds.add(log.taskRunId))
 
-    if (!_includeTaskRunContext) {
-      return logMessages.value.filter((log) =>
-        customFilter ? customFilter(log) : true,
-      )
-    }
-
     return logMessages.value.filter(
       (log) =>
         (customFilter ? customFilter(log) : true) ||
-        filteredTaskRunIds.has(log.taskRunId),
+        (log.type === 'system' && filteredTaskRunIds.has(log.taskRunId)),
     )
   })
 
