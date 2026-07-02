@@ -1,10 +1,5 @@
 <template>
-  <v-btn-toggle
-    v-model="selected"
-    variant="tonal"
-    density="compact"
-    multiple
-  >
+  <v-btn-toggle v-model="selected" variant="tonal" density="compact" multiple>
     <v-btn
       v-for="item in logLevelsItems"
       :key="item.id"

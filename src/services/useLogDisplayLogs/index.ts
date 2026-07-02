@@ -87,7 +87,6 @@ export function useLogDisplayLogs(
   const manualLogMessages = shallowRef<LogMessage[]>([])
   const { t } = useI18n()
 
-
   const manualIsLoading = ref(false)
   const systemIsLoading = ref(false)
   const error = shallowRef<string>()
@@ -102,7 +101,10 @@ export function useLogDisplayLogs(
       return []
     }
     const _reverseOrder = toValue(reverseOrder)
-    const combinedLogs = [...manualLogMessages.value, ...systemLogMessages.value]
+    const combinedLogs = [
+      ...manualLogMessages.value,
+      ...systemLogMessages.value,
+    ]
     return _reverseOrder
       ? combinedLogs.toSorted((a, b) => a.entryTime.localeCompare(b.entryTime))
       : combinedLogs.toSorted((a, b) => b.entryTime.localeCompare(a.entryTime))

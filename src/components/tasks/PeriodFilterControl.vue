@@ -37,7 +37,6 @@ interface Props {
 
 const { hasAllOption = true } = defineProps<Props>()
 
-
 const period = defineModel<RelativePeriod | null>({ required: true })
 
 interface RelativePeriodOption {
@@ -83,7 +82,6 @@ const activeOptions = computed(() => {
     return options.filter((option) => option.numSecondsBack !== null)
   }
 })
-
 
 const selectedOption = ref<RelativePeriodOption>()
 
