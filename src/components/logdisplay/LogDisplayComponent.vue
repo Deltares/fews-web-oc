@@ -135,7 +135,6 @@
             :disseminationStatus="disseminationStatus"
             :userName="preferredUsername"
             :noteGroup="noteGroup"
-            v-model:expanded="expandedItems[item.logs[0].taskRunId]"
             @disseminate-log="disseminateLog"
             @delete-log="deleteLog"
             @edit-log="editLog"

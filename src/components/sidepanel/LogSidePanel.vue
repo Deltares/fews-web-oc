@@ -65,7 +65,6 @@
             :disseminationStatus="disseminationStatus"
             :userName="preferredUsername"
             :noteGroup="noteGroup"
-            v-model:expanded="expandedItems[item.logs[0].taskRunId]"
             @disseminate-log="disseminateLog"
             @delete-log="deleteLog"
             @edit-log="editLog"
@@ -177,7 +176,6 @@ const search = ref<string>()
 const maxCount = ref<number>(20000)
 const selectedLevels = ref<LogLevel[]>([...logLevels])
 const selectedLogTypes = ref<LogType[]>([...logTypes])
-const expandedItems = ref<Record<string, boolean>>({})
 const isSearchVisible = ref<boolean>(false)
 const searchField = ref<HTMLElement | null>(null)
 const shouldHideFilter = ref<boolean>(false)
