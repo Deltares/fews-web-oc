@@ -399,8 +399,14 @@ watch(
       return
     }
 
-    currentColourScaleIds.value = styles.map(styleToId)
-
+    const nextScaleIds = styles.map(styleToId)
+    const hasStyleChanges =
+      nextScaleIds.length !== currentColourScaleIds.value.length ||
+      nextScaleIds.some((id, index) => id !== currentColourScaleIds.value[index])
+    if (!hasStyleChanges) {
+      return
+    }
+    currentColourScaleIds.value = nextScaleIds
     addScalesForStyles(styles)
   },
   { immediate: true },
@@ -415,6 +421,7 @@ watch(
 )
 
 function addScalesForStyles(styles: Style[]): void {
+  console.log('Adding scales for styles', styles) 
   styles.forEach((style) => {
     colourScalesStore.addScale(
       style,
