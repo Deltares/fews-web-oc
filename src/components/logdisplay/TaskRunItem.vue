@@ -109,8 +109,6 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const emit = defineEmits(['disseminateLog'])
-
 const expanded = ref(false)
 
 const levelCount = computed(() =>
