@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { fetchWebResourcesDefaultUserSettings } from '@/services/useDefaultUserSettings'
+import { fetchWebResourcesDefaultUserSettings } from '../../../src/services/useDefaultUserSettings'
 
 vi.mock('@/lib/fews-config', () => ({
   getResourcesStaticUrl: (resource: string) =>
@@ -23,41 +23,17 @@ describe('fetchWebResourcesDefaultUserSettings', () => {
     vi.restoreAllMocks()
   })
 
-  it('returns valid overrides when payload matches schema', async () => {
+  it('returns valid overrides when payload shape is valid', async () => {
     const payload = {
       settings: [
         { id: 'ui.theme', value: 'dark', favorite: true },
-        { id: 'charts.scrollZoomMode', enabled: false },
+        { id: 'charts.scrollZoomMode', value: true, enabled: false },
       ],
-    }
-    const schema = {
-      type: 'object',
-      properties: {
-        settings: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              value: { anyOf: [{ type: 'string' }, { type: 'boolean' }] },
-              enabled: { type: 'boolean' },
-              favorite: { type: 'boolean' },
-            },
-            required: ['id'],
-            additionalProperties: false,
-          },
-        },
-      },
-      required: ['settings'],
-      additionalProperties: false,
     }
 
     vi.stubGlobal(
       'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(mockResponse(true, payload))
-        .mockResolvedValueOnce(mockResponse(true, schema)),
+      vi.fn().mockResolvedValueOnce(mockResponse(true, payload)),
     )
 
     const result = await fetchWebResourcesDefaultUserSettings()
@@ -68,54 +44,17 @@ describe('fetchWebResourcesDefaultUserSettings', () => {
     expect(result[1].enabled).toBe(false)
   })
 
-  it('returns empty array when schema validation fails', async () => {
+  it('filters structurally invalid override entries', async () => {
     const payload = {
-      settings: [{ id: 'ui.theme', value: 123 }],
-    }
-    const schema = {
-      type: 'object',
-      properties: {
-        settings: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              value: { type: 'string' },
-            },
-            required: ['id', 'value'],
-            additionalProperties: false,
-          },
-        },
-      },
-      required: ['settings'],
-      additionalProperties: false,
+      settings: [
+        { id: 'ui.theme', value: 'dark' },
+        { id: 'ui.theme', enabled: 'bad-type' },
+      ],
     }
 
     vi.stubGlobal(
       'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(mockResponse(true, payload))
-        .mockResolvedValueOnce(mockResponse(true, schema)),
-    )
-
-    const result = await fetchWebResourcesDefaultUserSettings()
-
-    expect(result).toHaveLength(0)
-  })
-
-  it('falls back to structural validation when schema is unavailable', async () => {
-    const payload = {
-      settings: [{ id: 'ui.theme', value: 'dark', favorite: true }],
-    }
-
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(mockResponse(true, payload))
-        .mockResolvedValueOnce(mockResponse(false, {})),
+      vi.fn().mockResolvedValueOnce(mockResponse(true, payload)),
     )
 
     const result = await fetchWebResourcesDefaultUserSettings()
@@ -124,13 +63,55 @@ describe('fetchWebResourcesDefaultUserSettings', () => {
     expect(result[0].id).toBe('ui.theme')
   })
 
+  it('accepts array payload shape directly', async () => {
+    const payload = [
+      { id: 'ui.theme', value: 'dark', favorite: true },
+      { id: 'charts.scrollZoomMode', value: true, enabled: false },
+    ]
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValueOnce(mockResponse(true, payload)),
+    )
+
+    const result = await fetchWebResourcesDefaultUserSettings()
+
+    expect(result).toHaveLength(2)
+  })
+
+  it('returns empty array when fetch is not ok', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValueOnce(mockResponse(false, {})),
+    )
+
+    const result = await fetchWebResourcesDefaultUserSettings()
+
+    expect(result).toHaveLength(0)
+  })
+
   it('returns empty array when payload shape is invalid', async () => {
     vi.stubGlobal(
       'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(mockResponse(true, { unsupported: true }))
-        .mockResolvedValueOnce(mockResponse(false, {})),
+      vi.fn().mockResolvedValueOnce(mockResponse(true, { unsupported: true })),
+    )
+
+    const result = await fetchWebResourcesDefaultUserSettings()
+
+    expect(result).toHaveLength(0)
+  })
+
+  it('returns empty array when all entries are structurally invalid', async () => {
+    const payload = {
+      settings: [
+        { value: 'missing-id' },
+        { id: 'ui.theme', enabled: 'bad-type' },
+      ],
+    }
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValueOnce(mockResponse(true, payload)),
     )
 
     const result = await fetchWebResourcesDefaultUserSettings()
