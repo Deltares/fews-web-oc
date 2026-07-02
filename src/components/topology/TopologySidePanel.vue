@@ -47,7 +47,9 @@
       v-if="activeSidePanelType === sidePanel.type"
       :is="sidePanel.component"
       :topology-node="topologyNode"
-      :settings="settingsForSidePanel(sidePanel.type)"
+      v-bind="
+        sidePanel.type === 'logDisplay' ? { settings: settingsForSidePanel() } : {}
+      "
       @close="closeSidePanel()"
     />
   </template>
@@ -158,11 +160,9 @@ const enabledGeneralSidePanels = computed<GeneralSidePanel[]>(() => {
   )
 })
 
-function settingsForSidePanel(type: GeneralSidePanelType): any {
+function settingsForSidePanel(): { logDisplayId: string } {
   const sidePanelConfig = configStore.general.sidePanel
-  if (type === 'logDisplay') {
-    return { logDisplayId: sidePanelConfig?.[type]?.logDisplayId ?? '' }
-  }
+  return { logDisplayId: sidePanelConfig?.logDisplay?.logDisplayId ?? '' }
 }
 
 const hasMultipleEnabledSidePanels = computed<boolean>(
