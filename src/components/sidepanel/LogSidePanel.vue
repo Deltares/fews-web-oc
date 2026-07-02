@@ -39,7 +39,7 @@
         class="log-level-filter-overlay d-flex w-100 justify-center py-2"
         :class="{ hidden: shouldHideFilter && !isSearchVisible }"
         @mouseenter="handleFilterMouseEnter"
-        @mouseleave="handleFilterMouseLeave"
+        @mouseleave="scheduleHideFilter"
       >
         <v-sheet>
           <LogLevelFilter v-model="selectedLevels" />
@@ -50,7 +50,7 @@
         class="w-100 px-1 pb-1"
         :items="groupedByTaskRunId"
         :item-height="50"
-        @scroll="handleScroll"
+        @scroll="scheduleHideFilter"
       >
         <template #default="{ item }">
           <DateSeparator
@@ -131,11 +131,7 @@ import NewLogMessage from '@/components/logdisplay/NewLogMessage.vue'
 import { refDebounced } from '@vueuse/core'
 import { configManager } from '@/services/application-config'
 import { useLogDisplayLogs } from '@/services/useLogDisplayLogs'
-import {
-  filterLog,
-  getManualFilters,
-  getSystemFilters,
-} from '@/lib/log/utils'
+import { filterLog, getManualFilters, getSystemFilters } from '@/lib/log/utils'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import { useLogDisplay } from '@/services/useLogDisplay'
 import { useCurrentUser } from '@/services/useCurrentUser'
@@ -262,12 +258,7 @@ const customFilter = (log: LogMessage) =>
   )
 
 const { logMessages, isLoading, lastUpdatedTimestamp, groupedByTaskRunId } =
-  useLogDisplayLogs(
-    baseUrl,
-    () => debouncedFilters.value,
-    customFilter,
-    false,
-  )
+  useLogDisplayLogs(baseUrl, () => debouncedFilters.value, customFilter, false)
 
 const taskRunIds = computed(() => {
   const _taskRunIds = logMessages.value.map((logs) => logs.taskRunId)
@@ -303,15 +294,15 @@ const {
 
 async function toggleSearch() {
   isSearchVisible.value = !isSearchVisible.value
-  if (!isSearchVisible.value) {
-    search.value = undefined
-  } else {
+  if (isSearchVisible.value) {
     await nextTick()
     ;(searchField.value as any)?.$el?.querySelector('input')?.focus()
+  } else {
+    search.value = undefined
   }
 }
 
-function handleScroll(event: Event) {
+function scheduleHideFilter() {
   if (hideTimeout) {
     clearTimeout(hideTimeout)
   }
@@ -325,15 +316,6 @@ function handleFilterMouseEnter() {
   if (hideTimeout) {
     clearTimeout(hideTimeout)
   }
-}
-
-function handleFilterMouseLeave() {
-  if (hideTimeout) {
-    clearTimeout(hideTimeout)
-  }
-  hideTimeout = setTimeout(() => {
-    shouldHideFilter.value = true
-  }, 1000)
 }
 
 const lastUpdatedString = computed<string>(() => {
