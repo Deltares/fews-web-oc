@@ -267,8 +267,8 @@ const niceColors = [
 
 function nameToNiceColor(name: string, opacity: number) {
   let hash = 0
-  for (let i = 0; i < name.length; i++) {
-    hash = (name.codePointAt(i) ?? 0) + ((hash << 5) - hash)
+  for (const char of name) {
+    hash = (char.codePointAt(0) ?? 0) + ((hash << 5) - hash)
   }
   const index = Math.abs(hash) % niceColors.length
   const alphaHex = Math.round(Math.min(Math.max(opacity, 0), 1) * 255)
