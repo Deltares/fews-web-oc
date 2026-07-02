@@ -108,10 +108,6 @@ import { computed, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import {
-  ForecasterNoteKeysRequest,
-  ForecasterNoteRequest,
-  LogDisplayLogsActionRequest,
-  PiWebserviceProvider,
   type LogDisplayDisseminationAction,
   type TopologyNode,
 } from '@deltares/fews-pi-requests'
@@ -119,7 +115,6 @@ import {
 import {
   logLevels,
   logTypes,
-  type LogDisseminationStatus,
   type LogLevel,
   type LogMessage,
   type LogType,
@@ -138,7 +133,6 @@ import { configManager } from '@/services/application-config'
 import { useLogDisplayLogs } from '@/services/useLogDisplayLogs'
 import {
   filterLog,
-  getLogDisseminationKey,
   getManualFilters,
   getSystemFilters,
 } from '@/lib/log/utils'
@@ -149,7 +143,7 @@ import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { useTaskRuns } from '@/services/useTaskRuns'
 import { RelativePeriod } from '@/lib/period/types.ts'
 import { useNoteGroup } from '@/services/useNoteGroup/index.ts'
-import { createTransformRequestFn } from '@/lib/requests/transformRequest.ts'
+import { useLogActions } from '@/components/logdisplay/useLogActions'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -288,100 +282,24 @@ const { taskRuns } = useTaskRuns(baseUrl, () => ({
 const disseminations = computed<LogDisplayDisseminationAction[]>(
   () => logDisplay.value?.logDissemination?.disseminationActions ?? [],
 )
-const disseminationStatus = ref<Record<string, LogDisseminationStatus>>({})
-
-async function disseminateLog(
-  log: LogMessage,
-  dissemination: LogDisplayDisseminationAction,
-) {
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const provider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-  const request: LogDisplayLogsActionRequest = {
-    logDisplayId: props.settings.logDisplayId,
-    actionId: dissemination.id,
-    logMessage: log.text,
-    logLevel: log.level,
-  }
-  const key = getLogDisseminationKey(log, dissemination)
-
-  disseminationStatus.value[key] = {
-    isLoading: true,
-  }
-
-  try {
-    await provider.postLogDisplaysAction(request)
-  } catch (error) {
-    disseminationStatus.value[key] = {
-      isLoading: false,
-      error: (error as Error).message,
-    }
-    return
-  }
-
-  disseminationStatus.value[key] = {
-    isLoading: false,
-    success: true,
-  }
-}
-
-async function deleteLog(log: LogMessage) {
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const provider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-  const keys: ForecasterNoteKeysRequest = {
-    logs: [{ id: log.id, taskRunId: log.taskRunId }],
-  }
-  await provider.deleteForecasterNote(keys)
-  refreshLogs()
-}
-
-async function editLog(log: LogMessage) {
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const provider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-  const note: ForecasterNoteRequest = {
-    noteGroupId: noteGroup.value?.id ?? '',
-    logMessage: log.text,
-    logLevel: log.level,
-    id: log.id,
-    taskRunId: log.taskRunId,
-    userId: log.user,
-  }
-  await provider.postForecasterNote(note)
-  refreshLogs()
-}
-
-async function acknowledgeLog(log: LogMessage) {
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const provider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-  const keys: ForecasterNoteKeysRequest = {
-    logs: [{ id: log.id, taskRunId: log.taskRunId }],
-  }
-  await provider.acknowledgeForecasterNote(keys)
-  refreshLogs()
-}
-
-async function unacknowledgeLog(log: LogMessage) {
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const provider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-  const keys: ForecasterNoteKeysRequest = {
-    logs: [{ id: log.id, taskRunId: log.taskRunId }],
-  }
-  await provider.unacknowledgeForecasterNote(keys)
-  refreshLogs()
-}
 
 function refreshLogs() {
   now.value = new Date()
 }
+
+const {
+  disseminationStatus,
+  disseminateLog,
+  deleteLog,
+  editLog,
+  acknowledgeLog,
+  unacknowledgeLog,
+} = useLogActions({
+  baseUrl,
+  getLogDisplayId: () => props.settings.logDisplayId,
+  getNoteGroupId: () => noteGroup.value?.id ?? '',
+  onRefresh: refreshLogs,
+})
 
 async function toggleSearch() {
   isSearchVisible.value = !isSearchVisible.value

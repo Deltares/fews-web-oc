@@ -165,18 +165,11 @@ import {
   toTitleCase,
   LogMessage,
   levelToTitle,
-  LogDisseminationStatus,
-  getLogDisseminationKey,
   levelToColor,
   levelToIcon,
 } from '@/lib/log'
 import {
-  ForecasterNoteKeysRequest,
-  ForecasterNoteRequest,
-  LogDisplayLogsActionRequest,
-  PiWebserviceProvider,
   type ForecasterNoteGroup,
-  type LogDisplayDisseminationAction,
   type LogsDisplay,
 } from '@deltares/fews-pi-requests'
 import { useLogDisplayLogs } from '@/services/useLogDisplayLogs'
@@ -186,8 +179,8 @@ import { useCurrentUser } from '@/services/useCurrentUser'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import NewLogMessage from './NewLogMessage.vue'
 import { useTaskRuns } from '@/services/useTaskRuns'
-import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
+import { useLogActions } from './useLogActions'
 
 interface Props {
   logDisplay: LogsDisplay
@@ -311,101 +304,25 @@ const { taskRuns } = useTaskRuns(baseUrl, () => ({
 const disseminations = computed(
   () => props.logDisplay.logDissemination?.disseminationActions ?? [],
 )
-const disseminationStatus = ref<Record<string, LogDisseminationStatus>>({})
-
-async function disseminateLog(
-  log: LogMessage,
-  dissemination: LogDisplayDisseminationAction,
-) {
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const provider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-  const request: LogDisplayLogsActionRequest = {
-    logDisplayId: props.logDisplay.id,
-    actionId: dissemination.id,
-    logMessage: log.text,
-    logLevel: log.level,
-  }
-  const key = getLogDisseminationKey(log, dissemination)
-
-  disseminationStatus.value[key] = {
-    isLoading: true,
-  }
-
-  try {
-    await provider.postLogDisplaysAction(request)
-  } catch (error) {
-    disseminationStatus.value[key] = {
-      isLoading: false,
-      error: (error as Error).message,
-    }
-    return
-  }
-
-  disseminationStatus.value[key] = {
-    isLoading: false,
-    success: true,
-  }
-}
-
-async function deleteLog(log: LogMessage) {
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const provider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-  const keys: ForecasterNoteKeysRequest = {
-    logs: [{ id: log.id, taskRunId: log.taskRunId }],
-  }
-  await provider.deleteForecasterNote(keys)
-  refreshLogs()
-}
-
-async function editLog(log: LogMessage) {
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const provider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-  const note: ForecasterNoteRequest = {
-    noteGroupId: props.noteGroup?.id ?? '',
-    logMessage: log.text,
-    logLevel: log.level,
-    id: log.id,
-    taskRunId: log.taskRunId,
-    userId: log.user,
-  }
-  await provider.postForecasterNote(note)
-  refreshLogs()
-}
-
-async function acknowledgeLog(log: LogMessage) {
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const provider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-  const keys: ForecasterNoteKeysRequest = {
-    logs: [{ id: log.id, taskRunId: log.taskRunId }],
-  }
-  await provider.acknowledgeForecasterNote(keys)
-  refreshLogs()
-}
-
-async function unacknowledgeLog(log: LogMessage) {
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const provider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-  const keys: ForecasterNoteKeysRequest = {
-    logs: [{ id: log.id, taskRunId: log.taskRunId }],
-  }
-  await provider.unacknowledgeForecasterNote(keys)
-  refreshLogs()
-}
 
 async function refreshLogs() {
   // Set endDate to now + 5 seconds to ensure the backend will return the latest logs
   endDate.value = new Date(Date.now() + 5000)
 }
+
+const {
+  disseminationStatus,
+  disseminateLog,
+  deleteLog,
+  editLog,
+  acknowledgeLog,
+  unacknowledgeLog,
+} = useLogActions({
+  baseUrl,
+  getLogDisplayId: () => props.logDisplay.id,
+  getNoteGroupId: () => props.noteGroup?.id ?? '',
+  onRefresh: refreshLogs,
+})
 </script>
 
 <style scoped>
