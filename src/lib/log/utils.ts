@@ -55,13 +55,13 @@ export function filterLog(
   const taskRunUser = taskRun?.userId?.toLowerCase()
   const title = getTitleForLog(log, '', taskRuns, workflows)?.toLowerCase()
   return (
-    !searchText ||
-    user?.includes(searchText) ||
-    eventCode?.includes(searchText) ||
-    text.includes(searchText) ||
-    taskRunId?.includes(searchText) ||
-    title?.includes(searchText) ||
-    taskRunUser?.includes(searchText) ||
+    (!searchText ||
+      user?.includes(searchText) ||
+      eventCode?.includes(searchText) ||
+      text.includes(searchText) ||
+      taskRunId?.includes(searchText) ||
+      title?.includes(searchText) ||
+      taskRunUser?.includes(searchText)) ??
     false
   )
 }
