@@ -23,6 +23,7 @@ import { useUserSettingsStore } from './stores/userSettings'
 import { useTheme } from 'vuetify'
 import { useDark, usePreferredDark } from '@vueuse/core'
 import { useTaskRunMonitorStore } from './stores/taskRunMonitor'
+import { useSystemTimeStore } from './stores/systemTime'
 
 import '@/assets/fews-flags.css'
 import { useBaseMapsStore } from './stores/baseMaps'
@@ -41,6 +42,8 @@ const isDark = useDark()
 
 // Initialise task run monitoring.
 useTaskRunMonitorStore()
+// Initialise FEWS system time authority.
+useSystemTimeStore()
 
 const layoutComponent = computed(() => {
   if (globalThis.location.href.includes('/embed/')) {
