@@ -3,12 +3,21 @@
     <template v-slot:activator="{ props, isActive }">
       <div class="icon-group" v-bind="props">
         <div class="icon-group__underlay"></div>
+        <span
+          class="systemtime-status"
+          :class="{ 'systemtime-status--running': isRunningMode }"
+          :title="modeLabel"
+          aria-label="System time mode"
+        >
+          <v-icon class="systemtime-status__icon">{{ modeIcon }}</v-icon>
+          <span
+            class="systemtime-status__dot"
+            :class="{ 'systemtime-status__dot--pulse': syncPulseActive }"
+            :style="runningDotStyle"
+          ></span>
+        </span>
         <span class="icon-group__label">
-          {{
-            mobile
-              ? d(store.systemTime, 'timeControl__mobile')
-              : d(store.systemTime, 'timeControl')
-          }}
+          {{ systemTimeLabel }}
         </span>
         <v-btn icon size="small" class="last-btn">
           <v-icon>{{
@@ -77,7 +86,7 @@ import type { VForm } from 'vuetify/components'
 import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
 
-import { useSystemTimeStore } from '@/stores/systemTime'
+import { CLOCK_TICK_MS, useSystemTimeStore } from '@/stores/systemTime'
 import { useConfigStore } from '@/stores/config'
 import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
 
@@ -103,8 +112,65 @@ const intervalItems = computed(() => {
 
 const customStartDate = ref<Date>()
 const customEndDate = ref<Date>()
+const syncPulseActive = ref(false)
+let syncPulseTimeout: ReturnType<typeof setTimeout> | undefined
 
 const isCustomInterval = computed(() => store.selectedInterval === 'custom')
+const isBackendSynced = computed(
+  () => store.lastSyncedAt !== undefined && store.syncError === undefined,
+)
+
+const systemTimeLabel = computed(() => {
+  if (!isBackendSynced.value) {
+    return '--:--'
+  }
+
+  return mobile.value
+    ? d(store.systemTime, 'timeControl__mobile')
+    : d(store.systemTime, 'timeControl')
+})
+
+const isRunningMode = computed(
+  () => store.mode === 'running' || store.mode === 'running_fixed_interval',
+)
+
+const runningDotStyle = computed(() => ({
+  animationDuration: `${CLOCK_TICK_MS}ms`,
+}))
+
+const modeIcon = computed(() => {
+  switch (store.mode) {
+    case 'running':
+      return 'mdi-clock-outline'
+    case 'running_fixed_interval':
+      return 'mdi-clock-time-eight-outline'
+    case 'offset_running':
+      return 'mdi-clock-plus-outline'
+    case 'offset_fixed_interval':
+      return 'mdi-clock-edit-outline'
+    case 'static':
+      return 'mdi-clock-remove-outline'
+    default:
+      return 'mdi-clock-outline'
+  }
+})
+
+const modeLabel = computed(() => {
+  switch (store.mode) {
+    case 'running':
+      return 'System time mode: running'
+    case 'running_fixed_interval':
+      return 'System time mode: running (fixed interval)'
+    case 'offset_running':
+      return 'System time mode: offset running'
+    case 'offset_fixed_interval':
+      return 'System time mode: offset (fixed interval)'
+    case 'static':
+      return 'System time mode: static'
+    default:
+      return 'System time mode: unknown'
+  }
+})
 
 watchEffect(() => {
   if (isCustomInterval.value && dateOrderIsCorrect.value) {
@@ -118,6 +184,26 @@ watch([customStartDate, customEndDate], () => {
   form.value?.validate()
 })
 
+watch(
+  () => store.lastSyncedAt?.getTime(),
+  (newVal, oldVal) => {
+    if (newVal === undefined || newVal === oldVal) return
+    syncPulseActive.value = false
+    if (syncPulseTimeout) {
+      clearTimeout(syncPulseTimeout)
+      syncPulseTimeout = undefined
+    }
+
+    syncPulseTimeout = setTimeout(() => {
+      syncPulseActive.value = true
+      syncPulseTimeout = setTimeout(() => {
+        syncPulseActive.value = false
+        syncPulseTimeout = undefined
+      }, 700)
+    }, 0)
+  },
+)
+
 function onIntervalChange() {
   store.changeInterval()
 }
@@ -130,13 +216,78 @@ function onIntervalChange() {
 
 .icon-group {
   display: inline-flex;
+  align-items: center;
+  gap: 6px;
   position: relative;
   border-radius: 24px;
 }
 
+.systemtime-status {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 10px;
+}
+
+.systemtime-status__icon {
+  opacity: 0.9;
+}
+
+.systemtime-status__dot {
+  position: absolute;
+  right: -1px;
+  top: -1px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(var(--v-theme-primary));
+  display: none;
+}
+
+.systemtime-status--running .systemtime-status__dot {
+  display: block;
+  animation-name: status-blink;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.systemtime-status__dot--pulse::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid rgba(var(--v-theme-primary), 0.65);
+  animation: sync-pulse 0.7s ease-out;
+}
+
+@keyframes status-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  55%,
+  100% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes sync-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
 .icon-group__label {
   line-height: 40px;
-  padding-left: 15px;
+  padding-left: 4px;
 }
 
 .icon-group__underlay {
