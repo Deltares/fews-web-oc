@@ -72,7 +72,7 @@ import {
 } from '@/lib/taskruns'
 
 import { useCurrentUser } from '@/services/useCurrentUser'
-import { useTaskRuns } from '@/services/useTasksRuns'
+import { useTasksRuns } from '@/services/useTasksRuns'
 
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 
@@ -115,7 +115,7 @@ const {
   outputStartTime,
   outputEndTime,
   fetch: refreshTaskRuns,
-} = useTaskRuns(
+} = useTasksRuns(
   period,
   availableWorkflowsStore.workflowIds,
   selectedTaskStatuses,
