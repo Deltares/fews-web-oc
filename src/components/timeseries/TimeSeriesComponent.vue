@@ -134,7 +134,6 @@ import {
   getDomainWithConfigFallback,
   getSubplotWithDomain,
 } from '@/lib/display/utils'
-import { useUserSettingsStore } from '@/stores/userSettings'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 import { getBrushDomain } from '@/lib/charts/brush.ts'
 
@@ -198,7 +197,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { selectedDate } = useSelectedDate(() => props.currentTime)
 const store = useSystemTimeStore()
-const userSettings = useUserSettingsStore()
 const isEditing = ref(false)
 const confirmationDialog = ref(false)
 const { xs } = useDisplay()
@@ -240,9 +238,7 @@ const fullBrushDomain = computed<[Date, Date]>(() => {
   )
 })
 
-const showBrush = computed(
-  () => userSettings.get('charts.brush')?.value === true,
-)
+const showBrush = computed(() => props.settings.timeSeriesChart.showBrush)
 const chartOptions = ref<UseTimeSeriesOptions>({
   startTime: store.startTime,
   endTime: store.endTime,

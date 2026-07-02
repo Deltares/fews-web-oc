@@ -121,7 +121,7 @@ function getTimeSeriesGridActionsFilter(
 }
 
 const brushFilter = computed(() => {
-  if (!userSettings.get('charts.brush')?.value) {
+  if (!props.settings.charts.timeSeriesChart.showBrush) {
     return
   }
   if (props.locationIds) {

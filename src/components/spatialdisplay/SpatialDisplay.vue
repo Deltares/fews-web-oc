@@ -188,14 +188,26 @@ const selectedLocations = computed<Location[] | undefined>(() => {
   return locationList
 })
 
+const hasValidCoordinates = computed(() => {
+  if (!props.latitude || !props.longitude) return false
+
+  const latitude = Number(props.latitude)
+  const longitude = Number(props.longitude)
+  return Number.isFinite(latitude) && Number.isFinite(longitude)
+})
+
 const resolvedSettings = computed<ComponentSettings>(() => {
   const selected = selectedLocations.value ?? []
+  const showBrush =
+    !hasValidCoordinates.value &&
+    userSettings.get('charts.brush')?.value === true
   return {
     ...props.settings,
     charts: {
       ...props.settings.charts,
       timeSeriesChart: {
         ...props.settings.charts.timeSeriesChart,
+        showBrush,
         enabled: getDisplayEnabledFromLocationAttributes(
           selected,
           props.settings.charts.timeSeriesChart.locationEnabledAttribute,

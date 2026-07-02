@@ -200,6 +200,13 @@ export function getRelativeUrlForRequest(
 ): string {
   // Parse request URL to URL object to be able to append query parameters.
   const url = absoluteUrl(`${baseUrl}/${request.request}`)
+  const isGridTimeSeries = request.request.includes('/timeseries/grid')
+
+  // FEWS PI /timeseries/grid does not support thinning. Ensure it is never
+  // forwarded when present in incoming action URLs.
+  if (isGridTimeSeries) {
+    url.searchParams.delete('thinning')
+  }
 
   const convertToDateTime = (date: Date | null | undefined) => {
     if (!date) return null
@@ -222,7 +229,7 @@ export function getRelativeUrlForRequest(
   if (endTimeQuery) url.searchParams.set('endTime', endTimeQuery)
 
   // Set thinning if specified.
-  if (options.thinning) {
+  if (options.thinning && !isGridTimeSeries) {
     const parseDateTimeFromSearchParam = (param: string) => {
       const dateTimeString = url.searchParams.get(param)
       if (!dateTimeString) return null
