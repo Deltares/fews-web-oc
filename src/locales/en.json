@@ -121,5 +121,11 @@
     "linkCopyFailed": "Failed to copy link",
     "map": "Map",
     "chart": "Chart"
+  },
+  "logDisplay": {
+    "manual": {
+      "anonymousUser": "Anonymous User"
+    },
+    "system": {}
   }
 }

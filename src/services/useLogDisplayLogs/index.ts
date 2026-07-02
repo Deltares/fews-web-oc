@@ -6,6 +6,7 @@ import {
 } from '@deltares/fews-pi-requests'
 import type { MaybeRefOrGetter } from 'vue'
 import { computed, ref, shallowRef, toValue, watchEffect } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 type DateSeparatorItem = {
   type: 'dateSeparator'
@@ -85,6 +86,8 @@ export function useLogDisplayLogs(
 ) {
   const systemLogMessages = shallowRef<LogMessage[]>([])
   const manualLogMessages = shallowRef<LogMessage[]>([])
+  const { t } = useI18n()
+
 
   const manualIsLoading = ref(false)
   const systemIsLoading = ref(false)
@@ -129,6 +132,7 @@ export function useLogDisplayLogs(
             ...log,
             type: filter.logType ?? 'manual',
             taskRunId: cleanTaskRunId(log.taskRunId),
+            user: log.user || t('logDisplay.manual.anonymousUser'),
           })) ?? []
 
         return logs
