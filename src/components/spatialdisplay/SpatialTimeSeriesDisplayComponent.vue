@@ -5,6 +5,7 @@
         :displayConfig="displayConfig"
         :elevationChartDisplayconfig="elevationChartDisplayconfig"
         :brushChartConfig="brushChartConfig"
+        :disable-thinning="disableThinning"
         :currentTime="currentTime"
         :filter="filter"
         :settings="settings.charts"
@@ -34,6 +35,7 @@ import { useTaskRunsStore } from '@/stores/taskRuns'
 
 interface Props {
   brushFilter?: FilterActionsFilter | TimeSeriesGridActionsFilter
+  disableThinning?: boolean
   filter?: FilterActionsFilter | TimeSeriesGridActionsFilter
   elevationChartFilter?: TimeSeriesGridActionsFilter
   locationsTooltipFilter?: LocationsTooltipFilter

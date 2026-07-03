@@ -2,6 +2,7 @@
   <SpatialTimeSeriesDisplayComponent
     :filter="filter"
     :brushFilter="brushFilter"
+    :disable-thinning="isGridCoordinateMode"
     :elevation-chart-filter="elevationChartFilter"
     :locations-tooltip-filter="locationsTooltipFilter"
     :current-time="currentTime"
@@ -51,6 +52,10 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const userSettings = useUserSettingsStore()
+
+const isGridCoordinateMode = computed(
+  () => !!(props.longitude && props.latitude),
+)
 
 const filterIds = computed(() => props.topologyNode?.filterIds ?? [])
 
@@ -121,14 +126,15 @@ function getTimeSeriesGridActionsFilter(
 }
 
 const brushFilter = computed(() => {
+  if (isGridCoordinateMode.value) {
+    return undefined
+  }
+
   if (!props.settings.charts.timeSeriesChart.showBrush) {
     return
   }
   if (props.locationIds) {
     return getFilterActionsFilter(props.locationIds, true)
-  }
-  if (props.longitude && props.latitude) {
-    return getTimeSeriesGridActionsFilter(props.longitude, props.latitude)
   }
   return {}
 })

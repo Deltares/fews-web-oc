@@ -140,6 +140,7 @@ import { getBrushDomain } from '@/lib/charts/brush.ts'
 interface Props {
   config?: DisplayConfig
   brushChartConfig?: DisplayConfig | null
+  disableThinning?: boolean
   elevationChartConfig?: DisplayConfig
   currentTime?: Date
   informationContent?: string | null
@@ -242,8 +243,18 @@ const showBrush = computed(() => props.settings.timeSeriesChart.showBrush)
 const chartOptions = ref<UseTimeSeriesOptions>({
   startTime: store.startTime,
   endTime: store.endTime,
-  thinning: true,
+  thinning: !props.disableThinning,
 })
+
+watch(
+  () => props.disableThinning,
+  (disableThinning) => {
+    chartOptions.value = {
+      ...chartOptions.value,
+      thinning: !disableThinning,
+    }
+  },
+)
 
 const brushOptions = computed<UseTimeSeriesOptions>(() => ({
   startTime: fullBrushDomain.value[0],
