@@ -21,7 +21,7 @@ function parseSystemTimePayload(rawPayload: string): string {
 function parseIsoSystemTime(isoDateText: string): Date {
   const parsed = new Date(isoDateText)
   if (Number.isNaN(parsed.getTime())) {
-    throw new Error(
+    throw new TypeError(
       `FEWS system time response was not a valid ISO8601 timestamp: ${isoDateText}`,
     )
   }
