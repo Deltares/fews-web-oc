@@ -33,7 +33,7 @@ export class SystemTimeAuthority {
 
   async syncFromBackend(): Promise<SystemTimeSyncSnapshot> {
     const fewsBaseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-    const url = new URL(SYSTEM_TIME_PATH, `${fewsBaseUrl}/`).toString()
+    const url = new URL(SYSTEM_TIME_PATH, `${fewsBaseUrl}`).toString()
     const request = await createTransformRequestFn()(new Request(url))
 
     console.log(`Fetching FEWS system time from ${url}`)
