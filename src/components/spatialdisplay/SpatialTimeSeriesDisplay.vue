@@ -130,7 +130,7 @@ const brushFilter = computed(() => {
     return undefined
   }
 
-  if (!props.settings.charts.timeSeriesChart.showBrush) {
+  if (!userSettings.get('charts.brush')?.value) {
     return
   }
   if (props.locationIds) {

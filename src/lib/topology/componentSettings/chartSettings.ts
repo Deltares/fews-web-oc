@@ -19,9 +19,7 @@ export type ChartsSettings = Omit<
 > & {
   timeSeriesChart: WithOptionalLocationEnabledAttribute<
     DeepRequiredChartsSettings['timeSeriesChart']
-  > & {
-    showBrush: boolean
-  }
+  >
   timeSeriesTable: WithOptionalLocationEnabledAttribute<
     DeepRequiredChartsSettings['timeSeriesTable']
   >
@@ -53,7 +51,6 @@ export const defaultChartSettings: ChartsSettings = {
   },
   timeSeriesChart: {
     enabled: true,
-    showBrush: false,
     legend: {
       minNumberOfLines: '2',
       maxNumberOfLines: '2',

@@ -3,7 +3,7 @@
     :displayConfig="displayConfig"
     :elevationChartDisplayconfig="scalar1DDisplayConfig"
     :brushChartConfig="brushChartConfig"
-    :settings="resolvedChartSettings"
+    :settings="props.settings.charts"
   >
     <template #toolbar-title>
       <v-menu
@@ -58,16 +58,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const userSettings = useUserSettingsStore()
 const taskRunsStore = useTaskRunsStore()
-
-const resolvedChartSettings = computed(() => {
-  return {
-    ...props.settings.charts,
-    timeSeriesChart: {
-      ...props.settings.charts.timeSeriesChart,
-      showBrush: userSettings.get('charts.brush')?.value === true,
-    },
-  }
-})
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 

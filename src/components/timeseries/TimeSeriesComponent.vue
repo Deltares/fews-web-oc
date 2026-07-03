@@ -119,6 +119,7 @@ import {
 import type { UseTimeSeriesOptions } from '../../services/useTimeSeries/index.ts'
 import { configManager } from '../../services/application-config'
 import { useSystemTimeStore } from '@/stores/systemTime'
+import { useUserSettingsStore } from '@/stores/userSettings'
 import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 import { useDisplay } from 'vuetify'
 import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
@@ -198,6 +199,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { selectedDate } = useSelectedDate(() => props.currentTime)
 const store = useSystemTimeStore()
+const userSettings = useUserSettingsStore()
 const isEditing = ref(false)
 const confirmationDialog = ref(false)
 const { xs } = useDisplay()
@@ -239,33 +241,25 @@ const fullBrushDomain = computed<[Date, Date]>(() => {
   )
 })
 
-const showBrush = computed(() => props.settings.timeSeriesChart.showBrush)
-const chartOptions = ref<UseTimeSeriesOptions>({
-  startTime: store.startTime,
-  endTime: store.endTime,
-  thinning: !props.disableThinning,
-})
-
-watch(
-  () => props.disableThinning,
-  (disableThinning) => {
-    chartOptions.value = {
-      ...chartOptions.value,
-      thinning: !disableThinning,
-    }
-  },
+const showBrush = computed(
+  () =>
+    userSettings.get('charts.brush')?.value === true && !props.disableThinning,
 )
+const chartOptions = computed<UseTimeSeriesOptions>(() => {
+  return {
+    startTime: store.startTime,
+    endTime: store.endTime,
+  }
+})
 
 const brushOptions = computed<UseTimeSeriesOptions>(() => ({
   startTime: fullBrushDomain.value[0],
   endTime: fullBrushDomain.value[1],
-  thinning: true,
 }))
 
 const tableOptions = computed<UseTimeSeriesOptions>(() => ({
   startTime: store.startTime,
   endTime: store.endTime,
-  thinning: false,
 }))
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')

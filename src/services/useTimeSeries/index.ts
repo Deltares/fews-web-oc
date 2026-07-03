@@ -20,7 +20,7 @@ import {
 } from 'vue'
 import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl'
-import { DateTime, Interval } from 'luxon'
+import { DateTime } from 'luxon'
 import { Series } from '../../lib/timeseries/timeSeries'
 import { SeriesUrlRequest } from '../../lib/timeseries/timeSeriesResource'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
@@ -42,7 +42,6 @@ const TIMESERIES_POLLING_INTERVAL = 1000 * 30
 export interface UseTimeSeriesOptions {
   startTime?: Date | null
   endTime?: Date | null
-  thinning?: boolean
   showVerticalProfile?: boolean
   convertDatum?: boolean
   useDisplayUnits?: boolean
@@ -200,13 +199,6 @@ export function getRelativeUrlForRequest(
 ): string {
   // Parse request URL to URL object to be able to append query parameters.
   const url = absoluteUrl(`${baseUrl}/${request.request}`)
-  const isGridTimeSeries = request.request.includes('/timeseries/grid')
-
-  // FEWS PI /timeseries/grid does not support thinning. Ensure it is never
-  // forwarded when present in incoming action URLs.
-  if (isGridTimeSeries) {
-    url.searchParams.delete('thinning')
-  }
 
   const convertToDateTime = (date: Date | null | undefined) => {
     if (!date) return null
@@ -227,32 +219,6 @@ export function getRelativeUrlForRequest(
   // Set start and end time.
   if (startTimeQuery) url.searchParams.set('startTime', startTimeQuery)
   if (endTimeQuery) url.searchParams.set('endTime', endTimeQuery)
-
-  // Set thinning if specified.
-  if (options.thinning && !isGridTimeSeries) {
-    const parseDateTimeFromSearchParam = (param: string) => {
-      const dateTimeString = url.searchParams.get(param)
-      if (!dateTimeString) return null
-      return DateTime.fromISO(dateTimeString)
-    }
-    // If no start or end time was specified, parse it from the query
-    // parameter obtained from the original actions request URL.
-    const requestStartTime =
-      startTime ?? parseDateTimeFromSearchParam('startTime')
-    const requestEndTime = endTime ?? parseDateTimeFromSearchParam('endTime')
-
-    if (requestStartTime && requestEndTime) {
-      const durationMilliseconds = Interval.fromDateTimes(
-        requestStartTime,
-        requestEndTime,
-      ).length('millisecond')
-      const estimatedChartWidth = 0.5 * window.outerWidth
-      const millisecondsPerPixel = Math.round(
-        durationMilliseconds / estimatedChartWidth,
-      )
-      url.searchParams.set('thinning', millisecondsPerPixel.toString())
-    }
-  }
 
   if (options.convertDatum) {
     url.searchParams.set('convertDatum', options.convertDatum.toString())

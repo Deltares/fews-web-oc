@@ -111,7 +111,7 @@ interface Props {
   panHandler?: PanHandler
   verticalProfile?: boolean
   forecastLegend?: string
-  settings: Omit<ChartsSettings['timeSeriesChart'], 'showBrush'>
+  settings: ChartsSettings['timeSeriesChart']
   maximized?: boolean
 }
 
