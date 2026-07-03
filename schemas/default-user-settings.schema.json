@@ -1,40 +1,1053 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "additionalProperties": false,
-  "type": "object",
-  "required": ["settings"],
-  "properties": {
-    "$schema": {
-      "type": "string"
-    },
-    "settings": {
+  "anyOf": [
+    {
       "type": "array",
       "items": {
-        "additionalProperties": false,
-        "type": "object",
-        "required": ["id", "value"],
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "value": {
-            "anyOf": [
-              {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "minLength": 1,
                 "type": "string"
               },
-              {
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "favorite": {
                 "type": "boolean"
               }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "const": "units.displayUnits",
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "const": "system",
+                    "type": "string"
+                  },
+                  {
+                    "const": "display",
+                    "type": "string"
+                  }
+                ]
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "favorite": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "const": "ui.hierarchical-menu-style",
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "const": "auto",
+                    "type": "string"
+                  },
+                  {
+                    "const": "tree",
+                    "type": "string"
+                  },
+                  {
+                    "const": "column",
+                    "type": "string"
+                  }
+                ]
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "favorite": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "const": "charts.scrollZoomMode",
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "const": "off",
+                    "type": "string"
+                  },
+                  {
+                    "const": "x",
+                    "type": "string"
+                  },
+                  {
+                    "const": "y",
+                    "type": "string"
+                  },
+                  {
+                    "const": "xy",
+                    "type": "string"
+                  }
+                ]
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "favorite": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "label",
+              "value",
+              "group"
+            ],
+            "properties": {
+              "id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": {
+                "const": "boolean",
+                "type": "string"
+              },
+              "label": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "value": {
+                "type": "boolean"
+              },
+              "group": {
+                "anyOf": [
+                  {
+                    "const": "Charts",
+                    "type": "string"
+                  },
+                  {
+                    "const": "Units",
+                    "type": "string"
+                  },
+                  {
+                    "const": "Map",
+                    "type": "string"
+                  },
+                  {
+                    "const": "UI",
+                    "type": "string"
+                  },
+                  {
+                    "const": "Datum",
+                    "type": "string"
+                  }
+                ]
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "favorite": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "label",
+              "value",
+              "items",
+              "group"
+            ],
+            "properties": {
+              "id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": {
+                "const": "oneOfMultiple",
+                "type": "string"
+              },
+              "label": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "items": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "value",
+                    "title"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "icon": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "group": {
+                "anyOf": [
+                  {
+                    "const": "Charts",
+                    "type": "string"
+                  },
+                  {
+                    "const": "Units",
+                    "type": "string"
+                  },
+                  {
+                    "const": "Map",
+                    "type": "string"
+                  },
+                  {
+                    "const": "UI",
+                    "type": "string"
+                  },
+                  {
+                    "const": "Datum",
+                    "type": "string"
+                  }
+                ]
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "favorite": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "label",
+              "value",
+              "items",
+              "group"
+            ],
+            "properties": {
+              "id": {
+                "const": "units.displayUnits",
+                "type": "string"
+              },
+              "type": {
+                "const": "oneOfMultiple",
+                "type": "string"
+              },
+              "label": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "const": "system",
+                    "type": "string"
+                  },
+                  {
+                    "const": "display",
+                    "type": "string"
+                  }
+                ]
+              },
+              "items": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "value",
+                    "title"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "icon": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "group": {
+                "const": "Units",
+                "type": "string"
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "favorite": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "label",
+              "value",
+              "items",
+              "group"
+            ],
+            "properties": {
+              "id": {
+                "const": "ui.hierarchical-menu-style",
+                "type": "string"
+              },
+              "type": {
+                "const": "oneOfMultiple",
+                "type": "string"
+              },
+              "label": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "const": "auto",
+                    "type": "string"
+                  },
+                  {
+                    "const": "tree",
+                    "type": "string"
+                  },
+                  {
+                    "const": "column",
+                    "type": "string"
+                  }
+                ]
+              },
+              "items": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "value",
+                    "title"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "icon": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "group": {
+                "const": "UI",
+                "type": "string"
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "favorite": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "label",
+              "value",
+              "items",
+              "group"
+            ],
+            "properties": {
+              "id": {
+                "const": "charts.scrollZoomMode",
+                "type": "string"
+              },
+              "type": {
+                "const": "oneOfMultiple",
+                "type": "string"
+              },
+              "label": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "const": "off",
+                    "type": "string"
+                  },
+                  {
+                    "const": "x",
+                    "type": "string"
+                  },
+                  {
+                    "const": "y",
+                    "type": "string"
+                  },
+                  {
+                    "const": "xy",
+                    "type": "string"
+                  }
+                ]
+              },
+              "items": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "value",
+                    "title"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "icon": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "group": {
+                "const": "Charts",
+                "type": "string"
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "favorite": {
+                "type": "boolean"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "settings"
+      ],
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "settings": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "boolean"
+                      }
+                    ]
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "favorite": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "const": "units.displayUnits",
+                    "type": "string"
+                  },
+                  "value": {
+                    "anyOf": [
+                      {
+                        "const": "system",
+                        "type": "string"
+                      },
+                      {
+                        "const": "display",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "favorite": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "const": "ui.hierarchical-menu-style",
+                    "type": "string"
+                  },
+                  "value": {
+                    "anyOf": [
+                      {
+                        "const": "auto",
+                        "type": "string"
+                      },
+                      {
+                        "const": "tree",
+                        "type": "string"
+                      },
+                      {
+                        "const": "column",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "favorite": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "const": "charts.scrollZoomMode",
+                    "type": "string"
+                  },
+                  "value": {
+                    "anyOf": [
+                      {
+                        "const": "off",
+                        "type": "string"
+                      },
+                      {
+                        "const": "x",
+                        "type": "string"
+                      },
+                      {
+                        "const": "y",
+                        "type": "string"
+                      },
+                      {
+                        "const": "xy",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "favorite": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "id",
+                  "type",
+                  "label",
+                  "value",
+                  "group"
+                ],
+                "properties": {
+                  "id": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "type": {
+                    "const": "boolean",
+                    "type": "string"
+                  },
+                  "label": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "boolean"
+                  },
+                  "group": {
+                    "anyOf": [
+                      {
+                        "const": "Charts",
+                        "type": "string"
+                      },
+                      {
+                        "const": "Units",
+                        "type": "string"
+                      },
+                      {
+                        "const": "Map",
+                        "type": "string"
+                      },
+                      {
+                        "const": "UI",
+                        "type": "string"
+                      },
+                      {
+                        "const": "Datum",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "favorite": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "id",
+                  "type",
+                  "label",
+                  "value",
+                  "items",
+                  "group"
+                ],
+                "properties": {
+                  "id": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "type": {
+                    "const": "oneOfMultiple",
+                    "type": "string"
+                  },
+                  "label": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  },
+                  "items": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "value",
+                        "title"
+                      ],
+                      "properties": {
+                        "value": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "disabled": {
+                          "type": "boolean"
+                        },
+                        "icon": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "group": {
+                    "anyOf": [
+                      {
+                        "const": "Charts",
+                        "type": "string"
+                      },
+                      {
+                        "const": "Units",
+                        "type": "string"
+                      },
+                      {
+                        "const": "Map",
+                        "type": "string"
+                      },
+                      {
+                        "const": "UI",
+                        "type": "string"
+                      },
+                      {
+                        "const": "Datum",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "favorite": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "id",
+                  "type",
+                  "label",
+                  "value",
+                  "items",
+                  "group"
+                ],
+                "properties": {
+                  "id": {
+                    "const": "units.displayUnits",
+                    "type": "string"
+                  },
+                  "type": {
+                    "const": "oneOfMultiple",
+                    "type": "string"
+                  },
+                  "label": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "value": {
+                    "anyOf": [
+                      {
+                        "const": "system",
+                        "type": "string"
+                      },
+                      {
+                        "const": "display",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "items": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "value",
+                        "title"
+                      ],
+                      "properties": {
+                        "value": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "disabled": {
+                          "type": "boolean"
+                        },
+                        "icon": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "group": {
+                    "const": "Units",
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "favorite": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "id",
+                  "type",
+                  "label",
+                  "value",
+                  "items",
+                  "group"
+                ],
+                "properties": {
+                  "id": {
+                    "const": "ui.hierarchical-menu-style",
+                    "type": "string"
+                  },
+                  "type": {
+                    "const": "oneOfMultiple",
+                    "type": "string"
+                  },
+                  "label": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "value": {
+                    "anyOf": [
+                      {
+                        "const": "auto",
+                        "type": "string"
+                      },
+                      {
+                        "const": "tree",
+                        "type": "string"
+                      },
+                      {
+                        "const": "column",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "items": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "value",
+                        "title"
+                      ],
+                      "properties": {
+                        "value": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "disabled": {
+                          "type": "boolean"
+                        },
+                        "icon": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "group": {
+                    "const": "UI",
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "favorite": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "id",
+                  "type",
+                  "label",
+                  "value",
+                  "items",
+                  "group"
+                ],
+                "properties": {
+                  "id": {
+                    "const": "charts.scrollZoomMode",
+                    "type": "string"
+                  },
+                  "type": {
+                    "const": "oneOfMultiple",
+                    "type": "string"
+                  },
+                  "label": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "value": {
+                    "anyOf": [
+                      {
+                        "const": "off",
+                        "type": "string"
+                      },
+                      {
+                        "const": "x",
+                        "type": "string"
+                      },
+                      {
+                        "const": "y",
+                        "type": "string"
+                      },
+                      {
+                        "const": "xy",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "items": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "value",
+                        "title"
+                      ],
+                      "properties": {
+                        "value": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "disabled": {
+                          "type": "boolean"
+                        },
+                        "icon": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "group": {
+                    "const": "Charts",
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "favorite": {
+                    "type": "boolean"
+                  }
+                }
+              }
             ]
-          },
-          "enabled": {
-            "type": "boolean"
-          },
-          "favorite": {
-            "type": "boolean"
           }
         }
       }
     }
-  }
+  ]
 }
