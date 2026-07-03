@@ -65,7 +65,6 @@
           v-if="selectedCollection.charts.length"
           v-model:collection="selectedCollection"
           v-model:domain="visibleDomain"
-          :disable-brush="props.disableThinning"
           :fullBrushDomain="fullBrushDomain"
           :series="series"
           :brushSeries="brushSeries"
@@ -116,7 +115,6 @@ interface Props {
   collections: Collection[]
   config: DataAnalysisDisplayElement
   boundingBox?: BoundingBox
-  disableThinning?: boolean
   settings?: ComponentSettings
 }
 
@@ -224,6 +222,7 @@ watch(visibleDomain, (newDomain) => {
 
 const timeSeriesOptions = computed(() => ({
   ...domainOptions.value,
+  thinning: true,
   useDisplayUnits: userSettings.useDisplayUnits,
   convertDatum: userSettings.convertDatum,
 }))
@@ -238,8 +237,7 @@ const { series } = useTimeSeries(
 )
 
 const showBrush = computed(
-  () =>
-    userSettings.get('charts.brush')?.value === true && !props.disableThinning,
+  () => userSettings.get('charts.brush')?.value === true,
 )
 const fullBrushDomain = computed(() =>
   getBrushDomain(fullDomain.value?.[0], fullDomain.value?.[1], [
@@ -250,6 +248,7 @@ const fullBrushDomain = computed(() =>
 const brushOptions = computed(() => ({
   startTime: fullBrushDomain.value[0],
   endTime: fullBrushDomain.value[1],
+  thinning: true,
   useDisplayUnits: userSettings.useDisplayUnits,
   convertDatum: userSettings.convertDatum,
 }))

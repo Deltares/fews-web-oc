@@ -20,7 +20,7 @@ import {
 } from 'vue'
 import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl'
-import { DateTime } from 'luxon'
+import { DateTime, Interval } from 'luxon'
 import { Series } from '../../lib/timeseries/timeSeries'
 import { SeriesUrlRequest } from '../../lib/timeseries/timeSeriesResource'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
@@ -42,6 +42,7 @@ const TIMESERIES_POLLING_INTERVAL = 1000 * 30
 export interface UseTimeSeriesOptions {
   startTime?: Date | null
   endTime?: Date | null
+  thinning?: boolean
   showVerticalProfile?: boolean
   convertDatum?: boolean
   useDisplayUnits?: boolean
@@ -219,6 +220,31 @@ export function getRelativeUrlForRequest(
   // Set start and end time.
   if (startTimeQuery) url.searchParams.set('startTime', startTimeQuery)
   if (endTimeQuery) url.searchParams.set('endTime', endTimeQuery)
+
+  if (options.thinning) {
+    const parseDateTimeFromSearchParam = (param: string) => {
+      const dateTimeString = url.searchParams.get(param)
+      if (!dateTimeString) return null
+      return DateTime.fromISO(dateTimeString)
+    }
+
+    // Reuse values from request URL when not provided via options.
+    const requestStartTime =
+      startTime ?? parseDateTimeFromSearchParam('startTime')
+    const requestEndTime = endTime ?? parseDateTimeFromSearchParam('endTime')
+
+    if (requestStartTime && requestEndTime) {
+      const durationMilliseconds = Interval.fromDateTimes(
+        requestStartTime,
+        requestEndTime,
+      ).length('millisecond')
+      const estimatedChartWidth = 0.5 * window.outerWidth
+      const millisecondsPerPixel = Math.round(
+        durationMilliseconds / estimatedChartWidth,
+      )
+      url.searchParams.set('thinning', millisecondsPerPixel.toString())
+    }
+  }
 
   if (options.convertDatum) {
     url.searchParams.set('convertDatum', options.convertDatum.toString())

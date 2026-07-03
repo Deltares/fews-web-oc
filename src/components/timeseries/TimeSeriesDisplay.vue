@@ -3,7 +3,7 @@
     :displayConfig="displayConfig"
     :elevationChartDisplayconfig="scalar1DDisplayConfig"
     :brushChartConfig="brushChartConfig"
-    :settings="props.settings.charts"
+    :settings="settings.charts"
   >
     <template #toolbar-title>
       <v-menu

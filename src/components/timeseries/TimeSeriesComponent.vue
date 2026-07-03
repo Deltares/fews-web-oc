@@ -246,9 +246,17 @@ const showBrush = computed(
     userSettings.get('charts.brush')?.value === true && !props.disableThinning,
 )
 const chartOptions = computed<UseTimeSeriesOptions>(() => {
+  if (props.disableThinning) {
+    return {
+      startTime: store.startTime,
+      endTime: store.endTime,
+    }
+  }
+
   return {
     startTime: store.startTime,
     endTime: store.endTime,
+    thinning: true,
   }
 })
 
