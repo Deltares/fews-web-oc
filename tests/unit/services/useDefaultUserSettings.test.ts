@@ -27,7 +27,7 @@ describe('fetchWebResourcesDefaultUserSettings', () => {
     const payload = {
       settings: [
         { id: 'ui.theme', value: 'dark', favorite: true },
-        { id: 'charts.scrollZoomMode', value: true, enabled: false },
+        { id: 'charts.scrollZoomMode', value: 'xy', enabled: false },
       ],
     }
 
@@ -66,7 +66,7 @@ describe('fetchWebResourcesDefaultUserSettings', () => {
   it('accepts array payload shape directly', async () => {
     const payload = [
       { id: 'ui.theme', value: 'dark', favorite: true },
-      { id: 'charts.scrollZoomMode', value: true, enabled: false },
+      { id: 'charts.scrollZoomMode', value: 'xy', enabled: false },
     ]
 
     vi.stubGlobal(
