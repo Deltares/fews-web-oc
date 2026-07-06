@@ -245,17 +245,18 @@ const showBrush = computed(
   () =>
     userSettings.get('charts.brush')?.value === true && !props.disableThinning,
 )
+const { debouncedRefetchChartTimeSeries, domain } = useFetchDomain()
 const chartOptions = computed<UseTimeSeriesOptions>(() => {
   if (props.disableThinning) {
     return {
-      startTime: store.startTime,
-      endTime: store.endTime,
+      startTime: domain.value.startTime ?? store.startTime,
+      endTime: domain.value.endTime ?? store.endTime,
     }
   }
 
   return {
-    startTime: store.startTime,
-    endTime: store.endTime,
+    startTime: domain.value.startTime ?? store.startTime,
+    endTime: domain.value.endTime ?? store.endTime,
     thinning: true,
   }
 })
@@ -392,8 +393,6 @@ function onConfirmationLeave() {
   confirmationDialog.value = false
   isEditing.value = false
 }
-
-const { debouncedRefetchChartTimeSeries } = useFetchDomain(chartOptions)
 
 watch(visibleDomain, (newDomain) => {
   if (!newDomain) return

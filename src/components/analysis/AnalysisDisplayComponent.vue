@@ -208,12 +208,7 @@ const endTime = computed(() => {
 })
 
 const visibleDomain = ref<[Date, Date]>()
-const domainOptions = ref({
-  startTime: startTime.value,
-  endTime: endTime.value,
-})
-
-const { debouncedRefetchChartTimeSeries } = useFetchDomain(domainOptions)
+const { debouncedRefetchChartTimeSeries, domain } = useFetchDomain()
 
 watch(visibleDomain, (newDomain) => {
   if (!newDomain) return
@@ -221,7 +216,8 @@ watch(visibleDomain, (newDomain) => {
 })
 
 const timeSeriesOptions = computed(() => ({
-  ...domainOptions.value,
+  startTime: domain.value.startTime ?? startTime.value,
+  endTime: domain.value.endTime ?? endTime.value,
   thinning: true,
   useDisplayUnits: userSettings.useDisplayUnits,
   convertDatum: userSettings.convertDatum,
