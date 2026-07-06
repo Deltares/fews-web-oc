@@ -30,11 +30,13 @@ export function useTaskRuns(
       'VITE_FEWS_WEBSERVICES_MAX_URL_LENGTH',
     )
 
-    const provider = new PiWebserviceProvider(baseUrl, {
+    const providerOptions = {
       transformRequestFn: createTransformRequestFn(),
       maxUrlLength,
       explodeQueryParameters,
-    })
+    }
+
+    const provider = new PiWebserviceProvider(baseUrl, providerOptions)
 
     const response = await provider.getTaskRuns({
       ..._filter,

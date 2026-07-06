@@ -222,9 +222,9 @@ watch(visibleDomain, (newDomain) => {
 
 const timeSeriesOptions = computed(() => ({
   ...domainOptions.value,
+  thinning: true,
   useDisplayUnits: userSettings.useDisplayUnits,
   convertDatum: userSettings.convertDatum,
-  thinning: true,
 }))
 
 const { series } = useTimeSeries(
@@ -248,9 +248,9 @@ const fullBrushDomain = computed(() =>
 const brushOptions = computed(() => ({
   startTime: fullBrushDomain.value[0],
   endTime: fullBrushDomain.value[1],
+  thinning: true,
   useDisplayUnits: userSettings.useDisplayUnits,
   convertDatum: userSettings.convertDatum,
-  thinning: true,
 }))
 const { series: brushSeries } = useTimeSeries(
   baseUrl,

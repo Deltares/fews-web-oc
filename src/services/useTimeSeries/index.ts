@@ -221,15 +221,14 @@ export function getRelativeUrlForRequest(
   if (startTimeQuery) url.searchParams.set('startTime', startTimeQuery)
   if (endTimeQuery) url.searchParams.set('endTime', endTimeQuery)
 
-  // Set thinning if specified.
   if (options.thinning) {
     const parseDateTimeFromSearchParam = (param: string) => {
       const dateTimeString = url.searchParams.get(param)
       if (!dateTimeString) return null
       return DateTime.fromISO(dateTimeString)
     }
-    // If no start or end time was specified, parse it from the query
-    // parameter obtained from the original actions request URL.
+
+    // Reuse values from request URL when not provided via options.
     const requestStartTime =
       startTime ?? parseDateTimeFromSearchParam('startTime')
     const requestEndTime = endTime ?? parseDateTimeFromSearchParam('endTime')

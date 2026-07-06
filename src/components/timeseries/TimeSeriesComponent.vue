@@ -119,6 +119,7 @@ import {
 import type { UseTimeSeriesOptions } from '../../services/useTimeSeries/index.ts'
 import { configManager } from '../../services/application-config'
 import { useSystemTimeStore } from '@/stores/systemTime'
+import { useUserSettingsStore } from '@/stores/userSettings'
 import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 import { useDisplay } from 'vuetify'
 import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
@@ -134,13 +135,13 @@ import {
   getDomainWithConfigFallback,
   getSubplotWithDomain,
 } from '@/lib/display/utils'
-import { useUserSettingsStore } from '@/stores/userSettings'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 import { getBrushDomain } from '@/lib/charts/brush.ts'
 
 interface Props {
   config?: DisplayConfig
   brushChartConfig?: DisplayConfig | null
+  disableThinning?: boolean
   elevationChartConfig?: DisplayConfig
   currentTime?: Date
   informationContent?: string | null
@@ -241,24 +242,32 @@ const fullBrushDomain = computed<[Date, Date]>(() => {
 })
 
 const showBrush = computed(
-  () => userSettings.get('charts.brush')?.value === true,
+  () =>
+    userSettings.get('charts.brush')?.value === true && !props.disableThinning,
 )
-const chartOptions = ref<UseTimeSeriesOptions>({
-  startTime: store.startTime,
-  endTime: store.endTime,
-  thinning: true,
+const chartOptions = computed<UseTimeSeriesOptions>(() => {
+  if (props.disableThinning) {
+    return {
+      startTime: store.startTime,
+      endTime: store.endTime,
+    }
+  }
+
+  return {
+    startTime: store.startTime,
+    endTime: store.endTime,
+    thinning: true,
+  }
 })
 
 const brushOptions = computed<UseTimeSeriesOptions>(() => ({
   startTime: fullBrushDomain.value[0],
   endTime: fullBrushDomain.value[1],
-  thinning: true,
 }))
 
 const tableOptions = computed<UseTimeSeriesOptions>(() => ({
   startTime: store.startTime,
   endTime: store.endTime,
-  thinning: false,
 }))
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
