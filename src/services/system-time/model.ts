@@ -1,19 +1,17 @@
-export type SystemTimeMode =
-  | 'running'
-  | 'running_fixed_interval'
-  | 'offset_running'
-  | 'offset_fixed_interval'
-  | 'static'
+export type SystemTimeBasis = 'client' | 'actual' | 'offset'
+export type SystemTimeUpdatePattern = 'continuous' | 'step' | 'static'
 
 export interface SystemTimeAnchor {
   baseSystemTimeMs: number
   fetchedAtClientMs: number
-  mode: SystemTimeMode
+  timeBasis: SystemTimeBasis
+  updatePattern: SystemTimeUpdatePattern
   updateIntervalMs?: number
 }
 
 export interface SystemTimeSyncSnapshot {
-  mode: SystemTimeMode
+  timeBasis: SystemTimeBasis
+  updatePattern: SystemTimeUpdatePattern
   updateIntervalMs?: number
   systemTime: Date
   fetchedAtClientMs: number
@@ -25,17 +23,19 @@ export function resolveSystemTimeAt(
 ): Date {
   const elapsed = Math.max(0, nowClientMs - anchor.fetchedAtClientMs)
 
-  if (anchor.mode === 'static') {
+  if (anchor.updatePattern === 'static') {
     return new Date(anchor.baseSystemTimeMs)
   }
 
-  const isFixedIntervalMode =
-    anchor.mode === 'running_fixed_interval' ||
-    anchor.mode === 'offset_fixed_interval'
+  const isStepMode = anchor.updatePattern === 'step'
 
-  if (isFixedIntervalMode && anchor.updateIntervalMs && anchor.updateIntervalMs > 0) {
+  if (isStepMode && anchor.updateIntervalMs && anchor.updateIntervalMs > 0) {
     const steps = Math.floor(elapsed / anchor.updateIntervalMs)
     return new Date(anchor.baseSystemTimeMs + steps * anchor.updateIntervalMs)
+  }
+
+  if (isStepMode) {
+    return new Date(anchor.baseSystemTimeMs)
   }
 
   return new Date(anchor.baseSystemTimeMs + elapsed)
@@ -46,7 +46,8 @@ export function createSnapshot(
   nowClientMs: number,
 ): SystemTimeSyncSnapshot {
   return {
-    mode: anchor.mode,
+    timeBasis: anchor.timeBasis,
+    updatePattern: anchor.updatePattern,
     updateIntervalMs: anchor.updateIntervalMs,
     systemTime: resolveSystemTimeAt(anchor, nowClientMs),
     fetchedAtClientMs: anchor.fetchedAtClientMs,

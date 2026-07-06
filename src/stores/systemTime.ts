@@ -3,13 +3,17 @@ import { defineStore } from 'pinia'
 import {
   systemTimeAuthority,
 } from '@/services/system-time'
-import type { SystemTimeMode } from '@/services/system-time/model'
+import type {
+  SystemTimeBasis,
+  SystemTimeUpdatePattern,
+} from '@/services/system-time/model'
 
 export interface SystemTimeStore {
   systemTime: Date
   intervalTimer: undefined | number | ReturnType<typeof setInterval>
   resyncTimer: undefined | number | ReturnType<typeof setInterval>
-  mode: SystemTimeMode
+  timeBasis: SystemTimeBasis
+  updatePattern: SystemTimeUpdatePattern
   updateIntervalMs: number | undefined
   lastSyncedAt: Date | undefined
   syncError: string | undefined
@@ -27,7 +31,8 @@ export const useSystemTimeStore = () => {
       systemTime: new Date(),
       intervalTimer: undefined,
       resyncTimer: undefined,
-      mode: 'running',
+      timeBasis: 'actual',
+      updatePattern: 'continuous',
       updateIntervalMs: undefined,
       lastSyncedAt: undefined,
       syncError: undefined,
@@ -40,7 +45,8 @@ export const useSystemTimeStore = () => {
         try {
           const snapshot = await systemTimeAuthority.syncFromBackend()
           this.systemTime = snapshot.systemTime
-          this.mode = snapshot.mode
+          this.timeBasis = snapshot.timeBasis
+          this.updatePattern = snapshot.updatePattern
           this.updateIntervalMs = snapshot.updateIntervalMs
           this.lastSyncedAt = new Date(snapshot.fetchedAtClientMs)
           this.syncError = undefined
@@ -48,14 +54,16 @@ export const useSystemTimeStore = () => {
           const snapshot = systemTimeAuthority.hasAnchor()
             ? {
                 systemTime: systemTimeAuthority.now(),
-                mode: systemTimeAuthority.mode(),
+                timeBasis: systemTimeAuthority.timeBasis(),
+                updatePattern: systemTimeAuthority.updatePattern(),
                 updateIntervalMs: systemTimeAuthority.updateIntervalMs(),
                 fetchedAtClientMs: Date.now(),
               }
             : systemTimeAuthority.setFallbackRunningNow()
 
           this.systemTime = snapshot.systemTime
-          this.mode = snapshot.mode
+          this.timeBasis = snapshot.timeBasis
+          this.updatePattern = snapshot.updatePattern
           this.updateIntervalMs = snapshot.updateIntervalMs
           this.lastSyncedAt = new Date(snapshot.fetchedAtClientMs)
           this.syncError = error instanceof Error ? error.message : String(error)
@@ -65,7 +73,7 @@ export const useSystemTimeStore = () => {
       async startClock() {
         await this.syncFromBackend()
 
-        if (this.mode === 'static') {
+        if (this.updatePattern === 'static') {
           this.stopClock()
           return
         }
