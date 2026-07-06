@@ -1,6 +1,5 @@
 import { debounce } from 'lodash-es'
-import type { Ref } from 'vue'
-import type { UseTimeSeriesOptions } from '@/services/useTimeSeries'
+import { ref } from 'vue'
 
 // Ratio between old and new domain when zooming above which no refetch is
 // performed. Note: zooming out (i.e. zoom ratio > 1) will always refetch.
@@ -10,17 +9,17 @@ const MAX_ZOOM_RATIO_FOR_REFETCH = 0.8
 // unlikely that there is any effect of thinning.
 const MIN_HOURS_FOR_REFETCH = 12
 
-export function useFetchDomain(chartOptions: Ref<UseTimeSeriesOptions>) {
+export function useFetchDomain() {
+  const domain = ref<{ startTime?: Date; endTime?: Date }>({})
+
   function shouldRefetchAfterDomainUpdate(newDomain: [Date, Date]): boolean {
     // Always refetch if we have no previously set domain; we have no guarantees
     // what the (FEWS-configured) domain is.
-    if (!chartOptions.value.startTime || !chartOptions.value.endTime)
-      return true
+    const { startTime, endTime } = domain.value
+    if (!startTime || !endTime) return true
 
     const newDomainRange = newDomain[1].getTime() - newDomain[0].getTime()
-    const oldDomainRange =
-      chartOptions.value.endTime.getTime() -
-      chartOptions.value.startTime.getTime()
+    const oldDomainRange = endTime.getTime() - startTime.getTime()
     const zoomRatio = newDomainRange / oldDomainRange
 
     // Detect panning; we should always refetch if we are panning.
@@ -46,14 +45,15 @@ export function useFetchDomain(chartOptions: Ref<UseTimeSeriesOptions>) {
   function refetchChartTimeSeries(newDomain: [Date, Date]) {
     if (!shouldRefetchAfterDomainUpdate(newDomain)) return
 
-    // Request a time series update with the new domain by setting a new
-    // lastUpdated value.
+    // Request a time series update with the new domain by updating the
+    // domain override, which feeds back into chartOptions via the computed.
     const [startTime, endTime] = newDomain
-    chartOptions.value = { ...chartOptions.value, startTime, endTime }
+    domain.value = { startTime, endTime }
   }
   const debouncedRefetchChartTimeSeries = debounce(refetchChartTimeSeries, 500)
 
   return {
     debouncedRefetchChartTimeSeries,
+    domain,
   }
 }
