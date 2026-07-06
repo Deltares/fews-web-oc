@@ -5,9 +5,10 @@ import {
 } from './model'
 
 describe('resolveSystemTimeAt', () => {
-  it('advances continuously for running mode', () => {
+  it('advances continuously for continuous update pattern', () => {
     const anchor: SystemTimeAnchor = {
-      mode: 'running',
+      timeBasis: 'actual',
+      updatePattern: 'continuous',
       baseSystemTimeMs: 10_000,
       fetchedAtClientMs: 1_000,
     }
@@ -15,9 +16,10 @@ describe('resolveSystemTimeAt', () => {
     expect(resolveSystemTimeAt(anchor, 1_250).getTime()).toBe(10_250)
   })
 
-  it('advances in discrete steps for fixed interval mode', () => {
+  it('advances in discrete steps for step update pattern', () => {
     const anchor: SystemTimeAnchor = {
-      mode: 'running_fixed_interval',
+      timeBasis: 'actual',
+      updatePattern: 'step',
       baseSystemTimeMs: 10_000,
       fetchedAtClientMs: 1_000,
       updateIntervalMs: 60_000,
@@ -27,9 +29,10 @@ describe('resolveSystemTimeAt', () => {
     expect(resolveSystemTimeAt(anchor, 61_000).getTime()).toBe(70_000)
   })
 
-  it('does not move for static mode', () => {
+  it('does not move for static update pattern', () => {
     const anchor: SystemTimeAnchor = {
-      mode: 'static',
+      timeBasis: 'actual',
+      updatePattern: 'static',
       baseSystemTimeMs: 42_000,
       fetchedAtClientMs: 1_000,
     }
