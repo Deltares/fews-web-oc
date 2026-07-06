@@ -70,9 +70,13 @@
         </v-col>
       </v-row>
       <v-card-actions>
-        <span>{{ t('timeControl.browserTime') }}:</span>
+        <span>Basis:</span>
         <v-chip small>
-          {{ d(new Date(), 'timeControl') }}
+          {{ store.timeBasis }}
+        </v-chip>
+        <span>Update:</span>
+        <v-chip small>
+          {{ store.updatePattern }}
         </v-chip>
       </v-card-actions>
     </v-card>
@@ -130,46 +134,41 @@ const systemTimeLabel = computed(() => {
     : d(store.systemTime, 'timeControl')
 })
 
-const isRunningMode = computed(
-  () => store.mode === 'running' || store.mode === 'running_fixed_interval',
-)
+const isRunningMode = computed(() => store.updatePattern !== 'static')
 
 const runningDotStyle = computed(() => ({
   animationDuration: `${CLOCK_TICK_MS}ms`,
 }))
 
 const modeIcon = computed(() => {
-  switch (store.mode) {
-    case 'running':
-      return 'mdi-clock-outline'
-    case 'running_fixed_interval':
-      return 'mdi-clock-time-eight-outline'
-    case 'offset_running':
-      return 'mdi-clock-plus-outline'
-    case 'offset_fixed_interval':
-      return 'mdi-clock-edit-outline'
-    case 'static':
-      return 'mdi-clock-remove-outline'
-    default:
-      return 'mdi-clock-outline'
+  if (store.updatePattern === 'static') {
+    return 'mdi-clock-outline'
   }
+
+  if (store.timeBasis === 'offset') {
+    if (store.updatePattern === 'step') {
+      return 'mdi-clock-edit-outline'
+    }
+    return 'mdi-clock-plus-outline'
+  }
+
+  if (store.updatePattern === 'step') {
+    return 'mdi-clock-time-eight-outline'
+  }
+
+  return 'mdi-clock-outline'
 })
 
 const modeLabel = computed(() => {
-  switch (store.mode) {
-    case 'running':
-      return 'System time mode: running'
-    case 'running_fixed_interval':
-      return 'System time mode: running (fixed interval)'
-    case 'offset_running':
-      return 'System time mode: offset running'
-    case 'offset_fixed_interval':
-      return 'System time mode: offset (fixed interval)'
-    case 'static':
-      return 'System time mode: static'
-    default:
-      return 'System time mode: unknown'
+  if (store.updatePattern === 'static') {
+    return `System time mode: ${store.timeBasis}, static`
   }
+
+  if (store.updatePattern === 'step') {
+    return `System time mode: ${store.timeBasis}, step`
+  }
+
+  return `System time mode: ${store.timeBasis}, continuous`
 })
 
 watchEffect(() => {

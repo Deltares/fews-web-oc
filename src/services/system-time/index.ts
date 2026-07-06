@@ -4,11 +4,13 @@ import {
   createSnapshot,
   resolveSystemTimeAt,
   type SystemTimeAnchor,
-  type SystemTimeMode,
+  type SystemTimeBasis,
+  type SystemTimeUpdatePattern,
   type SystemTimeSyncSnapshot,
 } from './model'
 
 const SYSTEM_TIME_PATH = 'rest/fewspiservice/v1/systemtime'
+const ACTUAL_TIME_TOLERANCE_MS = 1_000
 
 async function fetchFewsIsoTimestamp(
   path: string,
@@ -18,7 +20,6 @@ async function fetchFewsIsoTimestamp(
   const url = new URL(path, `${fewsBaseUrl}`).toString()
   const request = await createTransformRequestFn()(new Request(url))
 
-  console.log(`Fetching FEWS ${label} from ${url}`)
   const response = await fetch(request)
   if (!response.ok) {
     throw new Error(`Failed to fetch FEWS ${label}: ${response.status}`)
@@ -48,7 +49,6 @@ function parseIsoSystemTime(isoDateText: string): Date {
 
 export class SystemTimeAuthority {
   private anchor: SystemTimeAnchor | undefined
-  private previousLastUpdateTimeMs: number | undefined
 
   async syncFromBackend(): Promise<SystemTimeSyncSnapshot> {
     const systemTime = await fetchFewsIsoTimestamp(
@@ -57,19 +57,19 @@ export class SystemTimeAuthority {
     )
 
     const fetchedAtClientMs = Date.now()
-    const lastUpdateTimeMs = systemTime.getTime()
-    const mode: SystemTimeMode =
-      this.previousLastUpdateTimeMs !== undefined &&
-      this.previousLastUpdateTimeMs === lastUpdateTimeMs
-        ? 'static'
-        : 'running'
+    const systemTimeMs = systemTime.getTime()
+    let updatePattern: SystemTimeUpdatePattern = 'continuous'
 
-    this.previousLastUpdateTimeMs = lastUpdateTimeMs
+    const timeBasis: SystemTimeBasis =
+      Math.abs(systemTimeMs - fetchedAtClientMs) <= ACTUAL_TIME_TOLERANCE_MS
+        ? 'actual'
+        : 'offset'
 
     this.anchor = {
-      baseSystemTimeMs: systemTime.getTime(),
+      baseSystemTimeMs: systemTimeMs,
       fetchedAtClientMs,
-      mode,
+      timeBasis,
+      updatePattern,
       updateIntervalMs: undefined,
     }
 
@@ -80,7 +80,8 @@ export class SystemTimeAuthority {
     this.anchor = {
       baseSystemTimeMs: now.getTime(),
       fetchedAtClientMs: Date.now(),
-      mode: 'running',
+      timeBasis: 'client',
+      updatePattern: 'continuous',
     }
 
     return createSnapshot(this.anchor, Date.now())
@@ -97,8 +98,12 @@ export class SystemTimeAuthority {
     return resolveSystemTimeAt(this.anchor, Date.now())
   }
 
-  mode(): SystemTimeMode {
-    return this.anchor?.mode ?? 'running'
+  timeBasis(): SystemTimeBasis {
+    return this.anchor?.timeBasis ?? 'actual'
+  }
+
+  updatePattern(): SystemTimeUpdatePattern {
+    return this.anchor?.updatePattern ?? 'continuous'
   }
 
   updateIntervalMs(): number | undefined {
