@@ -28,7 +28,7 @@ import type {
   LocationsTooltipFilter,
   TimeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useLocationTooltip } from '@/services/useLocationTooltip'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useTaskRunsStore } from '@/stores/taskRuns'
@@ -48,27 +48,41 @@ const taskRunsStore = useTaskRunsStore()
 
 const props = defineProps<Props>()
 
+const DISPLAY_CONFIG_POLLING_INTERVAL = 60_000
+
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const filter = computed(() => props.filter)
-const { displayConfig, scalar1DDisplayConfig } = useDisplayConfigFilter(
+const {
+  displayConfig,
+  scalar1DDisplayConfig,
+  startPolling: startMainDisplayPolling,
+  stopPolling: stopMainDisplayPolling,
+} = useDisplayConfigFilter(
   baseUrl,
   filter,
   () => taskRunsStore.selectedTaskRunIds,
 )
-const { displayConfig: elevationChartDisplayconfigFromGrid } =
-  useDisplayConfigFilter(
-    baseUrl,
-    () => props.elevationChartFilter ?? {},
-    () => taskRunsStore.selectedTaskRunIds,
-  )
+const {
+  displayConfig: elevationChartDisplayconfigFromGrid,
+  startPolling: startElevationDisplayPolling,
+  stopPolling: stopElevationDisplayPolling,
+} = useDisplayConfigFilter(
+  baseUrl,
+  () => props.elevationChartFilter ?? {},
+  () => taskRunsStore.selectedTaskRunIds,
+)
 
 const elevationChartDisplayconfig = computed(
   () =>
     scalar1DDisplayConfig?.value ?? elevationChartDisplayconfigFromGrid.value,
 )
 
-const { displayConfig: brushChartConfig } = useDisplayConfigFilter(
+const {
+  displayConfig: brushChartConfig,
+  startPolling: startBrushDisplayPolling,
+  stopPolling: stopBrushDisplayPolling,
+} = useDisplayConfigFilter(
   baseUrl,
   () => props.brushFilter ?? {},
   () => taskRunsStore.selectedTaskRunIds,
@@ -78,4 +92,16 @@ const { tooltip } = useLocationTooltip(
   baseUrl,
   () => props.locationsTooltipFilter,
 )
+
+onMounted(() => {
+  startMainDisplayPolling(DISPLAY_CONFIG_POLLING_INTERVAL)
+  startElevationDisplayPolling(DISPLAY_CONFIG_POLLING_INTERVAL)
+  startBrushDisplayPolling(DISPLAY_CONFIG_POLLING_INTERVAL)
+})
+
+onUnmounted(() => {
+  stopMainDisplayPolling()
+  stopElevationDisplayPolling()
+  stopBrushDisplayPolling()
+})
 </script>

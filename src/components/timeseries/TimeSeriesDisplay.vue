@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import TimeSeriesWindowComponent from './TimeSeriesWindowComponent.vue'
-import { ref, watch, computed, watchEffect } from 'vue'
+import { ref, watch, computed, watchEffect, onMounted, onUnmounted } from 'vue'
 import { configManager } from '@/services/application-config'
 import { useDisplayConfig } from '@/services/useDisplayConfig/index.ts'
 import { useUserSettingsStore } from '@/stores/userSettings'
@@ -59,6 +59,8 @@ const props = withDefaults(defineProps<Props>(), {
 const userSettings = useUserSettingsStore()
 const taskRunsStore = useTaskRunsStore()
 
+const DISPLAY_CONFIG_POLLING_INTERVAL = 60_000
+
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const selectedPlotId = ref<string>()
@@ -80,7 +82,13 @@ const filter = computed(() => {
   }
 })
 
-const { displays, displayConfig, scalar1DDisplayConfig } = useDisplayConfig(
+const {
+  displays,
+  displayConfig,
+  scalar1DDisplayConfig,
+  startPolling: startMainDisplayPolling,
+  stopPolling: stopMainDisplayPolling,
+} = useDisplayConfig(
   baseUrl,
   filter,
   selectedPlotId,
@@ -97,12 +105,26 @@ const brushFilter = computed(() => {
   }
 })
 
-const { displayConfig: brushChartConfig } = useDisplayConfig(
+const {
+  displayConfig: brushChartConfig,
+  startPolling: startBrushDisplayPolling,
+  stopPolling: stopBrushDisplayPolling,
+} = useDisplayConfig(
   baseUrl,
   brushFilter,
   selectedPlotId,
   () => taskRunsStore.selectedTaskRunIds,
 )
+
+onMounted(() => {
+  startMainDisplayPolling(DISPLAY_CONFIG_POLLING_INTERVAL)
+  startBrushDisplayPolling(DISPLAY_CONFIG_POLLING_INTERVAL)
+})
+
+onUnmounted(() => {
+  stopMainDisplayPolling()
+  stopBrushDisplayPolling()
+})
 
 watchEffect(() => {
   if (props.plotId) selectedPlotId.value = props.plotId
