@@ -85,14 +85,13 @@
     "unnamedLayer": "Unbenannter Layer"
   },
   "sidePanel": {
-    "documentFile": "Informationen",
+    "thresholds": "Übersicht Schwellenwerte",
+    "taskOverview": "Aufgaben Übersicht",
     "importStatus": "Import Status",
-    "logDisplay": "Logs",
     "nonCurrentData": "Nicht-Aktuelle Daten",
     "runTask": "Aufgabe ausführen",
-    "share": "Teilen",
-    "taskOverview": "Aufgaben Übersicht",
-    "thresholds": "Übersicht Schwellenwerte"
+    "documentFile": "Informationen",
+    "share": "Teilen"
   },
   "workflow": {
     "expectedRuntime": "Erwartete Laufzeit",
@@ -122,10 +121,23 @@
     "map": "Karte",
     "chart": "Diagramm"
   },
-  "logDisplay": {
-    "manual": {
-      "anonymousUser": "Anonymer Benutzer"
+  "settings": {
+    "charts": {
+      "brush": "Pinsel-Diagramm anzeigen",
+      "scrollZoomMode": {
+        "label": "Scrollrad-Zoommodus",
+        "values": {
+          "off": "Aus",
+          "x": "Nur X",
+          "y": "Nur Y",
+          "xy": "X und Y"
+        }
+      }
     },
-    "system": {}
+    "ui": {
+      "map": {
+        "showCoordinates": "Mauskoordinaten anzeigen"
+      }
+    }
   }
 }
