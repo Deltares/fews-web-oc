@@ -15,6 +15,7 @@
       :actionEventBus="actionEventBus"
       :settings="settings"
       @dashboardAction="onDashboardAction"
+      @navigate="emit('navigate', $event)"
     />
   </v-card>
 </template>
@@ -32,6 +33,7 @@ import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { provideMapSync } from '@/services/useMapSync'
 import { provideSelectedElevation } from '@/services/useSelectedElevation'
 import { provideChartHandlers } from '@/services/useChartHandlers'
+import type { NavigateRoute } from '@/lib/router'
 
 interface Props {
   group: WebOCDashboardGroup
@@ -39,6 +41,11 @@ interface Props {
 }
 
 defineProps<Props>()
+
+interface Emits {
+  navigate: [to: NavigateRoute]
+}
+const emit = defineEmits<Emits>()
 
 // Provide group level shared state
 provideMapSync()

@@ -59,6 +59,7 @@ const props = defineProps<Props>()
 
 interface Emits {
   dashboardAction: [result: SsdActionResult]
+  navigate: [to: NavigateRoute]
 }
 const emit = defineEmits<Emits>()
 
@@ -147,6 +148,9 @@ function onNavigate(to: NavigateRoute) {
     case 'SSDTimeSeriesDisplay':
     case 'SchematicStatusDisplay':
       navigateTo(to)
+      break
+    case 'TopologyDisplay':
+      emit('navigate', to)
       break
     default:
       console.warn(`Unknown route name: ${String(to.name)}`)

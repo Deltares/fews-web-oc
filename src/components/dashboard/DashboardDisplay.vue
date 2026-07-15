@@ -5,6 +5,7 @@
         v-for="group in groups"
         :group="group"
         :settings="props.settings"
+        @navigate="emit('navigate', $event)"
       />
     </div>
     <v-card
@@ -33,6 +34,7 @@ import { provideSelectedDate } from '@/services/useSelectedDate'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useDynamicCss } from '@/services/useDynamicCss'
 import DashboardGroup from './DashboardGroup.vue'
+import type { NavigateRoute } from '@/lib/router'
 
 interface Props {
   dashboard: WebOCDashboard
@@ -40,6 +42,11 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+interface Emits {
+  navigate: [to: NavigateRoute]
+}
+const emit = defineEmits<Emits>()
 
 const { mobile } = useDisplay()
 
