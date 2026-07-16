@@ -81,7 +81,9 @@ export function getJsonDataFromProperties(
 
     if (property.type === 'enumProperty') {
       data[property.id] = property.value.code
-    } else {
+    } else if (property.type === 'multiProperty') {
+      data[property.id] = property.defaultValue
+    } else if ('value' in property) {
       data[property.id] = property.value
     }
   })
@@ -149,7 +151,7 @@ function convertPropertyToJsonSchemaProperty(
         title: property.name,
         dateValidation,
       }
-    case 'whatIfTemplateTemplateId':
+    case 'whatIfTemplateId':
       return {
         type: 'string',
         title: property.name,

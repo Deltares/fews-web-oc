@@ -250,8 +250,8 @@ const { jsonSchema, uiSchema } = useWhatIfTemplateSchemas(
 //       and only then update the default properties.
 watch(jsonSchema, () => {
   selectedProperties.value = getJsonDataFromProperties(
-    selectedWhatIfTemplate.value?.properties,
-    selectedWhatIfScenario.value?.properties,
+    selectedWhatIfTemplate.value?.properties ?? [],
+    selectedWhatIfScenario.value?.properties ?? [],
   )
 })
 
