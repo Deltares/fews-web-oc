@@ -86,6 +86,26 @@ export class AuthenticationManager {
     }
   }
 
+  public async getCurrentUserId(): Promise<string> {
+    const user = await this.getUser()
+    const preferredUsername = user?.profile?.preferred_username
+    if (typeof preferredUsername === 'string' && preferredUsername.length > 0) {
+      return preferredUsername
+    }
+
+    const name = user?.profile?.name
+    if (typeof name === 'string' && name.length > 0) {
+      return name
+    }
+
+    const email = user?.profile?.email
+    if (typeof email === 'string' && email.length > 0) {
+      return email
+    }
+
+    return 'Current User'
+  }
+
   public async transformRequestAuth(
     request: Request,
     signal?: AbortSignal,

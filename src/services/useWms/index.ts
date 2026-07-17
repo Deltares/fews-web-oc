@@ -226,7 +226,6 @@ export function useWmsMaxValuesTimeSeries(
         filter.aggregation = _aggregationLabel
       }
       if (_taskRunId) {
-        // @ts-expect-error taskRunId is not yet in the type definition
         filter.taskRunId = _taskRunId
       }
       const response = await piProvider.getTimeSeriesGridMaxValues(filter)

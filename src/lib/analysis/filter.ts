@@ -202,7 +202,9 @@ function getAddPositionForFilter(
 ) {
   const parametersStore = useParametersStore()
 
-  const filterParameter = filter.parameterIds?.split(',')[0]
+  const filterParameter = Array.isArray(filter.parameterIds)
+    ? filter.parameterIds[0]
+    : filter.parameterIds?.split(',')[0]
   const filterParameterGroup =
     parametersStore.byId(filterParameter)?.parameterGroup
   if (!filterParameterGroup) {

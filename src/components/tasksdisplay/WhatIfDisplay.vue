@@ -139,7 +139,6 @@ import ExpectedWorkflowRuntime from './ExpectedWorkflowRuntime.vue'
 import AvailableWorkflowServers from './AvailableWorkflowServers.vue'
 import type {
   PostWhatIfScenarioFilter,
-  RunTaskFilter,
   WhatIfScenarioDescriptor,
   WhatIfTemplate,
 } from '@deltares/fews-pi-requests'
@@ -154,7 +153,11 @@ import type { WorkflowItem } from '@/lib/workflows'
 import { refreshTaskRuns } from '@/services/useTasksRuns'
 import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
 import { useAlertsStore } from '@/stores/alerts'
-import { useWorkflowsStore, WorkflowType } from '@/stores/workflows'
+import {
+  type RunTaskRequestFilter,
+  useWorkflowsStore,
+  WorkflowType,
+} from '@/stores/workflows'
 import { useWorkflowBoundingBox } from '@/services/useWorkflowBoundingBox'
 import { useWhatIfTemplateSchemas } from '@/services/useWhatIfTemplateSchemas'
 import { useTaskRunMonitorStore } from '@/stores/taskRunMonitor'
@@ -405,7 +408,7 @@ function monitorWorkflowTaskProgress(taskId: string | undefined): void {
 function getRunTaskFilter(
   workflowId: string,
   scenarioId: string,
-): RunTaskFilter {
+): RunTaskRequestFilter {
   return {
     workflowId,
     timeZero: timeZero.value,

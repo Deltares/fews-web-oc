@@ -34,6 +34,9 @@ const webServiceProvider = new PiWebserviceProvider(baseUrl, {
 
 type OmitForWorkflow<T> = Omit<T, 'startTime' | 'endTime'>
 export type PartialProcessDataFilter = OmitForWorkflow<ProcessDataFilter>
+export type RunTaskRequestFilter = Omit<RunTaskFilter, 'userId'> & {
+  userId?: string
+}
 
 export interface StartWorkflowOptions {
   body?: string
@@ -41,9 +44,18 @@ export interface StartWorkflowOptions {
 }
 
 function isPartialProcessDataFilter(
-  config: RunTaskFilter | PartialProcessDataFilter,
+  config: RunTaskRequestFilter | PartialProcessDataFilter,
 ): config is PartialProcessDataFilter {
   return (config as PartialProcessDataFilter).xCellSize !== undefined
+}
+
+async function completeRunTaskFilter(
+  filter: RunTaskRequestFilter,
+): Promise<RunTaskFilter> {
+  return {
+    ...filter,
+    userId: filter.userId ?? (await authenticationManager.getCurrentUserId()),
+  }
 }
 
 export const useWorkflowsStore = defineStore('workflows', {
@@ -59,7 +71,7 @@ export const useWorkflowsStore = defineStore('workflows', {
   actions: {
     async startWorkflow(
       type: WorkflowType,
-      filter: RunTaskFilter | PartialProcessDataFilter,
+      filter: RunTaskRequestFilter | PartialProcessDataFilter,
       options?: StartWorkflowOptions,
     ) {
       if (
@@ -83,7 +95,11 @@ export const useWorkflowsStore = defineStore('workflows', {
 
         await downloadFileWithXhr(url.toString(), fileName, headers)
       } else if (type === WorkflowType.RunTask) {
-        return await webServiceProvider.postRunTask(filter, options?.body ?? '')
+        const completeFilter = await completeRunTaskFilter(filter)
+        return await webServiceProvider.postRunTask(
+          completeFilter,
+          options?.body ?? '',
+        )
       }
     },
   },
