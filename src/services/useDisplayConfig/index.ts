@@ -3,7 +3,7 @@ import {
   TopologyActionFilter,
   type ActionsResponse,
 } from '@deltares/fews-pi-requests'
-import { computed, ref, toValue, watch } from 'vue'
+import { computed, onUnmounted, ref, toValue, watch, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import type { DisplayConfig } from '@/lib/display'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.js'
@@ -23,6 +23,39 @@ export interface UseDisplayConfigReturn {
   displayConfig: Ref<DisplayConfig | null>
   displays: Ref<DisplayConfig[] | null>
   scalar1DDisplayConfig?: Ref<DisplayConfig | null>
+  refresh: () => Promise<void>
+  loading: Ref<boolean>
+  startPolling: (intervalMs: number) => void
+  stopPolling: () => void
+}
+
+type PollingController = {
+  startPolling: (intervalMs: number) => void
+  stopPolling: () => void
+}
+
+function createPollingController(
+  loading: Ref<boolean>,
+  refresh: () => Promise<void>,
+): PollingController {
+  let pollingId: ReturnType<typeof globalThis.setInterval> | undefined
+
+  const startPolling = (intervalMs: number) => {
+    stopPolling()
+    pollingId = globalThis.setInterval(() => {
+      if (loading.value) return
+      void refresh()
+    }, intervalMs)
+  }
+
+  const stopPolling = () => {
+    if (pollingId !== undefined) {
+      clearInterval(pollingId)
+      pollingId = undefined
+    }
+  }
+
+  return { startPolling, stopPolling }
 }
 
 /**
@@ -47,31 +80,46 @@ export function useDisplayConfig(
   const response = ref<ActionsResponse>()
   const displays = ref<DisplayConfig[] | null>(null)
   const scalar1DDisplayConfig = ref<DisplayConfig | null>(null)
+  const loading = ref(false)
 
-  watch(
-    [() => toValue(filter), () => toValue(taskRunIds)],
-    async ([_filter, _taskRunIds]) => {
-      if (_filter === undefined) return
-      const nodeId = _filter.nodeId
-      const taskRunsFilter = {
-        ..._filter,
-        // TODO: Change this to string.join(',') when the backend is fixed
-        taskRunIds: _taskRunIds,
-        currentForecastsAlwaysVisible: true,
-      }
+  async function refresh(): Promise<void> {
+    const _filter = toValue(filter)
+    const _taskRunIds = toValue(taskRunIds)
+    if (_filter === undefined) return
+
+    const nodeId = _filter.nodeId
+    const taskRunsFilter = {
+      ..._filter,
+      taskRunIds: _taskRunIds,
+      currentForecastsAlwaysVisible: true,
+    }
+
+    loading.value = true
+    try {
       response.value = await piProvider.getTopologyActions(
         _taskRunIds?.length ? taskRunsFilter : _filter,
       )
-
       displays.value = actionsResponseToDisplayConfig(response.value, nodeId)
       const scalarDisplays = actionsResponseToScalar1DDisplayConfig(
         response.value,
         nodeId,
       )
       scalar1DDisplayConfig.value = scalarDisplays[0] ?? null
-    },
-    { immediate: true },
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const { startPolling, stopPolling } = createPollingController(
+    loading,
+    refresh,
   )
+
+  watchEffect(refresh)
+
+  onUnmounted(() => {
+    stopPolling()
+  })
 
   const displayConfig = computed<DisplayConfig | null>((oldDisplayConfig) => {
     const _plotId = toValue(plotId)
@@ -87,6 +135,10 @@ export function useDisplayConfig(
     displays,
     displayConfig,
     scalar1DDisplayConfig,
+    refresh,
+    loading,
+    startPolling,
+    stopPolling,
   }
 }
 
@@ -109,11 +161,15 @@ export function useDisplayConfigFilter(
   const displays = ref<DisplayConfig[] | null>(null)
   const scalar1DDisplayConfig = ref<DisplayConfig | null>(null)
   const response = ref<ActionsResponse>()
+  const loading = ref(false)
 
-  watch(
-    [() => toValue(filter), () => toValue(taskRunIds)],
-    async ([_filter, _taskRunIds]) => {
-      if (_filter === undefined) return
+  async function refresh(): Promise<void> {
+    const _filter = toValue(filter)
+    const _taskRunIds = toValue(taskRunIds)
+    if (_filter === undefined) return
+
+    loading.value = true
+    try {
       if (isFilterActionsFilter(_filter)) {
         if (!_filter.filterId) {
           response.value = undefined
@@ -143,9 +199,21 @@ export function useDisplayConfigFilter(
         displays.value = null
         return
       }
-    },
-    { immediate: true },
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const { startPolling, stopPolling } = createPollingController(
+    loading,
+    refresh,
   )
+
+  watchEffect(refresh)
+
+  onUnmounted(() => {
+    stopPolling()
+  })
 
   // Use a second watchEffect to not trigger a fetch on these reactive variables
   watch(response, (_reponse) => {
@@ -171,6 +239,10 @@ export function useDisplayConfigFilter(
     displays,
     displayConfig,
     scalar1DDisplayConfig,
+    refresh,
+    loading,
+    startPolling,
+    stopPolling,
   }
 
   return shell
