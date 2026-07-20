@@ -70,13 +70,9 @@
         </v-col>
       </v-row>
       <v-card-actions>
-        <span>Basis:</span>
+        <span>System time:</span>
         <v-chip small>
-          {{ store.timeBasis }}
-        </v-chip>
-        <span>Update:</span>
-        <v-chip small>
-          {{ store.updatePattern }}
+          {{ store.timeBasis }} | {{ store.updatePattern }}
         </v-chip>
       </v-card-actions>
     </v-card>
@@ -142,14 +138,14 @@ const runningDotStyle = computed(() => ({
 
 const modeIcon = computed(() => {
   if (store.updatePattern === 'static') {
-    return 'mdi-clock-outline'
+    return 'mdi-history'
   }
 
   if (store.timeBasis === 'offset') {
     if (store.updatePattern === 'step') {
       return 'mdi-clock-edit-outline'
     }
-    return 'mdi-clock-plus-outline'
+    return 'mdi-clock-star-four-points-outline'
   }
 
   if (store.updatePattern === 'step') {
