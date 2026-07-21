@@ -8,9 +8,7 @@
           {
             "additionalProperties": false,
             "type": "object",
-            "required": [
-              "id"
-            ],
+            "required": ["id"],
             "properties": {
               "id": {
                 "minLength": 1,
@@ -37,9 +35,7 @@
           {
             "additionalProperties": false,
             "type": "object",
-            "required": [
-              "id"
-            ],
+            "required": ["id"],
             "properties": {
               "id": {
                 "const": "units.displayUnits",
@@ -68,9 +64,7 @@
           {
             "additionalProperties": false,
             "type": "object",
-            "required": [
-              "id"
-            ],
+            "required": ["id"],
             "properties": {
               "id": {
                 "const": "ui.hierarchical-menu-style",
@@ -103,9 +97,7 @@
           {
             "additionalProperties": false,
             "type": "object",
-            "required": [
-              "id"
-            ],
+            "required": ["id"],
             "properties": {
               "id": {
                 "const": "charts.scrollZoomMode",
@@ -142,13 +134,7 @@
           {
             "additionalProperties": false,
             "type": "object",
-            "required": [
-              "id",
-              "type",
-              "label",
-              "value",
-              "group"
-            ],
+            "required": ["id", "type", "label", "value", "group"],
             "properties": {
               "id": {
                 "minLength": 1,
@@ -200,14 +186,7 @@
           {
             "additionalProperties": false,
             "type": "object",
-            "required": [
-              "id",
-              "type",
-              "label",
-              "value",
-              "items",
-              "group"
-            ],
+            "required": ["id", "type", "label", "value", "items", "group"],
             "properties": {
               "id": {
                 "minLength": 1,
@@ -230,10 +209,7 @@
                 "items": {
                   "additionalProperties": false,
                   "type": "object",
-                  "required": [
-                    "value",
-                    "title"
-                  ],
+                  "required": ["value", "title"],
                   "properties": {
                     "value": {
                       "type": "string"
@@ -285,14 +261,7 @@
           {
             "additionalProperties": false,
             "type": "object",
-            "required": [
-              "id",
-              "type",
-              "label",
-              "value",
-              "items",
-              "group"
-            ],
+            "required": ["id", "type", "label", "value", "items", "group"],
             "properties": {
               "id": {
                 "const": "units.displayUnits",
@@ -324,10 +293,7 @@
                 "items": {
                   "additionalProperties": false,
                   "type": "object",
-                  "required": [
-                    "value",
-                    "title"
-                  ],
+                  "required": ["value", "title"],
                   "properties": {
                     "value": {
                       "type": "string"
@@ -359,14 +325,7 @@
           {
             "additionalProperties": false,
             "type": "object",
-            "required": [
-              "id",
-              "type",
-              "label",
-              "value",
-              "items",
-              "group"
-            ],
+            "required": ["id", "type", "label", "value", "items", "group"],
             "properties": {
               "id": {
                 "const": "ui.hierarchical-menu-style",
@@ -402,10 +361,7 @@
                 "items": {
                   "additionalProperties": false,
                   "type": "object",
-                  "required": [
-                    "value",
-                    "title"
-                  ],
+                  "required": ["value", "title"],
                   "properties": {
                     "value": {
                       "type": "string"
@@ -437,14 +393,7 @@
           {
             "additionalProperties": false,
             "type": "object",
-            "required": [
-              "id",
-              "type",
-              "label",
-              "value",
-              "items",
-              "group"
-            ],
+            "required": ["id", "type", "label", "value", "items", "group"],
             "properties": {
               "id": {
                 "const": "charts.scrollZoomMode",
@@ -484,10 +433,7 @@
                 "items": {
                   "additionalProperties": false,
                   "type": "object",
-                  "required": [
-                    "value",
-                    "title"
-                  ],
+                  "required": ["value", "title"],
                   "properties": {
                     "value": {
                       "type": "string"
@@ -522,9 +468,7 @@
     {
       "additionalProperties": false,
       "type": "object",
-      "required": [
-        "settings"
-      ],
+      "required": ["settings"],
       "properties": {
         "$schema": {
           "type": "string"
@@ -536,9 +480,7 @@
               {
                 "additionalProperties": false,
                 "type": "object",
-                "required": [
-                  "id"
-                ],
+                "required": ["id"],
                 "properties": {
                   "id": {
                     "minLength": 1,
@@ -565,9 +507,7 @@
               {
                 "additionalProperties": false,
                 "type": "object",
-                "required": [
-                  "id"
-                ],
+                "required": ["id"],
                 "properties": {
                   "id": {
                     "const": "units.displayUnits",
@@ -596,9 +536,7 @@
               {
                 "additionalProperties": false,
                 "type": "object",
-                "required": [
-                  "id"
-                ],
+                "required": ["id"],
                 "properties": {
                   "id": {
                     "const": "ui.hierarchical-menu-style",
@@ -631,9 +569,7 @@
               {
                 "additionalProperties": false,
                 "type": "object",
-                "required": [
-                  "id"
-                ],
+                "required": ["id"],
                 "properties": {
                   "id": {
                     "const": "charts.scrollZoomMode",
@@ -670,13 +606,7 @@
               {
                 "additionalProperties": false,
                 "type": "object",
-                "required": [
-                  "id",
-                  "type",
-                  "label",
-                  "value",
-                  "group"
-                ],
+                "required": ["id", "type", "label", "value", "group"],
                 "properties": {
                   "id": {
                     "minLength": 1,
@@ -728,14 +658,7 @@
               {
                 "additionalProperties": false,
                 "type": "object",
-                "required": [
-                  "id",
-                  "type",
-                  "label",
-                  "value",
-                  "items",
-                  "group"
-                ],
+                "required": ["id", "type", "label", "value", "items", "group"],
                 "properties": {
                   "id": {
                     "minLength": 1,
@@ -758,10 +681,7 @@
                     "items": {
                       "additionalProperties": false,
                       "type": "object",
-                      "required": [
-                        "value",
-                        "title"
-                      ],
+                      "required": ["value", "title"],
                       "properties": {
                         "value": {
                           "type": "string"
@@ -813,14 +733,7 @@
               {
                 "additionalProperties": false,
                 "type": "object",
-                "required": [
-                  "id",
-                  "type",
-                  "label",
-                  "value",
-                  "items",
-                  "group"
-                ],
+                "required": ["id", "type", "label", "value", "items", "group"],
                 "properties": {
                   "id": {
                     "const": "units.displayUnits",
@@ -852,10 +765,7 @@
                     "items": {
                       "additionalProperties": false,
                       "type": "object",
-                      "required": [
-                        "value",
-                        "title"
-                      ],
+                      "required": ["value", "title"],
                       "properties": {
                         "value": {
                           "type": "string"
@@ -887,14 +797,7 @@
               {
                 "additionalProperties": false,
                 "type": "object",
-                "required": [
-                  "id",
-                  "type",
-                  "label",
-                  "value",
-                  "items",
-                  "group"
-                ],
+                "required": ["id", "type", "label", "value", "items", "group"],
                 "properties": {
                   "id": {
                     "const": "ui.hierarchical-menu-style",
@@ -930,10 +833,7 @@
                     "items": {
                       "additionalProperties": false,
                       "type": "object",
-                      "required": [
-                        "value",
-                        "title"
-                      ],
+                      "required": ["value", "title"],
                       "properties": {
                         "value": {
                           "type": "string"
@@ -965,14 +865,7 @@
               {
                 "additionalProperties": false,
                 "type": "object",
-                "required": [
-                  "id",
-                  "type",
-                  "label",
-                  "value",
-                  "items",
-                  "group"
-                ],
+                "required": ["id", "type", "label", "value", "items", "group"],
                 "properties": {
                   "id": {
                     "const": "charts.scrollZoomMode",
@@ -1012,10 +905,7 @@
                     "items": {
                       "additionalProperties": false,
                       "type": "object",
-                      "required": [
-                        "value",
-                        "title"
-                      ],
+                      "required": ["value", "title"],
                       "properties": {
                         "value": {
                           "type": "string"
