@@ -27,7 +27,6 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { VDateInput } from 'vuetify/labs/components'
 
 interface Props {
   dateLabel?: string

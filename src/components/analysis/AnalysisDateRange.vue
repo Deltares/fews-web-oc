@@ -75,7 +75,6 @@
 
 <script setup lang="ts">
 import SelectIcon from '@/components/general/SelectIcon.vue'
-import { VDateInput } from 'vuetify/labs/components'
 import type { CollectionSettings } from '@/lib/analysis'
 import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'

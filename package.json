@@ -29,9 +29,9 @@
     "@deltares/fews-wms-requests": "^4.0.1",
     "@deltares/webgl-streamline-visualizer": "^4.5.0",
     "@indoorequal/vue-maplibre-gl": "^8.4.2",
-    "@jsonforms/core": "^3.7.0",
-    "@jsonforms/vue": "^3.7.0",
-    "@jsonforms/vue-vuetify": "^3.7.0",
+    "@jsonforms/core": "^3.8.0",
+    "@jsonforms/vue": "^3.8.0",
+    "@jsonforms/vue-vuetify": "^3.8.0",
     "@tiptap/core": "^3.20.5",
     "@tiptap/extension-blockquote": "^3.20.5",
     "@tiptap/extension-bold": "^3.20.5",
@@ -89,7 +89,7 @@
     "vue-router": "^5.0.4",
     "vue-slider-component": "^4.1.0-beta.7",
     "vuedraggable": "^4.1.0",
-    "vuetify": "^4.0.6"
+    "vuetify": "^4.1.5"
   },
   "devDependencies": {
     "@mdi/font": "^7.4.47",
