@@ -53,6 +53,7 @@
               'datetime-slider__snapshot-label--day-transition':
                 frame.isDayTransition && frame.time.getHours() !== 0,
             }"
+            :datetime="frame.time.toISOString()"
           >
             <span
               v-if="frame.isDayTransition && frame.time.getHours() !== 0"
