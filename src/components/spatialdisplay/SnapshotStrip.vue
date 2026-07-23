@@ -111,6 +111,7 @@ const snapshotIsDragging = ref(false)
 let snapshotDragStartClientX = 0
 let snapshotDragStartScrollLeft = 0
 let snapshotDragDistance = 0
+let snapshotWheelRemainderPx = 0
 const SNAPSHOT_DRAG_CLICK_THRESHOLD_PX = 4
 let snapshotResizeObserver: ResizeObserver | undefined
 
@@ -118,6 +119,7 @@ const SNAPSHOT_FRAME_WIDTH = 96
 const SNAPSHOT_FRAME_GAP = 0
 const SNAPSHOT_FRAME_STRIDE = SNAPSHOT_FRAME_WIDTH + SNAPSHOT_FRAME_GAP
 const SNAPSHOT_OVERSCAN = 6
+const WHEEL_DELTA_LINE_PX = 16
 const MS_PER_MINUTE = 60 * 1000
 const SNAPSHOT_INTERVAL_MINUTES_OPTIONS = [
   1, 2, 5, 10, 15, 30, 60, 120, 180, 360, 720, 1440,
@@ -321,6 +323,27 @@ const visibleSnapshotFrames = computed(() =>
   ),
 )
 
+const layerStepPx = computed(() =>
+  Math.max(
+    (layerTimeStepMs.value / snapshotIntervalMs.value) * SNAPSHOT_FRAME_STRIDE,
+    1,
+  ),
+)
+
+const maxSelectableLayerStep = computed(() => {
+  const timelineStart = snapshotTimelineTimes.value[0]
+  const availableEndTime = props.times?.at(-1)
+  if (!timelineStart || !availableEndTime) return 0
+
+  return Math.max(
+    0,
+    Math.floor(
+      (availableEndTime.getTime() - timelineStart.getTime()) /
+        layerTimeStepMs.value,
+    ),
+  )
+})
+
 const formatSnapshotMillisecond = timeFormat('.%L')
 const formatSnapshotSecond = timeFormat(':%S')
 const formatSnapshotMinute = timeFormat('%H:%M')
@@ -352,7 +375,44 @@ function onSnapshotScroll(): void {
 }
 
 function onSnapshotWheel(event: WheelEvent): void {
-  if (!event.shiftKey || event.deltaY === 0) return
+  const viewport = snapshotViewport.value
+  if (!viewport) return
+
+  if (!event.shiftKey) {
+    const wheelDelta =
+      Math.abs(event.deltaX) > Math.abs(event.deltaY)
+        ? event.deltaX
+        : event.deltaY
+    if (wheelDelta === 0) return
+
+    const deltaPx = getWheelDeltaPx(event, wheelDelta, viewport.clientWidth)
+    // Keep scrolling aligned with real layer timesteps.
+    snapshotWheelRemainderPx += deltaPx
+    const layerSteps = Math.trunc(snapshotWheelRemainderPx / layerStepPx.value)
+    if (layerSteps === 0) return
+
+    event.preventDefault()
+    const maxSelectableScrollLeft = getMaxSelectableScrollLeft(viewport)
+    const currentLayerStepIndex = Math.round(
+      viewport.scrollLeft / layerStepPx.value,
+    )
+    const maxLayerStepIndex = Math.floor(
+      maxSelectableScrollLeft / layerStepPx.value,
+    )
+    const nextLayerStepIndex = clamp(
+      currentLayerStepIndex + layerSteps,
+      0,
+      maxLayerStepIndex,
+    )
+    const nextScrollLeft = nextLayerStepIndex * layerStepPx.value
+    viewport.scrollLeft = nextScrollLeft
+    snapshotWheelRemainderPx -= layerSteps * layerStepPx.value
+    return
+  }
+
+  snapshotWheelRemainderPx = 0
+
+  if (event.deltaY === 0) return
   event.preventDefault()
 
   // If all frames are already visible, do not allow further zooming out.
@@ -368,6 +428,20 @@ function onSnapshotWheel(event: WheelEvent): void {
   } else {
     snapshotIntervalIndex.value = Math.max(snapshotIntervalIndex.value - 1, 0)
   }
+}
+
+function getWheelDeltaPx(
+  event: WheelEvent,
+  delta: number,
+  viewportWidthPx: number,
+): number {
+  if (event.deltaMode === WheelEvent.DOM_DELTA_LINE) {
+    return delta * WHEEL_DELTA_LINE_PX
+  }
+  if (event.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
+    return delta * viewportWidthPx
+  }
+  return delta
 }
 
 watch(snapshotIntervalOptionsMs, (options) => {
@@ -395,12 +469,16 @@ function onSnapshotStripClick(event: MouseEvent): void {
     viewportRect.left +
     viewport.scrollLeft -
     snapshotEdgePadding.value
-  const timelineIndex = clamp(
-    Math.floor(clickOffsetPx / SNAPSHOT_FRAME_STRIDE),
+  const layerStepIndex = clamp(
+    Math.round(clickOffsetPx / layerStepPx.value),
     0,
-    timelineTimes.length - 1,
+    maxSelectableLayerStep.value,
   )
-  const clickedTime = timelineTimes[timelineIndex]
+  const timelineStart = timelineTimes[0]
+  if (!timelineStart) return
+  const clickedTime = new Date(
+    timelineStart.getTime() + layerStepIndex * layerTimeStepMs.value,
+  )
   const closestSliderTime = getClosestTime(clickedTime, availableTimes)
   if (!closestSliderTime) return
 
@@ -427,7 +505,11 @@ function onSnapshotPointerMove(event: PointerEvent): void {
 
   const delta = snapshotDragStartClientX - event.clientX
   snapshotDragDistance = Math.abs(delta)
-  viewport.scrollLeft = snapshotDragStartScrollLeft + delta
+  viewport.scrollLeft = clamp(
+    snapshotDragStartScrollLeft + delta,
+    0,
+    getMaxSelectableScrollLeft(viewport),
+  )
 }
 
 function onSnapshotPointerUp(event: PointerEvent): void {
@@ -445,12 +527,16 @@ function onSnapshotPointerUp(event: PointerEvent): void {
   // The center line sits at scrollLeft + viewportWidth/2, and the edge padding
   // equals viewportWidth/2, so the frame index under the center line is simply
   // scrollLeft / SNAPSHOT_FRAME_STRIDE.
-  const timelineIndex = clamp(
-    Math.floor(viewport.scrollLeft / SNAPSHOT_FRAME_STRIDE),
+  const layerStepIndex = clamp(
+    Math.round(viewport.scrollLeft / layerStepPx.value),
     0,
-    timelineTimes.length - 1,
+    maxSelectableLayerStep.value,
   )
-  const centeredTime = timelineTimes[timelineIndex]
+  const timelineStart = timelineTimes[0]
+  if (!timelineStart) return
+  const centeredTime = new Date(
+    timelineStart.getTime() + layerStepIndex * layerTimeStepMs.value,
+  )
   const closestSliderTime = getClosestTime(centeredTime, availableTimes)
   if (!closestSliderTime) return
 
@@ -484,6 +570,15 @@ function getAlignedTimeOnOrBefore(
   const elapsedMs = date.getTime() - refMs
   const steps = Math.floor(elapsedMs / intervalMs)
   return new Date(refMs + steps * intervalMs)
+}
+
+function getMaxSelectableScrollLeft(viewport: HTMLElement): number {
+  const maxCenteredScrollLeft = maxSelectableLayerStep.value * layerStepPx.value
+  const maxContentScrollLeft = Math.max(
+    viewport.scrollWidth - viewport.clientWidth,
+    0,
+  )
+  return Math.min(maxCenteredScrollLeft, maxContentScrollLeft)
 }
 
 function updateSnapshotViewportMetrics(): void {
