@@ -427,11 +427,9 @@ const selectedSnapshotIndex = computed(() => {
   const timelineStartMs = snapshotTimelineTimes.value[0].getTime()
   const relativeIntervals =
     (selectedDate.value.getTime() - timelineStartMs) / snapshotIntervalMs.value
-  const selectedFrameOffsetPx =
-    (relativeIntervals + 0.5) * SNAPSHOT_FRAME_STRIDE
 
   return clamp(
-    Math.floor((selectedFrameOffsetPx - 0.000001) / SNAPSHOT_FRAME_STRIDE),
+    Math.floor(relativeIntervals),
     0,
     Math.max(snapshotTimelineTimes.value.length - 1, 0),
   )
@@ -458,7 +456,7 @@ const visibleSnapshotRange = computed(() => {
 })
 
 const snapshotEdgePadding = computed(() =>
-  Math.max((snapshotViewportWidth.value - SNAPSHOT_FRAME_WIDTH) / 2, 0),
+  Math.max(snapshotViewportWidth.value / 2, 0),
 )
 
 const snapshotLeftPadding = computed(
@@ -603,8 +601,7 @@ function centerSnapshotAroundSelectedTime(): void {
   const timelineStartMs = snapshotTimelineTimes.value[0].getTime()
   const relativeIntervals =
     (selectedDate.value.getTime() - timelineStartMs) / snapshotIntervalMs.value
-  const selectedFrameOffsetPx =
-    (relativeIntervals + 0.5) * SNAPSHOT_FRAME_STRIDE
+  const selectedFrameOffsetPx = relativeIntervals * SNAPSHOT_FRAME_STRIDE
   const targetCenter = snapshotEdgePadding.value + selectedFrameOffsetPx
   const desiredScrollLeft = Math.max(
     targetCenter - snapshotViewportWidth.value / 2,
@@ -690,7 +687,6 @@ watch(
   (times) => {
     if (!times || times.length === 0) {
       selectedDateOfSlider.value = undefined
-      return
     }
   },
 )
