@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="datetime-slider__snapshot-strip mb-1"
-    style="margin-top: -7px"
-  >
+  <div class="datetime-slider__snapshot-strip mb-1" style="margin-top: -7px">
     <div class="datetime-slider__snapshot-times-wrapper">
       <div class="datetime-slider__snapshot-center-line"></div>
       <div

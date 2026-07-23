@@ -321,8 +321,6 @@ function onSnapshotSelectTime(date: Date): void {
   selectedDateOfSlider.value = date
 }
 
-
-
 watch(selectedDate, () => {
   emit('update:currentTime', selectedDate.value)
 })

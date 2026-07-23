@@ -139,9 +139,9 @@ function removeHooksFromMapObject(): void {
   map?.off('error', onError)
 }
 
-function getImageSourceOptions(time = props.layer.time):
-  | ImageSourceSpecification
-  | undefined {
+function getImageSourceOptions(
+  time = props.layer.time,
+): ImageSourceSpecification | undefined {
   if (!map) return
 
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
