@@ -207,7 +207,7 @@
                   aria-hidden="true"
                 ></div>
                 <span class="datetime-slider__snapshot-label">
-                  {{ formatSnapshotTime(frame.time) }}
+                  <span>{{ formatSnapshotChip(frame.time) }}</span>
                 </span>
               </div>
               <div
@@ -312,6 +312,7 @@ import { provideLayerOrder } from '@/services/useLayerOrder'
 import { useOverlays } from '@/services/useOverlays'
 import { toMercator } from '@turf/projection'
 import { point } from '@turf/helpers'
+import { timeFormat } from 'd3-time-format'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -571,11 +572,29 @@ const visibleSnapshotFrames = computed(() =>
   ),
 )
 
+const formatSnapshotMillisecond = timeFormat('.%L')
+const formatSnapshotSecond = timeFormat(':%S')
+const formatSnapshotMinute = timeFormat('%H:%M')
+const formatSnapshotHour = timeFormat('%H:%M')
+const formatSnapshotDay = timeFormat('%d %b')
+const formatSnapshotMonth = timeFormat('%b')
+const formatSnapshotYear = timeFormat('%Y')
+
 function formatSnapshotTime(time: Date): string {
   return time.toLocaleTimeString(undefined, {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+function formatSnapshotChip(time: Date): string {
+  if (time.getMilliseconds()) return formatSnapshotMillisecond(time)
+  if (time.getSeconds()) return formatSnapshotSecond(time)
+  if (time.getMinutes()) return formatSnapshotMinute(time)
+  if (time.getHours()) return formatSnapshotHour(time)
+  if (time.getDate() !== 1) return formatSnapshotDay(time)
+  if (time.getMonth() !== 0) return formatSnapshotMonth(time)
+  return formatSnapshotYear(time)
 }
 
 function closeSnapshotPreview(): void {
