@@ -206,7 +206,17 @@
                   class="datetime-slider__snapshot-image datetime-slider__snapshot-image--empty"
                   aria-hidden="true"
                 ></div>
-                <span class="datetime-slider__snapshot-label">
+                <span
+                  class="datetime-slider__snapshot-label"
+                  :class="{
+                    'datetime-slider__snapshot-label--day-transition':
+                      frame.isDayTransition && frame.time.getHours() !== 0,
+                  }"
+                >
+                  <span
+                    v-if="frame.isDayTransition && frame.time.getHours() !== 0"
+                    class="datetime-slider__snapshot-label-date"
+                  >{{ formatSnapshotDay(frame.time) }}</span>
                   <span>{{ formatSnapshotChip(frame.time) }}</span>
                 </span>
               </div>
@@ -448,11 +458,17 @@ const snapshotTimelineTimes = computed(() => {
   const rangeEnd = times.at(-1)
   if (!rangeEnd) return []
 
+  const dayStartMs = new Date(rangeStart).setHours(0, 0, 0, 0)
+  const firstLayerOffsetMs = rangeStart.getTime() - dayStartMs
+  const alignsWithDayStart = firstLayerOffsetMs % snapshotIntervalMs.value === 0
+  const originMs = alignsWithDayStart ? dayStartMs : rangeStart.getTime()
+
   const alignedStart = getAlignedTimeOnOrBefore(
     rangeStart,
     snapshotIntervalMs.value,
+    originMs,
   )
-  const alignedEnd = getAlignedTimeOnOrBefore(rangeEnd, snapshotIntervalMs.value)
+  const alignedEnd = getAlignedTimeOnOrBefore(rangeEnd, snapshotIntervalMs.value, originMs)
   const timeline: Date[] = []
 
   for (
@@ -532,6 +548,16 @@ const snapshotFrames = computed(() => {
   const availableTimeMsSet = new Set(availableTimes.map((time) => time.getTime()))
 
   return snapshotTimelineTimes.value.map((time, timelineIndex) => {
+    const prevTime =
+      timelineIndex > 0
+        ? snapshotTimelineTimes.value[timelineIndex - 1]
+        : undefined
+    const isDayTransition =
+      prevTime === undefined ||
+      prevTime.getDate() !== time.getDate() ||
+      prevTime.getMonth() !== time.getMonth() ||
+      prevTime.getFullYear() !== time.getFullYear()
+
     const isInAvailableRange =
       availableStartTime !== undefined &&
       availableEndTime !== undefined &&
@@ -551,6 +577,7 @@ const snapshotFrames = computed(() => {
     return {
       index: timelineIndex,
       time,
+      isDayTransition,
       hasImage,
       hasTimeMismatch,
       url: hasImage ? buildSnapshotGetMapUrl(requestTime, snapshotBbox) : '',
@@ -682,11 +709,11 @@ function getClosestTime(targetTime: Date, times: Date[]): Date | undefined {
   return closestTime
 }
 
-function getAlignedTimeOnOrBefore(date: Date, intervalMs: number): Date {
-  const dayStartMs = new Date(date).setHours(0, 0, 0, 0)
-  const elapsedMs = date.getTime() - dayStartMs
+function getAlignedTimeOnOrBefore(date: Date, intervalMs: number, originMs?: number): Date {
+  const refMs = originMs ?? new Date(date).setHours(0, 0, 0, 0)
+  const elapsedMs = date.getTime() - refMs
   const steps = Math.floor(elapsedMs / intervalMs)
-  return new Date(dayStartMs + steps * intervalMs)
+  return new Date(refMs + steps * intervalMs)
 }
 
 function updateSnapshotViewportMetrics(): void {
@@ -1281,6 +1308,20 @@ function onCoordinateMoved(lat: number, lng: number): void {
   font-size: 10px;
   color: rgba(var(--v-theme-on-surface), 0.92);
   background-color: rgba(var(--v-theme-surface), 0.75);
+}
+
+.datetime-slider__snapshot-label--day-transition {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 4px;
+  gap: 1px;
+}
+
+.datetime-slider__snapshot-label-date {
+  font-size: 9px;
+  opacity: 0.75;
+  line-height: 1.2;
 }
 
 .datetime-slider__snapshot-close {
