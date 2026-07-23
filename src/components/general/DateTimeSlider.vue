@@ -1,6 +1,6 @@
 <template>
   <div class="datetime-slider" aria-labelledby="date time slider">
-    <div class="slider-container">
+    <div ref="sliderContainer" class="slider-container">
       <vue-slider
         v-model="dateIndex"
         :marks="marks"
@@ -107,7 +107,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch, type WatchHandle } from 'vue'
+import {
+  computed,
+  onMounted,
+  onUnmounted,
+  ref,
+  watch,
+  type WatchHandle,
+} from 'vue'
 import { scaleTime } from 'd3-scale'
 import { DateTime } from 'luxon'
 import { useI18n } from 'vue-i18n'
@@ -138,6 +145,9 @@ const emit = defineEmits(['update:selectedDate'])
 const { t } = useI18n()
 
 const doFollowNow = defineModel<boolean>('doFollowNow', { default: true })
+const showSnapshotFrames = defineModel<boolean>('showSnapshotFrames', {
+  default: false,
+})
 
 // Step size when playing an animation, and when clicking the previous and next frame buttons.
 const playIncrement = 1
@@ -151,6 +161,11 @@ const availableSpeeds = [0.5, 1, 2, 4]
 const playTimeoutTimer = ref<ReturnType<typeof setTimeout>>()
 
 let followNowIntervalTimer: ReturnType<typeof setInterval> | null = null
+const sliderContainer = ref<HTMLElement>()
+const dragGestureStartY = ref(0)
+const isTrackingDragGesture = ref(false)
+
+const DRAG_UP_THRESHOLD_PX = 24
 
 const hideLabel = ref(true)
 
@@ -295,6 +310,39 @@ function setDateToNow(): void {
   dateIndex.value = findDateIndex(props.dates, now)
 }
 
+function isSliderGestureElement(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  return Boolean(
+    target.closest(
+      '.vue-slider-dot-handle, .vue-slider-dot, .vue-slider-process, .vue-slider-rail, .vue-slider',
+    ),
+  )
+}
+
+function onPointerDown(event: PointerEvent): void {
+  if (!isSliderGestureElement(event.target)) return
+
+  dragGestureStartY.value = event.clientY
+  isTrackingDragGesture.value = true
+}
+
+function onPointerMove(event: PointerEvent): void {
+  if (!isTrackingDragGesture.value) return
+
+  const dragUpDistance = dragGestureStartY.value - event.clientY
+  if (dragUpDistance >= DRAG_UP_THRESHOLD_PX) {
+    showSnapshotFrames.value = true
+  }
+}
+
+function stopDragGestureTracking(): void {
+  isTrackingDragGesture.value = false
+}
+
+function onPointerUp(): void {
+  stopDragGestureTracking()
+}
+
 function togglePlay(): void {
   if (playTimeoutTimer.value) {
     stopPlay()
@@ -383,13 +431,27 @@ function formatSpeed(speed: number) {
   return speed === defaultSpeed ? 'Normal' : `${speed}x`
 }
 
+onMounted(() => {
+  sliderContainer.value?.addEventListener('pointerdown', onPointerDown)
+  window.addEventListener('pointermove', onPointerMove)
+  window.addEventListener('pointerup', onPointerUp)
+  window.addEventListener('pointercancel', onPointerUp)
+})
+
 onUnmounted(() => {
+  sliderContainer.value?.removeEventListener('pointerdown', onPointerDown)
+  window.removeEventListener('pointermove', onPointerMove)
+  window.removeEventListener('pointerup', onPointerUp)
+  window.removeEventListener('pointercancel', onPointerUp)
+  stopDragGestureTracking()
+  showSnapshotFrames.value = false
   stopFollowTimer()
 })
 </script>
 
 <style scoped>
 .slider-container {
+  position: relative;
   padding: 0px 10px;
 }
 

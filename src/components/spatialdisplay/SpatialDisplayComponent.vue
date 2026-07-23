@@ -9,6 +9,8 @@
       v-if="layerKind === LayerKind.Static && showLayer && layerOptions"
       v-model:isLoading="isLoading"
       :layer="layerOptions"
+      :showSnapshotFrames="showTimeSnapshotFrames"
+      :snapshotTimes="snapshotTimes"
       :key="`layer-${layerOptions.name}`"
       :layerId="mapIds.wms.layer"
       :sourceId="mapIds.wms.source"
@@ -154,12 +156,72 @@
       :dates="times ?? []"
       :now="timesDefault"
       v-model:doFollowNow="doFollowNow"
+      v-model:showSnapshotFrames="showTimeSnapshotFrames"
       class="spatial-display__slider"
       :hide-speed-controls="mobile"
       :isLoading="isLoading"
     >
       <template #below-track>
+        <div
+          v-if="showTimeSnapshotFrames"
+          class="datetime-slider__snapshot-strip mb-1"
+          style="margin-top: -7px"
+        >
+          <div class="datetime-slider__snapshot-times-wrapper">
+            <div class="datetime-slider__snapshot-center-line"></div>
+            <div
+              ref="snapshotViewport"
+              class="datetime-slider__snapshot-times"
+              @scroll="onSnapshotScroll"
+              @wheel.prevent="onSnapshotWheel"
+            >
+              <div
+                class="datetime-slider__snapshot-spacer"
+                :style="{ width: `${snapshotLeftPadding}px` }"
+              ></div>
+              <div
+                v-for="frame in visibleSnapshotFrames"
+                :key="frame.time.toISOString()"
+                class="datetime-slider__snapshot-frame"
+                :class="{
+                  'datetime-slider__snapshot-frame--selected':
+                    frame.index === selectedSnapshotIndex,
+                  'datetime-slider__snapshot-frame--empty': !frame.hasImage,
+                }"
+              >
+                <img
+                  v-if="frame.hasImage"
+                  class="datetime-slider__snapshot-image"
+                  :src="frame.url"
+                  :alt="`Snapshot at ${formatSnapshotTime(frame.time)}`"
+                  loading="lazy"
+                />
+                <div
+                  v-else
+                  class="datetime-slider__snapshot-image datetime-slider__snapshot-image--empty"
+                  aria-hidden="true"
+                ></div>
+                <span class="datetime-slider__snapshot-label">
+                  {{ formatSnapshotTime(frame.time) }}
+                </span>
+              </div>
+              <div
+                class="datetime-slider__snapshot-spacer"
+                :style="{ width: `${snapshotRightPadding}px` }"
+              ></div>
+            </div>
+          </div>
+          <v-btn
+            class="datetime-slider__snapshot-close"
+            size="x-small"
+            variant="text"
+            density="compact"
+            icon="mdi-close"
+            @click.stop="closeSnapshotPreview"
+          />
+        </div>
         <DateTimeSliderValues
+          v-else
           :values="maxValuesTimeSeries"
           :colour-scale="currentColourScale ?? null"
           height="6px"
@@ -176,7 +238,15 @@ import DateTimeSliderValues from '@/components/general/DateTimeSliderValues.vue'
 import MapComponent from '@/components/map/MapComponent.vue'
 import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 
-import { ref, computed, watch, watchEffect } from 'vue'
+import {
+  ref,
+  computed,
+  watch,
+  watchEffect,
+  nextTick,
+  onMounted,
+  onUnmounted,
+} from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
   useWmsCapabilities,
@@ -235,6 +305,9 @@ import { clamp } from '@/lib/utils/math'
 import { useAggregations } from '@/services/useAggregations'
 import { provideLayerOrder } from '@/services/useLayerOrder'
 import { useOverlays } from '@/services/useOverlays'
+import { findDateIndex } from '@/lib/utils/dates'
+import { toMercator } from '@turf/projection'
+import { point } from '@turf/helpers'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -303,6 +376,279 @@ const locationToChildrenMap = computed(() =>
 const selectedDateOfSlider = ref<Date>()
 const { selectedDate, dateTimeSliderEnabled } =
   useSelectedDate(selectedDateOfSlider)
+const showTimeSnapshotFrames = ref(false)
+const snapshotViewport = ref<HTMLElement>()
+const snapshotScrollLeft = ref(0)
+const snapshotViewportWidth = ref(0)
+const snapshotIntervalHoursOptions = [1, 2, 3, 6, 12, 24]
+const snapshotIntervalIndex = ref(0)
+let snapshotResizeObserver: ResizeObserver | undefined
+
+const SNAPSHOT_FRAME_WIDTH = 96
+const SNAPSHOT_FRAME_GAP = 0
+const SNAPSHOT_FRAME_STRIDE = SNAPSHOT_FRAME_WIDTH + SNAPSHOT_FRAME_GAP
+const SNAPSHOT_OVERSCAN = 6
+const MS_PER_HOUR = 60 * 60 * 1000
+
+const SNAPSHOT_OFFSETS = [-2, -1, 1, 2]
+const snapshotTimes = computed(() => {
+  const times = props.times
+  if (!showTimeSnapshotFrames.value) return []
+  if (!times?.length || !selectedDate.value) return []
+
+  const selectedIndex = findDateIndex(times, selectedDate.value)
+  const inRangeIndexes = SNAPSHOT_OFFSETS.map((offset) => selectedIndex + offset)
+    .filter((index) => index >= 0 && index < times.length)
+
+  return inRangeIndexes.map((index) => times[index])
+})
+
+const snapshotIntervalMs = computed(
+  () => snapshotIntervalHoursOptions[snapshotIntervalIndex.value] * MS_PER_HOUR,
+)
+
+const snapshotTimelineTimes = computed(() => {
+  const times = props.times
+  if (!showTimeSnapshotFrames.value) return []
+  if (!times?.length) return []
+
+  const rangeStart = times[0]
+  const rangeEnd = times.at(-1)
+  if (!rangeEnd) return []
+
+  const alignedStart = getAlignedTimeOnOrBefore(
+    rangeStart,
+    snapshotIntervalMs.value,
+  )
+  const alignedEnd = getAlignedTimeOnOrAfter(rangeEnd, snapshotIntervalMs.value)
+  const timeline: Date[] = []
+
+  for (
+    let currentTimeMs = alignedStart.getTime();
+    currentTimeMs <= alignedEnd.getTime();
+    currentTimeMs += snapshotIntervalMs.value
+  ) {
+    timeline.push(new Date(currentTimeMs))
+  }
+
+  return timeline
+})
+
+const selectedSnapshotIndex = computed(() => {
+  if (!snapshotTimelineTimes.value.length || !selectedDate.value) {
+    return -1
+  }
+
+  const timelineStartMs = snapshotTimelineTimes.value[0].getTime()
+  const relativeIntervals =
+    (selectedDate.value.getTime() - timelineStartMs) / snapshotIntervalMs.value
+  const selectedFrameOffsetPx =
+    (relativeIntervals + 0.5) * SNAPSHOT_FRAME_STRIDE
+
+  return clamp(
+    Math.floor((selectedFrameOffsetPx - 0.000001) / SNAPSHOT_FRAME_STRIDE),
+    0,
+    Math.max(snapshotTimelineTimes.value.length - 1, 0),
+  )
+})
+
+const visibleSnapshotRange = computed(() => {
+  const total = snapshotTimelineTimes.value.length
+  if (!total) return { start: 0, end: 0 }
+
+  const scrollWithoutEdgePadding = Math.max(
+    snapshotScrollLeft.value - snapshotEdgePadding.value,
+    0,
+  )
+  const firstVisibleIndex = Math.floor(
+    scrollWithoutEdgePadding / SNAPSHOT_FRAME_STRIDE,
+  )
+  const visibleCount = Math.ceil(
+    snapshotViewportWidth.value / SNAPSHOT_FRAME_STRIDE,
+  )
+
+  const start = Math.max(firstVisibleIndex - SNAPSHOT_OVERSCAN, 0)
+  const end = Math.min(start + visibleCount + SNAPSHOT_OVERSCAN * 2, total)
+  return { start, end }
+})
+
+const snapshotEdgePadding = computed(() =>
+  Math.max((snapshotViewportWidth.value - SNAPSHOT_FRAME_WIDTH) / 2, 0),
+)
+
+const snapshotLeftPadding = computed(
+  () =>
+    snapshotEdgePadding.value +
+    visibleSnapshotRange.value.start * SNAPSHOT_FRAME_STRIDE,
+)
+
+const snapshotRightPadding = computed(() => {
+  const total = snapshotTimelineTimes.value.length
+  return Math.max(
+    0,
+    snapshotEdgePadding.value +
+      (total - visibleSnapshotRange.value.end) * SNAPSHOT_FRAME_STRIDE,
+  )
+})
+
+const snapshotFrames = computed(() => {
+  if (!showTimeSnapshotFrames.value) return []
+  if (!layerOptions.value?.bbox) return []
+
+  const snapshotBbox = getMercatorBboxFromBounds(layerOptions.value.bbox)
+  const availableStartTime = props.times?.[0]
+  const availableEndTime = props.times?.at(-1)
+
+  return snapshotTimelineTimes.value.map((time, timelineIndex) => {
+    const hasImage =
+      availableStartTime !== undefined &&
+      availableEndTime !== undefined &&
+      time.getTime() >= availableStartTime.getTime() &&
+      time.getTime() <= availableEndTime.getTime()
+
+    return {
+      index: timelineIndex,
+      time,
+      hasImage,
+      url: hasImage ? buildSnapshotGetMapUrl(time, snapshotBbox) : '',
+    }
+  })
+})
+
+const visibleSnapshotFrames = computed(() =>
+  snapshotFrames.value.slice(
+    visibleSnapshotRange.value.start,
+    visibleSnapshotRange.value.end,
+  ),
+)
+
+function formatSnapshotTime(time: Date): string {
+  return time.toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+function closeSnapshotPreview(): void {
+  showTimeSnapshotFrames.value = false
+}
+
+function onSnapshotScroll(): void {
+  if (!snapshotViewport.value) return
+  snapshotScrollLeft.value = snapshotViewport.value.scrollLeft
+}
+
+function onSnapshotWheel(event: WheelEvent): void {
+  if (!showTimeSnapshotFrames.value) return
+  if (event.deltaY === 0) return
+
+  if (event.deltaY > 0) {
+    snapshotIntervalIndex.value = Math.min(
+      snapshotIntervalIndex.value + 1,
+      snapshotIntervalHoursOptions.length - 1,
+    )
+  } else {
+    snapshotIntervalIndex.value = Math.max(snapshotIntervalIndex.value - 1, 0)
+  }
+}
+
+function getAlignedTimeOnOrBefore(date: Date, intervalMs: number): Date {
+  const dayStartMs = new Date(date).setHours(0, 0, 0, 0)
+  const elapsedMs = date.getTime() - dayStartMs
+  const steps = Math.floor(elapsedMs / intervalMs)
+  return new Date(dayStartMs + steps * intervalMs)
+}
+
+function getAlignedTimeOnOrAfter(date: Date, intervalMs: number): Date {
+  const dayStartMs = new Date(date).setHours(0, 0, 0, 0)
+  const elapsedMs = date.getTime() - dayStartMs
+  const steps = Math.ceil(elapsedMs / intervalMs)
+  return new Date(dayStartMs + steps * intervalMs)
+}
+
+function updateSnapshotViewportMetrics(): void {
+  if (!snapshotViewport.value) return
+  snapshotViewportWidth.value = snapshotViewport.value.clientWidth
+  snapshotScrollLeft.value = snapshotViewport.value.scrollLeft
+}
+
+function centerSnapshotAroundSelectedTime(): void {
+  if (!snapshotViewport.value) return
+  if (!snapshotTimelineTimes.value.length || !selectedDate.value) return
+
+  const timelineStartMs = snapshotTimelineTimes.value[0].getTime()
+  const relativeIntervals =
+    (selectedDate.value.getTime() - timelineStartMs) / snapshotIntervalMs.value
+  const selectedFrameOffsetPx =
+    (relativeIntervals + 0.5) * SNAPSHOT_FRAME_STRIDE
+  const targetCenter = snapshotEdgePadding.value + selectedFrameOffsetPx
+  const desiredScrollLeft = Math.max(
+    targetCenter - snapshotViewportWidth.value / 2,
+    0,
+  )
+  const maxScrollLeft = Math.max(
+    snapshotViewport.value.scrollWidth - snapshotViewport.value.clientWidth,
+    0,
+  )
+  const nextScrollLeft = Math.min(desiredScrollLeft, maxScrollLeft)
+
+  snapshotViewport.value.scrollLeft = nextScrollLeft
+  snapshotScrollLeft.value = snapshotViewport.value.scrollLeft
+}
+
+function buildSnapshotGetMapUrl(time: Date, bbox: number[]): string {
+  const getMapUrl = new URL(`${baseUrl}/wms`)
+  getMapUrl.searchParams.append('service', 'WMS')
+  getMapUrl.searchParams.append('request', 'GetMap')
+  getMapUrl.searchParams.append('version', '1.3')
+  getMapUrl.searchParams.append('layers', layerOptions.value?.name ?? '')
+  getMapUrl.searchParams.append('crs', 'EPSG:3857')
+  getMapUrl.searchParams.append('bbox', `${bbox}`)
+  getMapUrl.searchParams.append('height', '60')
+  getMapUrl.searchParams.append('width', '96')
+  getMapUrl.searchParams.append('time', time.toISOString())
+
+  if (layerOptions.value?.aggregationLabel) {
+    getMapUrl.searchParams.append(
+      'aggregation',
+      layerOptions.value.aggregationLabel,
+    )
+  }
+  if (layerOptions.value?.useLastValue) {
+    getMapUrl.searchParams.append('useLastValue', 'true')
+  }
+  if (layerOptions.value?.style) {
+    getMapUrl.searchParams.append('styles', layerOptions.value.style)
+  }
+  if (layerOptions.value?.elevation) {
+    getMapUrl.searchParams.append('elevation', `${layerOptions.value.elevation}`)
+  }
+  if (layerOptions.value?.layerType) {
+    getMapUrl.searchParams.append('layerType', layerOptions.value.layerType)
+  }
+  if (layerOptions.value?.colorScaleRange) {
+    getMapUrl.searchParams.append(
+      'colorScaleRange',
+      `${layerOptions.value.colorScaleRange}`,
+    )
+    getMapUrl.searchParams.append(
+      'useDisplayUnits',
+      layerOptions.value.useDisplayUnits ? 'true' : 'false',
+    )
+  }
+  if (layerOptions.value?.taskRunId) {
+    getMapUrl.searchParams.append('taskRunId', layerOptions.value.taskRunId)
+  }
+
+  return getMapUrl.toString()
+}
+
+function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
+  const sw = toMercator(point(bounds.getSouthWest().toArray()))
+  const ne = toMercator(point(bounds.getNorthEast().toArray()))
+  return [...sw.geometry.coordinates, ...ne.geometry.coordinates]
+}
+
 watch(selectedDate, () => {
   emit('update:currentTime', selectedDate.value)
 })
@@ -559,6 +905,69 @@ watch(selectedDate, () => {
   debouncedSetLayerOptions()
 })
 
+watch(
+  () => selectedDate.value,
+  async () => {
+    if (!showTimeSnapshotFrames.value) return
+
+    await nextTick()
+    updateSnapshotViewportMetrics()
+    centerSnapshotAroundSelectedTime()
+  },
+)
+
+watch(
+  () => showTimeSnapshotFrames.value,
+  async (showPreview) => {
+    if (!showPreview) return
+
+    await nextTick()
+    if (snapshotViewport.value) {
+      snapshotResizeObserver?.disconnect()
+      snapshotResizeObserver?.observe(snapshotViewport.value)
+    }
+    updateSnapshotViewportMetrics()
+    centerSnapshotAroundSelectedTime()
+  },
+)
+
+watch(
+  () => selectedSnapshotIndex.value,
+  async () => {
+    if (!showTimeSnapshotFrames.value) return
+
+    await nextTick()
+    updateSnapshotViewportMetrics()
+    centerSnapshotAroundSelectedTime()
+  },
+)
+
+watch(
+  () => snapshotIntervalIndex.value,
+  async () => {
+    if (!showTimeSnapshotFrames.value) return
+
+    await nextTick()
+    updateSnapshotViewportMetrics()
+    centerSnapshotAroundSelectedTime()
+  },
+)
+
+onMounted(() => {
+  snapshotResizeObserver = new ResizeObserver(() => {
+    updateSnapshotViewportMetrics()
+  })
+
+  if (snapshotViewport.value) {
+    snapshotResizeObserver.observe(snapshotViewport.value)
+  }
+})
+
+onUnmounted(() => {
+  snapshotResizeObserver?.disconnect()
+  snapshotResizeObserver = undefined
+})
+
 function setLayerOptions(): void {
   if (!props.layerName || !selectedDate.value || !props.layerCapabilities) {
     layerOptions.value = undefined
@@ -620,13 +1029,13 @@ function onCoordinateClick(
 
   emit(
     'coordinateClick',
-    +event.lngLat.lat.toFixed(3),
-    +event.lngLat.lng.toFixed(3),
+    +event.lngLat.lat.toFixed(5),
+    +event.lngLat.lng.toFixed(5),
   )
 }
 
 function onCoordinateMoved(lat: number, lng: number): void {
-  emit('coordinateClick', +lat.toFixed(3), +lng.toFixed(3))
+  emit('coordinateClick', +lat.toFixed(5), +lng.toFixed(5))
 }
 </script>
 
@@ -652,6 +1061,110 @@ function onCoordinateMoved(lat: number, lng: number): void {
   backdrop-filter: blur(5px);
   background-color: rgba(var(--v-theme-surface), 0.8);
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.datetime-slider__snapshot-strip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 72px;
+  padding: 6px 6px;
+}
+
+.datetime-slider__snapshot-times-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+}
+
+.datetime-slider__snapshot-times {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.datetime-slider__snapshot-times::-webkit-scrollbar {
+  display: none;
+}
+
+.datetime-slider__snapshot-spacer {
+  height: 1px;
+  flex: 0 0 auto;
+}
+
+.datetime-slider__snapshot-center-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  transform: translateX(-50%);
+  background-color: rgba(var(--v-theme-primary), 0.9);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.datetime-slider__snapshot-frame {
+  position: relative;
+  width: 96px;
+  min-width: 96px;
+  height: 60px;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: rgba(var(--v-theme-surface), 0.9);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.18);
+}
+
+.datetime-slider__snapshot-frame--empty {
+  border-color: rgba(var(--v-theme-on-surface), 0.3);
+}
+
+.datetime-slider__snapshot-frame--selected {
+  border-color: rgba(var(--v-theme-primary), 0.9);
+}
+
+.datetime-slider__snapshot-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.datetime-slider__snapshot-image--empty {
+  opacity: 0.4;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(var(--v-theme-on-surface), 0.3),
+      rgba(var(--v-theme-on-surface), 0.3) 8px,
+      rgba(var(--v-theme-surface), 0.9) 8px,
+      rgba(var(--v-theme-surface), 0.9) 16px
+    );
+}
+
+.datetime-slider__snapshot-label {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  font-size: 10px;
+  color: rgba(var(--v-theme-on-surface), 0.92);
+  background-color: rgba(var(--v-theme-surface), 0.75);
+}
+
+.datetime-slider__snapshot-close {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  z-index: 3;
 }
 
 .mapcomponent__controls-container {

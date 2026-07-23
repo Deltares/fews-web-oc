@@ -38,11 +38,15 @@ interface Props {
   opacity?: number
   sourceId: string
   enableDoubleClick?: boolean
+  showSnapshotFrames?: boolean
+  snapshotTimes?: Date[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
   enableDoubleClick: false,
   opacity: 1,
+  showSnapshotFrames: false,
+  snapshotTimes: () => [],
 })
 const isLoading = defineModel<boolean>('isLoading', { default: false })
 
@@ -51,6 +55,7 @@ const emit = defineEmits(['doubleclick'])
 const { map } = useMap()
 
 const sourceOptions = ref<ImageSourceSpecification>()
+const SNAPSHOT_LAYER_OPACITY_SCALE = 0.2
 
 onMounted(() => {
   isLoading.value = true
@@ -60,6 +65,7 @@ onMounted(() => {
 onUnmounted(() => {
   isLoading.value = false
   removeHooksFromMapObject()
+  clearSnapshotLayers()
 })
 
 watch(
@@ -139,7 +145,9 @@ function removeHooksFromMapObject(): void {
   map?.off('error', onError)
 }
 
-function getImageSourceOptions(): ImageSourceSpecification | undefined {
+function getImageSourceOptions(time = props.layer.time):
+  | ImageSourceSpecification
+  | undefined {
   if (!map) return
 
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -166,8 +174,8 @@ function getImageSourceOptions(): ImageSourceSpecification | undefined {
   // Width and height are in pixels, this can cause the image can be distorted a bit relicative to the bbox coordinates
   getMapUrl.searchParams.append('height', `${height.toFixed(0)}`)
   getMapUrl.searchParams.append('width', `${width.toFixed(0)}`)
-  if (props.layer.time) {
-    getMapUrl.searchParams.append('time', props.layer.time.toISOString())
+  if (time) {
+    getMapUrl.searchParams.append('time', time.toISOString())
   }
   if (props.layer.aggregationLabel) {
     getMapUrl.searchParams.append('aggregation', props.layer.aggregationLabel)
@@ -204,11 +212,86 @@ function getImageSourceOptions(): ImageSourceSpecification | undefined {
   }
 }
 
+function getImageSourceOptionsAtTime(
+  time: Date,
+): ImageSourceSpecification | undefined {
+  return getImageSourceOptions(time)
+}
+
 watch(() => props.layer, debouncedUpdate, { immediate: true })
 async function updateSource() {
   if (!map || map.isMoving()) return
 
   sourceOptions.value = getImageSourceOptions()
+  syncSnapshotLayers()
+}
+
+watch(
+  [() => props.showSnapshotFrames, () => props.snapshotTimes, () => props.opacity],
+  () => {
+    syncSnapshotLayers()
+  },
+  { deep: true },
+)
+
+function getSnapshotSourceId(index: number): string {
+  return `${props.sourceId}-snapshot-${index}`
+}
+
+function getSnapshotLayerId(index: number): string {
+  return `${props.layerId}-snapshot-${index}`
+}
+
+function clearSnapshotLayers(): void {
+  if (!map) return
+
+  for (let index = 0; index < 8; index++) {
+    const layerId = getSnapshotLayerId(index)
+    const sourceId = getSnapshotSourceId(index)
+
+    if (map.getLayer(layerId)) {
+      map.removeLayer(layerId)
+    }
+    if (map.getSource(sourceId)) {
+      map.removeSource(sourceId)
+    }
+  }
+}
+
+function syncSnapshotLayers(): void {
+  if (!map) return
+  clearSnapshotLayers()
+
+  if (!props.showSnapshotFrames) return
+  if (!props.snapshotTimes.length) return
+
+  props.snapshotTimes.forEach((time, index) => {
+    const sourceOptionsForTime = getImageSourceOptionsAtTime(time)
+    if (!sourceOptionsForTime) return
+
+    const sourceId = getSnapshotSourceId(index)
+    const layerId = getSnapshotLayerId(index)
+
+    map.addSource(sourceId, sourceOptionsForTime)
+
+    const maxOpacity = (props.opacity ?? 1) * SNAPSHOT_LAYER_OPACITY_SCALE
+    const opacityStep = maxOpacity / (props.snapshotTimes.length + 1)
+    const opacity = Math.max(maxOpacity - opacityStep * index, 0.05)
+    const beforeLayerId = map.getLayer(props.layerId) ? props.layerId : undefined
+
+    map.addLayer(
+      {
+        type: 'raster',
+        id: layerId,
+        source: sourceId,
+        paint: {
+          'raster-opacity': opacity,
+          'raster-fade-duration': 0,
+        },
+      },
+      beforeLayerId,
+    )
+  })
 }
 
 const { source } = useSource(props.sourceId, sourceOptions)
