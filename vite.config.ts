@@ -96,6 +96,10 @@ export default defineConfig(({ mode }) => {
           __dirname,
           'node_modules/vuetify/lib/components/VTimePicker/index.js',
         ),
+        'vuetify/labs/VStepperVertical': resolve(
+          __dirname,
+          'node_modules/vuetify/lib/components/VStepperVertical/index.js',
+        ),
       },
     },
     plugins: [

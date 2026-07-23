@@ -150,7 +150,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useDisplay } from 'vuetify'
-import { VDateInput } from 'vuetify/labs/components'
 import LogItem from './LogItem.vue'
 import DateSeparator from './DateSeparator.vue'
 import {
