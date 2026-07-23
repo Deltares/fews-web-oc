@@ -666,7 +666,7 @@ onUnmounted(() => {
   bottom: 0;
   width: 2px;
   transform: translateX(-50%);
-  background-color: rgba(var(--v-theme-primary), 0.9);
+  background-color: rgba(var(--v-theme-secondary), 0.9);
   pointer-events: none;
   z-index: 2;
 }
@@ -687,7 +687,7 @@ onUnmounted(() => {
 }
 
 .datetime-slider__snapshot-frame--selected {
-  border-color: rgba(var(--v-theme-primary), 0.9);
+  border-color: rgba(var(--v-theme-secondary), 0.9);
 }
 
 .datetime-slider__snapshot-image {
