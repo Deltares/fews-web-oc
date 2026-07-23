@@ -188,15 +188,21 @@
                   'datetime-slider__snapshot-frame--empty': !frame.hasImage,
                 }"
               >
-                <img
-                  v-if="frame.hasImage"
-                  class="datetime-slider__snapshot-image"
-                  :src="frame.url"
-                  :alt="`Snapshot at ${formatSnapshotTime(frame.time)}`"
-                  loading="lazy"
-                />
+                <template v-if="frame.hasImage">
+                  <img
+                    class="datetime-slider__snapshot-image"
+                    :src="frame.url"
+                    :alt="`Snapshot at ${formatSnapshotTime(frame.time)}`"
+                    loading="lazy"
+                  />
+                  <div
+                    v-if="frame.hasTimeMismatch"
+                    class="datetime-slider__snapshot-image-mismatch-overlay"
+                    aria-hidden="true"
+                  ></div>
+                </template>
                 <div
-                  v-else
+                  v-if="!frame.hasImage"
                   class="datetime-slider__snapshot-image datetime-slider__snapshot-image--empty"
                   aria-hidden="true"
                 ></div>
@@ -444,7 +450,7 @@ const snapshotTimelineTimes = computed(() => {
     rangeStart,
     snapshotIntervalMs.value,
   )
-  const alignedEnd = getAlignedTimeOnOrAfter(rangeEnd, snapshotIntervalMs.value)
+  const alignedEnd = getAlignedTimeOnOrBefore(rangeEnd, snapshotIntervalMs.value)
   const timeline: Date[] = []
 
   for (
@@ -518,21 +524,34 @@ const snapshotFrames = computed(() => {
   if (!layerOptions.value?.bbox) return []
 
   const snapshotBbox = getMercatorBboxFromBounds(layerOptions.value.bbox)
+  const availableTimes = props.times ?? []
   const availableStartTime = props.times?.[0]
   const availableEndTime = props.times?.at(-1)
+  const availableTimeMsSet = new Set(availableTimes.map((time) => time.getTime()))
 
   return snapshotTimelineTimes.value.map((time, timelineIndex) => {
-    const hasImage =
+    const isInAvailableRange =
       availableStartTime !== undefined &&
       availableEndTime !== undefined &&
       time.getTime() >= availableStartTime.getTime() &&
       time.getTime() <= availableEndTime.getTime()
 
+    const isLeadingFallbackFrame =
+      timelineIndex === 0 &&
+      availableStartTime !== undefined &&
+      time.getTime() < availableStartTime.getTime()
+
+    const hasImage = isInAvailableRange || isLeadingFallbackFrame
+    const requestTime = isLeadingFallbackFrame ? availableStartTime : time
+    const hasTimeMismatch =
+      hasImage && !availableTimeMsSet.has(time.getTime())
+
     return {
       index: timelineIndex,
       time,
       hasImage,
-      url: hasImage ? buildSnapshotGetMapUrl(time, snapshotBbox) : '',
+      hasTimeMismatch,
+      url: hasImage ? buildSnapshotGetMapUrl(requestTime, snapshotBbox) : '',
     }
   })
 })
@@ -646,13 +665,6 @@ function getAlignedTimeOnOrBefore(date: Date, intervalMs: number): Date {
   const dayStartMs = new Date(date).setHours(0, 0, 0, 0)
   const elapsedMs = date.getTime() - dayStartMs
   const steps = Math.floor(elapsedMs / intervalMs)
-  return new Date(dayStartMs + steps * intervalMs)
-}
-
-function getAlignedTimeOnOrAfter(date: Date, intervalMs: number): Date {
-  const dayStartMs = new Date(date).setHours(0, 0, 0, 0)
-  const elapsedMs = date.getTime() - dayStartMs
-  const steps = Math.ceil(elapsedMs / intervalMs)
   return new Date(dayStartMs + steps * intervalMs)
 }
 
@@ -1224,15 +1236,18 @@ function onCoordinateMoved(lat: number, lng: number): void {
   display: block;
 }
 
-.datetime-slider__snapshot-image--empty {
+.datetime-slider__snapshot-image-mismatch-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   opacity: 0.4;
   background:
     repeating-linear-gradient(
       45deg,
       rgba(var(--v-theme-on-surface), 0.3),
       rgba(var(--v-theme-on-surface), 0.3) 8px,
-      rgba(var(--v-theme-surface), 0.9) 8px,
-      rgba(var(--v-theme-surface), 0.9) 16px
+      rgba(var(--v-theme-surface), 0.15) 8px,
+      rgba(var(--v-theme-surface), 0.15) 16px
     );
 }
 
