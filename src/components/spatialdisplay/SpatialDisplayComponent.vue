@@ -386,6 +386,7 @@ const snapshotViewport = ref<HTMLElement>()
 const snapshotScrollLeft = ref(0)
 const snapshotViewportWidth = ref(0)
 const snapshotIntervalIndex = ref(0)
+const animateNextSnapshotCentering = ref(false)
 let snapshotResizeObserver: ResizeObserver | undefined
 
 const SNAPSHOT_FRAME_WIDTH = 96
@@ -659,6 +660,7 @@ function onSnapshotStripClick(event: MouseEvent): void {
   const closestSliderTime = getClosestTime(clickedTime, availableTimes)
   if (!closestSliderTime) return
 
+  animateNextSnapshotCentering.value = true
   selectedDateOfSlider.value = closestSliderTime
 }
 
@@ -693,7 +695,7 @@ function updateSnapshotViewportMetrics(): void {
   snapshotScrollLeft.value = snapshotViewport.value.scrollLeft
 }
 
-function centerSnapshotAroundSelectedTime(): void {
+function centerSnapshotAroundSelectedTime(animate = false): void {
   if (!snapshotViewport.value) return
   if (!snapshotTimelineTimes.value.length || !selectedDate.value) return
 
@@ -711,6 +713,15 @@ function centerSnapshotAroundSelectedTime(): void {
     0,
   )
   const nextScrollLeft = Math.min(desiredScrollLeft, maxScrollLeft)
+
+  if (animate) {
+    snapshotViewport.value.scrollTo({
+      left: nextScrollLeft,
+      behavior: 'smooth',
+    })
+    snapshotScrollLeft.value = nextScrollLeft
+    return
+  }
 
   snapshotViewport.value.scrollLeft = nextScrollLeft
   snapshotScrollLeft.value = snapshotViewport.value.scrollLeft
@@ -1031,7 +1042,9 @@ watch(
 
     await nextTick()
     updateSnapshotViewportMetrics()
-    centerSnapshotAroundSelectedTime()
+    const animate = animateNextSnapshotCentering.value
+    animateNextSnapshotCentering.value = false
+    centerSnapshotAroundSelectedTime(animate)
   },
 )
 
@@ -1045,17 +1058,6 @@ watch(
       snapshotResizeObserver?.disconnect()
       snapshotResizeObserver?.observe(snapshotViewport.value)
     }
-    updateSnapshotViewportMetrics()
-    centerSnapshotAroundSelectedTime()
-  },
-)
-
-watch(
-  () => selectedSnapshotIndex.value,
-  async () => {
-    if (!showTimeSnapshotFrames.value) return
-
-    await nextTick()
     updateSnapshotViewportMetrics()
     centerSnapshotAroundSelectedTime()
   },
