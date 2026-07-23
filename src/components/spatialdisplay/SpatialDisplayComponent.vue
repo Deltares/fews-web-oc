@@ -170,9 +170,14 @@
             <div
               ref="snapshotViewport"
               class="datetime-slider__snapshot-times"
+              :class="{ 'is-dragging': snapshotIsDragging }"
               @scroll="onSnapshotScroll"
               @wheel="onSnapshotWheel"
               @click="onSnapshotStripClick"
+              @pointerdown="onSnapshotPointerDown"
+              @pointermove="onSnapshotPointerMove"
+              @pointerup="onSnapshotPointerUp"
+              @pointercancel="onSnapshotPointerUp"
             >
               <div
                 class="datetime-slider__snapshot-spacer"
@@ -194,6 +199,7 @@
                     :src="frame.url"
                     :alt="`Snapshot at ${formatSnapshotTime(frame.time)}`"
                     loading="lazy"
+                    draggable="false"
                   />
                   <div
                     v-if="frame.hasTimeMismatch"
@@ -216,7 +222,8 @@
                   <span
                     v-if="frame.isDayTransition && frame.time.getHours() !== 0"
                     class="datetime-slider__snapshot-label-date"
-                  >{{ formatSnapshotDay(frame.time) }}</span>
+                    >{{ formatSnapshotDay(frame.time) }}</span
+                  >
                   <span>{{ formatSnapshotChip(frame.time) }}</span>
                 </span>
               </div>
@@ -397,6 +404,11 @@ const snapshotScrollLeft = ref(0)
 const snapshotViewportWidth = ref(0)
 const snapshotIntervalIndex = ref(0)
 const animateNextSnapshotCentering = ref(false)
+const snapshotIsDragging = ref(false)
+let snapshotDragStartClientX = 0
+let snapshotDragStartScrollLeft = 0
+let snapshotDragDistance = 0
+const SNAPSHOT_DRAG_CLICK_THRESHOLD_PX = 4
 let snapshotResizeObserver: ResizeObserver | undefined
 
 const SNAPSHOT_FRAME_WIDTH = 96
@@ -404,7 +416,9 @@ const SNAPSHOT_FRAME_GAP = 0
 const SNAPSHOT_FRAME_STRIDE = SNAPSHOT_FRAME_WIDTH + SNAPSHOT_FRAME_GAP
 const SNAPSHOT_OVERSCAN = 6
 const MS_PER_MINUTE = 60 * 1000
-const SNAPSHOT_INTERVAL_MINUTES_OPTIONS = [1, 2, 5, 10, 15, 30, 60, 120, 180, 360, 720, 1440]
+const SNAPSHOT_INTERVAL_MINUTES_OPTIONS = [
+  1, 2, 5, 10, 15, 30, 60, 120, 180, 360, 720, 1440,
+]
 
 const layerTimeStepMs = computed(() => {
   const times = props.times
@@ -432,9 +446,9 @@ const layerTimeStepMs = computed(() => {
 })
 
 const snapshotIntervalOptionsMs = computed(() => {
-  const optionsMs = SNAPSHOT_INTERVAL_MINUTES_OPTIONS
-    .map((minutes) => minutes * MS_PER_MINUTE)
-    .filter((intervalMs) => intervalMs >= layerTimeStepMs.value)
+  const optionsMs = SNAPSHOT_INTERVAL_MINUTES_OPTIONS.map(
+    (minutes) => minutes * MS_PER_MINUTE,
+  ).filter((intervalMs) => intervalMs >= layerTimeStepMs.value)
 
   if (optionsMs.length === 0) {
     return [layerTimeStepMs.value]
@@ -468,7 +482,11 @@ const snapshotTimelineTimes = computed(() => {
     snapshotIntervalMs.value,
     originMs,
   )
-  const alignedEnd = getAlignedTimeOnOrBefore(rangeEnd, snapshotIntervalMs.value, originMs)
+  const alignedEnd = getAlignedTimeOnOrBefore(
+    rangeEnd,
+    snapshotIntervalMs.value,
+    originMs,
+  )
   const timeline: Date[] = []
 
   for (
@@ -545,7 +563,9 @@ const snapshotFrames = computed(() => {
   const availableTimes = props.times ?? []
   const availableStartTime = props.times?.[0]
   const availableEndTime = props.times?.at(-1)
-  const availableTimeMsSet = new Set(availableTimes.map((time) => time.getTime()))
+  const availableTimeMsSet = new Set(
+    availableTimes.map((time) => time.getTime()),
+  )
 
   return snapshotTimelineTimes.value.map((time, timelineIndex) => {
     const prevTime =
@@ -571,8 +591,7 @@ const snapshotFrames = computed(() => {
 
     const hasImage = isInAvailableRange || isLeadingFallbackFrame
     const requestTime = isLeadingFallbackFrame ? availableStartTime : time
-    const hasTimeMismatch =
-      hasImage && !availableTimeMsSet.has(time.getTime())
+    const hasTimeMismatch = hasImage && !availableTimeMsSet.has(time.getTime())
 
     return {
       index: timelineIndex,
@@ -589,7 +608,8 @@ const allSnapshotFramesFitInViewport = computed(() => {
   if (!showTimeSnapshotFrames.value) return false
   if (snapshotViewportWidth.value <= 0) return false
 
-  const totalFramesWidth = snapshotTimelineTimes.value.length * SNAPSHOT_FRAME_STRIDE
+  const totalFramesWidth =
+    snapshotTimelineTimes.value.length * SNAPSHOT_FRAME_STRIDE
   return totalFramesWidth <= snapshotViewportWidth.value
 })
 
@@ -671,6 +691,7 @@ watch(snapshotIntervalOptionsMs, (options) => {
 })
 
 function onSnapshotStripClick(event: MouseEvent): void {
+  if (snapshotDragDistance > SNAPSHOT_DRAG_CLICK_THRESHOLD_PX) return
   const viewport = snapshotViewport.value
   const timelineTimes = snapshotTimelineTimes.value
   const availableTimes = props.times
@@ -678,7 +699,10 @@ function onSnapshotStripClick(event: MouseEvent): void {
 
   const viewportRect = viewport.getBoundingClientRect()
   const clickOffsetPx =
-    event.clientX - viewportRect.left + viewport.scrollLeft - snapshotEdgePadding.value
+    event.clientX -
+    viewportRect.left +
+    viewport.scrollLeft -
+    snapshotEdgePadding.value
   const timelineIndex = clamp(
     Math.floor(clickOffsetPx / SNAPSHOT_FRAME_STRIDE),
     0,
@@ -689,6 +713,55 @@ function onSnapshotStripClick(event: MouseEvent): void {
   if (!closestSliderTime) return
 
   animateNextSnapshotCentering.value = true
+  selectedDateOfSlider.value = closestSliderTime
+}
+
+function onSnapshotPointerDown(event: PointerEvent): void {
+  if (event.button !== 0) return
+  const viewport = snapshotViewport.value
+  if (!viewport) return
+
+  snapshotIsDragging.value = true
+  snapshotDragStartClientX = event.clientX
+  snapshotDragStartScrollLeft = viewport.scrollLeft
+  snapshotDragDistance = 0
+  viewport.setPointerCapture(event.pointerId)
+}
+
+function onSnapshotPointerMove(event: PointerEvent): void {
+  if (!snapshotIsDragging.value) return
+  const viewport = snapshotViewport.value
+  if (!viewport) return
+
+  const delta = snapshotDragStartClientX - event.clientX
+  snapshotDragDistance = Math.abs(delta)
+  viewport.scrollLeft = snapshotDragStartScrollLeft + delta
+}
+
+function onSnapshotPointerUp(event: PointerEvent): void {
+  if (!snapshotIsDragging.value) return
+  snapshotIsDragging.value = false
+  snapshotViewport.value?.releasePointerCapture(event.pointerId)
+
+  if (snapshotDragDistance <= SNAPSHOT_DRAG_CLICK_THRESHOLD_PX) return
+
+  const viewport = snapshotViewport.value
+  const timelineTimes = snapshotTimelineTimes.value
+  const availableTimes = props.times
+  if (!viewport || !timelineTimes.length || !availableTimes?.length) return
+
+  // The center line sits at scrollLeft + viewportWidth/2, and the edge padding
+  // equals viewportWidth/2, so the frame index under the center line is simply
+  // scrollLeft / SNAPSHOT_FRAME_STRIDE.
+  const timelineIndex = clamp(
+    Math.floor(viewport.scrollLeft / SNAPSHOT_FRAME_STRIDE),
+    0,
+    timelineTimes.length - 1,
+  )
+  const centeredTime = timelineTimes[timelineIndex]
+  const closestSliderTime = getClosestTime(centeredTime, availableTimes)
+  if (!closestSliderTime) return
+
   selectedDateOfSlider.value = closestSliderTime
 }
 
@@ -710,7 +783,11 @@ function getClosestTime(targetTime: Date, times: Date[]): Date | undefined {
   return closestTime
 }
 
-function getAlignedTimeOnOrBefore(date: Date, intervalMs: number, originMs?: number): Date {
+function getAlignedTimeOnOrBefore(
+  date: Date,
+  intervalMs: number,
+  originMs?: number,
+): Date {
   const refMs = originMs ?? new Date(date).setHours(0, 0, 0, 0)
   const elapsedMs = date.getTime() - refMs
   const steps = Math.floor(elapsedMs / intervalMs)
@@ -780,7 +857,10 @@ function buildSnapshotGetMapUrl(time: Date, bbox: number[]): string {
     getMapUrl.searchParams.append('styles', layerOptions.value.style)
   }
   if (layerOptions.value?.elevation) {
-    getMapUrl.searchParams.append('elevation', `${layerOptions.value.elevation}`)
+    getMapUrl.searchParams.append(
+      'elevation',
+      `${layerOptions.value.elevation}`,
+    )
   }
   if (layerOptions.value?.layerType) {
     getMapUrl.searchParams.append('layerType', layerOptions.value.layerType)
@@ -903,8 +983,16 @@ watch(
       return
     }
 
-    currentColourScaleIds.value = styles.map(styleToId)
-
+    const nextScaleIds = styles.map(styleToId)
+    const hasStyleChanges =
+      nextScaleIds.length !== currentColourScaleIds.value.length ||
+      nextScaleIds.some(
+        (id, index) => id !== currentColourScaleIds.value[index],
+      )
+    if (!hasStyleChanges) {
+      return
+    }
+    currentColourScaleIds.value = nextScaleIds
     addScalesForStyles(styles)
   },
   { immediate: true },
@@ -1236,6 +1324,12 @@ function onCoordinateMoved(lat: number, lng: number): void {
   white-space: nowrap;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.datetime-slider__snapshot-times.is-dragging {
+  cursor: grabbing;
 }
 
 .datetime-slider__snapshot-times::-webkit-scrollbar {
@@ -1290,14 +1384,13 @@ function onCoordinateMoved(lat: number, lng: number): void {
   inset: 0;
   pointer-events: none;
   opacity: 0.4;
-  background:
-    repeating-linear-gradient(
-      45deg,
-      rgba(var(--v-theme-on-surface), 0.3),
-      rgba(var(--v-theme-on-surface), 0.3) 8px,
-      rgba(var(--v-theme-surface), 0.15) 8px,
-      rgba(var(--v-theme-surface), 0.15) 16px
-    );
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(var(--v-theme-on-surface), 0.3),
+    rgba(var(--v-theme-on-surface), 0.3) 8px,
+    rgba(var(--v-theme-surface), 0.15) 8px,
+    rgba(var(--v-theme-surface), 0.15) 16px
+  );
 }
 
 .datetime-slider__snapshot-label {
