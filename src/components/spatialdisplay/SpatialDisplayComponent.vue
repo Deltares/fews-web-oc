@@ -171,7 +171,7 @@
               ref="snapshotViewport"
               class="datetime-slider__snapshot-times"
               @scroll="onSnapshotScroll"
-              @wheel.prevent="onSnapshotWheel"
+              @wheel="onSnapshotWheel"
               @click="onSnapshotStripClick"
             >
               <div
@@ -636,7 +636,8 @@ function onSnapshotScroll(): void {
 
 function onSnapshotWheel(event: WheelEvent): void {
   if (!showTimeSnapshotFrames.value) return
-  if (event.deltaY === 0) return
+  if (!event.shiftKey || event.deltaY === 0) return
+  event.preventDefault()
 
   // If all frames are already visible, do not allow further zooming out.
   if (event.deltaY > 0 && allSnapshotFramesFitInViewport.value) {
