@@ -74,7 +74,7 @@
       variant="text"
       density="compact"
       icon="mdi-close"
-      aria-label="Close snapshots"
+      aria-label="Close snapshots"
       @click.stop="emit('close')"
     />
   </div>
