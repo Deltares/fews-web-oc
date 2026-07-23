@@ -9,8 +9,6 @@
       v-if="layerKind === LayerKind.Static && showLayer && layerOptions"
       v-model:isLoading="isLoading"
       :layer="layerOptions"
-      :showSnapshotFrames="showTimeSnapshotFrames"
-      :snapshotTimes="snapshotTimes"
       :key="`layer-${layerOptions.name}`"
       :layerId="mapIds.wms.layer"
       :sourceId="mapIds.wms.source"
@@ -305,7 +303,6 @@ import { clamp } from '@/lib/utils/math'
 import { useAggregations } from '@/services/useAggregations'
 import { provideLayerOrder } from '@/services/useLayerOrder'
 import { useOverlays } from '@/services/useOverlays'
-import { findDateIndex } from '@/lib/utils/dates'
 import { toMercator } from '@turf/projection'
 import { point } from '@turf/helpers'
 
@@ -389,19 +386,6 @@ const SNAPSHOT_FRAME_GAP = 0
 const SNAPSHOT_FRAME_STRIDE = SNAPSHOT_FRAME_WIDTH + SNAPSHOT_FRAME_GAP
 const SNAPSHOT_OVERSCAN = 6
 const MS_PER_HOUR = 60 * 60 * 1000
-
-const SNAPSHOT_OFFSETS = [-2, -1, 1, 2]
-const snapshotTimes = computed(() => {
-  const times = props.times
-  if (!showTimeSnapshotFrames.value) return []
-  if (!times?.length || !selectedDate.value) return []
-
-  const selectedIndex = findDateIndex(times, selectedDate.value)
-  const inRangeIndexes = SNAPSHOT_OFFSETS.map((offset) => selectedIndex + offset)
-    .filter((index) => index >= 0 && index < times.length)
-
-  return inRangeIndexes.map((index) => times[index])
-})
 
 const snapshotIntervalMs = computed(
   () => snapshotIntervalHoursOptions[snapshotIntervalIndex.value] * MS_PER_HOUR,
