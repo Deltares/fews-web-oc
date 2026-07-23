@@ -5,6 +5,7 @@
         v-model="dateIndex"
         :marks="marks"
         :hide-label="hideLabel"
+        :duration="0"
         step="1"
         :tooltipFormatter="dateString"
         silent

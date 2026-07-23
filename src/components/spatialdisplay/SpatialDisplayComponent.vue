@@ -172,6 +172,7 @@
               class="datetime-slider__snapshot-times"
               @scroll="onSnapshotScroll"
               @wheel.prevent="onSnapshotWheel"
+              @click="onSnapshotStripClick"
             >
               <div
                 class="datetime-slider__snapshot-spacer"
@@ -534,6 +535,45 @@ function onSnapshotWheel(event: WheelEvent): void {
   } else {
     snapshotIntervalIndex.value = Math.max(snapshotIntervalIndex.value - 1, 0)
   }
+}
+
+function onSnapshotStripClick(event: MouseEvent): void {
+  const viewport = snapshotViewport.value
+  const timelineTimes = snapshotTimelineTimes.value
+  const availableTimes = props.times
+  if (!viewport || !timelineTimes.length || !availableTimes?.length) return
+
+  const viewportRect = viewport.getBoundingClientRect()
+  const clickOffsetPx =
+    event.clientX - viewportRect.left + viewport.scrollLeft - snapshotEdgePadding.value
+  const timelineIndex = clamp(
+    Math.floor(clickOffsetPx / SNAPSHOT_FRAME_STRIDE),
+    0,
+    timelineTimes.length - 1,
+  )
+  const clickedTime = timelineTimes[timelineIndex]
+  const closestSliderTime = getClosestTime(clickedTime, availableTimes)
+  if (!closestSliderTime) return
+
+  selectedDateOfSlider.value = closestSliderTime
+}
+
+function getClosestTime(targetTime: Date, times: Date[]): Date | undefined {
+  if (!times.length) return undefined
+
+  let closestTime = times[0]
+  let smallestDistance = Math.abs(closestTime.getTime() - targetTime.getTime())
+
+  for (let index = 1; index < times.length; index += 1) {
+    const candidateTime = times[index]
+    const distance = Math.abs(candidateTime.getTime() - targetTime.getTime())
+    if (distance < smallestDistance) {
+      smallestDistance = distance
+      closestTime = candidateTime
+    }
+  }
+
+  return closestTime
 }
 
 function getAlignedTimeOnOrBefore(date: Date, intervalMs: number): Date {
