@@ -713,6 +713,7 @@ function onSnapshotStripClick(event: MouseEvent): void {
   if (!closestSliderTime) return
 
   animateNextSnapshotCentering.value = true
+  doFollowNow.value = false
   selectedDateOfSlider.value = closestSliderTime
 }
 
@@ -762,6 +763,7 @@ function onSnapshotPointerUp(event: PointerEvent): void {
   const closestSliderTime = getClosestTime(centeredTime, availableTimes)
   if (!closestSliderTime) return
 
+  doFollowNow.value = false
   selectedDateOfSlider.value = closestSliderTime
 }
 
