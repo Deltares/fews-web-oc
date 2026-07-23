@@ -378,7 +378,6 @@ const showTimeSnapshotFrames = ref(false)
 const snapshotViewport = ref<HTMLElement>()
 const snapshotScrollLeft = ref(0)
 const snapshotViewportWidth = ref(0)
-const snapshotIntervalHoursOptions = [1, 2, 3, 6, 12, 24]
 const snapshotIntervalIndex = ref(0)
 let snapshotResizeObserver: ResizeObserver | undefined
 
@@ -386,10 +385,50 @@ const SNAPSHOT_FRAME_WIDTH = 96
 const SNAPSHOT_FRAME_GAP = 0
 const SNAPSHOT_FRAME_STRIDE = SNAPSHOT_FRAME_WIDTH + SNAPSHOT_FRAME_GAP
 const SNAPSHOT_OVERSCAN = 6
-const MS_PER_HOUR = 60 * 60 * 1000
+const MS_PER_MINUTE = 60 * 1000
+const SNAPSHOT_INTERVAL_MINUTES_OPTIONS = [1, 2, 5, 10, 15, 30, 60, 120, 180, 360, 720, 1440]
+
+const layerTimeStepMs = computed(() => {
+  const times = props.times
+  if (!times || times.length < 2) {
+    return SNAPSHOT_INTERVAL_MINUTES_OPTIONS[0] * MS_PER_MINUTE
+  }
+
+  const sortedTimes = times
+    .map((time) => time.getTime())
+    .sort((left, right) => left - right)
+
+  let smallestStepMs = Number.POSITIVE_INFINITY
+  for (let index = 1; index < sortedTimes.length; index += 1) {
+    const stepMs = sortedTimes[index] - sortedTimes[index - 1]
+    if (stepMs > 0 && stepMs < smallestStepMs) {
+      smallestStepMs = stepMs
+    }
+  }
+
+  if (!Number.isFinite(smallestStepMs)) {
+    return SNAPSHOT_INTERVAL_MINUTES_OPTIONS[0] * MS_PER_MINUTE
+  }
+
+  return smallestStepMs
+})
+
+const snapshotIntervalOptionsMs = computed(() => {
+  const optionsMs = SNAPSHOT_INTERVAL_MINUTES_OPTIONS
+    .map((minutes) => minutes * MS_PER_MINUTE)
+    .filter((intervalMs) => intervalMs >= layerTimeStepMs.value)
+
+  if (optionsMs.length === 0) {
+    return [layerTimeStepMs.value]
+  }
+
+  return optionsMs
+})
 
 const snapshotIntervalMs = computed(
-  () => snapshotIntervalHoursOptions[snapshotIntervalIndex.value] * MS_PER_HOUR,
+  () =>
+    snapshotIntervalOptionsMs.value[snapshotIntervalIndex.value] ??
+    snapshotIntervalOptionsMs.value[0],
 )
 
 const snapshotTimelineTimes = computed(() => {
@@ -498,6 +537,14 @@ const snapshotFrames = computed(() => {
   })
 })
 
+const allSnapshotFramesFitInViewport = computed(() => {
+  if (!showTimeSnapshotFrames.value) return false
+  if (snapshotViewportWidth.value <= 0) return false
+
+  const totalFramesWidth = snapshotTimelineTimes.value.length * SNAPSHOT_FRAME_STRIDE
+  return totalFramesWidth <= snapshotViewportWidth.value
+})
+
 const visibleSnapshotFrames = computed(() =>
   snapshotFrames.value.slice(
     visibleSnapshotRange.value.start,
@@ -525,15 +572,36 @@ function onSnapshotWheel(event: WheelEvent): void {
   if (!showTimeSnapshotFrames.value) return
   if (event.deltaY === 0) return
 
+  // If all frames are already visible, do not allow further zooming out.
+  if (event.deltaY > 0 && allSnapshotFramesFitInViewport.value) {
+    return
+  }
+
+  const maxIntervalIndex = snapshotIntervalOptionsMs.value.length - 1
+
   if (event.deltaY > 0) {
     snapshotIntervalIndex.value = Math.min(
       snapshotIntervalIndex.value + 1,
-      snapshotIntervalHoursOptions.length - 1,
+      maxIntervalIndex,
     )
   } else {
     snapshotIntervalIndex.value = Math.max(snapshotIntervalIndex.value - 1, 0)
   }
 }
+
+watch(snapshotIntervalOptionsMs, (options) => {
+  if (options.length === 0) {
+    snapshotIntervalIndex.value = 0
+    return
+  }
+
+  const currentInterval = options[snapshotIntervalIndex.value]
+  if (currentInterval !== undefined) {
+    return
+  }
+
+  snapshotIntervalIndex.value = options.length - 1
+})
 
 function onSnapshotStripClick(event: MouseEvent): void {
   const viewport = snapshotViewport.value
