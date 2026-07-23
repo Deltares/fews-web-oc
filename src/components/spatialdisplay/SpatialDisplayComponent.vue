@@ -147,6 +147,7 @@
       :max-value="maxElevation"
       :ticks="elevationTicks"
       :unit="elevationUnit"
+      :style="{ bottom: elevationSliderBottom }"
     />
     <DateTimeSlider
       v-if="showDateTimeSlider"
@@ -519,7 +520,12 @@ function getDefaultLayerKind() {
 }
 
 const offsetBottomControls = computed(() => {
-  return showDateTimeSlider.value && props.times?.length ? '60px' : '0px'
+  if (!showDateTimeSlider.value || !props.times?.length) return '0px'
+  return showTimeSnapshotFrames.value ? '130px' : '60px'
+})
+
+const elevationSliderBottom = computed(() => {
+  return showTimeSnapshotFrames.value ? '185px' : '115px'
 })
 
 const layerHasElevation = computed(() => {
