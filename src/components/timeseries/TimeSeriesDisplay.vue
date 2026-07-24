@@ -11,6 +11,7 @@
         location="bottom"
         z-index="10000"
         max-height="400"
+        :close-on-content-click="false"
       >
         <template #activator="{ props }">
           <v-btn
