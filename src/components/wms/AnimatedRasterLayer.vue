@@ -139,7 +139,9 @@ function removeHooksFromMapObject(): void {
   map?.off('error', onError)
 }
 
-function getImageSourceOptions(): ImageSourceSpecification | undefined {
+function getImageSourceOptions(
+  time = props.layer.time,
+): ImageSourceSpecification | undefined {
   if (!map) return
 
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -166,8 +168,8 @@ function getImageSourceOptions(): ImageSourceSpecification | undefined {
   // Width and height are in pixels, this can cause the image can be distorted a bit relicative to the bbox coordinates
   getMapUrl.searchParams.append('height', `${height.toFixed(0)}`)
   getMapUrl.searchParams.append('width', `${width.toFixed(0)}`)
-  if (props.layer.time) {
-    getMapUrl.searchParams.append('time', props.layer.time.toISOString())
+  if (time) {
+    getMapUrl.searchParams.append('time', time.toISOString())
   }
   if (props.layer.aggregationLabel) {
     getMapUrl.searchParams.append('aggregation', props.layer.aggregationLabel)

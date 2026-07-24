@@ -147,6 +147,7 @@
       :max-value="maxElevation"
       :ticks="elevationTicks"
       :unit="elevationUnit"
+      :style="{ bottom: elevationSliderBottom }"
     />
     <DateTimeSlider
       v-if="showDateTimeSlider"
@@ -154,12 +155,23 @@
       :dates="times ?? []"
       :now="timesDefault"
       v-model:doFollowNow="doFollowNow"
+      v-model:showSnapshotFrames="showTimeSnapshotFrames"
       class="spatial-display__slider"
       :hide-speed-controls="mobile"
       :isLoading="isLoading"
     >
       <template #below-track>
+        <SnapshotStrip
+          v-if="showTimeSnapshotFrames"
+          :times="times"
+          :selected-date="selectedDate"
+          :bounding-box="boundingBox"
+          :layer-options="layerOptions"
+          @update:selected-date="onSnapshotSelectTime"
+          @close="showTimeSnapshotFrames = false"
+        />
         <DateTimeSliderValues
+          v-else
           :values="maxValuesTimeSeries"
           :colour-scale="currentColourScale ?? null"
           height="6px"
@@ -235,6 +247,7 @@ import { clamp } from '@/lib/utils/math'
 import { useAggregations } from '@/services/useAggregations'
 import { provideLayerOrder } from '@/services/useLayerOrder'
 import { useOverlays } from '@/services/useOverlays'
+import SnapshotStrip from '@/components/spatialdisplay/SnapshotStrip.vue'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -303,6 +316,13 @@ const locationToChildrenMap = computed(() =>
 const selectedDateOfSlider = ref<Date>()
 const { selectedDate, dateTimeSliderEnabled } =
   useSelectedDate(selectedDateOfSlider)
+const showTimeSnapshotFrames = ref(false)
+
+function onSnapshotSelectTime(date: Date): void {
+  doFollowNow.value = false
+  selectedDateOfSlider.value = date
+}
+
 watch(selectedDate, () => {
   emit('update:currentTime', selectedDate.value)
 })
@@ -320,7 +340,6 @@ watch(
   (times) => {
     if (!times || times.length === 0) {
       selectedDateOfSlider.value = undefined
-      return
     }
   },
 )
@@ -399,8 +418,16 @@ watch(
       return
     }
 
-    currentColourScaleIds.value = styles.map(styleToId)
-
+    const nextScaleIds = styles.map(styleToId)
+    const hasStyleChanges =
+      nextScaleIds.length !== currentColourScaleIds.value.length ||
+      nextScaleIds.some(
+        (id, index) => id !== currentColourScaleIds.value[index],
+      )
+    if (!hasStyleChanges) {
+      return
+    }
+    currentColourScaleIds.value = nextScaleIds
     addScalesForStyles(styles)
   },
   { immediate: true },
@@ -494,7 +521,12 @@ function getDefaultLayerKind() {
 }
 
 const offsetBottomControls = computed(() => {
-  return showDateTimeSlider.value && props.times?.length ? '60px' : '0px'
+  if (!showDateTimeSlider.value || !props.times?.length) return '0px'
+  return showTimeSnapshotFrames.value ? '130px' : '60px'
+})
+
+const elevationSliderBottom = computed(() => {
+  return showTimeSnapshotFrames.value ? '185px' : '115px'
 })
 
 const layerHasElevation = computed(() => {
@@ -620,13 +652,13 @@ function onCoordinateClick(
 
   emit(
     'coordinateClick',
-    +event.lngLat.lat.toFixed(3),
-    +event.lngLat.lng.toFixed(3),
+    +event.lngLat.lat.toFixed(5),
+    +event.lngLat.lng.toFixed(5),
   )
 }
 
 function onCoordinateMoved(lat: number, lng: number): void {
-  emit('coordinateClick', +lat.toFixed(3), +lng.toFixed(3))
+  emit('coordinateClick', +lat.toFixed(5), +lng.toFixed(5))
 }
 </script>
 
