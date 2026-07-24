@@ -15,7 +15,7 @@
         </v-btn>
         <div id="app-bar-content-start" />
       </template>
-      <div class="h-100" id="app-bar-content-center"></div>
+      <div class="align-items-center" id="app-bar-content-center"></div>
       <template #append>
         <div id="app-bar-content-end" />
         <TimeControlMenu />

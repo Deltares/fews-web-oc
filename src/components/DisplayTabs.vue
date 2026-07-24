@@ -1,17 +1,22 @@
 <template>
-  <v-toolbar-items v-if="displayTabs.length > 1">
+  <div
+    v-if="displayTabs.length > 1"
+    class="overflow-visible d-flex position-relative"
+  >
+    <div class="icon-group__underlay"></div>
     <v-btn
       variant="text"
+      size="small"
       v-for="tab in displayTabs"
       :key="tab.id"
       :value="tab.type"
       :href="tab.href"
       :target="tab.target"
       :to="tab.to"
+      :icon="tab.icon"
+      ><v-icon size="large">{{ tab.icon }}</v-icon></v-btn
     >
-      <v-icon>{{ tab.icon }}</v-icon>
-    </v-btn>
-  </v-toolbar-items>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -59,3 +64,14 @@ watchEffect(async () => {
   displayTabs.value = await displayTabsForNode(node, parentNodeIdNodeId)
 })
 </script>
+
+<style scoped>
+.icon-group__underlay {
+  position: absolute;
+  background-color: currentColor;
+  opacity: var(--v-activated-opacity); /* hidden by default */
+  transition: opacity 0.18s ease;
+  inset: 0; /* fill the container */
+  border-radius: 20px;
+}
+</style>
