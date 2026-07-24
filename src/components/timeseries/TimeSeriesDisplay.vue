@@ -8,6 +8,7 @@
     <template #toolbar-title>
       <v-menu
         v-if="displays && displays.length > 1"
+        v-model="isDisplayMenuOpen"
         location="bottom"
         z-index="10000"
         max-height="400"
@@ -25,10 +26,14 @@
         <v-list v-model="selectedPlotId" density="compact">
           <v-list-item
             v-for="display in displays"
+            :key="display.plotId"
             @click="selectedPlotId = display.plotId"
-            :title="display.id"
             :active="selectedPlotId === display.plotId"
-          />
+          >
+            <template #title>
+              <HighlightMatch :value="display.id" :query="displaySearchBuffer" />
+            </template>
+          </v-list-item>
         </v-list>
       </v-menu>
     </template>
@@ -37,6 +42,7 @@
 
 <script setup lang="ts">
 import TimeSeriesWindowComponent from './TimeSeriesWindowComponent.vue'
+import HighlightMatch from '@/components/general/HighlightMatch.vue'
 import { ref, watch, computed, watchEffect } from 'vue'
 import { configManager } from '@/services/application-config'
 import { useDisplayConfig } from '@/services/useDisplayConfig/index.ts'
@@ -63,6 +69,11 @@ const taskRunsStore = useTaskRunsStore()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const selectedPlotId = ref<string>()
+const isDisplayMenuOpen = ref(false)
+const displaySearchBuffer = ref('')
+
+let searchApplyTimer: ReturnType<typeof setTimeout> | undefined
+let searchResetTimer: ReturnType<typeof setTimeout> | undefined
 
 const nodeId = computed(() =>
   Array.isArray(props.nodeId)
@@ -117,5 +128,90 @@ watch(displays, () => {
   ) {
     selectedPlotId.value = plotIds[0]
   }
+})
+
+const findDisplayBySearch = (query: string) => {
+  const normalizedQuery = query.trim().toLowerCase()
+  if (!normalizedQuery) return
+
+  const availableDisplays = displays.value ?? []
+  return (
+    availableDisplays.find((display) =>
+      display.id.toLowerCase().startsWith(normalizedQuery),
+    ) ??
+    availableDisplays.find((display) =>
+      display.id.toLowerCase().includes(normalizedQuery),
+    )
+  )
+}
+
+const applyDisplaySearch = () => {
+  const match = findDisplayBySearch(displaySearchBuffer.value)
+  if (match) {
+    selectedPlotId.value = match.plotId
+  }
+}
+
+const clearSearchTimers = () => {
+  if (searchApplyTimer) {
+    clearTimeout(searchApplyTimer)
+    searchApplyTimer = undefined
+  }
+  if (searchResetTimer) {
+    clearTimeout(searchResetTimer)
+    searchResetTimer = undefined
+  }
+}
+
+const scheduleSearch = () => {
+  if (searchApplyTimer) clearTimeout(searchApplyTimer)
+  if (searchResetTimer) clearTimeout(searchResetTimer)
+
+  searchApplyTimer = setTimeout(() => {
+    applyDisplaySearch()
+  }, 220)
+
+  searchResetTimer = setTimeout(() => {
+    displaySearchBuffer.value = ''
+  }, 1200)
+}
+
+const onMenuKeydown = (event: KeyboardEvent) => {
+  if (!isDisplayMenuOpen.value) return
+  if (event.ctrlKey || event.metaKey || event.altKey) return
+
+  const target = event.target as HTMLElement | null
+  if (
+    target?.tagName === 'INPUT' ||
+    target?.tagName === 'TEXTAREA' ||
+    target?.isContentEditable
+  ) {
+    return
+  }
+
+  if (event.key === 'Backspace') {
+    displaySearchBuffer.value = displaySearchBuffer.value.slice(0, -1)
+    scheduleSearch()
+    return
+  }
+
+  if (event.key.length !== 1) return
+
+  displaySearchBuffer.value += event.key
+  scheduleSearch()
+}
+
+watch(isDisplayMenuOpen, (isOpen, _, onCleanup) => {
+  if (!isOpen) {
+    clearSearchTimers()
+    displaySearchBuffer.value = ''
+    return
+  }
+
+  window.addEventListener('keydown', onMenuKeydown)
+  onCleanup(() => {
+    window.removeEventListener('keydown', onMenuKeydown)
+    clearSearchTimers()
+  })
 })
 </script>
