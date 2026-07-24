@@ -489,9 +489,8 @@ watch(
 function onSnapshotStripClick(event: MouseEvent): void {
   if (snapshotDragDistance > SNAPSHOT_DRAG_CLICK_THRESHOLD_PX) return
   const viewport = snapshotViewport.value
-  const timelineTimes = snapshotTimelineTimes.value
-  const availableTimes = props.times
-  if (!viewport || !timelineTimes.length || !availableTimes?.length) return
+  const frames = snapshotFrames.value
+  if (!viewport || !frames.length) return
 
   const viewportRect = viewport.getBoundingClientRect()
   const clickOffsetPx =
@@ -499,21 +498,16 @@ function onSnapshotStripClick(event: MouseEvent): void {
     viewportRect.left +
     viewport.scrollLeft -
     snapshotEdgePadding.value
-  const layerStepIndex = clamp(
-    Math.round(clickOffsetPx / layerStepPx.value),
+  const frameIndex = clamp(
+    Math.floor(clickOffsetPx / SNAPSHOT_FRAME_STRIDE),
     0,
-    maxSelectableLayerStep.value,
+    frames.length - 1,
   )
-  const timelineStart = timelineTimes[0]
-  if (!timelineStart) return
-  const clickedTime = new Date(
-    timelineStart.getTime() + layerStepIndex * layerTimeStepMs.value,
-  )
-  const closestSliderTime = getClosestTime(clickedTime, availableTimes)
-  if (!closestSliderTime) return
+  const clickedFrame = frames[frameIndex]
+  if (!clickedFrame?.hasImage) return
 
   animateNextSnapshotCentering.value = true
-  emit('update:selectedDate', closestSliderTime)
+  emit('update:selectedDate', clickedFrame.time)
 }
 
 function onSnapshotPointerDown(event: PointerEvent): void {
