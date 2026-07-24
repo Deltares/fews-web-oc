@@ -50,6 +50,7 @@ const layoutComponent = computed(() => {
   switch (route.meta.layout) {
     case 'EmptyLayout':
       return EmptyLayout
+    case 'DefaultLayout':
     default:
       return DefaultLayout
   }
