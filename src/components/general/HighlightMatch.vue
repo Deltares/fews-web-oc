@@ -1,7 +1,9 @@
 <template>
-  <span>{{ match.before }}</span>
-  <span class="font-weight-bold">{{ match.match }}</span>
-  <span>{{ match.after }}</span>
+  <span>
+    <span>{{ match.before }}</span>
+    <span class="font-weight-bold">{{ match.match }}</span>
+    <span>{{ match.after }}</span>
+  </span>
 </template>
 
 <script setup lang="ts">
