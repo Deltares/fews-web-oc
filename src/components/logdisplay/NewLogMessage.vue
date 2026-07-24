@@ -40,6 +40,18 @@
           </v-list-item>
         </v-list>
       </v-menu>
+      <v-tooltip :text="routeButtonTooltip">
+        <template #activator="{ props: tooltipProps }">
+          <v-btn
+            v-bind="tooltipProps"
+            size="x-small"
+            icon
+            :disabled="isPosting"
+            @click="toggleCurrentRoute"
+            ><v-icon size="small">{{ routeButtonIcon }}</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
       <v-spacer />
       <v-btn
         icon="mdi-close"
@@ -104,6 +116,7 @@
 
 <script setup lang="ts">
 import {
+  createRouteToken,
   levelToColor,
   levelToIcon,
   levelToTitle,
@@ -119,6 +132,7 @@ import {
   type ForecasterNoteGroup,
 } from '@deltares/fews-pi-requests'
 import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
 
 type LogEditorMode = 'create' | 'edit'
 
@@ -158,6 +172,17 @@ const newLogLevel = ref<ManualLogLevel>(props.initialLogLevel)
 const postErrorMessage = ref<string>()
 const isPosting = ref(false)
 const isUiExpanded = ref(false)
+const route = useRoute()
+const currentRouteToken = computed(() => createRouteToken(route.fullPath))
+const hasCurrentRouteToken = computed(() =>
+  text.value.includes(currentRouteToken.value),
+)
+const routeButtonTooltip = computed(() =>
+  hasCurrentRouteToken.value ? 'Remove current route' : 'Insert current route',
+)
+const routeButtonIcon = computed(() =>
+  hasCurrentRouteToken.value ? 'mdi-link-off' : 'mdi-link',
+)
 
 const lineCount = computed(() => text.value.split('\n').length)
 const charCount = computed(() =>
@@ -188,6 +213,30 @@ function validateInput() {
 
 function expandUi() {
   isUiExpanded.value = true
+}
+
+function toggleCurrentRoute() {
+  const routeToken = currentRouteToken.value
+
+  if (hasCurrentRouteToken.value) {
+    text.value = text.value
+      .split(routeToken)
+      .join('')
+      .replace(/ {2,}/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
+      .trimEnd()
+    validateInput()
+    return
+  }
+
+  const separator =
+    text.value.length > 0 &&
+    !text.value.endsWith(' ') &&
+    !text.value.endsWith('\n')
+      ? ' '
+      : ''
+  text.value = `${text.value}${separator}${routeToken}`
+  validateInput()
 }
 
 async function handleClick(event: MouseEvent) {

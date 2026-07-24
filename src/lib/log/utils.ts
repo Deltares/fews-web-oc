@@ -140,6 +140,57 @@ export function logToRoute(log: LogMessage) {
   }
 }
 
+const routeTokenRegex = /\[\[route:(.+?)\]\]/g
+
+export type LogTextSegment =
+  | { type: 'text'; text: string }
+  | { type: 'route'; to: string; label: string }
+
+export function createRouteToken(routePath: string) {
+  return `[[route:${routePath}]]`
+}
+
+export function parseLogTextSegments(text: string): LogTextSegment[] {
+  const segments: LogTextSegment[] = []
+  let lastIndex = 0
+
+  for (const match of text.matchAll(routeTokenRegex)) {
+    const token = match[0]
+    const routePath = match[1]?.trim()
+    const matchIndex = match.index ?? -1
+
+    if (matchIndex < 0 || !routePath) continue
+
+    if (matchIndex > lastIndex) {
+      segments.push({
+        type: 'text',
+        text: text.slice(lastIndex, matchIndex),
+      })
+    }
+
+    segments.push({
+      type: 'route',
+      to: routePath,
+      label: routePath,
+    })
+
+    lastIndex = matchIndex + token.length
+  }
+
+  if (lastIndex < text.length) {
+    segments.push({
+      type: 'text',
+      text: text.slice(lastIndex),
+    })
+  }
+
+  if (segments.length === 0) {
+    return [{ type: 'text', text }]
+  }
+
+  return segments
+}
+
 export function logToUser(log: LogMessage, userName: string) {
   if (log.type === 'system') return log.code
   return isLogMessageByCurrentUser(log, userName) ? 'You' : log.user

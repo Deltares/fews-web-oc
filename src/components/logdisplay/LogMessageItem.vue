@@ -108,7 +108,18 @@
         @discard="toggleEditing"
       />
       <v-card-text v-else>
-        <span class="message-text"> {{ log.text }} </span>
+        <span class="message-text">
+          <template v-for="(segment, index) in messageSegments" :key="index">
+            <RouterLink
+              v-if="segment.type === 'route'"
+              :to="segment.to"
+              class="message-route-link"
+            >
+              {{ segment.label }}
+            </RouterLink>
+            <template v-else>{{ segment.text }}</template>
+          </template>
+        </span>
         <v-spacer />
         <slot name="actions"></slot>
       </v-card-text>
@@ -136,6 +147,7 @@ import {
   logToColor,
   logToRoute,
   logToActions,
+  parseLogTextSegments,
   type LogMessage,
   type LogActionEmit,
   type ManualLogLevel,
@@ -163,6 +175,7 @@ const isEditing = ref(false)
 const editedLogLevel = ref<ManualLogLevel>('INFO')
 
 const isAcknowledged = computed(() => props.log.eventAcknowledged)
+const messageSegments = computed(() => parseLogTextSegments(props.log.text))
 
 const canEdit = computed(() => {
   // Allow editing only for manual logs created by the current user
