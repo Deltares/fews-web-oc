@@ -43,7 +43,9 @@
               aria-hidden="true"
             ></div>
             <div
-              v-if="frame.hasTimeMismatch && getResolvedSnapshotImageUrl(frame.url)"
+              v-if="
+                frame.hasTimeMismatch && getResolvedSnapshotImageUrl(frame.url)
+              "
               class="datetime-slider__snapshot-image-mismatch-overlay"
               aria-hidden="true"
             ></div>
@@ -91,16 +93,19 @@
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import type { LngLatBounds } from 'maplibre-gl'
 import type { AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
+import type { BoundingBox } from '@deltares/fews-wms-requests'
 import { clamp } from '@/lib/utils/math'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { toMercator } from '@turf/projection'
 import { point } from '@turf/helpers'
 import { timeFormat } from 'd3-time-format'
 import { configManager } from '@/services/application-config'
+import { convertBoundingBoxToLngLatBounds } from '@/services/useWms'
 
 interface Props {
   times?: Date[]
   selectedDate?: Date
+  boundingBox?: BoundingBox
   layerOptions?: AnimatedRasterLayerOptions
 }
 
@@ -277,9 +282,12 @@ const snapshotRightPadding = computed(() => {
 })
 
 const snapshotFrames = computed(() => {
-  if (!props.layerOptions?.bbox) return []
+  const bounds = props.boundingBox
+    ? convertBoundingBoxToLngLatBounds(props.boundingBox)
+    : props.layerOptions?.bbox
+  if (!bounds) return []
 
-  const snapshotBbox = getMercatorBboxFromBounds(props.layerOptions.bbox)
+  const snapshotBbox = getMercatorBboxFromBounds(bounds)
   const availableTimes = props.times ?? []
   const availableStartTime = props.times?.[0]
   const availableEndTime = props.times?.at(-1)
@@ -609,7 +617,9 @@ async function ensureSnapshotImageLoaded(url: string): Promise<void> {
       const request = await transformSnapshotRequest(new Request(url))
       const response = await fetch(request)
       if (!response.ok) {
-        throw new Error(`Snapshot request failed with status ${response.status}`)
+        throw new Error(
+          `Snapshot request failed with status ${response.status}`,
+        )
       }
 
       const objectUrl = URL.createObjectURL(await response.blob())

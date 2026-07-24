@@ -165,6 +165,7 @@
           v-if="showTimeSnapshotFrames"
           :times="times"
           :selected-date="selectedDate"
+          :bounding-box="boundingBox"
           :layer-options="layerOptions"
           @update:selected-date="onSnapshotSelectTime"
           @close="showTimeSnapshotFrames = false"
