@@ -30,14 +30,20 @@
         >
           <template v-if="frame.hasImage">
             <img
+              v-if="getResolvedSnapshotImageUrl(frame.url)"
               class="datetime-slider__snapshot-image"
-              :src="frame.url"
+              :src="getResolvedSnapshotImageUrl(frame.url)"
               :alt="`Snapshot at ${formatSnapshotTime(frame.time)}`"
               loading="lazy"
               draggable="false"
             />
             <div
-              v-if="frame.hasTimeMismatch"
+              v-else
+              class="datetime-slider__snapshot-image datetime-slider__snapshot-image--empty"
+              aria-hidden="true"
+            ></div>
+            <div
+              v-if="frame.hasTimeMismatch && getResolvedSnapshotImageUrl(frame.url)"
               class="datetime-slider__snapshot-image-mismatch-overlay"
               aria-hidden="true"
             ></div>
@@ -86,6 +92,7 @@ import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import type { LngLatBounds } from 'maplibre-gl'
 import type { AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
 import { clamp } from '@/lib/utils/math'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { toMercator } from '@turf/projection'
 import { point } from '@turf/helpers'
 import { timeFormat } from 'd3-time-format'
@@ -110,12 +117,17 @@ const snapshotViewportWidth = ref(0)
 const snapshotIntervalIndex = ref(0)
 const animateNextSnapshotCentering = ref(false)
 const snapshotIsDragging = ref(false)
+const snapshotResolvedImageUrls = ref<Record<string, string>>({})
 let snapshotDragStartClientX = 0
 let snapshotDragStartScrollLeft = 0
 let snapshotDragDistance = 0
 let snapshotWheelRemainderPx = 0
 const SNAPSHOT_DRAG_CLICK_THRESHOLD_PX = 4
 let snapshotResizeObserver: ResizeObserver | undefined
+const snapshotImageFetches = new Map<string, Promise<void>>()
+const snapshotFailedImageUrls = new Set<string>()
+let snapshotActiveImageUrls = new Set<string>()
+let snapshotIsUnmounted = false
 
 const SNAPSHOT_FRAME_WIDTH = 96
 const SNAPSHOT_FRAME_GAP = 0
@@ -128,6 +140,7 @@ const SNAPSHOT_INTERVAL_MINUTES_OPTIONS = [
 ]
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const transformSnapshotRequest = createTransformRequestFn()
 
 const layerTimeStepMs = computed(() => {
   const times = props.times
@@ -458,6 +471,21 @@ watch(snapshotIntervalOptionsMs, (options) => {
   snapshotIntervalIndex.value = options.length - 1
 })
 
+watch(
+  visibleSnapshotFrames,
+  async (frames) => {
+    const activeUrls = new Set(
+      frames.filter((frame) => frame.hasImage).map((frame) => frame.url),
+    )
+    snapshotActiveImageUrls = activeUrls
+    revokeUnusedSnapshotImageUrls(activeUrls)
+    await Promise.all(
+      Array.from(activeUrls, (url) => ensureSnapshotImageLoaded(url)),
+    )
+  },
+  { immediate: true },
+)
+
 function onSnapshotStripClick(event: MouseEvent): void {
   if (snapshotDragDistance > SNAPSHOT_DRAG_CLICK_THRESHOLD_PX) return
   const viewport = snapshotViewport.value
@@ -561,6 +589,79 @@ function getClosestTime(targetTime: Date, times: Date[]): Date | undefined {
   }
 
   return closestTime
+}
+
+function getResolvedSnapshotImageUrl(url: string): string {
+  return snapshotResolvedImageUrls.value[url] ?? ''
+}
+
+async function ensureSnapshotImageLoaded(url: string): Promise<void> {
+  if (
+    !url ||
+    snapshotResolvedImageUrls.value[url] ||
+    snapshotFailedImageUrls.has(url)
+  ) {
+    return
+  }
+
+  const existingFetch = snapshotImageFetches.get(url)
+  if (existingFetch) {
+    await existingFetch
+    return
+  }
+
+  const loadPromise = (async () => {
+    try {
+      const request = await transformSnapshotRequest(new Request(url))
+      const response = await fetch(request)
+      if (!response.ok) {
+        throw new Error(`Snapshot request failed with status ${response.status}`)
+      }
+
+      const objectUrl = URL.createObjectURL(await response.blob())
+      if (snapshotIsUnmounted || !snapshotActiveImageUrls.has(url)) {
+        URL.revokeObjectURL(objectUrl)
+        return
+      }
+
+      snapshotResolvedImageUrls.value = {
+        ...snapshotResolvedImageUrls.value,
+        [url]: objectUrl,
+      }
+    } catch (error) {
+      snapshotFailedImageUrls.add(url)
+      console.error('Failed to load snapshot image', error)
+    } finally {
+      snapshotImageFetches.delete(url)
+    }
+  })()
+
+  snapshotImageFetches.set(url, loadPromise)
+  await loadPromise
+}
+
+function revokeSnapshotImageUrl(url: string): void {
+  const objectUrl = snapshotResolvedImageUrls.value[url]
+  if (!objectUrl) return
+
+  URL.revokeObjectURL(objectUrl)
+  const nextUrls = { ...snapshotResolvedImageUrls.value }
+  delete nextUrls[url]
+  snapshotResolvedImageUrls.value = nextUrls
+}
+
+function revokeUnusedSnapshotImageUrls(activeUrls: Set<string>): void {
+  for (const url of Object.keys(snapshotResolvedImageUrls.value)) {
+    if (!activeUrls.has(url)) {
+      revokeSnapshotImageUrl(url)
+    }
+  }
+
+  for (const url of Array.from(snapshotFailedImageUrls)) {
+    if (!activeUrls.has(url)) {
+      snapshotFailedImageUrls.delete(url)
+    }
+  }
 }
 
 function getAlignedTimeOnOrBefore(
@@ -709,8 +810,11 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  snapshotIsUnmounted = true
+  snapshotActiveImageUrls = new Set()
   snapshotResizeObserver?.disconnect()
   snapshotResizeObserver = undefined
+  revokeUnusedSnapshotImageUrls(new Set())
 })
 </script>
 
