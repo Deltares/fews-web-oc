@@ -25,13 +25,19 @@
         </template>
         <v-list v-model="selectedPlotId" density="compact">
           <v-list-item
-            v-for="display in displays"
+            v-for="(display, index) in displays"
             :key="display.plotId"
             @click="selectedPlotId = display.plotId"
             :active="selectedPlotId === display.plotId"
           >
             <template #title>
-              <HighlightMatch :value="display.id" :query="displaySearchBuffer" />
+              <div class="d-flex align-center justify-space-between ga-3">
+                <HighlightMatch
+                  :value="display.id"
+                  :query="displaySearchBuffer"
+                />
+                <kbd>{{ index + 1 }}</kbd>
+              </div>
             </template>
           </v-list-item>
         </v-list>
@@ -71,9 +77,12 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const selectedPlotId = ref<string>()
 const isDisplayMenuOpen = ref(false)
 const displaySearchBuffer = ref('')
+const displayIndexBuffer = ref('')
 
 let searchApplyTimer: ReturnType<typeof setTimeout> | undefined
 let searchResetTimer: ReturnType<typeof setTimeout> | undefined
+let indexApplyTimer: ReturnType<typeof setTimeout> | undefined
+let indexResetTimer: ReturnType<typeof setTimeout> | undefined
 
 const nodeId = computed(() =>
   Array.isArray(props.nodeId)
@@ -152,6 +161,16 @@ const applyDisplaySearch = () => {
   }
 }
 
+const applyDisplayIndexSelection = () => {
+  const index = Number.parseInt(displayIndexBuffer.value, 10) - 1
+  if (Number.isNaN(index) || index < 0) return
+
+  const display = displays.value?.[index]
+  if (display) {
+    selectedPlotId.value = display.plotId
+  }
+}
+
 const clearSearchTimers = () => {
   if (searchApplyTimer) {
     clearTimeout(searchApplyTimer)
@@ -160,6 +179,14 @@ const clearSearchTimers = () => {
   if (searchResetTimer) {
     clearTimeout(searchResetTimer)
     searchResetTimer = undefined
+  }
+  if (indexApplyTimer) {
+    clearTimeout(indexApplyTimer)
+    indexApplyTimer = undefined
+  }
+  if (indexResetTimer) {
+    clearTimeout(indexResetTimer)
+    indexResetTimer = undefined
   }
 }
 
@@ -173,6 +200,19 @@ const scheduleSearch = () => {
 
   searchResetTimer = setTimeout(() => {
     displaySearchBuffer.value = ''
+  }, 1200)
+}
+
+const scheduleIndexSelection = () => {
+  if (indexApplyTimer) clearTimeout(indexApplyTimer)
+  if (indexResetTimer) clearTimeout(indexResetTimer)
+
+  indexApplyTimer = setTimeout(() => {
+    applyDisplayIndexSelection()
+  }, 220)
+
+  indexResetTimer = setTimeout(() => {
+    displayIndexBuffer.value = ''
   }, 1200)
 }
 
@@ -190,8 +230,20 @@ const onMenuKeydown = (event: KeyboardEvent) => {
   }
 
   if (event.key === 'Backspace') {
+    if (displayIndexBuffer.value) {
+      displayIndexBuffer.value = displayIndexBuffer.value.slice(0, -1)
+      scheduleIndexSelection()
+      return
+    }
+
     displaySearchBuffer.value = displaySearchBuffer.value.slice(0, -1)
     scheduleSearch()
+    return
+  }
+
+  if (event.key >= '0' && event.key <= '9') {
+    displayIndexBuffer.value += event.key
+    scheduleIndexSelection()
     return
   }
 
@@ -205,6 +257,7 @@ watch(isDisplayMenuOpen, (isOpen, _, onCleanup) => {
   if (!isOpen) {
     clearSearchTimers()
     displaySearchBuffer.value = ''
+    displayIndexBuffer.value = ''
     return
   }
 
