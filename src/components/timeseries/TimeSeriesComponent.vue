@@ -264,6 +264,7 @@ const chartOptions = computed<UseTimeSeriesOptions>(() => {
 const brushOptions = computed<UseTimeSeriesOptions>(() => ({
   startTime: fullBrushDomain.value[0],
   endTime: fullBrushDomain.value[1],
+  thinning: true,
 }))
 
 const tableOptions = computed<UseTimeSeriesOptions>(() => ({
