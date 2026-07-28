@@ -1,4 +1,7 @@
-import type { Location } from '@deltares/fews-pi-requests'
+import type {
+  Location,
+  LocationsLayerZoomSettings,
+} from '@deltares/fews-pi-requests'
 import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import type { LegacyFilterSpecification } from 'maplibre-gl'
 import { mapIds } from './ids'
@@ -26,25 +29,58 @@ export function addPropertiesToLocationGeojson(
   selectedLocationIds: string[],
   showNames: boolean,
   showDataAvailability: boolean,
+  zoom: number,
+  minZoom: LocationsLayerZoomSettings,
+  maxZoom: LocationsLayerZoomSettings,
 ): FeatureCollection<Geometry, ExtendedLocation> {
-  const features = geojson.features.map((feature) => ({
-    ...feature,
-    properties: {
-      ...feature.properties,
-      locationName: showNames ? feature.properties.locationName : '',
-      iconName:
-        feature.properties.thresholdIconName ?? feature.properties.iconName,
-      webocIcon: getIconName(feature),
-      sortKey: getSortKey(feature),
-      invertedSortKey: getInvertedSortKey(feature),
-      selected: selectedLocationIds.includes(feature.properties.locationId),
-    },
-  }))
+  const features = geojson.features
+    .filter((feature) =>
+      isLocationVisibleAtZoom(feature.properties, zoom, minZoom, maxZoom),
+    )
+    .map((feature) => ({
+      ...feature,
+      properties: {
+        ...feature.properties,
+        locationName: showNames ? feature.properties.locationName : '',
+        iconName:
+          feature.properties.thresholdIconName ?? feature.properties.iconName,
+        webocIcon: getIconName(feature),
+        sortKey: getSortKey(feature),
+        invertedSortKey: getInvertedSortKey(feature),
+        selected: selectedLocationIds.includes(feature.properties.locationId),
+      },
+    }))
 
   return {
     ...geojson,
     features,
   }
+}
+
+function getEffectiveZoomLevel(
+  location: Location,
+  zoomSetting: LocationsLayerZoomSettings,
+): number {
+  const attributeId = zoomSetting.levelLocationAttribute
+  if (attributeId) {
+    const attribute = location.attributes?.find((a) => a.id === attributeId)
+    const level = Number(attribute?.value)
+    if (attribute?.value !== undefined && !Number.isNaN(level)) {
+      return level
+    }
+  }
+  return zoomSetting.level
+}
+
+export function isLocationVisibleAtZoom(
+  location: Location,
+  zoom: number,
+  minZoom: LocationsLayerZoomSettings,
+  maxZoom: LocationsLayerZoomSettings,
+): boolean {
+  const effectiveMinZoom = getEffectiveZoomLevel(location, minZoom)
+  const effectiveMaxZoom = getEffectiveZoomLevel(location, maxZoom)
+  return zoom >= effectiveMinZoom && zoom <= effectiveMaxZoom
 }
 
 function getIconName({ properties }: Feature<Geometry, Location>) {
