@@ -85,11 +85,7 @@ export interface ProductChart extends BaseChart {
 export type PlotChart = FilterChart | CorrelationChart
 
 export type Chart =
-  | FilterChart
-  | CorrelationChart
-  | AsyncChart
-  | ProductChart
-  | PlotChart
+  FilterChart | CorrelationChart | AsyncChart | ProductChart | PlotChart
 
 export interface CollectionEmits {
   addChart: [chart: Chart]

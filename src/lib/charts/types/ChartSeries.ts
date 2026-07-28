@@ -5,11 +5,7 @@ import { TimeSeriesDisplaySubplotItem } from '@deltares/fews-pi-requests'
 import { ThresholdLine } from './ThresholdLine'
 
 type ChartSeriesType =
-  | TimeSeriesDisplaySubplotItem['type']
-  | 'rule'
-  | 'bar'
-  | 'marker'
-  | 'dummy'
+  TimeSeriesDisplaySubplotItem['type'] | 'rule' | 'bar' | 'marker' | 'dummy'
 
 type SubplotItem = Pick<
   TimeSeriesDisplaySubplotItem,

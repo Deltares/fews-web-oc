@@ -127,8 +127,7 @@ function getLocaleOptions(locale: string): Partial<CartesianAxesOptions> {
 export function getAxisOptions(
   config: ChartConfig,
   settings:
-    | ChartsSettings['timeSeriesChart']
-    | ChartsSettings['verticalProfileChart'],
+    ChartsSettings['timeSeriesChart'] | ChartsSettings['verticalProfileChart'],
   options?: {
     isVerticalProfile?: boolean
     isBrush?: boolean

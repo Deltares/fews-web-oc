@@ -143,8 +143,7 @@ export function logToRoute(log: LogMessage) {
 const routeTokenRegex = /\[\[route:(.+?)\]\]/g
 
 export type LogTextSegment =
-  | { type: 'text'; text: string }
-  | { type: 'route'; to: string; label: string }
+  { type: 'text'; text: string } | { type: 'route'; to: string; label: string }
 
 export function createRouteToken(routePath: string) {
   return `[[route:${routePath}]]`

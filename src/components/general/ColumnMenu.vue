@@ -97,9 +97,12 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits(['click'])
 
 const open = defineModel<string[]>('open', { default: () => [] })
-const active = defineModel<string>('active', { default: () => [] })
+const active = defineModel<string>('active', { default: '' })
 
-const stack = useMenuItemsStack(() => props.items, active)
+const stack = useMenuItemsStack(
+  () => props.items,
+  () => active.value,
+)
 
 const currentParent = computed((): ColumnItem | undefined => {
   const s = stack.value
