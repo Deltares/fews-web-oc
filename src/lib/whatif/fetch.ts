@@ -23,8 +23,7 @@ export interface PostWhatIfScenarioError {
 }
 
 export type PostWhatIfScenarioResult =
-  | PostWhatIfScenarioSuccess
-  | PostWhatIfScenarioError
+  PostWhatIfScenarioSuccess | PostWhatIfScenarioError
 
 export async function postWhatIfScenario(
   filter: PostWhatIfScenarioFilter,

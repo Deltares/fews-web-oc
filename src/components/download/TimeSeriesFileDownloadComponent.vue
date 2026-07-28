@@ -77,8 +77,7 @@ const { t } = useI18n()
 interface Props {
   config?: DisplayConfig | null
   options?:
-    | Pick<FilterActionsFilter, 'useDisplayUnits' | 'convertDatum'>
-    | undefined
+    Pick<FilterActionsFilter, 'useDisplayUnits' | 'convertDatum'> | undefined
   filter?:
     | FilterActionsFilter
     | TimeSeriesGridActionsFilter
