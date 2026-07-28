@@ -46,8 +46,8 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         input: {
-          main: 'index.html',
-          error: 'error/index.html',
+          main: resolve(import.meta.dirname, 'index.html'),
+          error: resolve(import.meta.dirname, 'error/index.html'),
         },
       },
     },
