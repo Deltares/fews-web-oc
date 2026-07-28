@@ -1,23 +1,9 @@
 import { defineConfig, devices } from '@playwright/experimental-ct-vue'
 import getViteConfig from './vite.config'
-const baseViteConfig = getViteConfig({
+const viteConfig = getViteConfig({
   command: 'build',
   mode: 'test',
 })
-
-const legacyRollupOptions = (
-  baseViteConfig.build as Record<string, unknown> | undefined
-)?.['rollupOptions']
-
-const viteConfig = {
-  ...baseViteConfig,
-  build: {
-    ...baseViteConfig.build,
-    // Vite 8 CT runs with rolldown and expects rolldownOptions.
-    rolldownOptions: legacyRollupOptions,
-    rollupOptions: undefined,
-  },
-}
 
 /**
  * See https://playwright.dev/docs/test-configuration.
