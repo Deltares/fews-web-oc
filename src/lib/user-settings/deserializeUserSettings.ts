@@ -106,11 +106,13 @@ export function deserializeUserSettings(
 
     if (item.type === 'oneOfMultiple') {
       resolveOneOfMultipleValue(item, storedItem)
-    } else {
+    } else if (storedItem.value !== undefined) {
       item.value = storedItem.value as boolean
     }
 
-    item.favorite = storedItem.favorite as boolean
+    if (storedItem.favorite !== undefined) {
+      item.favorite = storedItem.favorite as boolean
+    }
   }
 
   return newState
