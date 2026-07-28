@@ -27,5 +27,4 @@ test.describe('HighlightMatch', () => {
     const boldSpan = component.locator('span.font-weight-bold')
     await expect(boldSpan).toHaveText('quick')
   })
-
 })
