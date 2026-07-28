@@ -1,4 +1,4 @@
-import { defineComponent, h } from 'vue'
+import { h } from 'vue'
 import HighlightMatch from './HighlightMatch.vue'
 
 export const Default = () => h(HighlightMatch, { value: 'Hello World', query: 'World' })
