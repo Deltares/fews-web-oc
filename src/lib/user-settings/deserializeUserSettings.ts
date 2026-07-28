@@ -88,16 +88,18 @@ export function deserializeUserSettings(
   defaults: UserSettingsItem[],
   webResourcesOverrides: UserSettingsOverride[] = [],
 ): UserSettingsItem[] {
-  let parsedState: { items?: Partial<UserSettingsItem>[] } = {}
+  let storedItems: Partial<UserSettingsItem>[] = []
   try {
-    parsedState = JSON.parse(data)
-  } catch {}
+    storedItems =
+      JSON.parse(data) as Partial<UserSettingsItem>[] ?? []
+  } catch {
+    console.warn('Failed to parse user settings from local storage, using defaults.')
+  }
 
   const newState: UserSettingsItem[] = defaults.map((item) => ({ ...item }))
 
   applyWebResourcesOverrides(newState, webResourcesOverrides)
 
-  const storedItems: Partial<UserSettingsItem>[] = parsedState.items ?? []
   for (const item of newState) {
     const storedItem = storedItems.find((s) => s.id === item.id)
     if (storedItem === undefined) continue
