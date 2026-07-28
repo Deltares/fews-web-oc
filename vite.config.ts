@@ -47,7 +47,7 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: {
           main: 'index.html',
-          error: 'error.html',
+          error: 'error/index.html',
         },
       },
     },
