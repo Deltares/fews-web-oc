@@ -51,7 +51,7 @@ const ssdContainer = useTemplateRef('ssdContainer')
 const svgContainer =
   useTemplateRef<HTMLSchematicStatusDisplayElement>('svgContainer')
 
-const emit = defineEmits(['action', 'selectTopologyNode'])
+const emit = defineEmits(['action'])
 defineExpose({ resize })
 
 const width = ref(100)
@@ -88,40 +88,10 @@ watch(
   },
 )
 
-watch(
-  svgContainer,
-  (newContainer, oldContainer) => {
-    if (oldContainer) {
-      oldContainer.removeEventListener(
-        'selectTopologyNode',
-        onSelectTopologyNode,
-      )
-      oldContainer.removeEventListener(
-        'select-topology-node',
-        onSelectTopologyNode,
-      )
-    }
-
-    if (!newContainer) return
-
-    newContainer.addEventListener('selectTopologyNode', onSelectTopologyNode)
-    newContainer.addEventListener('select-topology-node', onSelectTopologyNode)
-  },
-  { immediate: true },
-)
-
 onMounted(() => {
   if (!props.allowZooming) {
     setupHorizontalScroll()
   }
-})
-
-onUnmounted(() => {
-  const container = svgContainer.value
-  if (!container) return
-
-  container.removeEventListener('selectTopologyNode', onSelectTopologyNode)
-  container.removeEventListener('select-topology-node', onSelectTopologyNode)
 })
 
 function onLoad(): void {
@@ -136,10 +106,6 @@ function onLoad(): void {
 
 function onAction(event: CustomEvent): void {
   emit('action', event)
-}
-
-function onSelectTopologyNode(event: Event): void {
-  emit('selectTopologyNode', event)
 }
 
 async function resize() {

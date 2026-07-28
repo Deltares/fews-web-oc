@@ -11,7 +11,6 @@
         :mobile="ssdMobile"
         :allowZooming="settings.ssd.zoomEnabled"
         @action="onAction"
-        @selectTopologyNode="onSelectTopologyNode"
         ref="ssdComponent"
       />
       <DateTimeSlider
@@ -53,10 +52,7 @@ import { useDateRegistry } from '@/services/useDateRegistry'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import type { NavigateRoute } from '@/lib/router'
 import { convertJSDateToFewsPiParameter, isInDatesRange } from '@/lib/date'
-import {
-  getNodeIdFromSelectTopologyNodeActionResult,
-  getNodeIdFromSelectTopologyNodeEvent,
-} from '@/lib/ssd/selectTopologyNode'
+import { getNodeIdFromSelectTopologyNodeActionResult } from '@/lib/ssd/selectTopologyNode'
 const SSDTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/ssd/SsdTimeSeriesDisplay.vue'),
 )
@@ -81,20 +77,16 @@ interface SsdActionEventPayload {
   results: SsdActionResult[]
 }
 
-interface SelectTopologyNodeEventPayload {
-  nodeId?: string
-}
-
-const sliderDebounceInterval = 500
-
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const alertsStore = useAlertsStore()
-
 interface Emits {
   navigate: [to: NavigateRoute]
   dashboardAction: [result: SsdActionResult]
 }
 const emit = defineEmits<Emits>()
+
+const sliderDebounceInterval = 500
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const alertsStore = useAlertsStore()
 
 const { thresholds } = useDisplay()
 
@@ -165,18 +157,9 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
   const result = results[0]
   const request = result.requests?.[0]
 
-  // Web OC specific fallback while SSD action result support is rolled out.
   const nodeIdFromAction = getNodeIdFromSelectTopologyNodeActionResult(result)
   if (nodeIdFromAction) {
     navigateToTopologyNodeById(nodeIdFromAction)
-    return
-  }
-
-  if (result.type === 'SELECT_TOPOLOGY_NODE_BY_ID') {
-    console.warn(
-      'Received SELECT_TOPOLOGY_NODE_BY_ID action without a valid nodeId in requests[0].request.',
-      result,
-    )
     return
   }
 
@@ -202,21 +185,6 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
         message: `Action '${result.type}' not supported yet.`,
       })
   }
-}
-
-function onSelectTopologyNode(
-  event: CustomEvent<SelectTopologyNodeEventPayload>,
-): void {
-  const nodeId = getNodeIdFromSelectTopologyNodeEvent(event.detail)
-  if (!nodeId) {
-    console.warn(
-      'Received selectTopologyNode event without a valid detail.nodeId.',
-      event.detail,
-    )
-    return
-  }
-
-  navigateToTopologyNodeById(nodeId)
 }
 
 function navigateToTopologyNodeById(nodeId: string): void {

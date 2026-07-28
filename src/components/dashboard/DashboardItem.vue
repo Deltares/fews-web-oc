@@ -140,14 +140,14 @@ function onNavigate(to: NavigateRoute) {
         delete to.params?.locationIds
       }
 
-      navigateTo(to)
+      dashboardNavigateTo(to)
       break
     }
     case 'SpatialDisplay':
     case 'SpatialDisplayWithCoordinates':
     case 'SSDTimeSeriesDisplay':
     case 'SchematicStatusDisplay':
-      navigateTo(to)
+      dashboardNavigateTo(to)
       break
     case 'TopologyDisplay':
       emit('navigate', to)
@@ -157,7 +157,7 @@ function onNavigate(to: NavigateRoute) {
   }
 }
 
-function navigateTo(to: NavigateRoute) {
+function dashboardNavigateTo(to: NavigateRoute) {
   const layerName = to.params?.layerName ?? routeParams.value.layerName
 
   routeParams.value = {
