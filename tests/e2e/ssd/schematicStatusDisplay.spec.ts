@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { describeFromVersion } from '../utils/versionedTest'
 
 test.describe('Schematic Status Display Tests', () => {
   const base = 'topology/early_warning/node/'
@@ -41,6 +42,14 @@ test.describe('Schematic Status Display Tests', () => {
     await expect(page.getByText('Water Level (m + MSL)')).toBeVisible()
     await expect(page.getByText('Wave Height (m)')).toBeVisible()
   })
+})
+
+describeFromVersion('202502', 'Download NetCDF', () => {
+  const base = 'topology/early_warning/node/'
+  const topologyNode1 = 'viewer_coastal_flooding_warning_warning1'
+  const url =
+    base +
+    `viewer_coastal_flooding_warning/${topologyNode1}/ssd/coastal_flooding1`
 
   test('SSD should navigate to topology node via clicking on the select topology node button', async ({
     page,
