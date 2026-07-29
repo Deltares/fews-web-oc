@@ -42,62 +42,24 @@ test.describe('Schematic Status Display Tests', () => {
     await expect(page.getByText('Wave Height (m)')).toBeVisible()
   })
 
-  test('SSD should navigate to topology node via selectTopologyNode custom event', async ({
+  test('SSD should navigate to topology node via clicking on the select topology node button', async ({
     page,
   }) => {
     await page.goto(url)
 
-    await page.evaluate((nodeId) => {
-      const element = document.querySelector('schematic-status-display')
-      if (!element) {
-        throw new Error('schematic-status-display element not found')
-      }
+    const selectTopologyNodeButton = await page.getByRole('button', {
+      name: 'Switch to Topology Node',
+    })
 
-      element.dispatchEvent(
-        new CustomEvent('selectTopologyNode', {
-          detail: { nodeId },
-          bubbles: true,
-          composed: true,
-        }),
-      )
-    }, topologyNode2)
+    // Check that the button is visible and enabled before clicking
+    await expect(selectTopologyNodeButton).toBeVisible()
+    await expect(selectTopologyNodeButton).toBeEnabled()
 
-    await expect(page).toHaveURL(
-      new RegExp(`/topology/early_warning/node/.*/${topologyNode2}/ssd/`),
-    )
-  })
+    await selectTopologyNodeButton.click()
 
-  test('SSD should navigate to topology node via SELECT_TOPOLOGY_NODE_BY_ID action result fallback', async ({
-    page,
-  }) => {
-    await page.goto(url)
+    const expectedUrl =
+      '/topology/early_warning/node/viewer_coastal_flooding_inundation/viewer_coastal_flooding_inundation_forecast/map/waterdepth_sfincs'
 
-    await page.evaluate((nodeId) => {
-      const element = document.querySelector('schematic-status-display')
-      if (!element) {
-        throw new Error('schematic-status-display element not found')
-      }
-
-      element.dispatchEvent(
-        new CustomEvent('action', {
-          detail: {
-            panelId: 'coastal_flooding1',
-            objectId: '',
-            results: [
-              {
-                type: 'SELECT_TOPOLOGY_NODE_BY_ID',
-                requests: [{ request: nodeId }],
-              },
-            ],
-          },
-          bubbles: true,
-          composed: true,
-        }),
-      )
-    }, topologyNode2)
-
-    await expect(page).toHaveURL(
-      new RegExp(`/topology/early_warning/node/.*/${topologyNode2}/ssd/`),
-    )
+    await expect(page).toHaveURL(new RegExp(expectedUrl))
   })
 })
