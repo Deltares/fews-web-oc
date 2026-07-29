@@ -1,5 +1,9 @@
 <template>
-  <DashboardDisplay v-if="dashboard" :dashboard="dashboard" />
+  <DashboardDisplay
+    v-if="dashboard"
+    :dashboard="dashboard"
+    @navigate="emit('navigate', $event)"
+  />
   <v-alert v-else-if="dashboardId && isReady">No dashboard available</v-alert>
 </template>
 
@@ -9,12 +13,18 @@ import DashboardDisplay from '@/components/dashboard/DashboardDisplay.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { useDashboard } from '@/services/useDashboard'
 import { configManager } from '@/services/application-config'
+import type { NavigateRoute } from '@/lib/router'
 
 interface Props {
   topologyNode?: TopologyNode
 }
 
 const props = defineProps<Props>()
+
+interface Emits {
+  navigate: [to: NavigateRoute]
+}
+const emit = defineEmits<Emits>()
 
 const dashboardId = computed(() => props.topologyNode?.dashboardPanels?.[0]?.id)
 

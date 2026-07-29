@@ -52,6 +52,7 @@ import { useDateRegistry } from '@/services/useDateRegistry'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import type { NavigateRoute } from '@/lib/router'
 import { convertJSDateToFewsPiParameter, isInDatesRange } from '@/lib/date'
+import { getNodeIdFromSelectTopologyNodeActionResult } from '@/lib/ssd/selectTopologyNode'
 const SSDTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/ssd/SsdTimeSeriesDisplay.vue'),
 )
@@ -76,16 +77,16 @@ interface SsdActionEventPayload {
   results: SsdActionResult[]
 }
 
-const sliderDebounceInterval = 500
-
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const alertsStore = useAlertsStore()
-
 interface Emits {
   navigate: [to: NavigateRoute]
   dashboardAction: [result: SsdActionResult]
 }
 const emit = defineEmits<Emits>()
+
+const sliderDebounceInterval = 500
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const alertsStore = useAlertsStore()
 
 const { thresholds } = useDisplay()
 
@@ -145,10 +146,23 @@ const mobile = computed(() => {
 
 function onAction(event: CustomEvent<SsdActionEventPayload>): void {
   const { panelId, objectId, results } = event.detail
-  if (results.length === 0) return
+  if (results.length === 0) {
+    console.warn(
+      'SSD GetAction returned empty results; no click action can be executed.',
+      event.detail,
+    )
+    return
+  }
 
   const result = results[0]
   const request = result.requests?.[0]
+
+  const nodeIdFromAction = getNodeIdFromSelectTopologyNodeActionResult(result)
+  if (nodeIdFromAction) {
+    navigateToTopologyNodeById(nodeIdFromAction)
+    return
+  }
+
   switch (result.type) {
     case 'PDF':
       if (request) globalThis.open(new URL(request.request))
@@ -171,6 +185,14 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
         message: `Action '${result.type}' not supported yet.`,
       })
   }
+}
+
+function navigateToTopologyNodeById(nodeId: string): void {
+  const to = {
+    name: 'TopologyDisplay',
+    params: { nodeId: [nodeId] },
+  }
+  emit('navigate', to)
 }
 
 function switchPanel(request: SsdActionRequest): void {
