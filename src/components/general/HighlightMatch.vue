@@ -1,5 +1,5 @@
 <template>
-  <span>
+  <span class="highlight-match" @mousedown.prevent>
     <span>{{ match.before }}</span>
     <span class="font-weight-bold">{{ match.match }}</span>
     <span>{{ match.after }}</span>
@@ -19,3 +19,10 @@ const props = defineProps<Props>()
 
 const match = computed(() => findMatchingParts(props.value, props.query ?? ''))
 </script>
+
+<style scoped>
+.highlight-match {
+  user-select: none;
+  -webkit-user-select: none;
+}
+</style>
