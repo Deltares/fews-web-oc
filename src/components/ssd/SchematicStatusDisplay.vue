@@ -1,10 +1,6 @@
 <template>
   <div class="container" ref="container">
-    <div
-      class="child-container"
-      :class="{ 'd-none': hideSSD }"
-      ref="ssdContainer"
-    >
+    <div class="child-container" v-show="!hideSSD" ref="ssdContainer">
       <SsdComponent
         :src="src"
         :key="panelId"
@@ -26,7 +22,21 @@
         :panelId="panelId"
         :objectId="objectId"
         @close="closeTimeSeriesDisplay"
-      />
+      >
+        <template #toolbar-append>
+          <v-btn
+            v-if="!mobile"
+            size="small"
+            :icon="maximized ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
+            @click="maximized = !maximized"
+          />
+          <v-btn
+            size="small"
+            icon="mdi-close"
+            @click="closeTimeSeriesDisplay"
+          />
+        </template>
+      </SSDTimeSeriesDisplay>
     </div>
   </div>
 </template>
@@ -127,8 +137,15 @@ const { src } = useSsd(
   () => debouncedDateString.value,
 )
 
+const maximized = ref(false)
+
+const { width: containerWidth } = useElementSize(container)
+const mobile = computed(() => {
+  return containerWidth.value < thresholds.value.md
+})
+
 const hideSSD = computed(() => {
-  return mobile.value && props.objectId !== ''
+  return maximized.value || (mobile.value && props.objectId !== '')
 })
 
 const { width: ssdContainerWidth } = useElementSize(ssdContainer)
@@ -137,11 +154,6 @@ const ssdMobile = computed(() => {
 })
 watch(ssdContainerWidth, () => {
   ssdComponent.value?.resize()
-})
-
-const { width: containerWidth } = useElementSize(container)
-const mobile = computed(() => {
-  return containerWidth.value < thresholds.value.md
 })
 
 function onAction(event: CustomEvent<SsdActionEventPayload>): void {
@@ -227,6 +239,7 @@ function openTimeSeriesDisplay(panelId: string, objectId: string) {
 }
 
 function closeTimeSeriesDisplay(): void {
+  maximized.value = false
   const to = {
     name: 'SchematicStatusDisplay',
     params: { groupId: props.groupId, panelId: props.panelId },
