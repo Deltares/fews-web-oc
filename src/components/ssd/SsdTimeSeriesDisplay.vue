@@ -19,9 +19,7 @@
       <v-spacer />
     </template>
     <template v-slot:toolbar-append>
-      <v-btn size="small" variant="text" @click="onClose">
-        <v-icon size="small">mdi-close</v-icon>
-      </v-btn>
+      <slot name="toolbar-append" />
     </template>
     <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
     </TimeSeriesComponent>
