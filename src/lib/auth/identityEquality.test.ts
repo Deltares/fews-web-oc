@@ -32,7 +32,7 @@ describe('hasEqualIdentity', () => {
 
   it('does not match when neither value is backend-truncated', () => {
     const a = 'oliver_smith_marketing_team'
-    const b = 'oliver.smith.marketing.team@bigcorp.io'
+    const b = 'oliver.smith.marketing.teamatbigcorp.io'
 
     expect(hasEqualIdentity(a, b)).toBe(false)
   })
@@ -61,6 +61,13 @@ describe('hasEqualIdentity', () => {
   it('handles case where only one side has digits', () => {
     const a = 'emma_wilson_hr1'
     const b = 'emma.wilson.hr'
+
+    expect(hasEqualIdentity(a, b)).toBe(true)
+  })
+
+  it('handles cases where one side is an email and the other is not', () => {
+    const a = 'liam_brown_research'
+    const b = 'liam.brown.research@company.com'
 
     expect(hasEqualIdentity(a, b)).toBe(true)
   })

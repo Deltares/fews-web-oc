@@ -1,8 +1,8 @@
-export function normalizeBase(str: string): string {
+function normalizeBase(str: string): string {
   return str.toLowerCase().replaceAll('.', '_').slice(0, 30)
 }
 
-export function getTrailingDigitCount(str: string): number {
+function getTrailingDigitCount(str: string): number {
   let count = 0
   for (let i = str.length - 1; i >= 0; i--) {
     const code = str.codePointAt(i)
@@ -20,11 +20,13 @@ export function getTrailingDigitCount(str: string): number {
  * - truncates them to 30 characters
  * - sometimes replaces dots with underscores
  * - may append numeric suffixes (e.g. "user0") for uniqueness
+ * - sometimes uses the email prefix (before @) instead of the full email
  *
  * This function checks if two values represent the same identity by:
  * - normalizing format (case, separators, length)
  * - comparing directly
  * - if needed, ignoring trailing numeric suffixes added by the backend
+ * - if one is an email and the other is not, comparing the part before the @
  *
  * @param a - First identity (backend or OIDC/email)
  * @param b - Second identity (backend or OIDC/email)
@@ -48,6 +50,13 @@ export function hasEqualIdentity(a: string, b: string): boolean {
     const compareLen = Math.min(baseLenA, baseLenB)
 
     return normA.slice(0, compareLen) === normB.slice(0, compareLen)
+  }
+
+  const emailA = normA.split('@')[0]
+  const emailB = normB.split('@')[0]
+
+  if (emailA && emailB) {
+    return emailA === emailB
   }
 
   return false
