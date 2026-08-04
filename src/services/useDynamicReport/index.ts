@@ -4,14 +4,7 @@ import {
   PiWebserviceProvider,
   DynamicReportDisplayFilter,
 } from '@deltares/fews-pi-requests'
-import {
-  MaybeRefOrGetter,
-  ref,
-  shallowRef,
-  toValue,
-  watch,
-  watchEffect,
-} from 'vue'
+import { MaybeRefOrGetter, ref, shallowRef, toValue, watchEffect } from 'vue'
 
 export function useDynamicReport(
   baseUrl: string,
@@ -75,7 +68,7 @@ export function useDynamicReport(
     }
   }
   watchEffect(loadCapability)
-  watch(() => filter, loadReport, { deep: true })
+  watchEffect(loadReport)
 
   return {
     reportHtml,
