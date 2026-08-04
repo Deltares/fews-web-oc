@@ -2,8 +2,18 @@
   <div class="d-flex w-100 h-100 flex-row">
     <div class="h-100 d-flex flex-column child-container">
       <div class="w-100 d-flex flex-1-1 overflow-x-auto overflow-y-auto">
+        <div v-if="microFrontEndError" class="microfrontend-error-container">
+          <v-alert
+            type="error"
+            density="compact"
+            variant="tonal"
+            class="microfrontend-error"
+          >
+            {{ microFrontEndError }}
+          </v-alert>
+        </div>
         <component
-          v-if="loaded"
+          v-else-if="loaded"
           :is="PluginComponent"
           :time="selectedDateOfSlider"
           :topologyNode="topologyNode"
@@ -64,6 +74,7 @@ import { configManager } from '@/services/application-config'
 
 const loaded = ref(false)
 const PluginComponent = shallowRef<any>(null)
+const microFrontEndError = ref<string | null>(null)
 
 const { loadWebOCRemote } = useMicroFrontEnd()
 
@@ -92,12 +103,25 @@ async function getHeaders() {
 
 watchEffect(async () => {
   loaded.value = false
+  microFrontEndError.value = null
+
   const microFrontEndId = topologyNode?.microFrontEnds?.map((mf) => mf.id)[0]
   if (!microFrontEndId) {
+    PluginComponent.value = null
     loaded.value = true
     return
   }
-  PluginComponent.value = await loadWebOCRemote(microFrontEndId)
+
+  try {
+    PluginComponent.value = await loadWebOCRemote(microFrontEndId)
+  } catch (error) {
+    PluginComponent.value = null
+    microFrontEndError.value =
+      error instanceof Error
+        ? error.message
+        : `Failed to load Micro Frontend '${microFrontEndId}'.`
+  }
+
   loaded.value = true
 })
 
@@ -171,5 +195,20 @@ function closeTimeSeriesDisplay(): void {
   width: 50%;
   max-width: 100%;
   flex: 1 1 0px;
+}
+
+.microfrontend-error-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.microfrontend-error {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: min(640px, 100%);
 }
 </style>
