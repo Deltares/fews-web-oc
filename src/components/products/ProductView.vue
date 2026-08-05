@@ -82,9 +82,11 @@
               color="primary"
               prepend-icon="mdi-pencil"
               variant="flat"
+              :disabled="!selectedProduct"
               @click="isEditing = !isEditing"
-              >edit</v-btn
             >
+              edit
+            </v-btn>
             <v-menu location="bottom left">
               <template #activator="{ props }">
                 <v-btn
@@ -98,7 +100,7 @@
               </template>
               <v-list density="compact">
                 <v-list-item
-                  v-if="viewMode === 'html'"
+                  v-if="viewMode === 'html' && selectedProduct"
                   prepend-icon="mdi-email"
                   title="Open in Email Client..."
                   @click="
@@ -183,7 +185,7 @@ import { postProduct } from '@/lib/products/requests'
 import { useLogDisplay } from '@/services/useLogDisplay'
 import { convert } from 'html-to-text'
 import { clickDownloadUrl } from '@/lib/download'
-import router from '@/router'
+import { useRoute, useRouter } from 'vue-router'
 
 const LOG_DISPLAY_ID = 'email_reports'
 
@@ -211,11 +213,12 @@ const {
 const src = ref('')
 const viewMode = ref('')
 
-const selected = ref(0) // Example timeZero
-const selectedProduct = computed(() => {
-  return filteredProducts.value[selected.value]
-})
+const selectedProduct = computed(() =>
+  filteredProducts.value.find((p) => p.key === productKey),
+)
 
+const route = useRoute()
+const router = useRouter()
 const viewPeriod = ref<IntervalItem>({})
 const htmlContent = ref('')
 const isEditing = ref(false)
@@ -250,7 +253,7 @@ const areaId = computed(() => {
   return archiveProductSets[0].constraints?.areaId || 'weboc'
 })
 
-const { products, getProductByKey, fetchProducts, lastUpdated, isLoading } = useProducts(
+const { products, fetchProducts, lastUpdated, isLoading } = useProducts(
   baseUrl,
   viewPeriod,
   archiveProductConfig,
@@ -279,47 +282,22 @@ watchEffect(() => {
 watch(
   () => filteredProducts.value,
   () => {
-    if (!productKey) {
-      if (filteredProducts.value.length > 0) {
-        const firstProductMetaData = filteredProducts.value[0]
-        selected.value = 0
-        router.push({
-          name: 'TopologyDocumentDisplay',
-          params: {
-            productKey: firstProductMetaData.key,
-          },
-        })
-      }
-    }
-  },
-)
+    if (productKey) return
+    if (!filteredProducts.value.length) return
 
-watch(
-  () => productKey,
-  () => {
-    if (productKey) {
-      const productMetaData = getProductByKey(productKey)
-      if (productMetaData) {
-        selected.value = filteredProducts.value.findIndex(
-          (p) => p.key === productMetaData.key,
-        )
-      } else {
-        selected.value = -1
-      }
-    }
+    const firstProductMetaData = filteredProducts.value[0]
+    router.push({
+      name: route.name,
+      params: {
+        ...route.params,
+        productKey: firstProductMetaData.key,
+      },
+    })
   },
-  { immediate: true }
 )
 
 watchEffect(async () => {
-  if (selected.value < 0) {
-    src.value = ''
-    viewMode.value = ''
-    return
-  }
-
-  const productMetaData = filteredProducts.value[selected.value]
-  const url = getProductURL(baseUrl, productMetaData)
+  const url = getProductURL(baseUrl, selectedProduct.value)
   if (!url) {
     src.value = ''
     viewMode.value = ''
@@ -361,6 +339,10 @@ async function onSave() {
   const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const archiveUrl = `${piUrl}rest/fewspiservice/v1/archive/`
   const metaData = selectedProduct.value
+  if (!metaData) {
+    console.error('No product selected for saving')
+    return
+  }
   const fileName =
     metaData.relativePathProducts[0].split('/').pop() ?? 'unknown'
   try {
