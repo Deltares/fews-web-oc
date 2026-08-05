@@ -423,11 +423,12 @@ function openEmailClient(subject: string, content: string) {
   top: 48px;
   bottom: 0;
   background-color: #e0e0e0;
+  padding: 20px;
 }
 
 .products-browser-view__item {
   width: 1060px;
-  margin: 20px auto;
+  margin: 0 auto;
   background-color: white;
 }
 
@@ -437,8 +438,6 @@ img {
   box-shadow: 0 0.5mm 2mm rgba(0, 0, 0, 0.3);
   position: absolute;
   object-fit: contain;
-  left: 20px;
-  top: 20px;
   max-width: calc(100% - 40px);
   max-height: calc(100% - 40px);
 }
