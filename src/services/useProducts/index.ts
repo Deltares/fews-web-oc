@@ -16,6 +16,10 @@ import {
   IntervalItem,
   intervalToFewsPiDateRange,
 } from '@/lib/TimeControl/interval'
+import {
+  combineProductsMetaData,
+  getLocalProductsMetaData,
+} from '@/lib/products/local'
 
 export const FEWS_PRODUCT_ATTRIBUTE_DELETE = 'fews:delete'
 
@@ -218,7 +222,9 @@ export async function fetchProductsMetaData(
   try {
     const response = await provider.getProductsMetaData(filter)
     const promises = response.productsMetadata.map(convertToProductMetaDataType)
-    const products = await Promise.all(promises)
+    const remoteProducts = await Promise.all(promises)
+    const localProducts = getLocalProductsMetaData(filter)
+    const products = combineProductsMetaData(remoteProducts, localProducts)
     return products.filter(
       (product) => product.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE] !== 'true',
     )

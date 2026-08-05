@@ -124,7 +124,7 @@ const selectedCompose = ref(props.compose?.[0])
 async function onSave() {
   switch (props.type) {
     case 'upload':
-      uploadProduct(
+      await uploadProduct(
         name.value,
         author.value,
         props.areaId,
@@ -134,7 +134,7 @@ async function onSave() {
       break
     case 'new':
       const compose = selectedCompose.value
-      createNewProduct(
+      await createNewProduct(
         compose?.archiveProduct.name ?? '',
         author.value,
         compose?.archiveProduct,
