@@ -185,29 +185,10 @@ async function getArchiveProductForConstraint(
     })
   }
   filter.attribute = attributes
-  const response = await fetchProductsMetaData(baseUrl, filter)
-  let filteredProducts = response.filter(
-    (product) =>
-      product.areaId === constraint.areaId &&
-      product.sourceId === constraint.sourceId,
+  const response = await fetchProductsMetaData(baseUrl, filter, (product) =>
+    matchesConstraintProductMetaData(product, constraint),
   )
-  if (constraint.anyValid) {
-    filteredProducts = filteredProducts.filter((product) => {
-      return constraint.anyValid?.some((constraint) => {
-        if (
-          constraint.attributeTextEquals?.id &&
-          constraint.attributeTextEquals?.equals
-        ) {
-          return (
-            product.attributes[constraint.attributeTextEquals.id] ===
-            constraint.attributeTextEquals.equals
-          )
-        }
-        return false
-      })
-    })
-  }
-  return filteredProducts
+  return response
 }
 
 /**
@@ -220,6 +201,7 @@ async function getArchiveProductForConstraint(
 export async function fetchProductsMetaData(
   baseUrl: string,
   filter: ProductsMetaDataFilter,
+  productFilter?: (product: ArchiveProductsMetadataEntry) => boolean,
 ): Promise<ProductMetaDataType[]> {
   const provider = new PiArchiveWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -227,7 +209,11 @@ export async function fetchProductsMetaData(
 
   try {
     const response = await provider.getProductsMetaData(filter)
-    const promises = response.productsMetadata.map(convertToProductMetaDataType)
+    const remoteProductsMetadata = filterProductsMetaDataEntries(
+      response.productsMetadata,
+      productFilter,
+    )
+    const promises = remoteProductsMetadata.map(convertToProductMetaDataType)
     const remoteProducts = await Promise.all(promises)
     const localProducts = getLocalProductsMetaData(filter)
     const products = combineProductsMetaData(remoteProducts, localProducts)
@@ -364,4 +350,53 @@ function isArchiveProductSet(
   products: ArchiveProductSet[] | ArchiveProduct[],
 ): products is ArchiveProductSet[] {
   return (products as ArchiveProductSet[])[0]?.constraints !== undefined
+}
+
+export function filterProductsMetaDataEntries(
+  productsMetadata: ArchiveProductsMetadataEntry[],
+  productFilter?: (product: ArchiveProductsMetadataEntry) => boolean,
+): ArchiveProductsMetadataEntry[] {
+  return productsMetadata.filter(
+    (product) =>
+      !isDeletedProductMetaData(product) &&
+      (productFilter === undefined || productFilter(product)),
+  )
+}
+
+function isDeletedProductMetaData(
+  product: ArchiveProductsMetadataEntry,
+): boolean {
+  return product.attributes.some(
+    (attribute) =>
+      attribute.key === FEWS_PRODUCT_ATTRIBUTE_DELETE &&
+      attribute.value === 'true',
+  )
+}
+
+function matchesConstraintProductMetaData(
+  product: ArchiveProductsMetadataEntry,
+  constraint: Constraints,
+): boolean {
+  if (
+    product.areaId !== constraint.areaId ||
+    product.sourceId !== constraint.sourceId
+  ) {
+    return false
+  }
+
+  if (!constraint.anyValid?.length) {
+    return true
+  }
+
+  return constraint.anyValid.some((constraint) => {
+    const attributeTextEquals = constraint.attributeTextEquals
+    if (attributeTextEquals?.id && attributeTextEquals?.equals) {
+      return product.attributes.some(
+        (attribute) =>
+          attribute.key === attributeTextEquals.id &&
+          attribute.value === attributeTextEquals.equals,
+      )
+    }
+    return false
+  })
 }
