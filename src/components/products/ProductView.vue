@@ -7,6 +7,7 @@
         :config="tableConfig"
         class="w-100 h-100"
         :productKey="productKey"
+        :loading="isLoading"
         @refresh="fetchProducts()"
       >
         <template #footer>
@@ -249,7 +250,7 @@ const areaId = computed(() => {
   return archiveProductSets[0].constraints?.areaId || 'weboc'
 })
 
-const { products, getProductByKey, fetchProducts, lastUpdated } = useProducts(
+const { products, getProductByKey, fetchProducts, lastUpdated, isLoading } = useProducts(
   baseUrl,
   viewPeriod,
   archiveProductConfig,

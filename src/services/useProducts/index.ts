@@ -39,6 +39,7 @@ export function useProducts(
   const products = ref<ProductMetaDataType[]>([])
   const error = ref<string | null>(null)
   const lastUpdated = ref<Date | null>(null)
+  const isLoading = ref<boolean>(false)
 
   const refresh = async () => {
     error.value = null
@@ -58,6 +59,8 @@ export function useProducts(
 
     const _archiveProducts = toValue(archiveProducts)
 
+    isLoading.value = true
+
     if (isArchiveProductSet(_archiveProducts)) {
       products.value = await getArchiveProductSets(
         baseUrl,
@@ -71,6 +74,8 @@ export function useProducts(
         toValue(viewPeriod),
       )
     }
+
+    isLoading.value = false
   }
 
   const getProductByKey = (key: string) => {
@@ -89,6 +94,7 @@ export function useProducts(
     refresh,
     lastUpdated,
     error,
+    isLoading,
   }
 }
 

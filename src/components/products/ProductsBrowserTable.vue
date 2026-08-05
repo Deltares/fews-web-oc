@@ -96,6 +96,7 @@
         "
         class="d-flex flex-1-1"
         density="compact"
+        :loading="loading"
         fixed-header
         height="400"
         @click:row="onClick"
@@ -251,6 +252,7 @@ interface Props {
   template?: ProductMetaDataType
   config: ProductBrowserTableConfig
   productKey?: string
+  loading?: boolean
 }
 
 const props = defineProps<Props>()
