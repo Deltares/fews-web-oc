@@ -10,7 +10,10 @@ import { getFileExtension } from '@/lib/products/utils'
 import { getProductURL } from '@/components/products/productTools'
 import { type ArchiveProduct } from '@/lib/products/documentDisplay'
 import { type IntervalItem } from '@/lib/TimeControl/interval'
-import { FEWS_PRODUCT_ATTRIBUTE_LOCAL, storeLocalProductsMetaData } from '@/lib/products/local'
+import {
+  FEWS_PRODUCT_ATTRIBUTE_LOCAL,
+  storeLocalProductsMetaData,
+} from '@/lib/products/local'
 
 /**
  * Determines if a given string contains HTML content.
@@ -132,7 +135,7 @@ export async function postProduct(
 
   const responseData = await response.json()
   const metadata = responseData.productsMetadata[0]
-  await storeLocalProductsMetaData(metadata, String(content))
+  await storeLocalProductsMetaData(metadata, { content: String(content) })
   return metadata
 }
 
@@ -186,7 +189,7 @@ export async function postFileProduct(
 
   const responseData = await response.json()
   const metadata = responseData.productsMetadata[0]
-  await storeLocalProductsMetaData(metadata)
+  await storeLocalProductsMetaData(metadata, { file: renamedFile })
   return metadata
 }
 

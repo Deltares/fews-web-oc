@@ -78,7 +78,10 @@ function removeLocalProductsMetaData(relativePathMetaDataFiles: string[]) {
 
 export async function storeLocalProductsMetaData(
   product: PostResponse,
-  content?: string,
+  options?: {
+    content?: string
+    file?: File
+  },
 ) {
   const stored = readLocalProductsMetaData()
 
@@ -99,8 +102,8 @@ export async function storeLocalProductsMetaData(
   metaData.attributes[FEWS_PRODUCT_ATTRIBUTE_LOCAL] = 'true'
   metaData.relativePathProducts = [
     product.relativePathProducts[0],
-    // FIXME: hack
-    content ?? '',
+    options?.content ?? '',
+    options?.file ? URL.createObjectURL(options.file) : '',
   ]
 
   const remaining = stored.filter(

@@ -293,12 +293,25 @@ watchEffect(async () => {
       selectedProduct.value?.relativePathProducts[0].split('/').pop() ??
       'unknown'
     const content = selectedProduct.value?.relativePathProducts[1] ?? ''
-    const file = new File([String(content)], fileName, {
-      type: getContentType(content),
-    })
-    src.value = URL.createObjectURL(file)
-    viewMode.value = 'html'
-    htmlContent.value = sanitizeHtmlContent(content)
+    const file = selectedProduct.value?.relativePathProducts[2] ?? ''
+
+    if (content) {
+      const file = new File([String(content)], fileName, {
+        type: getContentType(content),
+      })
+      src.value = URL.createObjectURL(file)
+      viewMode.value = 'html'
+      htmlContent.value = sanitizeHtmlContent(content)
+      return
+    }
+
+    if (file) {
+      src.value = file
+      viewMode.value = getViewMode(getFileExtension(fileName))
+      htmlContent.value = ''
+      return
+    }
+
     return
   }
 
