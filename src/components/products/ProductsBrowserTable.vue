@@ -184,24 +184,31 @@
           </tr>
         </template>
         <template v-slot:item.actions="{ item }">
-          <v-btn
-            v-if="item.attributes.name !== 'Create new'"
-            icon="mdi-delete"
-            size="small"
-            variant="text"
-            @click.stop="onDeleteProduct(item)"
-            :loading="isDeletingProduct[item.key]"
-            aria-label="Delete product"
-            :class="{ 'hover-opacity': !isDeletingProduct[item.key] }"
-          ></v-btn>
-          <v-btn
-            v-else
-            icon="mdi-plus"
-            size="small"
-            variant="text"
-            @click="onNewProduct(template ?? item)"
-            :title="'Create new product'"
-          ></v-btn>
+          <div class="d-flex align-center justify-end">
+            <v-icon
+              v-if="isLocalProduct(item)"
+              icon="mdi-cloud-sync-outline"
+              class="text-medium-emphasis"
+            />
+            <v-btn
+              v-if="item.attributes.name !== 'Create new'"
+              icon="mdi-delete"
+              size="small"
+              variant="text"
+              @click.stop="onDeleteProduct(item)"
+              :loading="isDeletingProduct[item.key]"
+              aria-label="Delete product"
+              :class="{ 'hover-opacity': !isDeletingProduct[item.key] }"
+            ></v-btn>
+            <v-btn
+              v-else
+              icon="mdi-plus"
+              size="small"
+              variant="text"
+              @click="onNewProduct(template ?? item)"
+              :title="'Create new product'"
+            ></v-btn>
+          </div>
         </template>
         <template v-slot:body.prepend="props">
           <slot name="prepend" v-bind="props"></slot>
@@ -224,6 +231,7 @@ import { getProductURL } from './productTools'
 import { useCurrentUser } from '@/services/useCurrentUser'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { getFileExtension, getViewMode } from '@/lib/products/utils'
+import { isLocalProduct } from '@/lib/products/local'
 
 interface AttributeHeader {
   attribute: string

@@ -4,6 +4,7 @@ import { type ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
 import { type PostResponse } from '@/lib/products/types'
 
 const LOCAL_PRODUCTS_METADATA_STORAGE_KEY = 'weboc-products-metadata-v1.0.0'
+const FEWS_PRODUCT_ATTRIBUTE_LOCAL = 'fews:local'
 
 export function combineProductsMetaData(
   remoteProducts: ProductMetaDataType[],
@@ -20,14 +21,15 @@ export function combineProductsMetaData(
         localProduct.relativePathMetaDataFile,
     )
 
-    if (existingIndex !== -1) {
-      combined[existingIndex] = localProduct
-
-      if (isSameProductMetaData(localProduct, combined[existingIndex])) {
-        toRemove.push(localProduct.relativePathMetaDataFile)
-      }
-    } else {
+    if (existingIndex === -1) {
       combined.push(localProduct)
+      continue
+    }
+
+    if (isSameProductMetaData(combined[existingIndex], localProduct)) {
+      toRemove.push(localProduct.relativePathMetaDataFile)
+    } else {
+      combined[existingIndex] = localProduct
     }
   }
 
@@ -44,23 +46,19 @@ export function getLocalProductsMetaData(filter: ProductsMetaDataFilter) {
 }
 
 function isSameProductMetaData(
-  productA: ProductMetaDataType,
-  productB: ProductMetaDataType,
+  remote: ProductMetaDataType,
+  local: ProductMetaDataType,
 ) {
-  if (productA.relativePathMetaDataFile !== productB.relativePathMetaDataFile) {
+  if (remote.relativePathMetaDataFile !== local.relativePathMetaDataFile) {
     return false
   }
 
-  if (productA.timeZero !== productB.timeZero) {
+  if (remote.timeZero !== local.timeZero) {
     return false
   }
 
-  if (productA.version !== productB.version) {
-    return false
-  }
-
-  for (const attribute of Object.keys(productA.attributes)) {
-    if (productA.attributes[attribute] !== productB.attributes[attribute]) {
+  for (const attribute of Object.keys(remote.attributes)) {
+    if (remote.attributes[attribute] !== local.attributes[attribute]) {
       return false
     }
   }
@@ -80,12 +78,24 @@ function removeLocalProductsMetaData(relativePathMetaDataFiles: string[]) {
 
 export async function storeLocalProductsMetaData(product: PostResponse) {
   const stored = readLocalProductsMetaData()
-  const metaData = await convertToProductMetaDataType(product)
+
+  const metaData = await convertToProductMetaDataType({
+    ...product,
+    // Set to get the same hashed key and keep selection
+    // @ts-ignore: PostResponse gives a string but ProductMetaDataType expects a number
+    version: 1,
+  })
+  metaData.attributes[FEWS_PRODUCT_ATTRIBUTE_LOCAL] = 'true'
+
   const remaining = stored.filter(
     (item) =>
       item.relativePathMetaDataFile !== metaData.relativePathMetaDataFile,
   )
   writeLocalProductsMetaData([...remaining, metaData])
+}
+
+export function isLocalProduct(product: ProductMetaDataType | undefined) {
+  return product?.attributes[FEWS_PRODUCT_ATTRIBUTE_LOCAL] === 'true'
 }
 
 function matchesProductsMetaDataFilter(

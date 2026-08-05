@@ -186,6 +186,7 @@ import { useLogDisplay } from '@/services/useLogDisplay'
 import { convert } from 'html-to-text'
 import { clickDownloadUrl } from '@/lib/download'
 import { useRoute, useRouter } from 'vue-router'
+import { isLocalProduct } from '@/lib/products/local'
 
 const LOG_DISPLAY_ID = 'email_reports'
 
@@ -297,8 +298,9 @@ watch(
 )
 
 watchEffect(async () => {
+  const isLocal = isLocalProduct(selectedProduct.value)
   const url = getProductURL(baseUrl, selectedProduct.value)
-  if (!url) {
+  if (!url || isLocal) {
     src.value = ''
     viewMode.value = ''
     return
