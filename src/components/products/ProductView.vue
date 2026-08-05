@@ -308,34 +308,43 @@ watch(
       }
     }
   },
+  { immediate: true }
 )
 
 watchEffect(async () => {
-  if (selected.value > -1) {
-    const productMetaData = filteredProducts.value[selected.value]
-    const url = getProductURL(baseUrl, productMetaData)
-    const extension = getFileExtension(url)
-    const currentViewMode = getViewMode(extension)
-    const urlFragments =
-      currentViewMode === 'pdf' ? '#view=FitH&zoom=page-width' : ''
-
-    const transformRequest = createTransformRequestFn()
-    const request = await transformRequest(new Request(url, {}))
-    const response = await fetch(request)
-    if (currentViewMode === 'html') {
-      const clone = response.clone()
-      htmlContent.value = DOMPurify.sanitize(await clone.text(), {
-        USE_PROFILES: { html: true },
-      })
-    } else {
-      htmlContent.value = ''
-    }
-    const urlObject = URL.createObjectURL(await response.blob())
-    viewMode.value = currentViewMode
-    src.value = urlObject + urlFragments
-  } else {
+  if (selected.value < 0) {
     src.value = ''
+    viewMode.value = ''
+    return
   }
+
+  const productMetaData = filteredProducts.value[selected.value]
+  const url = getProductURL(baseUrl, productMetaData)
+  if (!url) {
+    src.value = ''
+    viewMode.value = ''
+    return
+  }
+
+  const extension = getFileExtension(url)
+  const currentViewMode = getViewMode(extension)
+  const urlFragments =
+    currentViewMode === 'pdf' ? '#view=FitH&zoom=page-width' : ''
+
+  const transformRequest = createTransformRequestFn()
+  const request = await transformRequest(new Request(url, {}))
+  const response = await fetch(request)
+  if (currentViewMode === 'html') {
+    const clone = response.clone()
+    htmlContent.value = DOMPurify.sanitize(await clone.text(), {
+      USE_PROFILES: { html: true },
+    })
+  } else {
+    htmlContent.value = ''
+  }
+  const urlObject = URL.createObjectURL(await response.blob())
+  viewMode.value = currentViewMode
+  src.value = urlObject + urlFragments
 })
 
 function downloadProduct() {
