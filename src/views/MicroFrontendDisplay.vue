@@ -15,10 +15,10 @@
         <component
           v-else-if="loaded"
           :is="PluginComponent"
-          :time="selectedDateOfSlider"
+          :selectedDate="selectedDateOfSlider"
           :topologyNode="topologyNode"
-          :webservicesUrl="webservicesUrl"
-          :getHeaders="getHeaders"
+          :hostSettings="hostSettings"
+          :settings="settings"
           @navigate="onNavigate"
         />
       </div>
@@ -68,6 +68,12 @@ import { useMicroFrontEnd } from '@/composables/useMicroFrontEnd'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import { configManager } from '@/services/application-config'
 
+export interface HostSettings {
+  baseUrl: string
+  webservicesUrl: string
+  getHeaders: () => Promise<Headers>
+}
+
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
 )
@@ -95,11 +101,11 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
-const webservicesUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-
-async function getHeaders() {
-  return await authenticationManager.getAuthorizationHeaders()
-}
+const hostSettings = computed<HostSettings>(() => ({
+  baseUrl: import.meta.env.BASE_URL,
+  webservicesUrl: configManager.get('VITE_FEWS_WEBSERVICES_URL'),
+  getHeaders: () => authenticationManager.getAuthorizationHeaders(),
+}))
 
 watchEffect(async () => {
   loaded.value = false
