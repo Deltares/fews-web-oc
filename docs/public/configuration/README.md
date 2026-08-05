@@ -69,6 +69,18 @@ Web OC will show a time series graph and a drop-down menu for selection of displ
 
 The period shown in the graph corresponds to the configured relative view period in `DisplayGroups.xml`.
 
+**How plotWeight is interpreted in the WebOC**
+
+The WebOC uses CSS Flexbox to distribute the remaining vertical space proportionally over the subplots axis heights (excluding the legend and margin for tick labels). The `flex-grow` property specifies the grow rate of the container.
+
+* The configured `plotWeight` is directly used as a `flex-grow` value.
+* The axis height of the subplot with `plotWeight` 2 grows twice as fast as a subplot with `plotWeight` 1.
+* The `plotWeight` is also used to set the minimum axis height in pixels. The plot view will have a scrollbar when there is not enough space.
+
+For WebOC, it is advised to use `plotWeights` larger than 200. This will make sure the subplots remain readable on small (mobile) screens as the minimum axis height is 200px. If a subplot should be two times larger than the other subplot, set its `plotWeight` to 400.
+
+When no `plotWeight` is specified, all subplots will have an equal height of 400px including the legend and tick labels. On desktop resolutions, typically two subplots will fit on screen, while a third subplot requires a scrollbar.
+
 ---
 
 **Display Information Document**
