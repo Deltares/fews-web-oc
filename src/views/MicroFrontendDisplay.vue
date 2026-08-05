@@ -2,7 +2,10 @@
   <div class="d-flex w-100 h-100 flex-row">
     <div class="h-100 d-flex flex-column child-container">
       <div class="w-100 d-flex flex-1-1 overflow-x-auto overflow-y-auto">
-        <div v-if="microFrontEndError" class="microfrontend-error-container">
+        <div
+          v-if="microFrontEndError"
+          class="d-flex h-100 justify-center align-center"
+        >
           <v-alert
             type="error"
             density="compact"
@@ -157,15 +160,6 @@ function closeTimeSeriesDisplay(): void {
   width: 50%;
   max-width: 100%;
   flex: 1 1 0px;
-}
-
-.microfrontend-error-container {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
 }
 
 .microfrontend-error {
