@@ -189,9 +189,9 @@
             size="small"
             variant="text"
             @click.stop="onDeleteProduct(item)"
+            :loading="isDeletingProduct[item.key]"
             aria-label="Delete product"
-            class="delete-action-btn"
-            :hover="true"
+            :class="{ 'hover-opacity': !isDeletingProduct[item.key] }"
           ></v-btn>
           <v-btn
             v-else
@@ -354,7 +354,10 @@ const items = computed(() => {
   return results
 })
 
+const isDeletingProduct = ref<Record<string, boolean>>({})
+
 async function onDeleteProduct(product: ProductMetaDataType) {
+  isDeletingProduct.value[product.key] = true
   try {
     const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
     await deleteProduct(baseUrl, product)
@@ -372,6 +375,7 @@ async function onDeleteProduct(product: ProductMetaDataType) {
         },
       })
     }
+    delete isDeletingProduct.value[product.key]
   }
 }
 
@@ -433,11 +437,11 @@ async function onNewProduct(item: ProductMetaDataType) {
   background-color: rgb(var(--v-theme-on-surface), var(--v-activated-opacity));
 }
 
-:deep(.v-data-table__tr:hover) .delete-action-btn {
+:deep(.v-data-table__tr:hover) .hover-opacity {
   opacity: 1;
 }
 
-.delete-action-btn {
+.hover-opacity {
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
 }

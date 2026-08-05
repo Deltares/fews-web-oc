@@ -73,6 +73,7 @@
             color="primary"
             size="small"
             :disabled="!formIsValid"
+            :loading="isSaving"
             @click="onSave()"
             :text="type === 'upload' ? 'Upload' : 'Create'"
           />
@@ -120,28 +121,36 @@ const file = ref<File>()
 const name = ref(props.name ?? '')
 const author = ref(props.author ?? '')
 const selectedCompose = ref(props.compose?.[0])
+const isSaving = ref(false)
 
 async function onSave() {
-  switch (props.type) {
-    case 'upload':
-      await uploadProduct(
-        name.value,
-        author.value,
-        props.areaId,
-        props.sourceId,
-        file.value,
-      )
-      break
-    case 'new':
-      const compose = selectedCompose.value
-      await createNewProduct(
-        compose?.archiveProduct.name ?? '',
-        author.value,
-        compose?.archiveProduct,
-        compose?.template,
-        props.viewPeriod,
-      )
-      break
+  isSaving.value = true
+  try {
+    switch (props.type) {
+      case 'upload':
+        await uploadProduct(
+          name.value,
+          author.value,
+          props.areaId,
+          props.sourceId,
+          file.value,
+        )
+        break
+      case 'new':
+        const compose = selectedCompose.value
+        await createNewProduct(
+          compose?.archiveProduct.name ?? '',
+          author.value,
+          compose?.archiveProduct,
+          compose?.template,
+          props.viewPeriod,
+        )
+        break
+    }
+  } catch (error) {
+    console.error('Error saving product:', error)
+  } finally {
+    isSaving.value = false
   }
 
   emit('saved')
