@@ -34,31 +34,21 @@
             :author="userName"
             :viewPeriod="viewPeriod"
             :compose="compose"
+            class="no-hover"
             @saved="fetchProducts()"
             @close="showUploadProductForm = false"
           />
 
-          <tr v-else-if="canUpload">
-            <td :colspan="headers[0].length + 3" class="ps-4">
+          <tr v-else-if="canUpload || canCreateNew" class="no-hover">
+            <td :colspan="headers[0].length + 3" class="ps-4 py-2">
               <v-btn
                 prepend-icon="mdi-plus"
                 size="small"
                 variant="tonal"
                 @click="showUploadProductForm = true"
               >
-                Upload</v-btn
-              >
-            </td>
-          </tr>
-          <tr v-else-if="canCreateNew">
-            <td :colspan="headers[0].length + 3" class="ps-4">
-              <v-btn
-                prepend-icon="mdi-plus"
-                size="small"
-                variant="tonal"
-                @click="showUploadProductForm = true"
-                >New</v-btn
-              >
+                {{ canUpload ? 'Upload' : 'New' }}
+              </v-btn>
             </td>
           </tr>
         </template>
@@ -451,5 +441,10 @@ img {
   box-sizing: border-box;
   background-color: white;
   box-shadow: 0 0.5mm 2mm rgba(0, 0, 0, 0.3);
+}
+
+.no-hover {
+  --v-hover-opacity: 0 !important;
+  background-color: transparent !important;
 }
 </style>
