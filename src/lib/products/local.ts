@@ -4,7 +4,7 @@ import { type ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
 import { type PostResponse } from '@/lib/products/types'
 
 const LOCAL_PRODUCTS_METADATA_STORAGE_KEY = 'weboc-products-metadata-v1.0.0'
-const FEWS_PRODUCT_ATTRIBUTE_LOCAL = 'fews:local'
+export const FEWS_PRODUCT_ATTRIBUTE_LOCAL = 'fews:local'
 
 export function combineProductsMetaData(
   remoteProducts: ProductMetaDataType[],
@@ -76,22 +76,38 @@ function removeLocalProductsMetaData(relativePathMetaDataFiles: string[]) {
   writeLocalProductsMetaData(remaining)
 }
 
-export async function storeLocalProductsMetaData(product: PostResponse) {
+export async function storeLocalProductsMetaData(
+  product: PostResponse,
+  content?: string,
+) {
   const stored = readLocalProductsMetaData()
+
+  // NOTE: Only version keys on productId
+  const version =
+    stored.filter(
+      (item) =>
+        item.attributes['productId'] ===
+        product.attributes.find((attr) => attr.key === 'productId')?.value,
+    ).length + 1
 
   const metaData = await convertToProductMetaDataType({
     ...product,
     // Set to get the same hashed key and keep selection
     // @ts-ignore: PostResponse gives a string but ProductMetaDataType expects a number
-    version: 1,
+    version,
   })
   metaData.attributes[FEWS_PRODUCT_ATTRIBUTE_LOCAL] = 'true'
+  metaData.relativePathProducts = [
+    product.relativePathProducts[0],
+    // FIXME: hack
+    content ?? '',
+  ]
 
   const remaining = stored.filter(
     (item) =>
       item.relativePathMetaDataFile !== metaData.relativePathMetaDataFile,
   )
-  writeLocalProductsMetaData([...remaining, metaData])
+  writeLocalProductsMetaData([metaData, ...remaining])
 }
 
 export function isLocalProduct(product: ProductMetaDataType | undefined) {

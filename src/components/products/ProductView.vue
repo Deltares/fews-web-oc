@@ -171,7 +171,7 @@ import EditReport from '@/components/reports/EditReport.vue'
 import DOMPurify from 'dompurify'
 import { ProductMetaDataType } from '@/services/useProducts/types'
 import { useCurrentUser } from '@/services/useCurrentUser'
-import { postProduct } from '@/lib/products/requests'
+import { getContentType, postProduct } from '@/lib/products/requests'
 import { useLogDisplay } from '@/services/useLogDisplay'
 import { convert } from 'html-to-text'
 import { clickDownloadUrl } from '@/lib/download'
@@ -288,9 +288,22 @@ watch(
 )
 
 watchEffect(async () => {
-  const isLocal = isLocalProduct(selectedProduct.value)
+  if (isLocalProduct(selectedProduct.value)) {
+    const fileName =
+      selectedProduct.value?.relativePathProducts[0].split('/').pop() ??
+      'unknown'
+    const content = selectedProduct.value?.relativePathProducts[1] ?? ''
+    const file = new File([String(content)], fileName, {
+      type: getContentType(content),
+    })
+    src.value = URL.createObjectURL(file)
+    viewMode.value = 'html'
+    htmlContent.value = sanitizeHtmlContent(content)
+    return
+  }
+
   const url = getProductURL(baseUrl, selectedProduct.value)
-  if (!url || isLocal) {
+  if (!url) {
     src.value = ''
     viewMode.value = ''
     return
@@ -306,9 +319,7 @@ watchEffect(async () => {
   const response = await fetch(request)
   if (currentViewMode === 'html') {
     const clone = response.clone()
-    htmlContent.value = DOMPurify.sanitize(await clone.text(), {
-      USE_PROFILES: { html: true },
-    })
+    htmlContent.value = sanitizeHtmlContent(await clone.text())
   } else {
     htmlContent.value = ''
   }
@@ -316,6 +327,10 @@ watchEffect(async () => {
   viewMode.value = currentViewMode
   src.value = urlObject + urlFragments
 })
+
+function sanitizeHtmlContent(content: string) {
+  return DOMPurify.sanitize(content, { USE_PROFILES: { html: true } })
+}
 
 function downloadProduct() {
   if (!src.value) return

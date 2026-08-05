@@ -10,7 +10,7 @@ import { getFileExtension } from '@/lib/products/utils'
 import { getProductURL } from '@/components/products/productTools'
 import { type ArchiveProduct } from '@/lib/products/documentDisplay'
 import { type IntervalItem } from '@/lib/TimeControl/interval'
-import { storeLocalProductsMetaData } from '@/lib/products/local'
+import { FEWS_PRODUCT_ATTRIBUTE_LOCAL, storeLocalProductsMetaData } from '@/lib/products/local'
 
 /**
  * Determines if a given string contains HTML content.
@@ -107,6 +107,7 @@ export async function postProduct(
   let url = `${archiveUrl}products?areaId=${areaId}&sourceId=${sourceId}&timeZero=${timeZero}&fileName=${filename}`
 
   for (const key in attributes) {
+    if (key === FEWS_PRODUCT_ATTRIBUTE_LOCAL) continue
     url = `${url}&attribute(${key})=${attributes[key]}`
   }
 
@@ -131,7 +132,7 @@ export async function postProduct(
 
   const responseData = await response.json()
   const metadata = responseData.productsMetadata[0]
-  await storeLocalProductsMetaData(metadata)
+  await storeLocalProductsMetaData(metadata, String(content))
   return metadata
 }
 
@@ -158,6 +159,7 @@ export async function postFileProduct(
   let url = `${archiveUrl}products?areaId=${areaId}&sourceId=${sourceId}&timeZero=${timeZero}`
 
   for (const key in attributes) {
+    if (key === FEWS_PRODUCT_ATTRIBUTE_LOCAL) continue
     url = `${url}&attribute(${key})=${attributes[key]}`
   }
   const transformRequest = createTransformRequestFn()
