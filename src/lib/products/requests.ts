@@ -10,7 +10,7 @@ import { getFileExtension } from '@/lib/products/utils'
 import { getProductURL } from '@/components/products/productTools'
 import { type ArchiveProduct } from '@/lib/products/documentDisplay'
 import { type IntervalItem } from '@/lib/TimeControl/interval'
-import { storeLocalProductsMetaData, storeUpdatedLocalAttributes } from '@/lib/products/local'
+import { storeLocalProductsMetaData } from '@/lib/products/local'
 
 /**
  * Determines if a given string contains HTML content.
@@ -256,8 +256,5 @@ export async function deleteProduct(
   await provider.postProductAttributes({
     relativePath: product.relativePathMetaDataFile,
     attribute: { [FEWS_PRODUCT_ATTRIBUTE_DELETE]: 'true' },
-  })
-  storeUpdatedLocalAttributes(product.relativePathMetaDataFile, {
-    [FEWS_PRODUCT_ATTRIBUTE_DELETE]: 'true',
   })
 }

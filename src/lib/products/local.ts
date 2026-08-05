@@ -88,25 +88,6 @@ export async function storeLocalProductsMetaData(product: PostResponse) {
   writeLocalProductsMetaData([...remaining, metaData])
 }
 
-export function storeUpdatedLocalAttributes(
-  relativePathMetaDataFile: string,
-  attributes: Record<string, string>,
-) {
-  const stored = readLocalProductsMetaData()
-  const updated = stored.map((item) =>
-    item.relativePathMetaDataFile === relativePathMetaDataFile
-      ? {
-          ...item,
-          attributes: {
-            ...item.attributes,
-            ...attributes,
-          },
-        }
-      : item,
-  )
-  writeLocalProductsMetaData(updated)
-}
-
 function matchesProductsMetaDataFilter(
   product: ProductMetaDataType,
   filter: ProductsMetaDataFilter,
