@@ -109,7 +109,8 @@ When a `<embedUrl>` element is configured in the selected topology node, Web OC 
 **External url**
 
 When a `<url>` element is configured in the selected topology node, Web OC will open a new browser window (outside Web OC) for the URL configured.  
-⚠️ This is only supported for topology nodes with *only* the `<url>` element configured.  
+> [!NOTE]
+> This is only supported for topology nodes with *only* the `<url>` element configured.  
 
 ---
 
