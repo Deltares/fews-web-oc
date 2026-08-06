@@ -1,8 +1,8 @@
 <template>
   <tr>
     <td colspan="100%" class="py-2">
-      <v-card flat>
-        <v-form v-model="formIsValid">
+      <v-form ref="formRef" @submit.prevent="onSubmit">
+        <v-card flat>
           <v-container>
             <v-row v-if="type === 'upload'">
               <v-col cols="12">
@@ -13,10 +13,10 @@
                   hide-details="auto"
                   variant="plain"
                   density="compact"
+                  validate-on="submit"
                   :rules="[(v) => !!v || 'File is required']"
                   accept=".html,.pdf,.png,.jpg,.jpeg,.gif"
-                >
-                </v-file-input>
+                />
               </v-col>
             </v-row>
             <v-row v-if="type === 'new'">
@@ -29,7 +29,7 @@
                   variant="outlined"
                   return-object
                   :rules="[(v) => !!v || 'Template is required']"
-                  hide-details
+                  hide-details="auto"
                   density="compact"
                 />
               </v-col>
@@ -41,9 +41,9 @@
                   label="Product Name"
                   variant="outlined"
                   :rules="[(v) => !!v || 'Product name is required']"
-                  hide-details
+                  hide-details="auto"
                   density="compact"
-                ></v-text-field>
+                />
               </v-col>
             </v-row>
             <v-row v-if="type === 'upload'">
@@ -53,32 +53,31 @@
                   label="Author"
                   variant="outlined"
                   :rules="[(v) => !!v || 'Author name is required']"
-                  hide-details
+                  hide-details="auto"
                   density="compact"
                 ></v-text-field>
               </v-col>
             </v-row>
           </v-container>
-        </v-form>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            variant="flat"
-            size="small"
-            @click="emit('close')"
-            text="Cancel"
-          />
-          <v-btn
-            variant="flat"
-            color="primary"
-            size="small"
-            :disabled="!formIsValid"
-            :loading="isSaving"
-            @click="onSave()"
-            :text="type === 'upload' ? 'Upload' : 'Create'"
-          />
-        </v-card-actions>
-      </v-card>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn
+              variant="flat"
+              size="small"
+              @click="emit('close')"
+              text="Cancel"
+            />
+            <v-btn
+              variant="flat"
+              color="primary"
+              size="small"
+              :loading="isSaving"
+              type="submit"
+              :text="type === 'upload' ? 'Upload' : 'Create'"
+            />
+          </v-card-actions>
+        </v-card>
+      </v-form>
     </td>
   </tr>
 </template>
@@ -95,7 +94,7 @@ import { IntervalItem } from '@/lib/TimeControl/interval'
 import { configManager } from '@/services/application-config'
 import { hashObject } from '@/services/useProducts'
 import { DateTime } from 'luxon'
-import { ref } from 'vue'
+import { ref, useTemplateRef } from 'vue'
 
 interface Props {
   type: 'new' | 'upload'
@@ -115,13 +114,25 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
-const formIsValid = ref(false)
 const file = ref<File>()
 
 const name = ref(props.name ?? '')
 const author = ref(props.author ?? '')
 const selectedCompose = ref(props.compose?.[0])
 const isSaving = ref(false)
+const formRef = useTemplateRef('formRef')
+
+async function onSubmit() {
+  if (!formRef.value) {
+    console.error('Form reference is not available')
+    return
+  }
+
+  const { valid } = await formRef.value.validate()
+  if (valid) {
+    onSave()
+  }
+}
 
 async function onSave() {
   isSaving.value = true
