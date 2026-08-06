@@ -83,7 +83,7 @@ import { IntervalItem } from '@/lib/TimeControl/interval'
 import { configManager } from '@/services/application-config'
 import { hashObject } from '@/services/useProducts'
 import { DateTime } from 'luxon'
-import { ref, useTemplateRef } from 'vue'
+import { ref, useTemplateRef, watch } from 'vue'
 
 interface Props {
   type: 'new' | 'upload'
@@ -110,6 +110,12 @@ const author = ref(props.author ?? '')
 const selectedCompose = ref(props.compose?.[0])
 const isSaving = ref(false)
 const formRef = useTemplateRef('formRef')
+
+watch(file, (newFile) => {
+  if (newFile && !name.value) {
+    name.value = newFile.name.replace(/\.[^/.]+$/, '')
+  }
+})
 
 async function onSubmit() {
   if (!formRef.value) {
