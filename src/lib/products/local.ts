@@ -95,9 +95,8 @@ export async function storeLocalProductsMetaData(
 
   const metaData = await convertToProductMetaDataType({
     ...product,
-    // Set to get the same hashed key and keep selection
-    // @ts-ignore: PostResponse gives a string but ProductMetaDataType expects a number
-    version,
+    // Add 999 to the version to ensure that local products are always considered newer than remote products with the same version
+    version: String(version + 999),
   })
   metaData.attributes[FEWS_PRODUCT_ATTRIBUTE_LOCAL] = 'true'
   metaData.relativePathProducts = [
