@@ -11,17 +11,15 @@
         @refresh="refresh()"
       >
         <template #footer>
+          <v-divider />
           <v-list-item density="compact">
             Last updated: {{ toHumanReadableDateTime(lastUpdated) }}
             <template #append>
               <v-btn
-                class="refresh-container"
-                variant="text"
-                icon
+                icon="mdi-refresh"
+                :loading="isLoading"
                 @click="refresh()"
-              >
-                <v-icon>mdi-refresh</v-icon>
-              </v-btn>
+              />
             </template>
           </v-list-item>
         </template>
