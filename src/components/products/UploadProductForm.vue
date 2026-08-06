@@ -1,66 +1,55 @@
 <template>
   <tr>
     <td colspan="100%" class="py-2">
-      <v-card flat>
-        <v-form v-model="formIsValid">
-          <v-container>
-            <v-row v-if="type === 'upload'">
-              <v-col cols="12">
-                <v-file-input
-                  v-model="file"
-                  :height="10"
-                  label="Upload file"
-                  hide-details="auto"
-                  variant="plain"
-                  density="compact"
-                  :rules="[(v) => !!v || 'File is required']"
-                  accept=".html,.pdf,.png,.jpg,.jpeg,.gif"
-                >
-                </v-file-input>
-              </v-col>
-            </v-row>
-            <v-row v-if="type === 'new'">
-              <v-col cols="12">
-                <v-select
-                  v-model="selectedCompose"
-                  :items="compose"
-                  :item-title="(item) => item.template.name"
-                  label="Select Template"
-                  variant="outlined"
-                  return-object
-                  :rules="[(v) => !!v || 'Template is required']"
-                  hide-details
-                  density="compact"
-                />
-              </v-col>
-            </v-row>
-            <v-row v-if="type === 'upload'">
-              <v-col cols="12">
-                <v-text-field
-                  v-model="name"
-                  label="Product Name"
-                  variant="outlined"
-                  :rules="[(v) => !!v || 'Product name is required']"
-                  hide-details
-                  density="compact"
-                ></v-text-field>
-              </v-col>
-            </v-row>
-            <v-row v-if="type === 'upload'">
-              <v-col cols="12">
-                <v-text-field
-                  v-model="author"
-                  label="Author"
-                  variant="outlined"
-                  :rules="[(v) => !!v || 'Author name is required']"
-                  hide-details
-                  density="compact"
-                ></v-text-field>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-form>
-        <v-card-actions>
+      <v-form
+        ref="formRef"
+        @submit.prevent="onSubmit"
+        class="d-flex flex-column ga-4"
+      >
+        <template v-if="type === 'upload'">
+          <v-file-input
+            v-model="file"
+            label="Upload file"
+            hide-details="auto"
+            variant="plain"
+            density="compact"
+            validate-on="submit"
+            :rules="[(v) => !!v || 'File is required']"
+            accept=".html,.pdf,.png,.jpg,.jpeg,.gif"
+            class="cursor-pointer"
+          />
+          <v-text-field
+            v-model="name"
+            label="Product Name"
+            variant="outlined"
+            :rules="[(v) => !!v || 'Product name is required']"
+            hide-details="auto"
+            density="compact"
+          />
+          <v-text-field
+            v-model="author"
+            label="Author"
+            variant="outlined"
+            :rules="[(v) => !!v || 'Author name is required']"
+            hide-details="auto"
+            density="compact"
+          />
+        </template>
+
+        <v-select
+          v-if="type === 'new'"
+          v-model="selectedCompose"
+          :items="compose"
+          :item-title="(item) => item.template.name"
+          label="Select Template"
+          variant="outlined"
+          return-object
+          :rules="[(v) => !!v || 'Template is required']"
+          hide-details="auto"
+          density="compact"
+        />
+
+        <div class="d-flex ga-2">
           <v-spacer />
           <v-btn
             variant="flat"
@@ -72,12 +61,12 @@
             variant="flat"
             color="primary"
             size="small"
-            :disabled="!formIsValid"
-            @click="onSave()"
+            :loading="isSaving"
+            type="submit"
             :text="type === 'upload' ? 'Upload' : 'Create'"
           />
-        </v-card-actions>
-      </v-card>
+        </div>
+      </v-form>
     </td>
   </tr>
 </template>
@@ -94,7 +83,7 @@ import { IntervalItem } from '@/lib/TimeControl/interval'
 import { configManager } from '@/services/application-config'
 import { hashObject } from '@/services/useProducts'
 import { DateTime } from 'luxon'
-import { ref } from 'vue'
+import { ref, useTemplateRef, watch } from 'vue'
 
 interface Props {
   type: 'new' | 'upload'
@@ -114,34 +103,60 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
-const formIsValid = ref(false)
 const file = ref<File>()
 
 const name = ref(props.name ?? '')
 const author = ref(props.author ?? '')
 const selectedCompose = ref(props.compose?.[0])
+const isSaving = ref(false)
+const formRef = useTemplateRef('formRef')
+
+watch(file, (newFile) => {
+  if (newFile && !name.value) {
+    name.value = newFile.name.replace(/\.[^/.]+$/, '')
+  }
+})
+
+async function onSubmit() {
+  if (!formRef.value) {
+    console.error('Form reference is not available')
+    return
+  }
+
+  const { valid } = await formRef.value.validate()
+  if (valid) {
+    onSave()
+  }
+}
 
 async function onSave() {
-  switch (props.type) {
-    case 'upload':
-      uploadProduct(
-        name.value,
-        author.value,
-        props.areaId,
-        props.sourceId,
-        file.value,
-      )
-      break
-    case 'new':
-      const compose = selectedCompose.value
-      createNewProduct(
-        compose?.archiveProduct.name ?? '',
-        author.value,
-        compose?.archiveProduct,
-        compose?.template,
-        props.viewPeriod,
-      )
-      break
+  isSaving.value = true
+  try {
+    switch (props.type) {
+      case 'upload':
+        await uploadProduct(
+          name.value,
+          author.value,
+          props.areaId,
+          props.sourceId,
+          file.value,
+        )
+        break
+      case 'new':
+        const compose = selectedCompose.value
+        await createNewProduct(
+          compose?.archiveProduct.name ?? '',
+          author.value,
+          compose?.archiveProduct,
+          compose?.template,
+          props.viewPeriod,
+        )
+        break
+    }
+  } catch (error) {
+    console.error('Error saving product:', error)
+  } finally {
+    isSaving.value = false
   }
 
   emit('saved')

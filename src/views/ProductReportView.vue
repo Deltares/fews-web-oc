@@ -140,7 +140,7 @@ const filteredProducts = computed(() => {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { products, fetchProducts } = useProducts(
+const { products, refresh } = useProducts(
   baseUrl,
   viewPeriod,
   archiveProductConfig,
@@ -214,7 +214,7 @@ async function onSave() {
       fileName,
       metaData.attributes,
     )
-    await fetchProducts()
+    await refresh()
   } catch (error) {
     console.error('Error saving report:', error)
     return

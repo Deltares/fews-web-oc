@@ -96,6 +96,7 @@
         "
         class="d-flex flex-1-1"
         density="compact"
+        :loading="loading"
         fixed-header
         height="400"
         @click:row="onClick"
@@ -183,24 +184,32 @@
           </tr>
         </template>
         <template v-slot:item.actions="{ item }">
-          <v-btn
-            v-if="item.attributes.name !== 'Create new'"
-            icon="mdi-delete"
-            size="small"
-            variant="text"
-            @click.stop="onDeleteProduct(item)"
-            aria-label="Delete product"
-            class="delete-action-btn"
-            :hover="true"
-          ></v-btn>
-          <v-btn
-            v-else
-            icon="mdi-plus"
-            size="small"
-            variant="text"
-            @click="onNewProduct(template ?? item)"
-            :title="'Create new product'"
-          ></v-btn>
+          <div class="d-flex align-center justify-end">
+            <v-icon
+              v-if="isLocalProduct(item)"
+              icon="mdi-cloud-sync-outline"
+              class="text-medium-emphasis"
+              v-tooltip:top="'Syncing product to server'"
+            />
+            <v-btn
+              v-if="item.attributes.name !== 'Create new'"
+              icon="mdi-delete"
+              size="small"
+              variant="text"
+              @click.stop="onDeleteProduct(item)"
+              :loading="isDeletingProduct[item.key]"
+              aria-label="Delete product"
+              :class="{ 'hover-opacity': !isDeletingProduct[item.key] }"
+            ></v-btn>
+            <v-btn
+              v-else
+              icon="mdi-plus"
+              size="small"
+              variant="text"
+              @click="onNewProduct(template ?? item)"
+              :title="'Create new product'"
+            ></v-btn>
+          </div>
         </template>
         <template v-slot:body.prepend="props">
           <slot name="prepend" v-bind="props"></slot>
@@ -223,6 +232,7 @@ import { getProductURL } from './productTools'
 import { useCurrentUser } from '@/services/useCurrentUser'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { getFileExtension, getViewMode } from '@/lib/products/utils'
+import { isLocalProduct } from '@/lib/products/local'
 
 interface AttributeHeader {
   attribute: string
@@ -251,6 +261,7 @@ interface Props {
   template?: ProductMetaDataType
   config: ProductBrowserTableConfig
   productKey?: string
+  loading?: boolean
 }
 
 const props = defineProps<Props>()
@@ -354,7 +365,10 @@ const items = computed(() => {
   return results
 })
 
+const isDeletingProduct = ref<Record<string, boolean>>({})
+
 async function onDeleteProduct(product: ProductMetaDataType) {
+  isDeletingProduct.value[product.key] = true
   try {
     const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
     await deleteProduct(baseUrl, product)
@@ -372,6 +386,7 @@ async function onDeleteProduct(product: ProductMetaDataType) {
         },
       })
     }
+    delete isDeletingProduct.value[product.key]
   }
 }
 
@@ -433,11 +448,15 @@ async function onNewProduct(item: ProductMetaDataType) {
   background-color: rgb(var(--v-theme-on-surface), var(--v-activated-opacity));
 }
 
-:deep(.v-data-table__tr:hover) .delete-action-btn {
+:deep(.selected-row > td) {
+  border-bottom: thin solid transparent;
+}
+
+:deep(.v-data-table__tr:hover) .hover-opacity {
   opacity: 1;
 }
 
-.delete-action-btn {
+.hover-opacity {
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
 }

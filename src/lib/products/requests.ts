@@ -6,10 +6,15 @@ import {
   FEWS_PRODUCT_ATTRIBUTE_DELETE,
   getArchiveProducts,
 } from '@/services/useProducts/index.js'
-import { getFileExtension } from './utils.js'
-import { getProductURL } from '@/components/products/productTools.js'
-import { ArchiveProduct } from './documentDisplay.js'
-import { IntervalItem } from '../TimeControl/interval.js'
+import { getFileExtension } from '@/lib/products/utils'
+import { getProductURL } from '@/components/products/productTools'
+import { type ArchiveProduct } from '@/lib/products/documentDisplay'
+import { type IntervalItem } from '@/lib/TimeControl/interval'
+import {
+  FEWS_PRODUCT_ATTRIBUTE_LOCAL,
+  storeLocalProductsMetaData,
+  updateLocalProductsMetaDataAttributes,
+} from '@/lib/products/local'
 
 /**
  * Determines if a given string contains HTML content.
@@ -106,6 +111,7 @@ export async function postProduct(
   let url = `${archiveUrl}products?areaId=${areaId}&sourceId=${sourceId}&timeZero=${timeZero}&fileName=${filename}`
 
   for (const key in attributes) {
+    if (key === FEWS_PRODUCT_ATTRIBUTE_LOCAL) continue
     url = `${url}&attribute(${key})=${attributes[key]}`
   }
 
@@ -129,7 +135,9 @@ export async function postProduct(
   }
 
   const responseData = await response.json()
-  return responseData.productsMetadata[0]
+  const metadata = responseData.productsMetadata[0]
+  await storeLocalProductsMetaData(metadata, { content: String(content) })
+  return metadata
 }
 
 /**
@@ -155,6 +163,7 @@ export async function postFileProduct(
   let url = `${archiveUrl}products?areaId=${areaId}&sourceId=${sourceId}&timeZero=${timeZero}`
 
   for (const key in attributes) {
+    if (key === FEWS_PRODUCT_ATTRIBUTE_LOCAL) continue
     url = `${url}&attribute(${key})=${attributes[key]}`
   }
   const transformRequest = createTransformRequestFn()
@@ -180,7 +189,9 @@ export async function postFileProduct(
   }
 
   const responseData = await response.json()
-  return responseData.productsMetadata[0]
+  const metadata = responseData.productsMetadata[0]
+  await storeLocalProductsMetaData(metadata, { file: renamedFile })
+  return metadata
 }
 
 /**
@@ -251,5 +262,8 @@ export async function deleteProduct(
   await provider.postProductAttributes({
     relativePath: product.relativePathMetaDataFile,
     attribute: { [FEWS_PRODUCT_ATTRIBUTE_DELETE]: 'true' },
+  })
+  updateLocalProductsMetaDataAttributes(product.relativePathMetaDataFile, {
+    [FEWS_PRODUCT_ATTRIBUTE_DELETE]: 'true',
   })
 }
