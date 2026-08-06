@@ -8,7 +8,7 @@
         class="w-100 h-100"
         :productKey="productKey"
         :loading="isLoading"
-        @refresh="fetchProducts()"
+        @refresh="refresh()"
       >
         <template #footer>
           <v-list-item density="compact">
@@ -18,7 +18,7 @@
                 class="refresh-container"
                 variant="text"
                 icon
-                @click="fetchProducts()"
+                @click="refresh()"
               >
                 <v-icon>mdi-refresh</v-icon>
               </v-btn>
@@ -35,7 +35,7 @@
             :viewPeriod="viewPeriod"
             :compose="compose"
             class="no-hover"
-            @saved="fetchProducts()"
+            @saved="refresh()"
             @close="showUploadProductForm = false"
           />
 
@@ -244,7 +244,7 @@ const areaId = computed(() => {
   return archiveProductSets[0].constraints?.areaId || 'weboc'
 })
 
-const { products, fetchProducts, lastUpdated, isLoading } = useProducts(
+const { products, refresh, lastUpdated, isLoading } = useProducts(
   baseUrl,
   viewPeriod,
   archiveProductConfig,
@@ -375,7 +375,7 @@ async function onSave() {
       fileName,
       metaData.attributes,
     )
-    await fetchProducts()
+    await refresh()
   } catch (error) {
     console.error('Error saving report:', error)
     return

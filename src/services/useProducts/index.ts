@@ -89,7 +89,6 @@ export function useProducts(
 
   return {
     products,
-    fetchProducts,
     getProductByKey,
     refresh,
     lastUpdated,
