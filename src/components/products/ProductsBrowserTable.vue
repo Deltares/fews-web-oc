@@ -447,6 +447,10 @@ async function onNewProduct(item: ProductMetaDataType) {
   background-color: rgb(var(--v-theme-on-surface), var(--v-activated-opacity));
 }
 
+:deep(.selected-row > td) {
+  border-bottom: thin solid transparent;
+}
+
 :deep(.v-data-table__tr:hover) .hover-opacity {
   opacity: 1;
 }
