@@ -189,6 +189,7 @@
               v-if="isLocalProduct(item)"
               icon="mdi-cloud-sync-outline"
               class="text-medium-emphasis"
+              v-tooltip:top="'Syncing product to server'"
             />
             <v-btn
               v-if="item.attributes.name !== 'Create new'"
