@@ -12,7 +12,7 @@
     :config="config"
     :productKey="productKey"
   />
-  <span v-else class="text-center">
+  <span v-else-if="config" class="text-center">
     Document display is not supported in this view mode.
   </span>
 </template>
