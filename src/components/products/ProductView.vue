@@ -52,7 +52,7 @@
         </template>
       </ProductsBrowserTable>
     </v-navigation-drawer>
-    <div class="flex-1-1 h-100 flex-column position-relative">
+    <div class="flex-1-1 h-100 w-100 flex-column position-relative">
       <EditReport
         v-if="isEditing"
         v-model="htmlContent"
