@@ -6,6 +6,7 @@ import type {
 import type { LogLevel, LogMessage, LogType } from './types'
 import { WorkflowItem } from '../workflows'
 import { TaskRun } from '@/lib/taskruns'
+import { hasEqualIdentity } from '@/lib/auth/identityEquality'
 
 export function getTitleForLog(
   log: LogMessage,
@@ -202,7 +203,8 @@ export function logToUserColor(log: LogMessage, userName: string, opacity = 1) {
 
 export function isLogMessageByCurrentUser(log: LogMessage, userName: string) {
   if (log.type === 'system') return false
-  return log.user === userName
+  if (log.user === undefined) return false
+  return hasEqualIdentity(log.user, userName)
 }
 
 export function logToActions(
