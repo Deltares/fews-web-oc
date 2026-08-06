@@ -285,7 +285,12 @@ watch(
   },
 )
 
-watchEffect(async () => {
+watch(selectedProduct, async (prevProduct, newProduct) => {
+  if (prevProduct?.key !== newProduct?.key) {
+    src.value = ''
+    htmlContent.value = ''
+  }
+
   if (isLocalProduct(selectedProduct.value)) {
     const fileName =
       selectedProduct.value?.relativePathProducts[0].split('/').pop() ??
