@@ -19,6 +19,7 @@ import {
 import {
   combineProductsMetaData,
   getLocalProductsMetaData,
+  removeRemoteFromLocalProductsMetaData,
 } from '@/lib/products/local'
 
 export const FEWS_PRODUCT_ATTRIBUTE_DELETE = 'fews:delete'
@@ -237,13 +238,17 @@ export async function fetchProductsMetaData(
 
   try {
     const response = await provider.getProductsMetaData(filter)
+    removeRemoteFromLocalProductsMetaData(response.productsMetadata)
+
     const remoteProductsMetadata = filterDeletedProductsMetaData(
       response.productsMetadata,
     ).filter((product) => (productFilter ? productFilter(product) : true))
     const remoteProducts = await Promise.all(
       remoteProductsMetadata.map(convertToProductMetaDataType),
     )
+
     const localProducts = getLocalProductsMetaData(filter)
+
     return combineProductsMetaData(remoteProducts, localProducts)
   } catch (err) {
     console.error(err)

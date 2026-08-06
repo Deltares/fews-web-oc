@@ -13,6 +13,7 @@ import { type IntervalItem } from '@/lib/TimeControl/interval'
 import {
   FEWS_PRODUCT_ATTRIBUTE_LOCAL,
   storeLocalProductsMetaData,
+  updateLocalProductsMetaDataAttributes,
 } from '@/lib/products/local'
 
 /**
@@ -261,5 +262,8 @@ export async function deleteProduct(
   await provider.postProductAttributes({
     relativePath: product.relativePathMetaDataFile,
     attribute: { [FEWS_PRODUCT_ATTRIBUTE_DELETE]: 'true' },
+  })
+  updateLocalProductsMetaDataAttributes(product.relativePathMetaDataFile, {
+    [FEWS_PRODUCT_ATTRIBUTE_DELETE]: 'true',
   })
 }

@@ -1,6 +1,9 @@
 import { convertToProductMetaDataType } from '@/services/useProducts'
 import { type ProductMetaDataType } from '@/services/useProducts/types'
-import { type ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
+import {
+  type ArchiveProductsMetadataEntry,
+  type ProductsMetaDataFilter,
+} from '@deltares/fews-pi-requests'
 import { type PostResponse } from '@/lib/products/types'
 
 const LOCAL_PRODUCTS_METADATA_STORAGE_KEY = 'weboc-products-metadata-v1.0.0'
@@ -11,8 +14,6 @@ export function combineProductsMetaData(
   localProducts: ProductMetaDataType[],
 ): ProductMetaDataType[] {
   const combined = [...remoteProducts]
-
-  const toRemove = []
 
   for (const localProduct of localProducts) {
     const existingIndex = combined.findIndex(
@@ -26,16 +27,24 @@ export function combineProductsMetaData(
       continue
     }
 
-    if (isSameProductMetaData(combined[existingIndex], localProduct)) {
-      toRemove.push(localProduct.relativePathMetaDataFile)
-    } else {
-      combined[existingIndex] = localProduct
-    }
+    combined[existingIndex] = localProduct
   }
 
-  removeLocalProductsMetaData(toRemove)
-
   return combined
+}
+
+export function removeRemoteFromLocalProductsMetaData(
+  remoteProducts: ArchiveProductsMetadataEntry[],
+) {
+  const stored = readLocalProductsMetaData()
+  const remaining = stored.filter(
+    (localProduct) =>
+      !remoteProducts.some((remoteProduct) =>
+        isSameProductMetaData(remoteProduct, localProduct),
+      ),
+  )
+
+  writeLocalProductsMetaData(remaining)
 }
 
 export function getLocalProductsMetaData(filter: ProductsMetaDataFilter) {
@@ -46,7 +55,7 @@ export function getLocalProductsMetaData(filter: ProductsMetaDataFilter) {
 }
 
 function isSameProductMetaData(
-  remote: ProductMetaDataType,
+  remote: ArchiveProductsMetadataEntry,
   local: ProductMetaDataType,
 ) {
   if (remote.relativePathMetaDataFile !== local.relativePathMetaDataFile) {
@@ -57,23 +66,13 @@ function isSameProductMetaData(
     return false
   }
 
-  for (const attribute of Object.keys(remote.attributes)) {
-    if (remote.attributes[attribute] !== local.attributes[attribute]) {
+  for (const attribute of remote.attributes) {
+    if (attribute.value !== local.attributes[attribute.key]) {
       return false
     }
   }
 
   return true
-}
-
-function removeLocalProductsMetaData(relativePathMetaDataFiles: string[]) {
-  if (!relativePathMetaDataFiles.length) return
-  const stored = readLocalProductsMetaData()
-  const remaining = stored.filter(
-    (item) =>
-      !relativePathMetaDataFiles.includes(item.relativePathMetaDataFile),
-  )
-  writeLocalProductsMetaData(remaining)
 }
 
 export async function storeLocalProductsMetaData(
@@ -114,6 +113,24 @@ export async function storeLocalProductsMetaData(
 
 export function isLocalProduct(product: ProductMetaDataType | undefined) {
   return product?.attributes[FEWS_PRODUCT_ATTRIBUTE_LOCAL] === 'true'
+}
+
+export function updateLocalProductsMetaDataAttributes(
+  relativePathMetaDataFile: string,
+  attributes: Record<string, string>,
+) {
+  const stored = readLocalProductsMetaData()
+  const item = stored.find(
+    (item) => item.relativePathMetaDataFile === relativePathMetaDataFile,
+  )
+  if (!item) return
+
+  item.attributes = {
+    ...item.attributes,
+    ...attributes,
+  }
+
+  writeLocalProductsMetaData(stored)
 }
 
 function matchesProductsMetaDataFilter(
