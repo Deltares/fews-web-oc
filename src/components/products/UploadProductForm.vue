@@ -1,82 +1,71 @@
 <template>
   <tr>
     <td colspan="100%" class="py-2">
-      <v-form ref="formRef" @submit.prevent="onSubmit">
-        <v-card flat>
-          <v-container>
-            <v-row v-if="type === 'upload'">
-              <v-col cols="12">
-                <v-file-input
-                  v-model="file"
-                  :height="10"
-                  label="Upload file"
-                  hide-details="auto"
-                  variant="plain"
-                  density="compact"
-                  validate-on="submit"
-                  :rules="[(v) => !!v || 'File is required']"
-                  accept=".html,.pdf,.png,.jpg,.jpeg,.gif"
-                />
-              </v-col>
-            </v-row>
-            <v-row v-if="type === 'new'">
-              <v-col cols="12">
-                <v-select
-                  v-model="selectedCompose"
-                  :items="compose"
-                  :item-title="(item) => item.template.name"
-                  label="Select Template"
-                  variant="outlined"
-                  return-object
-                  :rules="[(v) => !!v || 'Template is required']"
-                  hide-details="auto"
-                  density="compact"
-                />
-              </v-col>
-            </v-row>
-            <v-row v-if="type === 'upload'">
-              <v-col cols="12">
-                <v-text-field
-                  v-model="name"
-                  label="Product Name"
-                  variant="outlined"
-                  :rules="[(v) => !!v || 'Product name is required']"
-                  hide-details="auto"
-                  density="compact"
-                />
-              </v-col>
-            </v-row>
-            <v-row v-if="type === 'upload'">
-              <v-col cols="12">
-                <v-text-field
-                  v-model="author"
-                  label="Author"
-                  variant="outlined"
-                  :rules="[(v) => !!v || 'Author name is required']"
-                  hide-details="auto"
-                  density="compact"
-                ></v-text-field>
-              </v-col>
-            </v-row>
-          </v-container>
-          <v-card-actions>
-            <v-spacer />
-            <v-btn
-              variant="flat"
-              size="small"
-              @click="emit('close')"
-              text="Cancel"
-            />
-            <v-btn
-              variant="flat"
-              color="primary"
-              size="small"
-              :loading="isSaving"
-              type="submit"
-              :text="type === 'upload' ? 'Upload' : 'Create'"
-            />
-          </v-card-actions>
-        </v-card>
+      <v-form
+        ref="formRef"
+        @submit.prevent="onSubmit"
+        class="d-flex flex-column ga-4"
+      >
+        <template v-if="type === 'upload'">
+          <v-file-input
+            v-model="file"
+            label="Upload file"
+            hide-details="auto"
+            variant="plain"
+            density="compact"
+            validate-on="submit"
+            :rules="[(v) => !!v || 'File is required']"
+            accept=".html,.pdf,.png,.jpg,.jpeg,.gif"
+            class="cursor-pointer"
+          />
+          <v-text-field
+            v-model="name"
+            label="Product Name"
+            variant="outlined"
+            :rules="[(v) => !!v || 'Product name is required']"
+            hide-details="auto"
+            density="compact"
+          />
+          <v-text-field
+            v-model="author"
+            label="Author"
+            variant="outlined"
+            :rules="[(v) => !!v || 'Author name is required']"
+            hide-details="auto"
+            density="compact"
+          />
+        </template>
+
+        <v-select
+          v-if="type === 'new'"
+          v-model="selectedCompose"
+          :items="compose"
+          :item-title="(item) => item.template.name"
+          label="Select Template"
+          variant="outlined"
+          return-object
+          :rules="[(v) => !!v || 'Template is required']"
+          hide-details="auto"
+          density="compact"
+        />
+
+        <div class="d-flex ga-2">
+          <v-spacer />
+          <v-btn
+            variant="flat"
+            size="small"
+            @click="emit('close')"
+            text="Cancel"
+          />
+          <v-btn
+            variant="flat"
+            color="primary"
+            size="small"
+            :loading="isSaving"
+            type="submit"
+            :text="type === 'upload' ? 'Upload' : 'Create'"
+          />
+        </div>
       </v-form>
     </td>
   </tr>
