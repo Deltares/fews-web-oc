@@ -190,6 +190,35 @@ async function getArchiveProductForConstraint(
   return response
 }
 
+function filterDeletedProductsMetaData(
+  products: ArchiveProductsMetadataEntry[],
+): ArchiveProductsMetadataEntry[] {
+  const deletedProducts: Record<string, boolean> = {}
+  const result: Record<string, ArchiveProductsMetadataEntry[]> = {}
+
+  const getValue = (product: ArchiveProductsMetadataEntry, key: string) => {
+    return product.attributes.find((attr) => attr.key === key)?.value
+  }
+
+  for (const product of products) {
+    const key = `${getValue(product, 'productId')}-${product.timeZero}`
+    if (deletedProducts[key]) continue
+
+    if (getValue(product, FEWS_PRODUCT_ATTRIBUTE_DELETE) === 'true') {
+      deletedProducts[key] = true
+      result[key] = []
+      continue
+    }
+
+    if (!result[key]) {
+      result[key] = []
+    }
+    result[key].push(product)
+  }
+
+  return Object.values(result).flat()
+}
+
 /**
  * Fetch product metadata based on a given filter.
  *
@@ -208,17 +237,14 @@ export async function fetchProductsMetaData(
 
   try {
     const response = await provider.getProductsMetaData(filter)
-    const remoteProductsMetadata = filterProductsMetaDataEntries(
+    const remoteProductsMetadata = filterDeletedProductsMetaData(
       response.productsMetadata,
-      productFilter,
+    ).filter((product) => (productFilter ? productFilter(product) : true))
+    const remoteProducts = await Promise.all(
+      remoteProductsMetadata.map(convertToProductMetaDataType),
     )
-    const promises = remoteProductsMetadata.map(convertToProductMetaDataType)
-    const remoteProducts = await Promise.all(promises)
     const localProducts = getLocalProductsMetaData(filter)
-    const products = combineProductsMetaData(remoteProducts, localProducts)
-    return products.filter(
-      (product) => product.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE] !== 'true',
-    )
+    return combineProductsMetaData(remoteProducts, localProducts)
   } catch (err) {
     console.error(err)
     throw new Error('Error fetching product metadata')
@@ -349,27 +375,6 @@ function isArchiveProductSet(
   products: ArchiveProductSet[] | ArchiveProduct[],
 ): products is ArchiveProductSet[] {
   return (products as ArchiveProductSet[])[0]?.constraints !== undefined
-}
-
-export function filterProductsMetaDataEntries(
-  productsMetadata: ArchiveProductsMetadataEntry[],
-  productFilter?: (product: ArchiveProductsMetadataEntry) => boolean,
-): ArchiveProductsMetadataEntry[] {
-  return productsMetadata.filter(
-    (product) =>
-      !isDeletedProductMetaData(product) &&
-      (productFilter === undefined || productFilter(product)),
-  )
-}
-
-function isDeletedProductMetaData(
-  product: ArchiveProductsMetadataEntry,
-): boolean {
-  return product.attributes.some(
-    (attribute) =>
-      attribute.key === FEWS_PRODUCT_ATTRIBUTE_DELETE &&
-      attribute.value === 'true',
-  )
 }
 
 function matchesConstraintProductMetaData(
