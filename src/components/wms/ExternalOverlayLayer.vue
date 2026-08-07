@@ -54,17 +54,6 @@ function namespacedLayerId(id: string): string {
   return getLayerId(`overlay-${props.overlay.id}-${id}`)
 }
 
-async function loadStyle() {
-  const styleJsonFile = props.overlay.styleJsonFile
-  if (!styleJsonFile) return
-
-  const url = styleJsonFile.startsWith('http')
-    ? styleJsonFile
-    : getResourcesStaticUrl(styleJsonFile)
-  const response = await fetch(url)
-  style.value = await response.json()
-}
-
 function removeLayers() {
   if (!map) return
 
@@ -141,7 +130,14 @@ function applyOpacity() {
   }
 }
 
-loadStyle()
+const styleJsonFile = props.overlay.styleJsonFile
+if (styleJsonFile) {
+  const url = styleJsonFile.startsWith('http')
+    ? styleJsonFile
+    : getResourcesStaticUrl(styleJsonFile)
+  const response = await fetch(url)
+  style.value = await response.json()
+}
 
 watch([isLoaded, style], ([loaded, newStyle]) => {
   if (loaded && newStyle) addLayers()
