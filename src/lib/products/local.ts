@@ -154,8 +154,8 @@ function matchesProductsMetaDataFilter(
 }
 
 function readLocalProductsMetaData(): ProductMetaDataType[] {
-  if (typeof localStorage === 'undefined') return []
-  const raw = localStorage.getItem(LOCAL_PRODUCTS_METADATA_STORAGE_KEY)
+  if (typeof sessionStorage === 'undefined') return []
+  const raw = sessionStorage.getItem(LOCAL_PRODUCTS_METADATA_STORAGE_KEY)
   if (!raw) return []
   try {
     return JSON.parse(raw) as ProductMetaDataType[]
@@ -165,8 +165,8 @@ function readLocalProductsMetaData(): ProductMetaDataType[] {
 }
 
 function writeLocalProductsMetaData(products: ProductMetaDataType[]) {
-  if (typeof localStorage === 'undefined') return
-  localStorage.setItem(
+  if (typeof sessionStorage === 'undefined') return
+  sessionStorage.setItem(
     LOCAL_PRODUCTS_METADATA_STORAGE_KEY,
     JSON.stringify(products),
   )
