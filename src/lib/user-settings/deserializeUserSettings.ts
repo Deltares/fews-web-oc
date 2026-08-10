@@ -90,10 +90,11 @@ export function deserializeUserSettings(
 ): UserSettingsItem[] {
   let storedItems: Partial<UserSettingsItem>[] = []
   try {
-    storedItems =
-      JSON.parse(data) as Partial<UserSettingsItem>[] ?? []
+    storedItems = JSON.parse(data)?.items ?? []
   } catch {
-    console.warn('Failed to parse user settings from local storage, using defaults.')
+    console.warn(
+      'Failed to parse user settings from local storage, using defaults.',
+    )
   }
 
   const newState: UserSettingsItem[] = defaults.map((item) => ({ ...item }))
