@@ -3,14 +3,7 @@ function normalizeBase(str: string): string {
 }
 
 function getTrailingDigitCount(str: string): number {
-  let count = 0
-  for (let i = str.length - 1; i >= 0; i--) {
-    const code = str.codePointAt(i)
-    if (code === undefined) break
-    if (code < 48 || code > 57) break // not a digit
-    count++
-  }
-  return count
+  return str.match(/\d*$/)?.[0].length ?? 0
 }
 
 /**
