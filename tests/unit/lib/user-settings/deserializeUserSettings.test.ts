@@ -24,7 +24,7 @@ const defaultSettings: UserSettingsItem[] = [
       { value: 'light', title: 'Light' },
       { value: 'dark', title: 'Dark' },
     ],
-  } as UserSettingsItemOneOf,
+  },
   {
     id: 'datum.verticalDatum',
     type: 'boolean',
@@ -32,7 +32,7 @@ const defaultSettings: UserSettingsItem[] = [
     value: true,
     favorite: false,
     group: 'Datum',
-  } as UserSettingsItemBoolean,
+  },
   {
     id: 'charts.scrollZoomMode',
     type: 'oneOfMultiple',
@@ -46,7 +46,7 @@ const defaultSettings: UserSettingsItem[] = [
       { value: 'y', title: 'Only Y' },
       { value: 'xy', title: 'Both X and Y' },
     ],
-  } as UserSettingsItemOneOf,
+  },
 ]
 
 function serialize(items: Partial<UserSettingsItem>[]): string {
