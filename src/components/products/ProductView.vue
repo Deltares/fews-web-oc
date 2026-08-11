@@ -7,20 +7,19 @@
         :config="tableConfig"
         class="w-100 h-100"
         :productKey="productKey"
-        @refresh="fetchProducts()"
+        :loading="isLoading"
+        @refresh="refresh()"
       >
         <template #footer>
+          <v-divider />
           <v-list-item density="compact">
             Last updated: {{ toHumanReadableDateTime(lastUpdated) }}
             <template #append>
               <v-btn
-                class="refresh-container"
-                variant="text"
-                icon
-                @click="fetchProducts()"
-              >
-                <v-icon>mdi-refresh</v-icon>
-              </v-btn>
+                icon="mdi-refresh"
+                :loading="isLoading"
+                @click="refresh()"
+              />
             </template>
           </v-list-item>
         </template>
@@ -33,37 +32,27 @@
             :author="userName"
             :viewPeriod="viewPeriod"
             :compose="compose"
-            @saved="fetchProducts()"
+            class="no-hover"
+            @saved="refresh()"
             @close="showUploadProductForm = false"
           />
 
-          <tr v-else-if="canUpload">
-            <td :colspan="headers[0].length + 3" class="ps-4">
+          <tr v-else-if="canUpload || canCreateNew" class="no-hover">
+            <td :colspan="headers[0].length + 3" class="ps-4 py-2">
               <v-btn
                 prepend-icon="mdi-plus"
                 size="small"
                 variant="tonal"
                 @click="showUploadProductForm = true"
               >
-                Upload</v-btn
-              >
-            </td>
-          </tr>
-          <tr v-else-if="canCreateNew">
-            <td :colspan="headers[0].length + 3" class="ps-4">
-              <v-btn
-                prepend-icon="mdi-plus"
-                size="small"
-                variant="tonal"
-                @click="showUploadProductForm = true"
-                >New</v-btn
-              >
+                {{ canUpload ? 'Upload' : 'New' }}
+              </v-btn>
             </td>
           </tr>
         </template>
       </ProductsBrowserTable>
     </v-navigation-drawer>
-    <div class="flex-1-1 h-100 flex-column position-relative">
+    <div class="flex-1-1 h-100 w-100 flex-column position-relative">
       <EditReport
         v-if="isEditing"
         v-model="htmlContent"
@@ -81,9 +70,11 @@
               color="primary"
               prepend-icon="mdi-pencil"
               variant="flat"
+              :disabled="!selectedProduct"
               @click="isEditing = !isEditing"
-              >edit</v-btn
             >
+              edit
+            </v-btn>
             <v-menu location="bottom left">
               <template #activator="{ props }">
                 <v-btn
@@ -97,7 +88,7 @@
               </template>
               <v-list density="compact">
                 <v-list-item
-                  v-if="viewMode === 'html'"
+                  v-if="viewMode === 'html' && selectedProduct"
                   prepend-icon="mdi-email"
                   title="Open in Email Client..."
                   @click="
@@ -178,11 +169,12 @@ import EditReport from '@/components/reports/EditReport.vue'
 import DOMPurify from 'dompurify'
 import { ProductMetaDataType } from '@/services/useProducts/types'
 import { useCurrentUser } from '@/services/useCurrentUser'
-import { postProduct } from '@/lib/products/requests'
+import { getContentType, postProduct } from '@/lib/products/requests'
 import { useLogDisplay } from '@/services/useLogDisplay'
 import { convert } from 'html-to-text'
 import { clickDownloadUrl } from '@/lib/download'
-import router from '@/router'
+import { useRoute, useRouter } from 'vue-router'
+import { isLocalProduct } from '@/lib/products/local'
 
 const LOG_DISPLAY_ID = 'email_reports'
 
@@ -210,11 +202,12 @@ const {
 const src = ref('')
 const viewMode = ref('')
 
-const selected = ref(0) // Example timeZero
-const selectedProduct = computed(() => {
-  return filteredProducts.value[selected.value]
-})
+const selectedProduct = computed(() =>
+  filteredProducts.value.find((p) => p.key === productKey),
+)
 
+const route = useRoute()
+const router = useRouter()
 const viewPeriod = ref<IntervalItem>({})
 const htmlContent = ref('')
 const isEditing = ref(false)
@@ -249,7 +242,7 @@ const areaId = computed(() => {
   return archiveProductSets[0].constraints?.areaId || 'weboc'
 })
 
-const { products, getProductByKey, fetchProducts, lastUpdated } = useProducts(
+const { products, refresh, lastUpdated, isLoading } = useProducts(
   baseUrl,
   viewPeriod,
   archiveProductConfig,
@@ -278,64 +271,82 @@ watchEffect(() => {
 watch(
   () => filteredProducts.value,
   () => {
-    if (!productKey) {
-      if (filteredProducts.value.length > 0) {
-        const firstProductMetaData = filteredProducts.value[0]
-        selected.value = 0
-        router.push({
-          name: 'TopologyDocumentDisplay',
-          params: {
-            productKey: firstProductMetaData.key,
-          },
-        })
-      }
-    }
+    if (productKey) return
+    if (!filteredProducts.value.length) return
+
+    const firstProductMetaData = filteredProducts.value[0]
+    router.push({
+      name: route.name,
+      params: {
+        ...route.params,
+        productKey: firstProductMetaData.key,
+      },
+    })
   },
 )
 
-watch(
-  () => productKey,
-  () => {
-    if (productKey) {
-      const productMetaData = getProductByKey(productKey)
-      if (productMetaData) {
-        selected.value = filteredProducts.value.findIndex(
-          (p) => p.key === productMetaData.key,
-        )
-      } else {
-        selected.value = -1
-      }
-    }
-  },
-)
-
-watchEffect(async () => {
-  if (selected.value > -1) {
-    const productMetaData = filteredProducts.value[selected.value]
-    const url = getProductURL(baseUrl, productMetaData)
-    const extension = getFileExtension(url)
-    const currentViewMode = getViewMode(extension)
-    const urlFragments =
-      currentViewMode === 'pdf' ? '#view=FitH&zoom=page-width' : ''
-
-    const transformRequest = createTransformRequestFn()
-    const request = await transformRequest(new Request(url, {}))
-    const response = await fetch(request)
-    if (currentViewMode === 'html') {
-      const clone = response.clone()
-      htmlContent.value = DOMPurify.sanitize(await clone.text(), {
-        USE_PROFILES: { html: true },
-      })
-    } else {
-      htmlContent.value = ''
-    }
-    const urlObject = URL.createObjectURL(await response.blob())
-    viewMode.value = currentViewMode
-    src.value = urlObject + urlFragments
-  } else {
+watch(selectedProduct, async (prevProduct, newProduct) => {
+  if (prevProduct?.key !== newProduct?.key) {
     src.value = ''
+    htmlContent.value = ''
   }
+
+  if (isLocalProduct(selectedProduct.value)) {
+    const fileName =
+      selectedProduct.value?.relativePathProducts[0].split('/').pop() ??
+      'unknown'
+    const content = selectedProduct.value?.relativePathProducts[1] ?? ''
+    const file = selectedProduct.value?.relativePathProducts[2] ?? ''
+
+    if (content) {
+      const file = new File([String(content)], fileName, {
+        type: getContentType(content),
+      })
+      src.value = URL.createObjectURL(file)
+      viewMode.value = 'html'
+      htmlContent.value = sanitizeHtmlContent(content)
+      return
+    }
+
+    if (file) {
+      src.value = file
+      viewMode.value = getViewMode(getFileExtension(fileName))
+      htmlContent.value = ''
+      return
+    }
+
+    return
+  }
+
+  const url = getProductURL(baseUrl, selectedProduct.value)
+  if (!url) {
+    src.value = ''
+    viewMode.value = ''
+    return
+  }
+
+  const extension = getFileExtension(url)
+  const currentViewMode = getViewMode(extension)
+  const urlFragments =
+    currentViewMode === 'pdf' ? '#view=FitH&zoom=page-width' : ''
+
+  const transformRequest = createTransformRequestFn()
+  const request = await transformRequest(new Request(url, {}))
+  const response = await fetch(request)
+  if (currentViewMode === 'html') {
+    const clone = response.clone()
+    htmlContent.value = sanitizeHtmlContent(await clone.text())
+  } else {
+    htmlContent.value = ''
+  }
+  const urlObject = URL.createObjectURL(await response.blob())
+  viewMode.value = currentViewMode
+  src.value = urlObject + urlFragments
 })
+
+function sanitizeHtmlContent(content: string) {
+  return DOMPurify.sanitize(content, { USE_PROFILES: { html: true } })
+}
 
 function downloadProduct() {
   if (!src.value) return
@@ -351,6 +362,10 @@ async function onSave() {
   const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const archiveUrl = `${piUrl}rest/fewspiservice/v1/archive/`
   const metaData = selectedProduct.value
+  if (!metaData) {
+    console.error('No product selected for saving')
+    return
+  }
   const fileName =
     metaData.relativePathProducts[0].split('/').pop() ?? 'unknown'
   try {
@@ -363,7 +378,7 @@ async function onSave() {
       fileName,
       metaData.attributes,
     )
-    await fetchProducts()
+    await refresh()
   } catch (error) {
     console.error('Error saving report:', error)
     return
@@ -429,11 +444,12 @@ function openEmailClient(subject: string, content: string) {
   top: 48px;
   bottom: 0;
   background-color: #e0e0e0;
+  padding: 20px;
 }
 
 .products-browser-view__item {
   width: 1060px;
-  margin: 20px auto;
+  margin: 0 auto;
   background-color: white;
 }
 
@@ -443,8 +459,6 @@ img {
   box-shadow: 0 0.5mm 2mm rgba(0, 0, 0, 0.3);
   position: absolute;
   object-fit: contain;
-  left: 20px;
-  top: 20px;
   max-width: calc(100% - 40px);
   max-height: calc(100% - 40px);
 }
@@ -458,5 +472,10 @@ img {
   box-sizing: border-box;
   background-color: white;
   box-shadow: 0 0.5mm 2mm rgba(0, 0, 0, 0.3);
+}
+
+.no-hover {
+  --v-hover-opacity: 0 !important;
+  background-color: transparent !important;
 }
 </style>
