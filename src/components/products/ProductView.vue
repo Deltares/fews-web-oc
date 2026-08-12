@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex flex-row h-100 w-100">
-    <v-navigation-drawer v-model="drawer" :width="600">
+    <v-navigation-drawer v-model="drawer" :width="650">
       <ProductsBrowserTable
         v-if="tableConfig"
         :products="filteredProducts"
