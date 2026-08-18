@@ -108,7 +108,7 @@ import NewLogMessage from '@/components/logdisplay/NewLogMessage.vue'
 import { refDebounced } from '@vueuse/core'
 import { configManager } from '@/services/application-config'
 import { useLogDisplayLogs } from '@/services/useLogDisplayLogs'
-import { filterLog, getManualFilters, getSystemFilters } from '@/lib/log/utils'
+import { filterLog } from '@/lib/log/utils'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import { useCurrentUser } from '@/services/useCurrentUser'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
@@ -122,6 +122,7 @@ import {
 } from '@deltares/fews-pi-requests'
 import { LogLevel, logLevels, LogMessage, LogType, logTypes } from '@/lib/log'
 import { Duration } from 'luxon'
+import { useLogFilters } from '@/services/useLogFilters'
 
 interface Props {
   logDisplay: LogsDisplay
@@ -151,8 +152,6 @@ const isSearchVisible = ref<boolean>(false)
 const searchField = ref<HTMLElement | null>(null)
 const shouldHideFilter = ref<boolean>(false)
 let hideTimeout: ReturnType<typeof setTimeout> | null = null
-
-const requestDebounce = 500
 
 const filterDebounce = 100
 const debouncedSelectedLevels = refDebounced(selectedLevels, filterDebounce)
@@ -185,41 +184,11 @@ const baseFilters = computed(() => {
   }
 })
 
-const manualFilters = computed(() => {
-  const manualEventCodeId = props.noteGroup?.note.eventCodeId
-  return manualEventCodeId
-    ? getManualFilters(baseFilters.value, manualEventCodeId)
-    : []
-})
-
-const systemFilters = computed(() => {
-  const systemLogSettings = props.logDisplay.systemLog
-  return systemLogSettings
-    ? getSystemFilters(baseFilters.value, systemLogSettings)
-    : []
-})
-
-// To keep requests in sync between manual and system logs
-const filters = computed(() => {
-  const hasManual = props.logDisplay.manualLog
-  const hasSystem = props.logDisplay.systemLog
-  if (
-    (hasManual && !manualFilters.value.length) ||
-    (hasSystem && !systemFilters.value.length)
-  ) {
-    return {
-      manual: [],
-      system: [],
-    }
-  }
-
-  return {
-    manual: manualFilters.value,
-    system: systemFilters.value,
-  }
-})
-
-const debouncedFilters = refDebounced(filters, requestDebounce)
+const { manualFilters, systemFilters, debouncedFilters } = useLogFilters(
+  baseFilters,
+  () => props.noteGroup,
+  () => props.logDisplay,
+)
 
 const filterOnTaskRun = (log: LogMessage) => {
   const taskRunId = props.taskRunId?.trim()
@@ -241,7 +210,7 @@ const customFilter = (log: LogMessage) =>
   )
 
 const { logMessages, isLoading, lastUpdatedTimestamp, groupedByTaskRunId } =
-  useLogDisplayLogs(baseUrl, () => debouncedFilters.value, customFilter, false)
+  useLogDisplayLogs(baseUrl, debouncedFilters, customFilter, false)
 
 const taskRunIds = computed(() => {
   const _taskRunIds = logMessages.value.map((logs) => logs.taskRunId)
