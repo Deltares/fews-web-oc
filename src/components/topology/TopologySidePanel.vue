@@ -159,8 +159,7 @@ const enabledGeneralSidePanels = computed<GeneralSidePanel[]>(() => {
   // FIXME: For now we always enable share, should be removed once SidePanel configuration is implemented for it.
   return generalSidePanels.filter(
     (sidePanel) =>
-      sidePanel.type === 'share' ||
-      sidePanelConfig?.[sidePanel.type]?.enabled,
+      sidePanel.type === 'share' || sidePanelConfig?.[sidePanel.type]?.enabled,
   )
 })
 

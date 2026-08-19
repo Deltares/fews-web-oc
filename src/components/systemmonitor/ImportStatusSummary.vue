@@ -17,7 +17,11 @@
           :variant="isDark ? 'tonal' : 'flat'"
           size="small"
         >
-          {{ item.lastSuccessfulTime ? toHumanReadableDateTime(item.lastSuccessfulTime) : '-' }}
+          {{
+            item.lastSuccessfulTime
+              ? toHumanReadableDateTime(item.lastSuccessfulTime)
+              : '-'
+          }}
         </v-chip>
       </v-list-item>
       <v-list-item class="flex-grow-1 align-self-left ps-2">
@@ -307,5 +311,4 @@ function onTaskRunIdClick(taskRunId?: string): void {
   opacity: 0;
   transform: translateY(136px);
 }
-
 </style>
