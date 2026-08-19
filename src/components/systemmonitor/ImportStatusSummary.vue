@@ -55,7 +55,31 @@
       <div v-if="expanded">
         <v-list-item>
           <v-list-item-subtitle>Task run ID</v-list-item-subtitle>
-          <span class="text-body-2">{{ textValue(item.taskRunId) }}</span>
+          <div v-if="hasText(item.taskRunId)" class="d-flex align-center ga-2">
+            <span class="text-body-2">{{ item.taskRunId }}</span>
+            <v-tooltip
+              v-model="showLogsNotFoundTooltip"
+              location="top"
+              text="Logs not found"
+              :open-on-hover="false"
+              :open-on-focus="false"
+              :open-on-click="false"
+              :disabled="!showLogsNotFoundTooltip"
+            >
+              <template #activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  icon="mdi-file-clock"
+                  variant="text"
+                  density="compact"
+                  size="small"
+                  aria-label="Open logs for task run"
+                  @click.stop="onTaskRunIdClick(item.taskRunId)"
+                />
+              </template>
+            </v-tooltip>
+          </div>
+          <span v-else class="text-body-2">-</span>
         </v-list-item>
 
         <v-list-item>
@@ -142,15 +166,21 @@
   </v-card>
 </template>
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onUnmounted, ref } from 'vue'
 import type { ImportExportStatusItem } from './statusTypes'
 import { toHumanReadableDateTime } from '@/lib/date'
 import { useDark } from '@/services/useDark'
+import { useConfigStore } from '@/stores/config'
 
 interface Props {
   item: ImportExportStatusItem
 }
 const { item } = defineProps<Props>()
+
+interface Emits {
+  openLogTaskRun: [taskRunId: string]
+}
+const emit = defineEmits<Emits>()
 
 const expanded = defineModel<boolean>('expanded', {
   required: false,
@@ -158,6 +188,20 @@ const expanded = defineModel<boolean>('expanded', {
 })
 
 const isDark = useDark()
+const configStore = useConfigStore()
+const showLogsNotFoundTooltip = ref<boolean>(false)
+let hideTooltipTimer: ReturnType<typeof setTimeout> | null = null
+
+const canOpenLogsPanel = computed<boolean>(() => {
+  const logDisplayConfig = configStore.general.sidePanel?.logDisplay
+  return Boolean(logDisplayConfig?.enabled && logDisplayConfig.logDisplayId)
+})
+
+onUnmounted(() => {
+  if (hideTooltipTimer) {
+    clearTimeout(hideTooltipTimer)
+  }
+})
 
 function onExpansionPanelToggle() {
   // Only expand when no text is selected
@@ -186,6 +230,31 @@ const feedMeta = computed(() => {
     showTooltip: hasDescription && (hasName || useFallback),
   }
 })
+
+function onTaskRunIdClick(taskRunId?: string): void {
+  const normalizedTaskRunId = taskRunId?.trim()
+  if (!normalizedTaskRunId) return
+
+  if (!canOpenLogsPanel.value) {
+    showLogsNotFoundTooltip.value = !showLogsNotFoundTooltip.value
+
+    if (hideTooltipTimer) {
+      clearTimeout(hideTooltipTimer)
+      hideTooltipTimer = null
+    }
+
+    if (showLogsNotFoundTooltip.value) {
+      hideTooltipTimer = setTimeout(() => {
+        showLogsNotFoundTooltip.value = false
+      }, 2000)
+    }
+
+    return
+  }
+
+  showLogsNotFoundTooltip.value = false
+  emit('openLogTaskRun', normalizedTaskRunId)
+}
 </script>
 
 <style scoped>
@@ -224,4 +293,5 @@ const feedMeta = computed(() => {
   opacity: 0;
   transform: translateY(136px);
 }
+
 </style>

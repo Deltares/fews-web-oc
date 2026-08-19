@@ -1,6 +1,9 @@
 <template>
   <SidePanelContent :title="t('sidePanel.importStatus')" @close="emit('close')">
-    <ImportStatusControl :topology-node="topologyNode" />
+    <ImportStatusControl
+      :topology-node="topologyNode"
+      @open-log-task-run="emit('openLogTaskRun', $event)"
+    />
   </SidePanelContent>
 </template>
 
@@ -20,6 +23,7 @@ defineProps<Props>()
 
 interface Emits {
   close: []
+  openLogTaskRun: [taskRunId: string]
 }
 const emit = defineEmits<Emits>()
 </script>

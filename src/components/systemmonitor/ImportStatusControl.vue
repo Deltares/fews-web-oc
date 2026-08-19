@@ -24,6 +24,7 @@
           <ImportStatusSummary
             :item="item"
             v-model:expanded="expandedItems[item.dataFeed]"
+            @open-log-task-run="emit('openLogTaskRun', $event)"
           />
         </div>
       </template>
@@ -36,11 +37,11 @@ import {
   PiWebserviceProvider,
   type ExportStatus,
   type ImportStatus,
+  type TopologyNode,
 } from '@deltares/fews-pi-requests'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-import type { TopologyNode } from '@deltares/fews-pi-requests'
 import BaseTaskFilterControl from '@/components/tasks/BaseTaskFilterControl.vue'
 import type {
   ImportExportStatusItem,
@@ -54,6 +55,11 @@ interface Props {
 }
 
 defineProps<Props>()
+
+interface Emits {
+  openLogTaskRun: [taskRunId: string]
+}
+const emit = defineEmits<Emits>()
 
 const statusItems = ref<ImportExportStatusItem[]>([])
 const expandedItems = ref<Record<string, boolean>>({})

@@ -53,6 +53,7 @@
           : {}
       "
       @close="closeSidePanel()"
+      @open-log-task-run="openLogTaskRun"
     />
   </template>
 
@@ -158,13 +159,17 @@ const enabledGeneralSidePanels = computed<GeneralSidePanel[]>(() => {
   // FIXME: For now we always enable share, should be removed once SidePanel configuration is implemented for it.
   return generalSidePanels.filter(
     (sidePanel) =>
-      sidePanel.type === 'share' || sidePanelConfig?.[sidePanel.type]?.enabled,
+      sidePanel.type === 'share' ||
+      sidePanelConfig?.[sidePanel.type]?.enabled,
   )
 })
 
-function settingsForSidePanel(): { logDisplayId: string } {
+function settingsForSidePanel(): { logDisplayId: string; taskRunId?: string } {
   const sidePanelConfig = configStore.general.sidePanel
-  return { logDisplayId: sidePanelConfig?.logDisplay?.logDisplayId ?? '' }
+  return {
+    logDisplayId: sidePanelConfig?.logDisplay?.logDisplayId ?? '',
+    taskRunId: selectedLogTaskRunId.value,
+  }
 }
 
 const hasMultipleEnabledSidePanels = computed<boolean>(
@@ -177,17 +182,39 @@ const currentGeneralSidePanel = ref<GeneralSidePanel | null>(
 )
 // There can be only one active side panel, special or general, at a time.
 const activeSidePanelType = ref<SidePanelType | null>(null)
+const selectedLogTaskRunId = ref<string | undefined>(undefined)
 
 function setCurrentGeneralSidePanel(sidePanel: GeneralSidePanel): void {
+  if (sidePanel.type === 'logDisplay') {
+    // Manual opening of logs panel should not carry a stale task run filter.
+    selectedLogTaskRunId.value = undefined
+  }
   currentGeneralSidePanel.value = sidePanel
   activeSidePanelType.value = sidePanel.type
 }
 
 function closeSidePanel(): void {
   activeSidePanelType.value = null
+  selectedLogTaskRunId.value = undefined
 }
 
 function toggleActiveSidePanel(type: SidePanelType): void {
+  if (type === 'logDisplay' && activeSidePanelType.value !== 'logDisplay') {
+    // Manual opening of logs panel should not carry a stale task run filter.
+    selectedLogTaskRunId.value = undefined
+  }
   activeSidePanelType.value = activeSidePanelType.value === type ? null : type
+}
+
+function openLogTaskRun(taskRunId: string): void {
+  const logDisplayPanel = enabledGeneralSidePanels.value.find(
+    (panel) => panel.type === 'logDisplay',
+  )
+
+  if (!logDisplayPanel) return
+
+  selectedLogTaskRunId.value = taskRunId
+  currentGeneralSidePanel.value = logDisplayPanel
+  activeSidePanelType.value = 'logDisplay'
 }
 </script>
