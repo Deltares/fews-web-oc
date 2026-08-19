@@ -45,9 +45,9 @@
           <transition name="fade-slide">
             <v-chip
               v-show="!expanded && item.filesFailedCount > 0"
-              :color="item.filesFailedCount ? 'error' : 'grey'"
+              :color="item.filesFailedCount ? 'error' : 'surface-variant'"
               size="small"
-              variant="flat"
+              :variant="isDark ? 'tonal' : 'flat'"
             >
               {{ item.filesFailedCount }}
             </v-chip>
@@ -62,24 +62,31 @@
           <div class="d-flex align-center ga-2">
             <span class="text-body-2">{{ item.taskRunId }}</span>
             <v-tooltip
-              v-model="showLogsNotFoundTooltip"
               location="top"
-              text="Logs not found"
-              :open-on-hover="false"
-              :open-on-focus="false"
-              :open-on-click="false"
-              :disabled="!showLogsNotFoundTooltip"
+              text="Open logs for task run"
+              :disabled="showLogsNotFoundTooltip"
             >
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  icon="mdi-file-clock"
-                  variant="text"
-                  density="compact"
-                  size="small"
-                  aria-label="Open logs for task run"
-                  @click.stop="onTaskRunIdClick(item.taskRunId)"
-                />
+              <template #activator="{ props: hoverProps }">
+                <v-tooltip
+                  v-model="showLogsNotFoundTooltip"
+                  location="top"
+                  text="Logs not found"
+                  :open-on-hover="false"
+                  :open-on-focus="false"
+                  :open-on-click="false"
+                >
+                  <template #activator="{ props: errorProps }">
+                    <v-btn
+                      v-bind="mergeProps(hoverProps, errorProps)"
+                      icon="mdi-launch"
+                      variant="text"
+                      density="compact"
+                      size="small"
+                      aria-label="Open logs for task run"
+                      @click.stop="onTaskRunIdClick(item.taskRunId)"
+                    />
+                  </template>
+                </v-tooltip>
               </template>
             </v-tooltip>
           </div>
@@ -140,8 +147,8 @@
                 <v-chip
                   v-if="expanded"
                   size="small"
-                  color="grey"
-                  variant="flat"
+                  color="surface-variant"
+                  :variant="isDark ? 'tonal' : 'flat'"
                 >
                   {{ item.filesSuccessfulCount }}
                 </v-chip>
@@ -154,9 +161,9 @@
               <transition name="fade-slide">
                 <v-chip
                   v-if="expanded"
-                  :color="item.filesFailedCount ? 'error' : 'grey'"
+                  :color="item.filesFailedCount ? 'error' : 'surface-variant'"
                   size="small"
-                  variant="flat"
+                  :variant="isDark ? 'tonal' : 'flat'"
                 >
                   {{ item.filesFailedCount }}
                 </v-chip>
@@ -169,7 +176,7 @@
   </v-card>
 </template>
 <script setup lang="ts">
-import { computed, onUnmounted, ref } from 'vue'
+import { computed, mergeProps, onUnmounted, ref } from 'vue'
 import type { ImportExportStatusItem } from './statusTypes'
 import { toHumanReadableDateTime } from '@/lib/date'
 import { useDark } from '@/services/useDark'

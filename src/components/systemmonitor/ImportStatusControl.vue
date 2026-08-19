@@ -33,7 +33,6 @@
 </template>
 
 <script setup lang="ts">
-import { type TopologyNode } from '@deltares/fews-pi-requests'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import BaseTaskFilterControl from '@/components/tasks/BaseTaskFilterControl.vue'
 import type {
@@ -43,12 +42,6 @@ import type {
 } from './statusTypes'
 import ImportStatusSummary from './ImportStatusSummary.vue'
 import { useImportExportStatus } from './useImportExportStatus'
-
-interface Props {
-  topologyNode?: TopologyNode
-}
-
-defineProps<Props>()
 
 interface Emits {
   openLogTaskRun: [taskRunId: string]
