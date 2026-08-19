@@ -123,7 +123,7 @@
         </v-list-item>
 
         <v-list-item>
-          <v-list-item-subtitle>Last file</v-list-item-subtitle>
+          <v-list-item-subtitle>Last Successful File</v-list-item-subtitle>
           <span class="text-body-2">{{ item.lastSuccessfulFile }}</span>
         </v-list-item>
 
