@@ -53,9 +53,9 @@
     </div>
     <v-expand-transition>
       <div v-if="expanded">
-        <v-list-item>
+        <v-list-item v-if="hasText(item.taskRunId)">
           <v-list-item-subtitle>Task run ID</v-list-item-subtitle>
-          <div v-if="hasText(item.taskRunId)" class="d-flex align-center ga-2">
+          <div class="d-flex align-center ga-2">
             <span class="text-body-2">{{ item.taskRunId }}</span>
             <v-tooltip
               v-model="showLogsNotFoundTooltip"
@@ -79,17 +79,16 @@
               </template>
             </v-tooltip>
           </div>
-          <span v-else class="text-body-2">-</span>
         </v-list-item>
 
-        <v-list-item>
+        <v-list-item v-if="hasText(item.workflowId)">
           <v-list-item-subtitle>Workflow ID</v-list-item-subtitle>
-          <span class="text-body-2">{{ textValue(item.workflowId) }}</span>
+          <span class="text-body-2">{{ item.workflowId }}</span>
         </v-list-item>
 
-        <v-list-item>
+        <v-list-item v-if="hasText(item.workflowName)">
           <v-list-item-subtitle>Workflow name</v-list-item-subtitle>
-          <span class="text-body-2">{{ textValue(item.workflowName) }}</span>
+          <span class="text-body-2">{{ item.workflowName }}</span>
         </v-list-item>
 
         <v-list-item>
@@ -97,10 +96,10 @@
           <span class="text-body-2">{{ item.directory }}</span>
         </v-list-item>
 
-        <v-list-item>
+        <v-list-item v-if="feedMeta.visible">
           <v-list-item-subtitle>{{ feedMeta.label }}</v-list-item-subtitle>
           <div class="d-flex align-center ga-1">
-            <span class="text-body-2">{{ textValue(feedMeta.value) }}</span>
+            <span class="text-body-2">{{ feedMeta.value }}</span>
             <v-tooltip
               v-if="feedMeta.showTooltip"
               location="top"
@@ -124,9 +123,9 @@
           <span class="text-body-2">{{ item.lastSuccessfulFile }}</span>
         </v-list-item>
 
-        <v-list-item>
+        <v-list-item v-if="hasText(item.status)">
           <v-list-item-subtitle>Status</v-list-item-subtitle>
-          <span class="text-body-2">{{ textValue(item.status) }}</span>
+          <span class="text-body-2">{{ item.status }}</span>
         </v-list-item>
 
         <div class="d-flex w-100 justify-space-between align-left">
@@ -210,10 +209,6 @@ function onExpansionPanelToggle() {
   }
 }
 
-function textValue(value?: string): string {
-  return value && value.trim() !== '' ? value : '-'
-}
-
 function hasText(value?: string): boolean {
   return Boolean(value && value.trim() !== '')
 }
@@ -224,10 +219,29 @@ const feedMeta = computed(() => {
   const hasFeed = hasText(item.dataFeed)
   const useFallback = !hasName && hasDescription && hasFeed
 
+  if (hasName) {
+    return {
+      visible: true,
+      label: 'Data feed name',
+      value: item.dataFeedName,
+      showTooltip: hasDescription,
+    }
+  }
+
+  if (useFallback) {
+    return {
+      visible: true,
+      label: 'Data feed',
+      value: item.dataFeed,
+      showTooltip: true,
+    }
+  }
+
   return {
-    label: useFallback ? 'Data feed' : 'Data feed name',
-    value: useFallback ? item.dataFeed : item.dataFeedName,
-    showTooltip: hasDescription && (hasName || useFallback),
+    visible: false,
+    label: 'Data feed name',
+    value: '',
+    showTooltip: false,
   }
 })
 
