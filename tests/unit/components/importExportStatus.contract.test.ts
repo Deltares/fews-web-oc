@@ -10,6 +10,10 @@ const importStatusControlPath = resolve(
   process.cwd(),
   'src/components/systemmonitor/ImportStatusControl.vue',
 )
+const importExportStatusComposablePath = resolve(
+  process.cwd(),
+  'src/components/systemmonitor/useImportExportStatus.ts',
+)
 const importStatusSummaryPath = resolve(
   process.cwd(),
   'src/components/systemmonitor/ImportStatusSummary.vue',
@@ -33,7 +37,7 @@ describe('Import/Export status requirements contract', () => {
   })
 
   it('loads both import and export statuses and merges rows', () => {
-    const source = read(importStatusControlPath)
+    const source = read(importExportStatusComposablePath)
 
     expect(source).toContain('Promise.allSettled([')
     expect(source).toContain('webServiceProvider.getImportStatus()')
@@ -52,6 +56,17 @@ describe('Import/Export status requirements contract', () => {
     )
     expect(source).toContain(
       'statusItems.value = [...importItems, ...exportItems]',
+    )
+  })
+
+  it('uses shared import/export status composable in control panel', () => {
+    const source = read(importStatusControlPath)
+
+    expect(source).toContain(
+      "import { useImportExportStatus } from './useImportExportStatus'",
+    )
+    expect(source).toContain(
+      'const { statusItems, startPolling, stopPolling } = useImportExportStatus({',
     )
   })
 

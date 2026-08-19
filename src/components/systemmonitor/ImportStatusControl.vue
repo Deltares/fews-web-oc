@@ -33,15 +33,8 @@
 </template>
 
 <script setup lang="ts">
-import {
-  PiWebserviceProvider,
-  type ExportStatus,
-  type ImportStatus,
-  type TopologyNode,
-} from '@deltares/fews-pi-requests'
+import { type TopologyNode } from '@deltares/fews-pi-requests'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { configManager } from '@/services/application-config'
-import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import BaseTaskFilterControl from '@/components/tasks/BaseTaskFilterControl.vue'
 import type {
   ImportExportStatusItem,
@@ -49,6 +42,7 @@ import type {
   StatusSource,
 } from './statusTypes'
 import ImportStatusSummary from './ImportStatusSummary.vue'
+import { useImportExportStatus } from './useImportExportStatus'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -61,14 +55,15 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
-const statusItems = ref<ImportExportStatusItem[]>([])
+const { statusItems, startPolling, stopPolling } = useImportExportStatus({
+  pollIntervalMs: 10000,
+})
 const expandedItems = ref<Record<string, boolean>>({})
 const selectedSources = ref<StatusSource[]>(['import', 'export'])
 const selectedResults = ref<StatusResultFilter[]>([
   'successful',
   'unsuccessful',
 ])
-let active: boolean = false
 
 const sourceFilterOptions: Array<{
   id: string
@@ -88,11 +83,6 @@ const resultFilterOptions: Array<{
   { id: 'unsuccessful', title: 'Unsuccessful', value: 'unsuccessful' },
 ]
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const webServiceProvider = new PiWebserviceProvider(baseUrl, {
-  transformRequestFn: createTransformRequestFn(),
-})
-
 const filteredStatusItems = computed<ImportExportStatusItem[]>(() => {
   return statusItems.value.filter((item) => {
     const sourceMatches = selectedSources.value.includes(item.statusType)
@@ -104,49 +94,12 @@ const filteredStatusItems = computed<ImportExportStatusItem[]>(() => {
 })
 
 onUnmounted(() => {
-  active = false
+  stopPolling()
 })
 
 onMounted(async () => {
-  active = true
-  await loadStatuses()
+  await startPolling()
 })
-
-function normalizeStatuses(
-  items: (ImportStatus | ExportStatus)[],
-  statusType: 'import' | 'export',
-): ImportExportStatusItem[] {
-  return items.map((item) => ({
-    ...item,
-    statusType,
-  }))
-}
-
-async function loadStatuses() {
-  try {
-    if (!active) return
-
-    const [importResult, exportResult] = await Promise.allSettled([
-      webServiceProvider.getImportStatus(),
-      webServiceProvider.getExportStatus(),
-    ])
-
-    const importItems =
-      importResult.status === 'fulfilled'
-        ? normalizeStatuses(importResult.value.importStatus, 'import')
-        : []
-    const exportItems =
-      exportResult.status === 'fulfilled'
-        ? normalizeStatuses(exportResult.value.exportStatus, 'export')
-        : []
-
-    statusItems.value = [...importItems, ...exportItems]
-  } catch (error) {
-    console.warn(error)
-  } finally {
-    setTimeout(loadStatuses, 10000)
-  }
-}
 </script>
 
 <style scoped>

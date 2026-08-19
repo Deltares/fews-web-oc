@@ -30,16 +30,9 @@
 </template>
 
 <script setup lang="ts">
-import {
-  PiWebserviceProvider,
-  type ExportStatus,
-  type ImportStatus,
-} from '@deltares/fews-pi-requests'
-import { onMounted, onUnmounted, ref } from 'vue'
-import { configManager } from '@/services/application-config'
-import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { onMounted, onUnmounted } from 'vue'
 import type { ReadonlyDataTableHeader } from '@/lib/table/types/TableHeaders'
-import type { ImportExportStatusItem } from './statusTypes'
+import { useImportExportStatus } from './useImportExportStatus'
 
 interface Props {
   timeOut: number
@@ -55,61 +48,20 @@ const headers: ReadonlyDataTableHeader[] = [
   { title: 'Files successful', key: 'filesSuccessfulCount' },
   { title: 'Failed files', key: 'filesFailedCount' },
 ]
-const statusItems = ref<ImportExportStatusItem[]>([])
-let active: boolean = false
-
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const webServiceProvider = new PiWebserviceProvider(baseUrl, {
-  transformRequestFn: createTransformRequestFn(),
+const { statusItems, startPolling, stopPolling } = useImportExportStatus({
+  pollIntervalMs: props.timeOut,
 })
 
 onUnmounted(() => {
-  active = false
+  stopPolling()
 })
 
 onMounted(async () => {
-  active = true
-  await loadStatuses()
+  await startPolling()
 })
 
 function getColor(failure: number): string {
   if (failure == 0) return 'grey'
   return 'red'
-}
-
-function normalizeStatuses(
-  items: (ImportStatus | ExportStatus)[],
-  statusType: 'import' | 'export',
-): ImportExportStatusItem[] {
-  return items.map((item) => ({
-    ...item,
-    statusType,
-  }))
-}
-
-async function loadStatuses() {
-  try {
-    if (!active) return
-
-    const [importResult, exportResult] = await Promise.allSettled([
-      webServiceProvider.getImportStatus(),
-      webServiceProvider.getExportStatus(),
-    ])
-
-    const importItems =
-      importResult.status === 'fulfilled'
-        ? normalizeStatuses(importResult.value.importStatus, 'import')
-        : []
-    const exportItems =
-      exportResult.status === 'fulfilled'
-        ? normalizeStatuses(exportResult.value.exportStatus, 'export')
-        : []
-
-    statusItems.value = [...importItems, ...exportItems]
-  } catch (error) {
-    console.warn(error)
-  } finally {
-    setTimeout(loadStatuses, props.timeOut)
-  }
 }
 </script>
