@@ -74,8 +74,25 @@
         </v-list-item>
 
         <v-list-item>
-          <v-list-item-subtitle>Data feed name</v-list-item-subtitle>
-          <span class="text-body-2">{{ textValue(item.dataFeedName) }}</span>
+          <v-list-item-subtitle>{{ feedMeta.label }}</v-list-item-subtitle>
+          <div class="d-flex align-center ga-1">
+            <span class="text-body-2">{{ textValue(feedMeta.value) }}</span>
+            <v-tooltip
+              v-if="feedMeta.showTooltip"
+              location="top"
+              :text="item.dataFeedDescription"
+            >
+              <template #activator="{ props }">
+                <v-icon
+                  v-bind="props"
+                  size="16"
+                  icon="mdi-information-outline"
+                  color="primary"
+                  @click.stop
+                />
+              </template>
+            </v-tooltip>
+          </div>
         </v-list-item>
 
         <v-list-item>
@@ -125,6 +142,7 @@
   </v-card>
 </template>
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { ImportExportStatusItem } from './statusTypes'
 import { toHumanReadableDateTime } from '@/lib/date'
 import { useDark } from '@/services/useDark'
@@ -151,6 +169,23 @@ function onExpansionPanelToggle() {
 function textValue(value?: string): string {
   return value && value.trim() !== '' ? value : '-'
 }
+
+function hasText(value?: string): boolean {
+  return Boolean(value && value.trim() !== '')
+}
+
+const feedMeta = computed(() => {
+  const hasName = hasText(item.dataFeedName)
+  const hasDescription = hasText(item.dataFeedDescription)
+  const hasFeed = hasText(item.dataFeed)
+  const useFallback = !hasName && hasDescription && hasFeed
+
+  return {
+    label: useFallback ? 'Data feed' : 'Data feed name',
+    value: useFallback ? item.dataFeed : item.dataFeedName,
+    showTooltip: hasDescription && (hasName || useFallback),
+  }
+})
 </script>
 
 <style scoped>
