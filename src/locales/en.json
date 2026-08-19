@@ -86,7 +86,7 @@
   },
   "sidePanel": {
     "documentFile": "More info",
-    "importStatus": "Import status",
+    "importStatus": "Import/Export status",
     "logDisplay": "Logs",
     "nonCurrentData": "Non-current data",
     "runTask": "Run tasks",

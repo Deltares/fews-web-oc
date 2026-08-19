@@ -2,21 +2,25 @@
   <v-data-table
     :headers="headers"
     :items-per-page="100"
-    :items="importStatus"
+    :items="statusItems"
     fixed-header
   >
-    <template v-slot:[`item.lastImportTime`]="{ item }">
+    <template v-slot:[`item.lastSuccessfulTime`]="{ item }">
       <v-chip
         size="small"
-        :color="item.lastImportTimeBackgroundColor"
+        :color="item.lastSuccessfulTimeBackgroundColor"
         variant="flat"
       >
-        {{ item.lastImportTime }}
+        {{ item.lastSuccessfulTime }}
       </v-chip>
     </template>
-    <template v-slot:[`item.fileFailed`]="{ item }">
-      <v-chip size="small" :color="getColor(item.fileFailed)" variant="flat">
-        {{ item.fileFailed }}
+    <template v-slot:[`item.filesFailedCount`]="{ item }">
+      <v-chip
+        size="small"
+        :color="getColor(item.filesFailedCount)"
+        variant="flat"
+      >
+        {{ item.filesFailedCount }}
       </v-chip>
     </template>
     <template #bottom>
@@ -26,11 +30,16 @@
 </template>
 
 <script setup lang="ts">
-import { ImportStatus, PiWebserviceProvider } from '@deltares/fews-pi-requests'
+import {
+  PiWebserviceProvider,
+  type ExportStatus,
+  type ImportStatus,
+} from '@deltares/fews-pi-requests'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import type { ReadonlyDataTableHeader } from '@/lib/table/types/TableHeaders'
+import type { ImportExportStatusItem } from './statusTypes'
 
 interface Props {
   timeOut: number
@@ -38,14 +47,15 @@ interface Props {
 const props = defineProps<Props>()
 
 const headers: ReadonlyDataTableHeader[] = [
+  { title: 'Type', key: 'statusType' },
   { title: 'Source', key: 'dataFeed' },
   { title: 'Directory', key: 'directory' },
-  { title: 'Last import time', key: 'lastImportTime' },
-  { title: 'Last file imported', key: 'lastFileImported' },
-  { title: 'Files imported', key: 'fileRead' },
-  { title: 'Failed imports', key: 'fileFailed' },
+  { title: 'Last successful time', key: 'lastSuccessfulTime' },
+  { title: 'Last file', key: 'lastSuccessfulFile' },
+  { title: 'Files successful', key: 'filesSuccessfulCount' },
+  { title: 'Failed files', key: 'filesFailedCount' },
 ]
-const importStatus = ref<ImportStatus[]>([])
+const statusItems = ref<ImportExportStatusItem[]>([])
 let active: boolean = false
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -59,7 +69,7 @@ onUnmounted(() => {
 
 onMounted(async () => {
   active = true
-  await loadImportStatus()
+  await loadStatuses()
 })
 
 function getColor(failure: number): string {
@@ -67,15 +77,39 @@ function getColor(failure: number): string {
   return 'red'
 }
 
-async function loadImportStatus() {
+function normalizeStatuses(
+  items: (ImportStatus | ExportStatus)[],
+  statusType: 'import' | 'export',
+): ImportExportStatusItem[] {
+  return items.map((item) => ({
+    ...item,
+    statusType,
+  }))
+}
+
+async function loadStatuses() {
   try {
     if (!active) return
-    const res = await webServiceProvider.getImportStatus()
-    importStatus.value = res.importStatus
+
+    const [importResult, exportResult] = await Promise.allSettled([
+      webServiceProvider.getImportStatus(),
+      webServiceProvider.getExportStatus(),
+    ])
+
+    const importItems =
+      importResult.status === 'fulfilled'
+        ? normalizeStatuses(importResult.value.importStatus, 'import')
+        : []
+    const exportItems =
+      exportResult.status === 'fulfilled'
+        ? normalizeStatuses(exportResult.value.exportStatus, 'export')
+        : []
+
+    statusItems.value = [...importItems, ...exportItems]
   } catch (error) {
     console.warn(error)
   } finally {
-    setTimeout(loadImportStatus, props.timeOut)
+    setTimeout(loadStatuses, props.timeOut)
   }
 }
 </script>

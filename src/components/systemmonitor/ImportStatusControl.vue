@@ -1,8 +1,8 @@
 <template>
   <v-virtual-scroll
-    v-if="importStatusItems.length"
+    v-if="statusItems.length"
     class="overflow-y-auto h-100"
-    :items="importStatusItems"
+    :items="statusItems"
     :item-height="62"
   >
     <template #default="{ item }">
@@ -17,14 +17,17 @@
 </template>
 
 <script setup lang="ts">
-import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
+import {
+  PiWebserviceProvider,
+  type ExportStatus,
+  type ImportStatus,
+} from '@deltares/fews-pi-requests'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
-import ImportStatusSummary, {
-  type ImportStatusDirectory,
-} from './ImportStatusSummary.vue'
+import type { ImportExportStatusItem } from './statusTypes'
+import ImportStatusSummary from './ImportStatusSummary.vue'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -32,7 +35,7 @@ interface Props {
 
 defineProps<Props>()
 
-const importStatusItems = ref<ImportStatusDirectory[]>([])
+const statusItems = ref<ImportExportStatusItem[]>([])
 const expandedItems = ref<Record<string, boolean>>({})
 let active: boolean = false
 
@@ -47,18 +50,42 @@ onUnmounted(() => {
 
 onMounted(async () => {
   active = true
-  await loadImportStatus()
+  await loadStatuses()
 })
 
-async function loadImportStatus() {
+function normalizeStatuses(
+  items: (ImportStatus | ExportStatus)[],
+  statusType: 'import' | 'export',
+): ImportExportStatusItem[] {
+  return items.map((item) => ({
+    ...item,
+    statusType,
+  }))
+}
+
+async function loadStatuses() {
   try {
     if (!active) return
-    const res = await webServiceProvider.getImportStatus()
-    importStatusItems.value = res.importStatus as ImportStatusDirectory[]
+
+    const [importResult, exportResult] = await Promise.allSettled([
+      webServiceProvider.getImportStatus(),
+      webServiceProvider.getExportStatus(),
+    ])
+
+    const importItems =
+      importResult.status === 'fulfilled'
+        ? normalizeStatuses(importResult.value.importStatus, 'import')
+        : []
+    const exportItems =
+      exportResult.status === 'fulfilled'
+        ? normalizeStatuses(exportResult.value.exportStatus, 'export')
+        : []
+
+    statusItems.value = [...importItems, ...exportItems]
   } catch (error) {
     console.warn(error)
   } finally {
-    setTimeout(loadImportStatus, 10000)
+    setTimeout(loadStatuses, 10000)
   }
 }
 </script>

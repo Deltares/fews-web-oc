@@ -10,22 +10,27 @@
     <div class="d-flex w-100 justify-space-between align-left">
       <v-list-item class="px-2 date-time-item">
         <v-list-item-subtitle v-if="expanded">
-          Last import time
+          Last successful time
         </v-list-item-subtitle>
         <v-chip
-          :color="item.lastImportTimeBackgroundColor"
+          :color="item.lastSuccessfulTimeBackgroundColor"
           :variant="isDark ? 'tonal' : 'flat'"
           size="small"
         >
-          {{ toHumanReadableDateTime(item.lastImportTime) }}
+          {{ item.lastSuccessfulTime ? toHumanReadableDateTime(item.lastSuccessfulTime) : '-' }}
         </v-chip>
       </v-list-item>
       <v-list-item class="flex-grow-1 align-self-left ps-2">
-        <v-list-item-subtitle> Source </v-list-item-subtitle>
+        <v-list-item-subtitle>
+          Source
+          <v-chip size="x-small" class="ms-1" variant="tonal">
+            {{ item.statusType }}
+          </v-chip>
+        </v-list-item-subtitle>
         <span
           class="text-body-2 text-truncate"
           :class="[
-            item.fileFailed > 0 && !expanded
+            item.filesFailedCount > 0 && !expanded
               ? 'datafeed-label'
               : 'datafeed-label long',
           ]"
@@ -35,12 +40,12 @@
         <template v-slot:append>
           <transition name="fade-slide">
             <v-chip
-              v-show="!expanded && item.fileFailed > 0"
-              :color="item.fileFailed ? 'error' : 'grey'"
+              v-show="!expanded && item.filesFailedCount > 0"
+              :color="item.filesFailedCount ? 'error' : 'grey'"
               size="small"
               variant="flat"
             >
-              {{ item.fileFailed }}
+              {{ item.filesFailedCount }}
             </v-chip>
           </transition>
         </template>
@@ -49,18 +54,43 @@
     <v-expand-transition>
       <div v-if="expanded">
         <v-list-item>
+          <v-list-item-subtitle>Task run ID</v-list-item-subtitle>
+          <span class="text-body-2">{{ textValue(item.taskRunId) }}</span>
+        </v-list-item>
+
+        <v-list-item>
+          <v-list-item-subtitle>Workflow ID</v-list-item-subtitle>
+          <span class="text-body-2">{{ textValue(item.workflowId) }}</span>
+        </v-list-item>
+
+        <v-list-item>
+          <v-list-item-subtitle>Workflow name</v-list-item-subtitle>
+          <span class="text-body-2">{{ textValue(item.workflowName) }}</span>
+        </v-list-item>
+
+        <v-list-item>
           <v-list-item-subtitle>Directory</v-list-item-subtitle>
           <span class="text-body-2">{{ item.directory }}</span>
         </v-list-item>
 
         <v-list-item>
+          <v-list-item-subtitle>Data feed name</v-list-item-subtitle>
+          <span class="text-body-2">{{ textValue(item.dataFeedName) }}</span>
+        </v-list-item>
+
+        <v-list-item>
           <v-list-item-subtitle>Last file</v-list-item-subtitle>
-          <span class="text-body-2">{{ item.lastFileImported }}</span>
+          <span class="text-body-2">{{ item.lastSuccessfulFile }}</span>
+        </v-list-item>
+
+        <v-list-item>
+          <v-list-item-subtitle>Status</v-list-item-subtitle>
+          <span class="text-body-2">{{ textValue(item.status) }}</span>
         </v-list-item>
 
         <div class="d-flex w-100 justify-space-between align-left">
           <v-list-item class="flex-grow-1">
-            <v-list-item-subtitle>Files imported</v-list-item-subtitle>
+            <v-list-item-subtitle>Files successful</v-list-item-subtitle>
             <template v-slot:append>
               <transition name="fade-slide">
                 <v-chip
@@ -69,7 +99,7 @@
                   color="grey"
                   variant="flat"
                 >
-                  {{ item.fileRead }}
+                  {{ item.filesSuccessfulCount }}
                 </v-chip>
               </transition>
             </template>
@@ -80,11 +110,11 @@
               <transition name="fade-slide">
                 <v-chip
                   v-if="expanded"
-                  :color="item.fileFailed ? 'error' : 'grey'"
+                  :color="item.filesFailedCount ? 'error' : 'grey'"
                   size="small"
                   variant="flat"
                 >
-                  {{ item.fileFailed }}
+                  {{ item.filesFailedCount }}
                 </v-chip>
               </transition>
             </template>
@@ -95,16 +125,12 @@
   </v-card>
 </template>
 <script setup lang="ts">
-import type { ImportStatus } from '@deltares/fews-pi-requests'
+import type { ImportExportStatusItem } from './statusTypes'
 import { toHumanReadableDateTime } from '@/lib/date'
 import { useDark } from '@/services/useDark'
 
-export interface ImportStatusDirectory extends ImportStatus {
-  directory: string
-}
-
 interface Props {
-  item: ImportStatusDirectory
+  item: ImportExportStatusItem
 }
 const { item } = defineProps<Props>()
 
@@ -120,6 +146,10 @@ function onExpansionPanelToggle() {
   if (globalThis.getSelection()?.toString() === '') {
     expanded.value = !expanded.value
   }
+}
+
+function textValue(value?: string): string {
+  return value && value.trim() !== '' ? value : '-'
 }
 </script>
 
