@@ -1,8 +1,8 @@
 <template>
   <div class="container" ref="container">
     <div
-      class="child-container flex-column"
-      :class="{ 'd-none': hideMap, 'd-flex': !hideMap }"
+      class="child-container map-container flex-column d-flex"
+      :class="{ 'force-hide': maximized, 'has-chart': showChartPanel }"
     >
       <SpatialDisplayComponent
         :layer-name="props.layerName"
@@ -39,8 +39,8 @@
       >
         <template #toolbar-append>
           <v-btn
-            v-if="!containerIsMobileSize"
             size="small"
+            class="maximize-button"
             :icon="maximized ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
             @click="maximized = !maximized"
           />
@@ -62,11 +62,9 @@ import {
   onMounted,
   onUnmounted,
   ref,
-  useTemplateRef,
   watch,
 } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
-import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
 import { useWmsLayerCapabilities } from '@/services/useWms'
 import type { TopologyNode, Location } from '@deltares/fews-pi-requests'
@@ -76,7 +74,6 @@ import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
-import { useElementSize } from '@vueuse/core'
 import { useDateRegistry } from '@/services/useDateRegistry'
 import type { NavigateRoute } from '@/lib/router'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
@@ -120,9 +117,6 @@ watch(
 const warningLevelsStore = useWarningLevelsStore()
 const locationNamesStore = useLocationNamesStore()
 const userSettings = useUserSettingsStore()
-
-const { thresholds } = useDisplay()
-const containerRef = useTemplateRef('container')
 
 const boundingBox = computed(() => props.topologyNode?.boundingBox)
 const filterIds = computed(() => props.topologyNode?.filterIds ?? [])
@@ -279,18 +273,6 @@ const elevation = ref<number | undefined>()
 const currentTime = ref<Date>()
 const maximized = ref(false)
 
-const { width: containerWidth } = useElementSize(containerRef)
-
-const containerIsMobileSize = computed(() => {
-  return containerWidth.value < thresholds.value.md
-})
-
-const hideMap = computed(() => {
-  return (
-    maximized.value || (containerIsMobileSize.value && showChartPanel.value)
-  )
-})
-
 function onLocationsChange(locationIds: string[]): void {
   if (locationIds.length) {
     openLocationsTimeSeriesDisplay(locationIds)
@@ -397,6 +379,8 @@ watch(
   display: flex;
   width: 100%;
   height: 100%;
+  container-type: inline-size;
+  container-name: spatial-display;
 }
 
 .child-container {
@@ -406,8 +390,16 @@ watch(
   flex: 1 1 0px;
 }
 
-.child-container.mobile {
-  height: 100%;
-  width: 100%;
+@container spatial-display (max-width: 840px) {
+  .map-container.has-chart {
+    display: none;
+  }
+  .maximize-button {
+    display: none;
+  }
+}
+
+.map-container.force-hide {
+  display: none;
 }
 </style>
