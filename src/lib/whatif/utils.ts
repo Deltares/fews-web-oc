@@ -134,7 +134,10 @@ function convertPropertyToJsonSchemaProperty(
       return {
         type: 'integer',
         default: property.defaultValue,
+        minimum: property.minValue,
+        maximum: property.maxValue,
         title: property.name,
+        description: `Min: ${property.minValue}, Max: ${property.maxValue}`,
       }
     case 'boolean':
       return {
@@ -272,7 +275,7 @@ export function getErrorsForProperties(
     if (schema.required?.includes(key)) {
       errors.push(...getRequiredErrors(properties[key], key))
     }
-    if (property.type === 'number') {
+    if (property.type === 'number' || property.type === 'integer') {
       errors.push(...getNumberErrors(properties[key], key, title, property))
     }
     if (
