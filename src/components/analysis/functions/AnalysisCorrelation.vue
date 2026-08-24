@@ -116,8 +116,8 @@ const selectedSecondTimeseries = ref<TimeSeriesDisplaySubplotItem>()
 const selectedRegressionEquation = ref<RegressionEquation>(
   regressionEquations[0],
 )
-const upperThreshold = ref<number | undefined>(undefined)
-const lowerThreshold = ref<number | undefined>(undefined)
+const upperThreshold = ref<number | null | undefined>(undefined)
+const lowerThreshold = ref<number | null | undefined>(undefined)
 
 watch(() => props.isActive, clearSelections)
 function clearSelections() {
@@ -142,11 +142,11 @@ function addChart() {
     regressionEquation,
   }
 
-  if (upperThreshold.value !== undefined) {
+  if (upperThreshold.value !== undefined && upperThreshold.value !== null) {
     filter.upperThreshold = upperThreshold.value
   }
 
-  if (lowerThreshold.value !== undefined) {
+  if (lowerThreshold.value !== undefined && lowerThreshold.value !== null) {
     filter.lowerThreshold = lowerThreshold.value
   }
 
