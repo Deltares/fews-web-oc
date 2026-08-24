@@ -81,9 +81,7 @@ export function getJsonDataFromProperties(
 
     if (property.type === 'enumProperty') {
       data[property.id] = property.value.code
-    } else if (property.type === 'multiProperty') {
-      data[property.id] = property.defaultValue
-    } else if ('value' in property) {
+    } else {
       data[property.id] = property.value
     }
   })
@@ -134,10 +132,7 @@ function convertPropertyToJsonSchemaProperty(
       return {
         type: 'integer',
         default: property.defaultValue,
-        minimum: property.minValue,
-        maximum: property.maxValue,
         title: property.name,
-        description: `Min: ${property.minValue}, Max: ${property.maxValue}`,
       }
     case 'boolean':
       return {
@@ -154,7 +149,7 @@ function convertPropertyToJsonSchemaProperty(
         title: property.name,
         dateValidation,
       }
-    case 'whatIfTemplateId':
+    case 'whatIfTemplateTemplateId':
       return {
         type: 'string',
         title: property.name,
@@ -275,7 +270,7 @@ export function getErrorsForProperties(
     if (schema.required?.includes(key)) {
       errors.push(...getRequiredErrors(properties[key], key))
     }
-    if (property.type === 'number' || property.type === 'integer') {
+    if (property.type === 'number') {
       errors.push(...getNumberErrors(properties[key], key, title, property))
     }
     if (

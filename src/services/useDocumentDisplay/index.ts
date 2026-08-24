@@ -14,13 +14,12 @@ export function useDocumentDisplay(
   displayId: MaybeRefOrGetter<string | undefined>,
 ) {
   const documentDisplay = shallowRef<DocumentDisplay>()
-  const isLoading = ref(true)
+  const isLoading = ref(false)
 
   async function loadDocumentDisplay() {
     const _displayId = toValue(displayId)
     if (_displayId === undefined) {
       documentDisplay.value = undefined
-      isLoading.value = false
       return
     }
 

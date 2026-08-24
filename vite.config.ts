@@ -44,10 +44,10 @@ export default defineConfig(({ mode }) => {
       __BUILD_DATE__: JSON.stringify(buildDate),
     },
     build: {
-      rolldownOptions: {
+      rollupOptions: {
         input: {
-          main: resolve(import.meta.dirname, 'index.html'),
-          error: resolve(import.meta.dirname, 'error/index.html'),
+          main: 'index.html',
+          error: 'error.html',
         },
       },
     },

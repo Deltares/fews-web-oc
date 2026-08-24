@@ -107,8 +107,7 @@ export function getProductURL(
 ): string {
   if (metaData) {
     const relativePath = metaData.relativePathProducts[0]
-    if (!relativePath) return ''
     return `${baseUrl}/rest/fewspiservice/v1/archive/products/id?relativePath=${relativePath}`
   }
-  return ''
+  return 'invalid'
 }

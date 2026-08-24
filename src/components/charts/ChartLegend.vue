@@ -133,11 +133,11 @@ function toggleLine(tag: Tag) {
 
 const chipMargin = 8
 const chartControlsStyle = computed(() => {
-  const { left = 0, right = 0 } = props.margin
+  const { left = 0, right = 0, top = 0, bottom = 0 } = props.margin
 
   const maxHeight =
     expanded.value || !requiresExpand.value
-      ? `${legendHeight.value + 2}px`
+      ? `min(${legendHeight.value + 2}px, calc(100% - ${top + bottom}px))`
       : `${height.value + 2}px`
 
   const marginRight = right ? `${right - chipMargin}px` : undefined

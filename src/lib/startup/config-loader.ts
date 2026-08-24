@@ -11,10 +11,14 @@ export async function loadApplicationConfig(): Promise<
     )
   }
 
-  const contentType = response.headers.get('Content-Type') ?? ''
-  if (!contentType.toLowerCase().includes('application/json')) {
+  // Only reject a content type that is present and wrong, which still catches a
+  // server serving its SPA fallback (text/html) for a missing config. A missing
+  // header is tolerated: Android WebView asset servers do not set one for .json,
+  // and the JSON.parse below rejects non-JSON content anyway.
+  const contentType = response.headers.get('Content-Type')
+  if (contentType && !contentType.toLowerCase().includes('application/json')) {
     throw new Error(
-      `Invalid content type for app-config.json: expected application/json, got "${contentType || 'unknown'}"`,
+      `Invalid content type for app-config.json: expected application/json, got "${contentType}"`,
     )
   }
 

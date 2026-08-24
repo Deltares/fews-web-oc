@@ -1,6 +1,10 @@
 <template>
   <div class="container" ref="container">
-    <div class="child-container" v-show="!hideSSD" ref="ssdContainer">
+    <div
+      class="child-container"
+      :class="{ 'd-none': hideSSD }"
+      ref="ssdContainer"
+    >
       <SsdComponent
         :src="src"
         :key="panelId"
@@ -22,21 +26,7 @@
         :panelId="panelId"
         :objectId="objectId"
         @close="closeTimeSeriesDisplay"
-      >
-        <template #toolbar-append>
-          <v-btn
-            v-if="!mobile"
-            size="small"
-            :icon="maximized ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
-            @click="maximized = !maximized"
-          />
-          <v-btn
-            size="small"
-            icon="mdi-close"
-            @click="closeTimeSeriesDisplay"
-          />
-        </template>
-      </SSDTimeSeriesDisplay>
+      />
     </div>
   </div>
 </template>
@@ -62,7 +52,6 @@ import { useDateRegistry } from '@/services/useDateRegistry'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import type { NavigateRoute } from '@/lib/router'
 import { convertJSDateToFewsPiParameter, isInDatesRange } from '@/lib/date'
-import { getNodeIdFromSelectTopologyNodeActionResult } from '@/lib/ssd/selectTopologyNode'
 const SSDTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/ssd/SsdTimeSeriesDisplay.vue'),
 )
@@ -87,16 +76,16 @@ interface SsdActionEventPayload {
   results: SsdActionResult[]
 }
 
+const sliderDebounceInterval = 500
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const alertsStore = useAlertsStore()
+
 interface Emits {
   navigate: [to: NavigateRoute]
   dashboardAction: [result: SsdActionResult]
 }
 const emit = defineEmits<Emits>()
-
-const sliderDebounceInterval = 500
-
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const alertsStore = useAlertsStore()
 
 const { thresholds } = useDisplay()
 
@@ -137,15 +126,8 @@ const { src } = useSsd(
   () => debouncedDateString.value,
 )
 
-const maximized = ref(false)
-
-const { width: containerWidth } = useElementSize(container)
-const mobile = computed(() => {
-  return containerWidth.value < thresholds.value.md
-})
-
 const hideSSD = computed(() => {
-  return maximized.value || (mobile.value && props.objectId !== '')
+  return mobile.value && props.objectId !== ''
 })
 
 const { width: ssdContainerWidth } = useElementSize(ssdContainer)
@@ -156,25 +138,17 @@ watch(ssdContainerWidth, () => {
   ssdComponent.value?.resize()
 })
 
+const { width: containerWidth } = useElementSize(container)
+const mobile = computed(() => {
+  return containerWidth.value < thresholds.value.md
+})
+
 function onAction(event: CustomEvent<SsdActionEventPayload>): void {
   const { panelId, objectId, results } = event.detail
-  if (results.length === 0) {
-    console.warn(
-      'SSD GetAction returned empty results; no click action can be executed.',
-      event.detail,
-    )
-    return
-  }
+  if (results.length === 0) return
 
   const result = results[0]
   const request = result.requests?.[0]
-
-  const nodeIdFromAction = getNodeIdFromSelectTopologyNodeActionResult(result)
-  if (nodeIdFromAction) {
-    navigateToTopologyNodeById(nodeIdFromAction)
-    return
-  }
-
   switch (result.type) {
     case 'PDF':
       if (request) globalThis.open(new URL(request.request))
@@ -197,14 +171,6 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
         message: `Action '${result.type}' not supported yet.`,
       })
   }
-}
-
-function navigateToTopologyNodeById(nodeId: string): void {
-  const to = {
-    name: 'TopologyDisplay',
-    params: { nodeId: [nodeId] },
-  }
-  emit('navigate', to)
 }
 
 function switchPanel(request: SsdActionRequest): void {
@@ -239,7 +205,6 @@ function openTimeSeriesDisplay(panelId: string, objectId: string) {
 }
 
 function closeTimeSeriesDisplay(): void {
-  maximized.value = false
   const to = {
     name: 'SchematicStatusDisplay',
     params: { groupId: props.groupId, panelId: props.panelId },

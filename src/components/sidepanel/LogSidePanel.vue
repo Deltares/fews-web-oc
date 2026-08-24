@@ -144,7 +144,6 @@ interface Props {
   topologyNode?: TopologyNode
   settings: {
     logDisplayId: string
-    taskRunId?: string
   }
 }
 
@@ -243,11 +242,9 @@ const filters = computed(() => {
 })
 
 const debouncedFilters = refDebounced(filters, requestDebounce)
-const selectedTaskRunId = computed(() => props.settings.taskRunId?.trim() ?? '')
 
 const customFilter = (log: LogMessage) =>
   Boolean(
-    (!selectedTaskRunId.value || log.taskRunId === selectedTaskRunId.value) &&
     filterLog(
       log,
       debouncedSelectedLevels.value,
