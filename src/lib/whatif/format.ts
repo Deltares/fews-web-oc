@@ -1,3 +1,4 @@
+import { WhatIfMultiProperty } from '@deltares/fews-pi-requests'
 import { toHumanReadableDateTime } from '../date'
 import type { WhatIfTemplateProperty } from './types'
 import type { ScenarioProperty } from './utils'
@@ -17,21 +18,21 @@ export function formatWhatIfScenarioProperty(
     case 'number':
       // Show values with 3 significant digits.
       return property.value.toPrecision(3)
-    case 'multiProperty':
-      return formatMultiProperty(property, whatIfTemplateProperty)
+    case 'multiPropertyEnumeration':
+      return formatMultiPropertyEnumeration(property, whatIfTemplateProperty)
     default:
       // Handle the rest by just returning its (string) value.
       return property.value
   }
 }
 
-function formatMultiProperty(
-  property: ScenarioProperty & { type: 'multiProperty' },
+function formatMultiPropertyEnumeration(
+  property: WhatIfMultiProperty,
   whatIfTemplateProperty?: WhatIfTemplateProperty,
 ): string {
   // Fall back to just the index if we get no (valid) what-if template
   // property.
-  const fallback = String(property.defaultValue ?? '')
+  const fallback = property.value
   if (
     whatIfTemplateProperty === undefined ||
     whatIfTemplateProperty.type !== 'multiProperty'
@@ -39,7 +40,7 @@ function formatMultiProperty(
     return fallback
   }
   const selectedOption = whatIfTemplateProperty.selectionOptions.find(
-    (option) => option.code === String(property.defaultValue),
+    (option) => option.code === property.value,
   )
   return selectedOption?.label ?? fallback
 }

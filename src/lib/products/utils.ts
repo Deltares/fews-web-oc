@@ -1,5 +1,4 @@
-export function getFileExtension(url: string | undefined): string {
-  if (!url) return ''
+export function getFileExtension(url: string): string {
   const urlParts = url.toLowerCase().split('.')
   return urlParts[urlParts.length - 1]
 }

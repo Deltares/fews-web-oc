@@ -48,6 +48,6 @@ export function handleStartupError(err: unknown): void {
   )
 
   globalThis.setTimeout(() => {
-    globalThis.location.replace(`${BASE_URL}error/`)
+    globalThis.location.replace(`${BASE_URL}error.html`)
   }, redirectDelayMs)
 }

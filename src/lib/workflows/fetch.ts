@@ -75,7 +75,6 @@ export async function fetchModuleRuntimes(): Promise<ModuleRunTime[]> {
   try {
     const response = await piProvider.getModuleRunTimes({
       documentFormat: DocumentFormat.PI_JSON,
-      includeManualTasks: false,
     })
     return response.moduleRunTimes
   } catch (error) {

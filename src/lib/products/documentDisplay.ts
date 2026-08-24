@@ -9,7 +9,9 @@ import type {
 } from '@deltares/fews-pi-requests'
 
 export type DocumentDisplay =
-  DocumentBrowserDisplay | ReportDisplay | DisplayCompose
+  | DocumentBrowserDisplay
+  | ReportDisplay
+  | DisplayCompose
 
 export interface DocumentDisplaysConfig {
   documentDisplays: DocumentDisplay[]

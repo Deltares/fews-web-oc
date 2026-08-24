@@ -16,11 +16,6 @@ import {
   IntervalItem,
   intervalToFewsPiDateRange,
 } from '@/lib/TimeControl/interval'
-import {
-  combineProductsMetaData,
-  getLocalProductsMetaData,
-  removeRemoteFromLocalProductsMetaData,
-} from '@/lib/products/local'
 
 export const FEWS_PRODUCT_ATTRIBUTE_DELETE = 'fews:delete'
 
@@ -40,7 +35,6 @@ export function useProducts(
   const products = ref<ProductMetaDataType[]>([])
   const error = ref<string | null>(null)
   const lastUpdated = ref<Date | null>(null)
-  const isLoading = ref<boolean>(false)
 
   const refresh = async () => {
     error.value = null
@@ -60,8 +54,6 @@ export function useProducts(
 
     const _archiveProducts = toValue(archiveProducts)
 
-    isLoading.value = true
-
     if (isArchiveProductSet(_archiveProducts)) {
       products.value = await getArchiveProductSets(
         baseUrl,
@@ -75,8 +67,6 @@ export function useProducts(
         toValue(viewPeriod),
       )
     }
-
-    isLoading.value = false
   }
 
   const getProductByKey = (key: string) => {
@@ -90,11 +80,11 @@ export function useProducts(
 
   return {
     products,
+    fetchProducts,
     getProductByKey,
     refresh,
     lastUpdated,
     error,
-    isLoading,
   }
 }
 
@@ -185,39 +175,29 @@ async function getArchiveProductForConstraint(
     })
   }
   filter.attribute = attributes
-  const response = await fetchProductsMetaData(baseUrl, filter, (product) =>
-    matchesConstraintProductMetaData(product, constraint),
+  const response = await fetchProductsMetaData(baseUrl, filter)
+  let filteredProducts = response.filter(
+    (product) =>
+      product.areaId === constraint.areaId &&
+      product.sourceId === constraint.sourceId,
   )
-  return response
-}
-
-function filterDeletedProductsMetaData(
-  products: ArchiveProductsMetadataEntry[],
-): ArchiveProductsMetadataEntry[] {
-  const deletedProducts: Record<string, boolean> = {}
-  const result: Record<string, ArchiveProductsMetadataEntry[]> = {}
-
-  const getValue = (product: ArchiveProductsMetadataEntry, key: string) => {
-    return product.attributes.find((attr) => attr.key === key)?.value
+  if (constraint.anyValid) {
+    filteredProducts = filteredProducts.filter((product) => {
+      return constraint.anyValid?.some((constraint) => {
+        if (
+          constraint.attributeTextEquals?.id &&
+          constraint.attributeTextEquals?.equals
+        ) {
+          return (
+            product.attributes[constraint.attributeTextEquals.id] ===
+            constraint.attributeTextEquals.equals
+          )
+        }
+        return false
+      })
+    })
   }
-
-  for (const product of products) {
-    const key = `${getValue(product, 'productId')}-${product.timeZero}`
-    if (deletedProducts[key]) continue
-
-    if (getValue(product, FEWS_PRODUCT_ATTRIBUTE_DELETE) === 'true') {
-      deletedProducts[key] = true
-      result[key] = []
-      continue
-    }
-
-    if (!result[key]) {
-      result[key] = []
-    }
-    result[key].push(product)
-  }
-
-  return Object.values(result).flat()
+  return filteredProducts
 }
 
 /**
@@ -230,7 +210,6 @@ function filterDeletedProductsMetaData(
 export async function fetchProductsMetaData(
   baseUrl: string,
   filter: ProductsMetaDataFilter,
-  productFilter?: (product: ArchiveProductsMetadataEntry) => boolean,
 ): Promise<ProductMetaDataType[]> {
   const provider = new PiArchiveWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -238,18 +217,11 @@ export async function fetchProductsMetaData(
 
   try {
     const response = await provider.getProductsMetaData(filter)
-    removeRemoteFromLocalProductsMetaData(response.productsMetadata)
-
-    const remoteProductsMetadata = filterDeletedProductsMetaData(
-      response.productsMetadata,
-    ).filter((product) => (productFilter ? productFilter(product) : true))
-    const remoteProducts = await Promise.all(
-      remoteProductsMetadata.map(convertToProductMetaDataType),
+    const promises = response.productsMetadata.map(convertToProductMetaDataType)
+    const products = await Promise.all(promises)
+    return products.filter(
+      (product) => product.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE] !== 'true',
     )
-
-    const localProducts = getLocalProductsMetaData(filter)
-
-    return combineProductsMetaData(remoteProducts, localProducts)
   } catch (err) {
     console.error(err)
     throw new Error('Error fetching product metadata')
@@ -380,32 +352,4 @@ function isArchiveProductSet(
   products: ArchiveProductSet[] | ArchiveProduct[],
 ): products is ArchiveProductSet[] {
   return (products as ArchiveProductSet[])[0]?.constraints !== undefined
-}
-
-function matchesConstraintProductMetaData(
-  product: ArchiveProductsMetadataEntry,
-  constraint: Constraints,
-): boolean {
-  if (
-    product.areaId !== constraint.areaId ||
-    product.sourceId !== constraint.sourceId
-  ) {
-    return false
-  }
-
-  if (!constraint.anyValid?.length) {
-    return true
-  }
-
-  return constraint.anyValid.some((constraint) => {
-    const attributeTextEquals = constraint.attributeTextEquals
-    if (attributeTextEquals?.id && attributeTextEquals?.equals) {
-      return product.attributes.some(
-        (attribute) =>
-          attribute.key === attributeTextEquals.id &&
-          attribute.value === attributeTextEquals.equals,
-      )
-    }
-    return false
-  })
 }

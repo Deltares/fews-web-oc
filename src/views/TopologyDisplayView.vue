@@ -253,27 +253,6 @@ function onNavigate(to: NavigateRoute) {
         query: route.query,
       })
       break
-    case 'TopologyDisplay': {
-      const rawNodeId = to.params?.nodeId
-      const nodeId = (
-        Array.isArray(rawNodeId) ? rawNodeId : [rawNodeId]
-      ).filter((id): id is string => typeof id === 'string' && id.trim() !== '')
-
-      if (nodeId.length === 0) {
-        console.warn('Cannot navigate to topology node: invalid nodeId.', to)
-        return
-      }
-
-      router.push({
-        name: 'TopologyDisplay',
-        params: {
-          topologyId: route.params.topologyId,
-          nodeId,
-        },
-        query: route.query,
-      })
-      break
-    }
     default:
       console.warn(`Unknown route name: ${String(to.name)}`)
   }

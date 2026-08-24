@@ -1,8 +1,6 @@
 <template>
-  <div>
-    <BaseMenu :editor="props.editor" ref="baseMenu"></BaseMenu>
-    <TableRowsMenu :editor="props.editor" ref="tableRowsMenu"></TableRowsMenu>
-  </div>
+  <BaseMenu :editor="props.editor" ref="baseMenu"></BaseMenu>
+  <TableRowsMenu :editor="props.editor" ref="tableRowsMenu"></TableRowsMenu>
 </template>
 
 <script setup lang="ts">

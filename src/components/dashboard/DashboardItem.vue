@@ -59,7 +59,6 @@ const props = defineProps<Props>()
 
 interface Emits {
   dashboardAction: [result: SsdActionResult]
-  navigate: [to: NavigateRoute]
 }
 const emit = defineEmits<Emits>()
 
@@ -140,24 +139,21 @@ function onNavigate(to: NavigateRoute) {
         delete to.params?.locationIds
       }
 
-      dashboardNavigateTo(to)
+      navigateTo(to)
       break
     }
     case 'SpatialDisplay':
     case 'SpatialDisplayWithCoordinates':
     case 'SSDTimeSeriesDisplay':
     case 'SchematicStatusDisplay':
-      dashboardNavigateTo(to)
-      break
-    case 'TopologyDisplay':
-      emit('navigate', to)
+      navigateTo(to)
       break
     default:
       console.warn(`Unknown route name: ${String(to.name)}`)
   }
 }
 
-function dashboardNavigateTo(to: NavigateRoute) {
+function navigateTo(to: NavigateRoute) {
   const layerName = to.params?.layerName ?? routeParams.value.layerName
 
   routeParams.value = {

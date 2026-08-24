@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">WEB OC</string>
+    <string name="title_activity_main">WEB OC</string>
+    <string name="package_name">de.hydrotec.weboc</string>
+    <string name="custom_url_scheme">de.hydrotec.weboc</string>
+</resources>

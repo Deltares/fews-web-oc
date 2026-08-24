@@ -11,17 +11,14 @@
     @confirm="confirmLeave"
     @cancel="cancelLeave"
   />
-  <div
-    v-if="editor"
-    class="d-flex align-center justify-space-between px-2 border-bottom bg-surface-light"
-  >
+  <v-toolbar v-if="editor" density="compact">
     <TableMenu :editor="editor" ref="EditMenu" />
     <v-spacer />
     <v-btn
       variant="flat"
       @click="onSave"
       color="primary"
-      class="mr-1"
+      class="mr-5"
       :disabled="!hasChanges"
     >
       Save
@@ -29,9 +26,9 @@
     <v-btn size="small" icon @click="onClose">
       <v-icon size="small">mdi-close</v-icon>
     </v-btn>
-  </div>
-  <v-sheet theme="light" class="flex-1-1 position-relative">
-    <editor-content :editor="editor" />
+  </v-toolbar>
+  <v-sheet theme="light" class="flex-1-1 h-100 position-relative">
+    <editor-content :editor="editor" class="shadow-frame" />
   </v-sheet>
 </template>
 

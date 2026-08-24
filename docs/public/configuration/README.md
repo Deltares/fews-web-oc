@@ -69,18 +69,6 @@ Web OC will show a time series graph and a drop-down menu for selection of displ
 
 The period shown in the graph corresponds to the configured relative view period in `DisplayGroups.xml`.
 
-**How plotWeight is interpreted in the WebOC**
-
-The WebOC uses CSS Flexbox to distribute the remaining vertical space proportionally over the subplots axis heights (excluding the legend and margin for tick labels). The `flex-grow` property specifies the grow rate of the container.
-
-* The configured `plotWeight` is directly used as a `flex-grow` value.
-* The axis height of the subplot with `plotWeight` 2 grows twice as fast as a subplot with `plotWeight` 1.
-* The `plotWeight` is also used to set the minimum axis height in pixels. The plot view will have a scrollbar when there is not enough space.
-
-For WebOC, it is advised to use `plotWeight` values of 200 or higher. Since `plotWeight` is also used as the minimum axis height (in pixels, excluding legend/brush and margins), this helps keep subplots readable on small (mobile) screens. If a subplot should be two times larger than another subplot, set its `plotWeight` to 400.
-
-When no `plotWeight` is specified, all subplots will have an equal height of 400px including the legend and tick labels. On desktop resolutions, typically two subplots will fit on screen, while a third subplot requires a scrollbar.
-
 ---
 
 **Display Information Document**
@@ -121,8 +109,7 @@ When a `<embedUrl>` element is configured in the selected topology node, Web OC 
 **External url**
 
 When a `<url>` element is configured in the selected topology node, Web OC will open a new browser window (outside Web OC) for the URL configured.  
-> [!NOTE]
-> This is only supported for topology nodes with *only* the `<url>` element configured.  
+⚠️ This is only supported for topology nodes with *only* the `<url>` element configured.  
 
 ---
 

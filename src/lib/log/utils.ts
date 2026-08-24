@@ -6,7 +6,6 @@ import type {
 import type { LogLevel, LogMessage, LogType } from './types'
 import { WorkflowItem } from '../workflows'
 import { TaskRun } from '@/lib/taskruns'
-import { hasEqualIdentity } from '@/lib/auth/identityEquality'
 
 export function getTitleForLog(
   log: LogMessage,
@@ -144,7 +143,8 @@ export function logToRoute(log: LogMessage) {
 const routeTokenRegex = /\[\[route:(.+?)\]\]/g
 
 export type LogTextSegment =
-  { type: 'text'; text: string } | { type: 'route'; to: string; label: string }
+  | { type: 'text'; text: string }
+  | { type: 'route'; to: string; label: string }
 
 export function createRouteToken(routePath: string) {
   return `[[route:${routePath}]]`
@@ -203,8 +203,7 @@ export function logToUserColor(log: LogMessage, userName: string, opacity = 1) {
 
 export function isLogMessageByCurrentUser(log: LogMessage, userName: string) {
   if (log.type === 'system') return false
-  if (log.user === undefined) return false
-  return hasEqualIdentity(log.user, userName)
+  return log.user === userName
 }
 
 export function logToActions(

@@ -36,7 +36,8 @@ export async function fetchLocationsAsGeoJson(
   )
   const error = (
     settledResponses.find((res) => res.status === 'rejected') as
-      PromiseRejectedResult | undefined
+      | PromiseRejectedResult
+      | undefined
   )?.reason
 
   if (error) {

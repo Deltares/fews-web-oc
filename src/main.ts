@@ -8,6 +8,12 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import './assets/maplibre-override.css'
 
 import { runAppBootstrap } from './lib/startup/app-startup.js'
+import { applyPlatformClasses } from './services/usePlatform/index.js'
+
+// Before the first render, so styles gated on the client never flash the wrong
+// variant. The same bundle serves browsers and the Capacitor app, so this is what
+// lets a stylesheet target the app alone.
+applyPlatformClasses()
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)

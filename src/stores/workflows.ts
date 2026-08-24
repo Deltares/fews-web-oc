@@ -83,10 +83,7 @@ export const useWorkflowsStore = defineStore('workflows', {
 
         await downloadFileWithXhr(url.toString(), fileName, headers)
       } else if (type === WorkflowType.RunTask) {
-        return await webServiceProvider.postRunTask(
-          filter as RunTaskFilter,
-          options?.body ?? '',
-        )
+        return await webServiceProvider.postRunTask(filter, options?.body ?? '')
       }
     },
   },

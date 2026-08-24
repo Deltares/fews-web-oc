@@ -11,17 +11,17 @@ export function useMenuItemsStack(
     const _menuItems = toValue(menuItems)
     const _activeItem = toValue(activeItem)
 
-    const root: ColumnItem = {
-      id: 'rootNode',
-      name: '',
-      children: _menuItems,
-    }
-    const s = [root]
-
     if (_activeItem !== '' && _menuItems.length > 0) {
+      const root: ColumnItem = {
+        id: 'rootNode',
+        name: '',
+        children: _menuItems,
+      }
+      const s = [root]
+
       recursiveFind(s, _activeItem)
+      stack.value = s
     }
-    stack.value = s
   })
 
   return stack

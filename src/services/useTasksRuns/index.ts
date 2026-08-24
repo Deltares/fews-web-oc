@@ -23,7 +23,6 @@ import {
 import { configManager } from '../application-config'
 import { convertRelativeToAbsolutePeriod } from '@/lib/period/convert'
 import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
-import { hasEqualIdentity } from '@/lib/auth/identityEquality'
 
 const shouldRefreshTaskRuns = ref(false)
 
@@ -116,18 +115,11 @@ export function useTaskRuns(
     const _workflowIds = toValue(workflowIds)
     const _statuses = toValue(statuses)
     const _userId = toValue(options.userId) ?? null
-
-    const matchesUser = (task: TaskRun) => {
-      if (_userId === null) return true
-      if (task.userId === null) return false
-      return hasEqualIdentity(task.userId, _userId)
-    }
-
     return allTaskRuns.value.filter(
       (task) =>
         _workflowIds.includes(task.workflowId) &&
         _statuses.includes(task.status) &&
-        matchesUser(task),
+        (_userId === null || task.userId === _userId),
     )
   }
 

@@ -1,7 +1,6 @@
 import { ref, onMounted, computed } from 'vue'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.js'
 import type { User } from 'oidc-client-ts'
-import { hasEqualIdentity } from '@/lib/auth/identityEquality'
 
 export function useCurrentUser() {
   const user = ref<User | null>(null)
@@ -30,7 +29,7 @@ export function useCurrentUser() {
 
   function isCurrentUser(userIdToCheck: string | null): boolean {
     if (!hasCurrentUser() || userIdToCheck === null) return false
-    return hasEqualIdentity(userIdToCheck, preferredUsername.value)
+    return userIdToCheck === preferredUsername.value
   }
 
   onMounted(() => {
