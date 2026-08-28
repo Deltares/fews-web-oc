@@ -126,6 +126,8 @@ const filterOptions = computed(() => {
     props.settings.charts.timeSeriesTable.locationEnabledAttribute,
     props.settings.charts.verticalProfileChart.locationEnabledAttribute,
     props.settings.charts.metaDataPanel.locationEnabledAttribute,
+    props.settings.map.locationsLayer.minZoom.levelLocationAttribute,
+    props.settings.map.locationsLayer.maxZoom.levelLocationAttribute,
   ].filter((id): id is string => !!id)
   return {
     ...(userSettings.get('ui.map.showDataAvailability')?.value === true

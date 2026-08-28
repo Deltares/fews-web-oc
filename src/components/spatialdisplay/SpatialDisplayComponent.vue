@@ -52,6 +52,8 @@
       :locationsGeoJson="geojson"
       :selectedLocationIds="selectedLocationIds"
       :locationsClickable="settings.locationsLayer.singleClickAction"
+      :minZoom="settings.locationsLayer.minZoom"
+      :maxZoom="settings.locationsLayer.maxZoom"
       @click="onLocationClick"
     />
     <CoordinateSelectorMarker
