@@ -4,6 +4,14 @@ import DefaultUserSettings from '@/assets/DefaultUserSettings.json'
 import { LayerKind } from '@/lib/streamlines'
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import {
+  deserializeUserSettings,
+  type UserSettingsOverride,
+} from '@/lib/user-settings/deserializeUserSettings'
+import { fetchWebResourcesDefaultUserSettings } from '@/services/useDefaultUserSettings'
+
+export { deserializeUserSettings } from '@/lib/user-settings/deserializeUserSettings'
+export type { UserSettingsOverride } from '@/lib/user-settings/deserializeUserSettings'
 
 export interface UserSettingsWithIcon {
   value: string
@@ -50,6 +58,7 @@ export interface UserSettingsState {
 
 const defaultUserSettings = DefaultUserSettings as UserSettingsItem[]
 const parameterGroupKey = 'units.parameterGroup.'
+const STORAGE_KEY = 'weboc-user-settings-v1.0.0'
 
 const defaultGroups: UserSettingsGroup[] = [
   { id: 'Units', title: 'Units', icon: 'mdi-ruler' },
@@ -67,6 +76,7 @@ export const useUserSettingsStore = defineStore(
     const convertDatum = ref(false)
     const useDisplayUnits = ref(true)
     const preferredLayerKind = ref<LayerKind | null>(null)
+    const webResourcesOverrides = ref<UserSettingsOverride[]>([])
 
     const route = useRoute()
 
@@ -163,24 +173,44 @@ export const useUserSettingsStore = defineStore(
       }
     }
 
+    async function initializeWithWebResources(): Promise<void> {
+      const overrides = await fetchWebResourcesDefaultUserSettings()
+      webResourcesOverrides.value = overrides
+
+      const rawData = globalThis.localStorage.getItem(STORAGE_KEY) ?? '{}'
+      items.value = deserializeUserSettings(
+        rawData,
+        defaultUserSettings,
+        overrides,
+      )
+
+      const specialActionIds = ['units.displayUnits', 'datum.verticalDatum']
+      for (const id of specialActionIds) {
+        const item = items.value.find((i) => i.id === id)
+        if (item) add(item)
+      }
+    }
+
     return {
       groups,
       items,
       convertDatum,
       useDisplayUnits,
       preferredLayerKind,
+      webResourcesOverrides,
       listByGroup,
       listFavorite,
       get,
       scrollZoomMode,
       add,
       updateSettingItems,
+      initializeWithWebResources,
     }
   },
   {
     persist: [
       {
-        key: 'weboc-user-settings-v1.0.0',
+        key: STORAGE_KEY,
         storage: window.localStorage,
         pick: ['items'],
         afterHydrate: (context) => {
@@ -201,34 +231,9 @@ export const useUserSettingsStore = defineStore(
           serialize: (context) => {
             return JSON.stringify(context)
           },
-          deserialize: (data) => {
-            const parsedState = JSON.parse(data)
-            const newState = [...defaultUserSettings]
-            for (const prop of newState) {
-              const storedProp = parsedState.items.find(
-                (item: UserSettingsItem) => item.id === prop.id,
-              )
-              if (storedProp) {
-                if (
-                  prop.type === 'oneOfMultiple' &&
-                  !prop.items
-                    ?.map((i: UserSettingsWithIcon) => i.value)
-                    .includes(storedProp.value)
-                ) {
-                  const index = storedProp.items?.findIndex(
-                    (i: UserSettingsWithIcon) => i.value === storedProp.value,
-                  )
-                  const newValue = prop.items?.[index ?? -1]?.value
-                  if (newValue) prop.value = newValue
-                  prop.initialStorageValue = storedProp.value
-                } else {
-                  prop.value = storedProp.value
-                }
-                prop.favorite = storedProp.favorite
-              }
-            }
-            return newState
-          },
+
+          deserialize: (data) =>
+            deserializeUserSettings(data, defaultUserSettings),
         },
       },
     ],
