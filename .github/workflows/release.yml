@@ -1,5 +1,8 @@
 name: Upload assets on new release
 
+permissions:
+  contents: read
+
 on:
   release:
     types:
