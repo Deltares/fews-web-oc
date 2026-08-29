@@ -16,7 +16,9 @@
       density="compact"
       no-filter
       fixed-header
+      must-sort
       height="100%"
+      @update:sortBy="updateSortBy"
     >
       <template v-slot:headers="{ columns, toggleSort, isSorted, getSortIcon }">
         <tr>
@@ -29,14 +31,12 @@
                 'v-data-table__th--sorted': isSorted(column),
                 'v-data-table__th--sortable': column.sortable && !isEditing,
               }"
-              @click="
-                column.sortable && !isEditing ? toggleSort(column) : undefined
-              "
+              @click="column.sortable ? toggleSort(column) : undefined"
             >
               <div class="table-header-indicator-text">
                 <span>{{ column.title }}</span>
                 <v-icon
-                  v-if="column.sortable && !isEditing"
+                  v-if="column.sortable"
                   class="v-data-table-header__sort-icon"
                   :icon="getSortIcon(column)"
                 />
@@ -46,7 +46,7 @@
                 >
                   <v-btn
                     icon="mdi-table-row-plus-before"
-                    @click="addRowToTimeSeries(selected, 'before')"
+                    @click.stop="addRowToTimeSeries(selected, 'before')"
                     color="primary"
                     variant="text"
                     density="compact"
@@ -54,7 +54,7 @@
                   />
                   <v-btn
                     icon="mdi-table-row-plus-after"
-                    @click="addRowToTimeSeries(selected, 'after')"
+                    @click.stop="addRowToTimeSeries(selected, 'after')"
                     color="primary"
                     variant="text"
                     density="compact"
@@ -78,7 +78,10 @@
                 'table-header--editing': isEditingTimeSeries(
                   column.key as string,
                 ),
+                'v-data-table__th--sorted': isSorted(column),
+                'v-data-table__th--sortable': column.sortable && !isEditing,
               }"
+              @click="!isEditing ? toggleSort(column) : undefined"
             >
               <div class="table-header-indicator">
                 <div class="table-header-indicator-text">
@@ -95,7 +98,7 @@
                     >
                       <v-btn
                         prepend-icon="mdi-content-save-outline"
-                        @click="save(column.key as string)"
+                        @click.stop="save(column.key as string)"
                         :disabled="newTableData.length === 0"
                         color="primary"
                         variant="flat"
@@ -107,7 +110,7 @@
                         size="small"
                         variant="flat"
                         class="my-2"
-                        @click="stopEditTimeSeries(column.key || '')"
+                        @click.stop="stopEditTimeSeries(column.key || '')"
                         >Cancel</v-btn
                       >
                     </div>
@@ -116,9 +119,14 @@
                       size="x-small"
                       variant="text"
                       icon="mdi-pencil"
-                      @click="toggleEditTimeSeries(column.key as string)"
+                      @click.stop="toggleEditTimeSeries(column.key as string)"
                     ></v-btn>
                   </template>
+                  <v-icon
+                    v-if="column.sortable && !isEditing"
+                    class="v-data-table-header__sort-icon"
+                    :icon="getSortIcon(column)"
+                  ></v-icon>
                 </div>
                 <div
                   class="table-header-indicator-color"
@@ -249,7 +257,7 @@ const nonEquidistantSeries = computed(() => {
     .map(([id]) => id)
 })
 
-const dateOrder = computed(() =>
+const dateOrder = ref<'asc' | 'desc'>(
   props.settings.sortDateTimeColumn === 'ascending' ? 'asc' : 'desc',
 )
 type SortItem = { key: string; order: 'asc' | 'desc' }
@@ -260,15 +268,23 @@ const sortBy = ref<SortItem[]>([
   },
 ])
 watch(
-  dateOrder,
+  () => props.settings.sortDateTimeColumn,
   (order) => {
+    dateOrder.value = order === 'ascending' ? 'asc' : 'desc'
     const dateSortItem = sortBy.value.find((item) => item.key === 'date')
     if (!dateSortItem) return
 
-    dateSortItem.order = order
+    dateSortItem.order = dateOrder.value
   },
   { immediate: true },
 )
+
+function updateSortBy(newSortBy: SortItem[]) {
+  const dateSortItem = newSortBy.find((item) => item.key === 'date')
+  if (dateSortItem) {
+    dateOrder.value = dateSortItem.order
+  }
+}
 
 onBeforeMount(() => {
   if (props.config !== undefined) {
@@ -383,6 +399,13 @@ function toggleEditTimeSeries(seriesId: string) {
   if (isEditingTimeSeries(seriesId)) {
     stopEditTimeSeries(seriesId)
   } else {
+    // set sorting to date column when starting to edit
+    sortBy.value = [
+      {
+        key: 'date',
+        order: dateOrder.value,
+      },
+    ]
     editTimeSeries(seriesId)
   }
 }
