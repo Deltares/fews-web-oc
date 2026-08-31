@@ -15,7 +15,7 @@
           aria-label="Select Task Run"
           variant="text"
           density="compact"
-          class="text-capitalize px-2"
+          class="px-2"
           :item="selectedTaskRun"
         >
           <template #append>

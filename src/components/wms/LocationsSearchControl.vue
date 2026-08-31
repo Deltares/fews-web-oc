@@ -9,7 +9,7 @@
     <v-btn
       variant="text"
       v-if="showLocations"
-      class="locations-search text-capitalize"
+      class="locations-search"
       hide-details
       @click="showLocationsSearch"
     >
