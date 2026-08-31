@@ -18,7 +18,7 @@
           :disabled="item.disabled"
           variant="text"
           min-width="48"
-          class="pa-0 text-capitalize"
+          class="pa-0"
           @click="displayType = item.value"
         >
           <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>

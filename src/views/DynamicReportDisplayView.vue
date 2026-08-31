@@ -10,7 +10,6 @@
         <template #activator="{ props }">
           <v-btn
             v-bind="props"
-            class="text-capitalize"
             variant="text"
             append-icon="mdi-chevron-down"
             :text="selectedLocation?.name"
