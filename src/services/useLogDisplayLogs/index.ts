@@ -7,6 +7,7 @@ import {
 import type { MaybeRefOrGetter } from 'vue'
 import { computed, ref, shallowRef, toValue, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { systemTimeAuthority } from '@/services/system-time'
 
 type DateSeparatorItem = {
   type: 'dateSeparator'
@@ -142,7 +143,7 @@ export function useLogDisplayLogs(
       const logPromises = _filters.map(fetchLogsForFilter)
       const newLogs = await Promise.all(logPromises)
 
-      lastUpdatedTimestamp.value = Date.now()
+      lastUpdatedTimestamp.value = systemTimeAuthority.now().getTime()
       manualLogMessages.value = newLogs.flat()
     } catch {
       error.value = 'Error loading logDisplayLogs'
@@ -179,7 +180,7 @@ export function useLogDisplayLogs(
       const logPromises = _filters.map(fetchLogsForFilter)
       const newLogs = await Promise.all(logPromises)
 
-      lastUpdatedTimestamp.value = Date.now()
+      lastUpdatedTimestamp.value = systemTimeAuthority.now().getTime()
       systemLogMessages.value = newLogs.flat()
     } catch {
       error.value = 'Error loading logDisplayLogs'
