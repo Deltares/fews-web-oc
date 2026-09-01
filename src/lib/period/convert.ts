@@ -7,7 +7,8 @@ export function convertRelativeToAbsolutePeriod(
   relative: RelativePeriod,
   reference?: Date,
 ): AbsolutePeriod {
-  const referenceTimestamp = reference?.getTime() ?? systemTimeAuthority.now().getTime()
+  const referenceTimestamp =
+    reference?.getTime() ?? systemTimeAuthority.now().getTime()
   return {
     startTimestamp: referenceTimestamp + relative.startOffsetSeconds * 1000,
     endTimestamp: referenceTimestamp + relative.endOffsetSeconds * 1000,
