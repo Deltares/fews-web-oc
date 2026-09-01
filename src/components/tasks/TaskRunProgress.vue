@@ -37,9 +37,7 @@ onMounted(() => {
   updateProgress()
 })
 
-useFocusAwareInterval(updateProgress, () => props.updateIntervalSeconds, {
-  immediate: true,
-})
+useFocusAwareInterval(updateProgress, () => props.updateIntervalSeconds)
 
 function updateProgress(): void {
   if (
