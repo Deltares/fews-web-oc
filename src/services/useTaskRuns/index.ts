@@ -6,7 +6,7 @@ import {
 } from '@deltares/fews-pi-requests'
 import type { MaybeRefOrGetter } from 'vue'
 import { ref, shallowRef, toValue, watch } from 'vue'
-import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
+import { useRefreshCoordinator } from '@/services/useRefreshCoordinator'
 import { configManager } from '@/services/application-config'
 import { Pausable } from '@vueuse/core'
 import { convertFewsPiTaskRunToTaskRun, type TaskRun } from '@/lib/taskruns'
@@ -72,7 +72,9 @@ export function useTaskRuns(
   }
 
   if (refreshInterval) {
-    interval.value = useFocusAwareInterval(loadTaskRun, refreshInterval, {
+    interval.value = useRefreshCoordinator(loadTaskRun, {
+      policies: ['onSystemTick', 'onInterval', 'onVisibilityResume', 'manual'],
+      intervalMs: refreshInterval,
       immediateCallback: true,
     })
   } else {
