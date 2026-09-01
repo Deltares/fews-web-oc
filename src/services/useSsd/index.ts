@@ -8,6 +8,7 @@ import { computed, ref, shallowRef, toValue, watchEffect } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl.ts'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { useRefreshCoordinator } from '@/services/useRefreshCoordinator'
 export interface UseSsdCapabilitiesReturn {
   error: Ref<any>
   capabilities: Ref<SsdGetCapabilitiesResponse | undefined>
@@ -64,8 +65,11 @@ export function useSsdCapabilities(
     }
   }
 
-  loadCapabilities()
-  setInterval(loadCapabilities, REFRESH_INTERVAL)
+  useRefreshCoordinator(loadCapabilities, {
+    policies: ['onSystemTick', 'onInterval', 'onVisibilityResume'],
+    intervalMs: REFRESH_INTERVAL,
+    immediateCallback: true,
+  })
 
   watchEffect(() => {
     const panelIdValue = toValue(panelId)

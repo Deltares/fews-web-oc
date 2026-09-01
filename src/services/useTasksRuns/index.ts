@@ -22,8 +22,11 @@ import {
 
 import { configManager } from '../application-config'
 import { convertRelativeToAbsolutePeriod } from '@/lib/period/convert'
-import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 import { hasEqualIdentity } from '@/lib/auth/identityEquality'
+import {
+  type RefreshPolicy,
+  useRefreshCoordinator,
+} from '@/services/useRefreshCoordinator'
 import { systemTimeAuthority } from '@/services/system-time'
 
 const shouldRefreshTaskRuns = ref(false)
@@ -58,12 +61,24 @@ export function useTaskRuns(
   const refreshIntervalSeconds =
     options.refreshIntervalSeconds ?? DEFAULT_REFRESH_INTERVAL_SECONDS
 
-  useFocusAwareInterval(
+  const refreshPolicies: RefreshPolicy[] = [
+    'onSystemTick',
+    'onVisibilityResume',
+    'manual',
+  ]
+  if (refreshIntervalSeconds > 0) {
+    refreshPolicies.push('onInterval')
+  }
+
+  useRefreshCoordinator(
     () => {
       fetch().catch((error) => console.error(`Failed to fetch tasks: ${error}`))
     },
-    refreshIntervalSeconds * 1000,
-    { immediateCallback: true },
+    {
+      policies: refreshPolicies,
+      intervalMs: refreshIntervalSeconds * 1000,
+      immediateCallback: true,
+    },
   )
 
   watch(
@@ -72,7 +87,9 @@ export function useTaskRuns(
       () => toValue(options.topologyNodeId),
       () => shouldRefreshTaskRuns.value,
     ],
-    fetch,
+    () => {
+      void fetch()
+    },
   )
 
   async function fetch(): Promise<void> {
