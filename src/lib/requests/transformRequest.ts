@@ -4,12 +4,11 @@ import { getPermissionExcludesHeader } from '@/services/usePermissionExcludes'
 export function createTransformRequestFn(controller?: AbortController) {
   return async (request: Request): Promise<Request> => {
     const additionalHeaders = await getRequestHeaders()
-    const requestInit = {
-      headers: mergeHeaders(request.headers, additionalHeaders),
+    const headers = mergeHeaders(request.headers, additionalHeaders)
+    return new Request(request, {
+      headers,
       signal: controller?.signal,
-    }
-    const newRequest = new Request(request, requestInit)
-    return Promise.resolve(newRequest)
+    })
   }
 }
 
