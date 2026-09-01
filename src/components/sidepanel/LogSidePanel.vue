@@ -1,6 +1,6 @@
 <template>
   <SidePanelContent
-    :title="t('sidePanel.logDisplay')"
+    :title="logDisplay?.name ?? t('sidePanel.logDisplay')"
     @close="emit('close')"
     class="h-100"
   >
@@ -143,7 +143,7 @@ import { useLogActions } from '@/components/logdisplay/useLogActions'
 interface Props {
   topologyNode?: TopologyNode
   settings: {
-    logDisplayId: string
+    logDisplayId: string | undefined
     taskRunId?: string
   }
 }
@@ -159,9 +159,8 @@ const emit = defineEmits<Emits>()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const { logDisplay } = useLogDisplay(baseUrl, () => props.settings.logDisplayId)
+const { logDisplay } = useLogDisplay(() => props.settings.logDisplayId)
 const { noteGroup } = useNoteGroup(
-  baseUrl,
   () => logDisplay.value?.manualLog?.noteGroupId,
 )
 
@@ -288,7 +287,7 @@ const {
   unacknowledgeLog,
 } = useLogActions({
   baseUrl,
-  getLogDisplayId: () => props.settings.logDisplayId,
+  getLogDisplayId: () => props.settings.logDisplayId ?? '',
   getNoteGroupId: () => noteGroup.value?.id ?? '',
   onRefresh: refreshLogs,
 })

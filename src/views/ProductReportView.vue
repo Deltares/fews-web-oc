@@ -145,7 +145,7 @@ const { products, refresh } = useProducts(
   viewPeriod,
   archiveProductConfig,
 )
-const { logDisplay } = useLogDisplay(baseUrl, () => LOG_DISPLAY_ID)
+const { logDisplay } = useLogDisplay(() => LOG_DISPLAY_ID)
 
 const viewMode = ref('html') // or 'iframe', 'img'
 const selected = ref(0) // Example timeZero
