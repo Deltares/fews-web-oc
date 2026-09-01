@@ -1,5 +1,5 @@
 <template>
-  <SidePanelContent :title="t('sidePanel.documentFile')" @close="emit('close')">
+  <SidePanelContent :title="title" @close="emit('close')">
     <template #prepend>
       <v-btn icon="mdi-home" @click="goHome" />
     </template>
@@ -19,16 +19,14 @@
 <script setup lang="ts">
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { computed, useTemplateRef } from 'vue'
-import { useI18n } from 'vue-i18n'
 
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 
 import SidePanelContent from './SidePanelContent.vue'
 
-const { t } = useI18n()
-
 interface Props {
   topologyNode?: TopologyNode
+  title: string
 }
 const props = defineProps<Props>()
 
