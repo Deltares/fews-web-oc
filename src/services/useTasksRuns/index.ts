@@ -24,6 +24,7 @@ import { configManager } from '../application-config'
 import { convertRelativeToAbsolutePeriod } from '@/lib/period/convert'
 import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 import { hasEqualIdentity } from '@/lib/auth/identityEquality'
+import { systemTimeAuthority } from '@/services/system-time'
 
 const shouldRefreshTaskRuns = ref(false)
 
@@ -112,7 +113,7 @@ export function useTaskRuns(
       outputEndTime.value = range.outputEndTime
     }
 
-    lastUpdatedTimestamp.value = Date.now()
+    lastUpdatedTimestamp.value = systemTimeAuthority.now().getTime()
   }
 
   function filterTasks(): TaskRun[] {
