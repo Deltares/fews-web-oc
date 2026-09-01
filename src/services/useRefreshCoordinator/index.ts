@@ -10,10 +10,7 @@ import { MaybeRefOrGetter, onUnmounted, ref, toValue, watch } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime'
 
 export type RefreshPolicy =
-  | 'onSystemTick'
-  | 'onInterval'
-  | 'onVisibilityResume'
-  | 'manual'
+  'onSystemTick' | 'onInterval' | 'onVisibilityResume' | 'manual'
 
 interface UseRefreshCoordinatorOptions {
   policies: RefreshPolicy[]

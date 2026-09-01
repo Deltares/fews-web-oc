@@ -1,7 +1,4 @@
-import {
-  type Fn,
-  type Pausable,
-} from '@vueuse/core'
+import { type Fn, type Pausable } from '@vueuse/core'
 import { type MaybeRefOrGetter } from 'vue'
 import { useRefreshCoordinator } from '@/services/useRefreshCoordinator'
 

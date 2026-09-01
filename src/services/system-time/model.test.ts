@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  resolveSystemTimeAt,
-  type SystemTimeAnchor,
-} from './model'
+import { resolveSystemTimeAt, type SystemTimeAnchor } from './model'
 
 describe('resolveSystemTimeAt', () => {
   it('advances continuously for continuous update pattern', () => {

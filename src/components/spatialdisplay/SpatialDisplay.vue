@@ -56,12 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  defineAsyncComponent,
-  ref,
-  watch,
-} from 'vue'
+import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { configManager } from '@/services/application-config'
 import { useWmsLayerCapabilities } from '@/services/useWms'
