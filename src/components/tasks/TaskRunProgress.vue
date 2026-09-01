@@ -12,7 +12,7 @@
   </v-tooltip>
 </template>
 <script setup lang="ts">
-import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
+import { useRefreshCoordinator } from '@/services/useRefreshCoordinator'
 import { Duration } from 'luxon'
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -37,7 +37,10 @@ onMounted(() => {
   updateProgress()
 })
 
-useFocusAwareInterval(updateProgress, () => props.updateIntervalSeconds)
+useRefreshCoordinator(updateProgress, {
+  policies: ['onInterval', 'onVisibilityResume'],
+  intervalMs: () => props.updateIntervalSeconds * 1000,
+})
 
 function updateProgress(): void {
   if (
