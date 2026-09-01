@@ -29,58 +29,74 @@
 <script setup lang="ts">
 import SelectIcon from '@/components/general/SelectIcon.vue'
 import type { RelativePeriod } from '@/lib/period'
+import { Duration, DurationLikeObject } from 'luxon'
 import { computed, ref, watchEffect } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
-  hasAllOption?: boolean
+  type?: 'onlyLong' | 'onlyShort'
 }
 
-const { hasAllOption = true } = defineProps<Props>()
+const { type } = defineProps<Props>()
 
 const period = defineModel<RelativePeriod | null>({ required: true })
 
+const { locale, t } = useI18n()
+
 interface RelativePeriodOption {
   id: string
-  title: string
+  title?: string
+  duration: DurationLikeObject | null
   numSecondsBack: number | null
 }
 
-const secondsPerHour = 60 * 60
-const secondsPerDay = 24 * secondsPerHour
-const options: RelativePeriodOption[] = [
-  {
-    id: '-2h',
-    title: 'Last 2 hours',
-    numSecondsBack: 2 * secondsPerHour,
-  },
-  {
-    id: '-8h',
-    title: 'Last 8 hours',
-    numSecondsBack: 8 * secondsPerHour,
-  },
-  {
-    id: '-1d',
-    title: 'Last day',
-    numSecondsBack: 1 * secondsPerDay,
-  },
-  {
-    id: '-1w',
-    title: 'Last week',
-    numSecondsBack: 7 * secondsPerDay,
-  },
-  {
-    id: 'all',
-    title: 'All',
-    numSecondsBack: null,
-  },
+const rawOptions = [
+  { id: '-2h', duration: { hours: 2 } },
+  { id: '-8h', duration: { hours: 8 } },
+  { id: '-1d', duration: { days: 1 } },
+  { id: '-1w', duration: { weeks: 1 } },
+  { id: '-1m', duration: { months: 1 } },
+  { id: '-1y', duration: { years: 1 } },
+  { id: 'all', duration: null },
 ] as const
 
+const options = rawOptions.map((option) => ({
+  ...option,
+  numSecondsBack: getSecondsBack(option.duration),
+  title: formatDurationTitle(option.duration),
+}))
+
+function getSecondsBack(duration: DurationLikeObject | null): number | null {
+  if (duration === null) return null
+  return Duration.fromObject(duration).as('seconds')
+}
+
+function formatDurationTitle(duration: DurationLikeObject | null): string {
+  if (duration === null) return t('periodFilter.all')
+  // Without 1's
+  const human = Duration.fromObject(duration, { locale: locale.value })
+    .toHuman()
+    .replace(/1 /g, '')
+  return t('periodFilter.last', { duration: human })
+}
+
+const weekInSeconds = Duration.fromObject({ weeks: 1 }).as('seconds')
 const activeOptions = computed(() => {
-  if (hasAllOption) {
-    return options
-  } else {
-    return options.filter((option) => option.numSecondsBack !== null)
+  if (type === 'onlyLong') {
+    return options.filter(
+      (option) =>
+        option.numSecondsBack === null ||
+        option.numSecondsBack >= weekInSeconds,
+    )
   }
+  if (type === 'onlyShort') {
+    return options.filter(
+      (option) =>
+        option.numSecondsBack !== null &&
+        option.numSecondsBack <= weekInSeconds,
+    )
+  }
+  return options
 })
 
 const selectedOption = ref<RelativePeriodOption>()

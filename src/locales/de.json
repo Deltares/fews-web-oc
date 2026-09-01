@@ -127,5 +127,9 @@
       "anonymousUser": "Anonymer Benutzer"
     },
     "system": {}
+  },
+  "periodFilter": {
+    "all": "Alle",
+    "last": "Letzte {duration}"
   }
 }
