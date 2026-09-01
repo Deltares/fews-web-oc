@@ -1,8 +1,6 @@
 import { intervalToDateRange, type Interval } from '@/lib/TimeControl/interval'
 import { defineStore } from 'pinia'
-import {
-  systemTimeAuthority,
-} from '@/services/system-time'
+import { systemTimeAuthority } from '@/services/system-time'
 import type {
   SystemTimeBasis,
   SystemTimeUpdatePattern,
@@ -66,8 +64,11 @@ export const useSystemTimeStore = () => {
           this.updatePattern = snapshot.updatePattern
           this.updateIntervalMs = snapshot.updateIntervalMs
           this.lastSyncedAt = new Date(snapshot.fetchedAtClientMs)
-          this.syncError = error instanceof Error ? error.message : String(error)
-          console.warn(`Failed to synchronise FEWS system time: ${this.syncError}`)
+          this.syncError =
+            error instanceof Error ? error.message : String(error)
+          console.warn(
+            `Failed to synchronise FEWS system time: ${this.syncError}`,
+          )
         }
       },
       async startClock() {
