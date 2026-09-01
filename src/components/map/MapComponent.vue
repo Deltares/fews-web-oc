@@ -58,9 +58,9 @@ import type {
 } from 'maplibre-gl'
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { transformStyle } from '@/lib/map'
 import { getRequestHeaders } from '@/lib/requests/transformRequest'
 import { useLayerOrder } from '@/services/useLayerOrder'
-import { transformStyle } from '@/lib/map'
 
 interface Props {
   bounds?: LngLatBounds

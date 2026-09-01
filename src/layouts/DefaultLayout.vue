@@ -20,7 +20,7 @@
         <div id="app-bar-content-end" />
         <TimeControlMenu />
         <UserSettingsMenu />
-        <LoginComponent v-if="hasAnyAuthentication" />
+        <LoginComponent v-if="configManager.authenticationIsEnabled" />
       </template>
     </v-app-bar>
 
@@ -168,12 +168,13 @@ import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
 import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
 import StartupDialog from '@/components/dialog/StartupDialog.vue'
 
+import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import packageConfig from '@/../package.json'
 import { toCharacterIcon } from '@/lib/icons/index.ts'
+import { useUserSettingsStore } from '@/stores/userSettings.ts'
+import { useCustomStyleSheet } from '@/services/useCustomStyleSheet/index.ts'
 import { permissionsKey } from '@/services/usePermissionExcludes'
-import { useCustomStyleSheet } from '@/services/useCustomStyleSheet'
-import { useUserSettingsStore } from '@/stores/userSettings'
 
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
@@ -192,13 +193,6 @@ const isInstalledPWA = globalThis.matchMedia(
 const showHash = ref(false)
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
-
-const hasAnyAuthentication = computed(() => {
-  return (
-    import.meta.env.VITE_REQUEST_HEADER_AUTHORIZATION == 'Bearer' ||
-    import.meta.env.VITE_REQUEST_HEADER_AUTHORIZATION == 'Basic'
-  )
-})
 
 function updateAppBarStyles() {
   appBarColor.value = getComputedStyle(document.body).getPropertyValue(

@@ -21,7 +21,7 @@
         />
       </template>
       <v-divider />
-      <SettingsDialog :title="t('userSettings.settings')">
+      <UserSettingsDialog>
         <template #activator="{ props }">
           <v-list-item
             v-bind="props"
@@ -31,21 +31,16 @@
             {{ t('userSettings.allSettings') }} ...
           </v-list-item>
         </template>
-        <template #settings>
-          <UserSettings />
-        </template>
-      </SettingsDialog>
+      </UserSettingsDialog>
     </v-list>
   </v-menu>
 </template>
 
 <script setup lang="ts">
-import {
-  type UserSettingsItem,
-  useUserSettingsStore,
-} from '@/stores/userSettings'
-import SettingsDialog from './SettingsDialog.vue'
-import UserSettings from './UserSettings.vue'
+import UserSettingsOneOfMultiple from './UserSettingsOneOfMultiple.vue'
+import UserSettingsBoolean from './UserSettingsBoolean.vue'
+import { UserSettingsItem, useUserSettingsStore } from '@/stores/userSettings'
+import UserSettingsDialog from './UserSettingsDialog.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
