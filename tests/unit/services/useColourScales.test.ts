@@ -50,15 +50,6 @@ describe('useColourScales', () => {
 
       expect(currentScales.value).toEqual([])
     })
-
-    it('should initialize as initial range', () => {
-      const { currentScaleIsInitialRange } = useColourScales(
-        ref([]),
-        ref(mockScales),
-      )
-
-      expect(currentScaleIsInitialRange.value).toBe(false)
-    })
   })
 
   describe('current scales updates', () => {
@@ -144,68 +135,6 @@ describe('useColourScales', () => {
     })
   })
 
-  describe('current scale is initial range', () => {
-    it('should be true when range equals initial range', () => {
-      const { currentScaleIsInitialRange } = useColourScales(
-        ref(['scale1']),
-        ref(mockScales),
-      )
-
-      expect(currentScaleIsInitialRange.value).toBe(true)
-    })
-
-    it('should be false when range differs from initial range', () => {
-      const scales = ref(mockScales)
-      const { currentScale, currentScaleIsInitialRange } = useColourScales(
-        ref(['scale1']),
-        scales,
-      )
-
-      if (currentScale.value) {
-        currentScale.value.range = { min: 10, max: 90 }
-      }
-
-      expect(currentScaleIsInitialRange.value).toBe(false)
-    })
-
-    it('should be false when only min differs', () => {
-      const scales = ref(mockScales)
-      const { currentScale, currentScaleIsInitialRange } = useColourScales(
-        ref(['scale1']),
-        scales,
-      )
-
-      if (currentScale.value) {
-        currentScale.value.range.min = 5
-      }
-
-      expect(currentScaleIsInitialRange.value).toBe(false)
-    })
-
-    it('should be false when only max differs', () => {
-      const scales = ref(mockScales)
-      const { currentScale, currentScaleIsInitialRange } = useColourScales(
-        ref(['scale1']),
-        scales,
-      )
-
-      if (currentScale.value) {
-        currentScale.value.range.max = 95
-      }
-
-      expect(currentScaleIsInitialRange.value).toBe(false)
-    })
-
-    it('should be false when no current scale', () => {
-      const { currentScaleIsInitialRange } = useColourScales(
-        ref([]),
-        ref(mockScales),
-      )
-
-      expect(currentScaleIsInitialRange.value).toBe(false)
-    })
-  })
-
   describe('reactivity', () => {
     it('should reactively update when scales object changes', async () => {
       const scales = ref(mockScales)
@@ -285,7 +214,6 @@ describe('useColourScales', () => {
 
       expect(result).toHaveProperty('currentScale')
       expect(result).toHaveProperty('currentScales')
-      expect(result).toHaveProperty('currentScaleIsInitialRange')
     })
 
     it('should return reactive references', () => {
