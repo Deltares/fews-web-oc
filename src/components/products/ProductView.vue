@@ -101,6 +101,7 @@
                 <v-list-item
                   v-for="action in logDisplay?.logDissemination
                     ?.disseminationActions"
+                  :key="action.id"
                   :prepend-icon="action.iconId"
                   :title="action.description"
                   @click="runDisseminateAction(htmlContent, action)"

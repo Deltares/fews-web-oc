@@ -8,7 +8,7 @@
       </v-btn>
     </template>
     <v-list>
-      <template v-for="item in items">
+      <template v-for="item in items" :key="item.id">
         <v-list-item
           v-if="item.href"
           :href="item.href"
@@ -42,7 +42,7 @@ import type { VBtn } from 'vuetify/components'
 
 interface Props {
   variant: VBtn['variant']
-  items: ColumnItem[]
+  items?: ColumnItem[]
 }
 
 const props = withDefaults(defineProps<Props>(), {

@@ -152,7 +152,7 @@
               {{ d(item.date, 'timeSeriesTable__date') }}
             </div>
           </td>
-          <td v-for="id in seriesIds">
+          <td v-for="id in seriesIds" :key="id">
             <!-- Table cell when editing data -->
             <TableCellEdit
               v-if="isEditing && canEditItem(item, id)"

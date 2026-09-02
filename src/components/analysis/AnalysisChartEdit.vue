@@ -3,7 +3,7 @@
     <v-card>
       <v-card-title><EditableTitle v-model="chart.title" /></v-card-title>
       <v-list class="pt-0">
-        <v-list-item v-for="item in chart.subplot.items">
+        <v-list-item v-for="(item, index) in chart.subplot.items" :key="index">
           <template #prepend>
             <v-menu :close-on-content-click="false">
               <template #activator="{ props }">

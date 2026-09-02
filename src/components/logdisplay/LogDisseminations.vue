@@ -1,5 +1,5 @@
 <template>
-  <template v-for="dissemination in disseminations">
+  <template v-for="dissemination in disseminations" :key="dissemination.id">
     <v-dialog width="auto">
       <template #activator="{ props }">
         <v-list-item

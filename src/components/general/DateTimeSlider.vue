@@ -72,6 +72,7 @@
           <v-list class="pa-1">
             <v-list-item
               v-for="speed in availableSpeeds"
+              :key="speed"
               :active="speed === currentSpeed"
               rounded
               density="compact"

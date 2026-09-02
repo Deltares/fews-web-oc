@@ -2,7 +2,8 @@
   <div v-if="hasLoadedCss" class="display-container pa-1 ga-1">
     <div class="dashboard-container flex-1-1 ga-1">
       <DashboardGroup
-        v-for="group in groups"
+        v-for="(group, index) in groups"
+        :key="index"
         :group="group"
         :settings="props.settings"
         @navigate="emit('navigate', $event)"

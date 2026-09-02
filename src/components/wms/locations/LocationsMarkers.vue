@@ -1,6 +1,7 @@
 <template>
   <mgl-marker
-    v-for="coordinates in selectedLocationsCoordinates"
+    v-for="(coordinates, index) in selectedLocationsCoordinates"
+    :key="index"
     :coordinates="coordinates"
     :offset="[0, 4]"
     anchor="bottom"
