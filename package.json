@@ -26,7 +26,7 @@
     "@deltares/fews-ssd-requests": "^2.0.0",
     "@deltares/fews-ssd-webcomponent": "^2.0.0",
     "@deltares/fews-web-oc-charts": "^4.7.2",
-    "@deltares/fews-wms-requests": "^4.0.1",
+    "@deltares/fews-wms-requests": "^4.1.0",
     "@deltares/webgl-streamline-visualizer": "^4.5.0",
     "@indoorequal/vue-maplibre-gl": "^8.4.2",
     "@jsonforms/core": "^3.8.0",
