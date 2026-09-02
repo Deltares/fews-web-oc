@@ -58,7 +58,11 @@
         <v-menu activator="parent" :close-on-content-click="false">
           <v-list v-model:selected="groupByKey" density="compact">
             <v-list-subheader>Group by</v-list-subheader>
-            <v-list-item v-for="column in filteredColumns" :value="column.key">
+            <v-list-item
+              v-for="column in filteredColumns"
+              :value="column.key"
+              :key="column.key"
+            >
               {{ column.title }}
               <template v-slot:prepend="{ isSelected, select }">
                 <v-list-item-action start>

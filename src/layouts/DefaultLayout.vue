@@ -114,6 +114,7 @@
                 <v-list-item
                   v-if="helpMenu"
                   v-for="item in helpMenu.url"
+                  :key="item.name"
                   :href="item.url"
                   target="_blank"
                   append-icon="mdi-open-in-new"
@@ -122,6 +123,7 @@
                 <v-list-item
                   v-if="helpMenu"
                   v-for="item in helpMenu.path"
+                  :key="item.name"
                   :to="{ name: 'HtmlDisplay', params: { path: item.path } }"
                   href="#"
                   >{{ item.name }}</v-list-item

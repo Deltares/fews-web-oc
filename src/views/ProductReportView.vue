@@ -34,6 +34,7 @@
                 ?.disseminationActions"
               :prepend-icon="action.iconId"
               :title="action.description"
+              :key="action.id"
               @click="runDisseminateAction(htmlContent, action)"
             >
             </v-list-item>

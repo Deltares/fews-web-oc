@@ -19,6 +19,7 @@
           <v-list-item
             v-for="location in locations"
             @click="selectedLocation = location"
+            :key="location.id"
             :title="location.id"
             :active="selectedLocation === location"
           />

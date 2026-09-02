@@ -1,6 +1,7 @@
 <template>
   <v-card
-    v-for="element in group.elements"
+    v-for="(element, index) in group.elements"
+    :key="index"
     :style="{ gridArea: element.gridTemplateArea }"
     class="d-flex flex-column"
     density="compact"

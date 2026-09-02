@@ -3,7 +3,7 @@
     <v-card title="Make a selection to download data" flat>
       <v-form v-model="selectionIsValid">
         <v-row class="ma-1">
-          <v-col v-for="(item, index) in attributes">
+          <v-col v-for="(item, index) in attributes" :key="item.id">
             <v-autocomplete
               v-model="selectedAttributes[index]"
               :items="selectableAttributes[index]"
@@ -402,8 +402,7 @@ function downloadData() {
     .filter((parameterId) => parameterId !== undefined)
 
   const selectedQualifierIds = selectedParameterQualifiers.value
-    .map((parameterQualifier) => parameterQualifier.qualifiers)
-    .flatMap((item) => item)
+    .flatMap((parameterQualifier) => parameterQualifier.qualifiers)
     .filter((qualifier) => qualifier !== undefined)
 
   const selectedLocationIds = selectedLocations.value.map(

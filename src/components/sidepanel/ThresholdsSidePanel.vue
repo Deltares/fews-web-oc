@@ -22,6 +22,7 @@
             <v-list density="compact">
               <v-list-item
                 v-for="type in countTypes"
+                :key="type"
                 :title="t(`thresholds.countBy.${type}`)"
                 :active="countType === type"
                 @click="countType = type"

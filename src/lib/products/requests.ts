@@ -246,8 +246,9 @@ export async function fetchLatestArchiveProduct(
     return undefined
   }
 
-  const latestProduct = products.reduce((prev, current) =>
-    isNewer(prev, current) ? prev : current,
+  const latestProduct = products.reduce(
+    (prev, current) => (isNewer(prev, current) ? prev : current),
+    products[0],
   )
   return latestProduct
 }
