@@ -228,7 +228,7 @@ import { LayerKind } from '@/lib/streamlines'
 import { useColourScalesStore } from '@/stores/colourScales'
 import { useDisplay } from 'vuetify'
 import ColourLegend from '@/components/wms/ColourLegend.vue'
-import { rangeToString, styleToId } from '@/lib/legend'
+import { styleToId } from '@/lib/legend'
 import { useWorkflowsStore } from '@/stores/workflows'
 import CoordinateSelectorMarker from '@/components/wms/CoordinateSelectorMarker.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
@@ -615,9 +615,7 @@ function setLayerOptions(): void {
       minElevation.value,
       maxElevation.value,
     ),
-    colorScaleRange: currentColourScale.value?.range
-      ? rangeToString(currentColourScale.value.range)
-      : undefined,
+    colorScaleRange: currentColourScale.value?.requestRange,
     style: currentColourScale.value?.style.name,
     useDisplayUnits: userSettings.useDisplayUnits,
     useLastValue: isInDatesRange(selectedDate.value, props.times),
