@@ -7,19 +7,28 @@ describe('useColourScales', () => {
   let mockScales: Record<string, ColourScale>
 
   beforeEach(() => {
+    const getMockTitle = (id: string): string => {
+      switch (id) {
+        case 'scale1':
+          return 'Water Level [m]'
+        case 'scale2':
+          return 'Water Level [mm]'
+        default:
+          return 'Water Level'
+      }
+    }
+
     const createMockColourScale = (
       id: string,
       min: number = 0,
       max: number = 100,
     ): ColourScale => ({
       id,
-      title: 'Water Level',
-      style: { title: 'Water Level', name: id },
+      title: getMockTitle(id),
       range: { min, max },
       initialRange: { min: 0, max: 100 },
       colourMap: [],
       useGradients: true,
-      unit: id === 'scale1' ? 'm' : id === 'scale2' ? 'mm' : undefined,
     })
 
     mockScales = {
@@ -40,12 +49,6 @@ describe('useColourScales', () => {
       const { currentScales } = useColourScales(ref([]), ref(mockScales))
 
       expect(currentScales.value).toEqual([])
-    })
-
-    it('should initialize with empty current scale title', () => {
-      const { currentScaleTitle } = useColourScales(ref([]), ref(mockScales))
-
-      expect(currentScaleTitle.value).toBe('')
     })
 
     it('should initialize as initial range', () => {
@@ -123,30 +126,21 @@ describe('useColourScales', () => {
 
   describe('current scale title', () => {
     it('should include unit in title when scale has unit', () => {
-      const { currentScaleTitle } = useColourScales(
-        ref(['scale1']),
-        ref(mockScales),
-      )
+      const { currentScale } = useColourScales(ref(['scale1']), ref(mockScales))
 
-      expect(currentScaleTitle.value).toBe('Water Level [m]')
+      expect(currentScale.value.title).toBe('Water Level [m]')
     })
 
     it('should not include unit when scale has no unit', () => {
-      const { currentScaleTitle } = useColourScales(
-        ref(['scale3']),
-        ref(mockScales),
-      )
+      const { currentScale } = useColourScales(ref(['scale3']), ref(mockScales))
 
-      expect(currentScaleTitle.value).toBe('Water Level')
+      expect(currentScale.value.title).toBe('Water Level')
     })
 
     it('should work without optional title parameter', () => {
-      const { currentScaleTitle } = useColourScales(
-        ref(['scale1']),
-        ref(mockScales),
-      )
+      const { currentScale } = useColourScales(ref(['scale1']), ref(mockScales))
 
-      expect(currentScaleTitle.value).toContain('[m]')
+      expect(currentScale.value.title).toContain('[m]')
     })
   })
 
@@ -218,7 +212,6 @@ describe('useColourScales', () => {
       const { currentScale } = useColourScales(ref(['scale1']), scales)
 
       expect(currentScale.value?.id).toBe('scale1')
-      expect(currentScale.value?.unit).toBe('m')
 
       scales.value = {
         ...scales.value,
@@ -276,13 +269,13 @@ describe('useColourScales', () => {
 
     it('should handle switching between scales with different units', async () => {
       const currentIds = ref(['scale1'])
-      const { currentScaleTitle } = useColourScales(currentIds, ref(mockScales))
+      const { currentScale } = useColourScales(currentIds, ref(mockScales))
 
-      expect(currentScaleTitle.value).toBe('Water Level [m]')
+      expect(currentScale.value.title).toBe('Water Level [m]')
 
       currentIds.value = ['scale2']
       await nextTick()
-      expect(currentScaleTitle.value).toBe('Water Level [mm]')
+      expect(currentScale.value.title).toBe('Water Level [mm]')
     })
   })
 
@@ -291,7 +284,6 @@ describe('useColourScales', () => {
       const result = useColourScales(ref(['scale1']), ref(mockScales))
 
       expect(result).toHaveProperty('currentScale')
-      expect(result).toHaveProperty('currentScaleTitle')
       expect(result).toHaveProperty('currentScales')
       expect(result).toHaveProperty('currentScaleIsInitialRange')
     })

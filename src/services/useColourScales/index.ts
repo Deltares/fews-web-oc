@@ -4,7 +4,6 @@ import { computed, ref, toValue, watchEffect } from 'vue'
 
 export interface UseColourScalesReturn {
   currentScale: ShallowRef<ColourScale | undefined>
-  currentScaleTitle: ShallowRef<string>
   currentScales: ShallowRef<ColourScale[]>
   currentScaleIsInitialRange: ShallowRef<boolean>
 }
@@ -37,18 +36,8 @@ export function useColourScales(
     )
   })
 
-  const currentScaleTitle = computed(() => {
-    const scale = currentScale.value
-    if (!scale) return ''
-
-    const unit = scale.unit
-    const unitString = unit ? ` [${unit}]` : ''
-    return `${scale.title}${unitString}`
-  })
-
   return {
     currentScale,
-    currentScaleTitle,
     currentScales,
     currentScaleIsInitialRange,
   }

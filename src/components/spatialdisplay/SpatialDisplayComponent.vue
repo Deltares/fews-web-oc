@@ -33,12 +33,12 @@
       <ColourLegend
         v-if="!currentColourScale.useGradients"
         :colourMap="currentColourScale.colourMap"
-        :title="currentColourScaleTitle"
+        :title="currentColourScale.title"
       />
       <ColourBar
         v-else
         :colourMap="currentColourScale.colourMap"
-        :title="currentColourScaleTitle"
+        :title="currentColourScale.title"
         :useGradients="currentColourScale.useGradients"
         v-model:range="currentColourScale.range"
       />
@@ -362,11 +362,8 @@ const layerKind = ref(LayerKind.Static)
 
 const colourScalesStore = useColourScalesStore()
 const currentColourScaleIds = ref<string[]>([])
-const {
-  currentScale: currentColourScale,
-  currentScales: currentColourScales,
-  currentScaleTitle: currentColourScaleTitle,
-} = useColourScales(currentColourScaleIds, () => colourScalesStore.scales)
+const { currentScale: currentColourScale, currentScales: currentColourScales } =
+  useColourScales(currentColourScaleIds, () => colourScalesStore.scales)
 
 const workflowsStore = useWorkflowsStore()
 
