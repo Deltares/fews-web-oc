@@ -537,7 +537,11 @@ watch(
   () => props.layerCapabilities,
   (layer) => {
     legendLayerStyles.value = props.layerCapabilities?.styles
-    if (legendLayerStyles.value === undefined && props.layerName) {
+    if (
+      props.layerCapabilities &&
+      legendLayerStyles.value === undefined &&
+      props.layerName
+    ) {
       legendLayerStyles.value = [
         {
           title: props.layerName,
