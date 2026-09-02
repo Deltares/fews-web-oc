@@ -94,7 +94,7 @@ import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import type { LngLatBounds } from 'maplibre-gl'
 import type { AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
 import {
-  GetMapFilter,
+  type GetMapFilter,
   WMSProvider,
   type BoundingBox,
 } from '@deltares/fews-wms-requests'

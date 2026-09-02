@@ -166,6 +166,7 @@ function getImageSourceOptions(
   const filter: GetMapFilter = {
     ...getFilterFromLayerOptions(props.layer),
     bbox: `${getMercatorBboxFromBounds(bounds)}`,
+    // Width and height are in pixels, this can cause the image can be distorted a bit relative to the bbox coordinates
     height: Number(`${height.toFixed(0)}`),
     width: Number(`${width.toFixed(0)}`),
     time: time?.toISOString(),
