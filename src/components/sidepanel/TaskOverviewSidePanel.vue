@@ -153,7 +153,8 @@ const {
   isLoading,
   lastUpdatedTimestamp,
   fetch: refreshTaskRuns,
-} = useTaskRuns(period, selectedWorkflowIds, selectedTaskStatuses, {
+} = useTaskRuns(period, selectedWorkflowIds, {
+  statuses: selectedTaskStatuses,
   userId: selectedUserId,
 })
 const hasLoadedAtLeastOnce = computed<boolean>(

@@ -39,12 +39,13 @@ interface UseTaskRunsOptions {
   topologyNodeId?: MaybeRefOrGetter<string | undefined>
   includeWhatIfScenario?: MaybeRefOrGetter<boolean>
   refreshIntervalSeconds?: number
+  taskRunStatusIds?: MaybeRefOrGetter<string[]>
+  statuses?: MaybeRefOrGetter<TaskStatus[]>
 }
 
 export function useTaskRuns(
   dispatchPeriod: MaybeRefOrGetter<RelativePeriod | null>,
   workflowIds: MaybeRefOrGetter<string[]>,
-  statuses: MaybeRefOrGetter<TaskStatus[]>,
   options: UseTaskRunsOptions = {},
 ) {
   const isLoading = ref(false)
@@ -76,6 +77,7 @@ export function useTaskRuns(
   async function fetch(): Promise<void> {
     const _dispatchPeriod = toValue(dispatchPeriod)
     const _topologyNodeId = toValue(options.topologyNodeId)
+    const _taskRunStatusIds = toValue(options.taskRunStatusIds)
     const _includeWhatIfScenario =
       toValue(options.includeWhatIfScenario) ?? true
 
@@ -89,6 +91,7 @@ export function useTaskRuns(
       piProvider,
       _dispatchPeriod,
       _topologyNodeId,
+      _taskRunStatusIds,
     )
 
     if (_includeWhatIfScenario) {
@@ -114,7 +117,7 @@ export function useTaskRuns(
 
   function filterTasks(): TaskRun[] {
     const _workflowIds = toValue(workflowIds)
-    const _statuses = toValue(statuses)
+    const _statuses = toValue(options.statuses)
     const _userId = toValue(options.userId) ?? null
 
     const matchesUser = (task: TaskRun) => {
@@ -123,10 +126,15 @@ export function useTaskRuns(
       return hasEqualIdentity(task.userId, _userId)
     }
 
+    const hasStatus = (task: TaskRun) => {
+      if (_statuses === undefined) return true
+      return _statuses.includes(task.status)
+    }
+
     return allTaskRuns.value.filter(
       (task) =>
         _workflowIds.includes(task.workflowId) &&
-        _statuses.includes(task.status) &&
+        hasStatus(task) &&
         matchesUser(task),
     )
   }
@@ -146,6 +154,7 @@ async function fetchTaskRuns(
   piProvider: PiWebserviceProvider,
   dispatchPeriod?: RelativePeriod | null,
   topologyNodeId?: string,
+  taskRunStatusIds?: string[],
 ): Promise<FewsPiTaskRun[]> {
   const period = dispatchPeriod
     ? convertRelativeToAbsolutePeriod(dispatchPeriod)
@@ -159,7 +168,7 @@ async function fetchTaskRuns(
     documentFormat: DocumentFormat.PI_JSON,
     startDispatchTime,
     endDispatchTime,
-    taskRunStatusIds: Object.values(TaskStatusId),
+    taskRunStatusIds: taskRunStatusIds ?? Object.values(TaskStatusId),
   }
 
   const topologyNodeFilter = {
