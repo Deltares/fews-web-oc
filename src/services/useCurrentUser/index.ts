@@ -25,7 +25,7 @@ export function useCurrentUser() {
   }
 
   function hasCurrentUser(): boolean {
-    return user !== null
+    return user.value !== null
   }
 
   function isCurrentUser(userIdToCheck: string | null): boolean {
