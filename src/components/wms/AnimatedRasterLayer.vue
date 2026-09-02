@@ -17,6 +17,8 @@ import { useMap } from '@/services/useMap'
 import { point } from '@turf/helpers'
 import { debounce } from 'lodash-es'
 import { useLayer, useSource } from '@/services/useLayer'
+import { type GetMapFilter, WMSProvider } from '@deltares/fews-wms-requests'
+import { getFilterFromLayerOptions } from '@/lib/map'
 
 export interface AnimatedRasterLayerOptions {
   name: string
@@ -49,6 +51,10 @@ const isLoading = defineModel<boolean>('isLoading', { default: false })
 const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const wmsUrl = `${baseUrl}/wms`
+const wmsProvider = new WMSProvider(wmsUrl)
 
 const sourceOptions = ref<ImageSourceSpecification>()
 
@@ -144,7 +150,6 @@ function getImageSourceOptions(
 ): ImageSourceSpecification | undefined {
   if (!map) return
 
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   let bounds = map.getBounds()
   let { width, height } = map.getCanvas()
 
@@ -158,50 +163,18 @@ function getImageSourceOptions(
     )
   }
 
-  const getMapUrl = new URL(`${baseUrl}/wms`)
-  getMapUrl.searchParams.append('service', 'WMS')
-  getMapUrl.searchParams.append('request', 'GetMap')
-  getMapUrl.searchParams.append('version', '1.3')
-  getMapUrl.searchParams.append('layers', props.layer.name)
-  getMapUrl.searchParams.append('crs', 'EPSG:3857')
-  getMapUrl.searchParams.append('bbox', `${getMercatorBboxFromBounds(bounds)}`)
-  // Width and height are in pixels, this can cause the image can be distorted a bit relicative to the bbox coordinates
-  getMapUrl.searchParams.append('height', `${height.toFixed(0)}`)
-  getMapUrl.searchParams.append('width', `${width.toFixed(0)}`)
-  if (time) {
-    getMapUrl.searchParams.append('time', time.toISOString())
+  const filter: GetMapFilter = {
+    ...getFilterFromLayerOptions(props.layer),
+    bbox: `${getMercatorBboxFromBounds(bounds)}`,
+    height: Number(`${height.toFixed(0)}`),
+    width: Number(`${width.toFixed(0)}`),
+    time: time?.toISOString(),
   }
-  if (props.layer.aggregationLabel) {
-    getMapUrl.searchParams.append('aggregation', props.layer.aggregationLabel)
-  }
-  if (props.layer.useLastValue) {
-    getMapUrl.searchParams.append('useLastValue', 'true')
-  }
-  if (props.layer.style) {
-    getMapUrl.searchParams.append('styles', props.layer.style)
-  }
-  if (props.layer.elevation) {
-    getMapUrl.searchParams.append('elevation', `${props.layer.elevation}`)
-  }
-  if (props.layer.layerType) {
-    getMapUrl.searchParams.append('layerType', props.layer.layerType)
-  }
-  if (props.layer.colorScaleRange) {
-    getMapUrl.searchParams.append(
-      'colorScaleRange',
-      `${props.layer.colorScaleRange}`,
-    )
-    getMapUrl.searchParams.append(
-      'useDisplayUnits',
-      props.layer.useDisplayUnits ? 'true' : 'false',
-    )
-  }
-  if (props.layer.taskRunId) {
-    getMapUrl.searchParams.append('taskRunId', props.layer.taskRunId)
-  }
+
+  const url = wmsProvider.getMapUrl(filter)
   return {
     type: 'image',
-    url: getMapUrl.toString(),
+    url: url.toString(),
     coordinates: getCoordsFromBounds(bounds),
   }
 }

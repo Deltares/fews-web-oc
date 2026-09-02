@@ -93,7 +93,11 @@
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import type { LngLatBounds } from 'maplibre-gl'
 import type { AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
-import type { BoundingBox } from '@deltares/fews-wms-requests'
+import {
+  GetMapFilter,
+  WMSProvider,
+  type BoundingBox,
+} from '@deltares/fews-wms-requests'
 import { clamp } from '@/lib/utils/math'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { toMercator } from '@turf/projection'
@@ -101,6 +105,7 @@ import { point } from '@turf/helpers'
 import { timeFormat } from 'd3-time-format'
 import { configManager } from '@/services/application-config'
 import { convertBoundingBoxToLngLatBounds } from '@/services/useWms'
+import { getFilterFromLayerOptions } from '@/lib/map'
 
 interface Props {
   times?: Date[]
@@ -145,6 +150,8 @@ const SNAPSHOT_INTERVAL_MINUTES_OPTIONS = [
 ]
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const wmsUrl = `${baseUrl}/wms`
+const wmsProvider = new WMSProvider(wmsUrl)
 const transformSnapshotRequest = createTransformRequestFn()
 
 const layerTimeStepMs = computed(() => {
@@ -727,53 +734,18 @@ function centerSnapshotAroundSelectedTime(animate = false): void {
 }
 
 function buildSnapshotGetMapUrl(time: Date, bbox: number[]): string {
-  const getMapUrl = new URL(`${baseUrl}/wms`)
-  getMapUrl.searchParams.append('service', 'WMS')
-  getMapUrl.searchParams.append('request', 'GetMap')
-  getMapUrl.searchParams.append('version', '1.3')
-  getMapUrl.searchParams.append('layers', props.layerOptions?.name ?? '')
-  getMapUrl.searchParams.append('crs', 'EPSG:3857')
-  getMapUrl.searchParams.append('bbox', `${bbox}`)
-  getMapUrl.searchParams.append('height', '60')
-  getMapUrl.searchParams.append('width', '96')
-  getMapUrl.searchParams.append('time', time.toISOString())
+  if (!props.layerOptions) return ''
 
-  if (props.layerOptions?.aggregationLabel) {
-    getMapUrl.searchParams.append(
-      'aggregation',
-      props.layerOptions.aggregationLabel,
-    )
-  }
-  if (props.layerOptions?.useLastValue) {
-    getMapUrl.searchParams.append('useLastValue', 'true')
-  }
-  if (props.layerOptions?.style) {
-    getMapUrl.searchParams.append('styles', props.layerOptions.style)
-  }
-  if (props.layerOptions?.elevation) {
-    getMapUrl.searchParams.append(
-      'elevation',
-      `${props.layerOptions.elevation}`,
-    )
-  }
-  if (props.layerOptions?.layerType) {
-    getMapUrl.searchParams.append('layerType', props.layerOptions.layerType)
-  }
-  if (props.layerOptions?.colorScaleRange) {
-    getMapUrl.searchParams.append(
-      'colorScaleRange',
-      `${props.layerOptions.colorScaleRange}`,
-    )
-    getMapUrl.searchParams.append(
-      'useDisplayUnits',
-      props.layerOptions.useDisplayUnits ? 'true' : 'false',
-    )
-  }
-  if (props.layerOptions?.taskRunId) {
-    getMapUrl.searchParams.append('taskRunId', props.layerOptions.taskRunId)
+  const filter: GetMapFilter = {
+    ...getFilterFromLayerOptions(props.layerOptions),
+    bbox: `${bbox}`,
+    height: 60,
+    width: 96,
+    time: time.toISOString(),
   }
 
-  return getMapUrl.toString()
+  const url = wmsProvider.getMapUrl(filter)
+  return url.toString()
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
