@@ -17,6 +17,7 @@ import {
   ref,
   Ref,
   toValue,
+  watch,
   watchEffect,
 } from 'vue'
 // @ts-ignore
@@ -164,34 +165,40 @@ export function useWmsLegend(
 ): Ref<GetLegendGraphicResponse | undefined> {
   const legendGraphic = ref<GetLegendGraphicResponse>()
 
-  async function loadLegend(): Promise<void> {
-    const _layers = toValue(layerName)
-    const _useDisplayUnits = toValue(useDisplayUnits)
-    const _colorScaleRange = toValue(colorScaleRange)
-    const _style = toValue(style)
-    const _activeStyles = toValue(activeStyles)
+  watch(
+    [
+      () => toValue(layerName),
+      () => toValue(useDisplayUnits),
+      () => toValue(colorScaleRange),
+      () => toValue(style),
+      () => toValue(activeStyles),
+    ],
+    async ([
+      layerName,
+      useDisplayUnits,
+      colorScaleRange,
+      style,
+      activeStyles,
+    ]) => {
+      if (layerName === '') {
+        legendGraphic.value = undefined
+        return
+      }
 
-    if (_layers === '') {
-      legendGraphic.value = undefined
-      return
-    }
+      if (!activeStyles.some((s) => styleToId(s) === styleToId(style))) {
+        return
+      }
 
-    if (!_activeStyles.some((s) => styleToId(s) === styleToId(_style))) {
-      return
-    }
+      legendGraphic.value = await fetchWmsLegend(
+        baseUrl,
+        layerName,
+        useDisplayUnits,
+        colorScaleRange,
+        style,
+      )
+    },
+  )
 
-    legendGraphic.value = await fetchWmsLegend(
-      baseUrl,
-      _layers,
-      _useDisplayUnits,
-      _colorScaleRange,
-      _style,
-    )
-  }
-
-  watchEffect(() => {
-    loadLegend()
-  })
   return legendGraphic
 }
 
