@@ -148,7 +148,9 @@
       <v-sheet class="w-100 h-100 d-flex flex-row">
         <div class="flex-1-1 overflow-hidden">
           <Suspense>
-            <router-view :key="permissionsKey"></router-view>
+            <router-view
+              :key="permissionsStore.excludedPermissionsKey"
+            ></router-view>
           </Suspense>
         </div>
         <div class="border-s h-100" id="main-side-panel" />
@@ -174,10 +176,12 @@ import packageConfig from '@/../package.json'
 import { toCharacterIcon } from '@/lib/icons/index.ts'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { useCustomStyleSheet } from '@/services/useCustomStyleSheet/index.ts'
-import { permissionsKey } from '@/services/usePermissionExcludes'
+import { usePermissionsStore } from '@/stores/permissions.ts'
 
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
+const permissionsStore = usePermissionsStore()
+
 const { mobile, mdAndUp } = useDisplay()
 
 const theme = useTheme()
