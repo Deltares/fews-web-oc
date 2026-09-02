@@ -366,10 +366,7 @@ const {
   currentScale: currentColourScale,
   currentScales: currentColourScales,
   currentScaleTitle: currentColourScaleTitle,
-} = useColourScales(
-  currentColourScaleIds,
-  () => colourScalesStore.scales,
-)
+} = useColourScales(currentColourScaleIds, () => colourScalesStore.scales)
 
 const workflowsStore = useWorkflowsStore()
 
@@ -613,7 +610,7 @@ function setLayerOptions(): void {
     colorScaleRange: currentColourScale.value?.range
       ? rangeToString(currentColourScale.value.range)
       : undefined,
-    style: currentColourScale.value?.style.name,
+    style: currentColourScale.value?.style,
     useDisplayUnits: userSettings.useDisplayUnits,
     useLastValue: isInDatesRange(selectedDate.value, props.times),
     taskRunId: taskRunId.value,

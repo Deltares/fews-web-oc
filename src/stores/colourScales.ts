@@ -13,7 +13,7 @@ export interface Range {
 export interface ColourScale {
   id: string
   title: string
-  style: Style
+  style?: string
   range: Range
   initialRange: Range
   colourMap: ColourMap
@@ -59,7 +59,7 @@ const useColourScalesStore = defineStore('colourScales', () => {
       // @ts-expect-error: title has not yet been added to response
       title: initialLegendGraphic.title,
       unit: initialLegendGraphic.unit,
-      style: style,
+      style: style.name,
       colourMap: legend,
       range: legendToRange(legend),
       initialRange: legendToRange(legend),
