@@ -33,6 +33,7 @@ import {
   getBaseMapsFromConfig,
 } from './lib/basemap'
 import { MapLayerConfig } from '@deltares/fews-pi-requests'
+import { usePermissionsStore } from './stores/permissions'
 
 const route = useRoute()
 const configStore = useConfigStore()
@@ -41,8 +42,9 @@ const { change: changeTheme } = useTheme()
 const prefersDark = usePreferredDark()
 const isDark = useDark()
 
-// Initialise task run monitoring.
+// Initialise task run monitoring and permissions store.
 useTaskRunMonitorStore()
+usePermissionsStore()
 
 const layoutComponent = computed(() => {
   if (globalThis.location.href.includes('/embed/')) {

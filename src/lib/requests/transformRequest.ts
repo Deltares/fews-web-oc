@@ -1,9 +1,12 @@
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
-import { getPermissionExcludesHeader } from '@/services/usePermissionExcludes'
+import { usePermissionsStore } from '@/stores/permissions'
 
-export function createTransformRequestFn(controller?: AbortController) {
+export function createTransformRequestFn(
+  controller?: AbortController,
+  disablePermissionExcludes?: boolean,
+) {
   return async (request: Request): Promise<Request> => {
-    const additionalHeaders = await getRequestHeaders()
+    const additionalHeaders = await getRequestHeaders(disablePermissionExcludes)
     const headers = mergeHeaders(request.headers, additionalHeaders)
     return new Request(request, {
       headers,
@@ -12,10 +15,18 @@ export function createTransformRequestFn(controller?: AbortController) {
   }
 }
 
-export async function getRequestHeaders(): Promise<Headers> {
-  const permExcludeHeaders = getPermissionExcludesHeader()
+export async function getRequestHeaders(
+  disablePermissionExcludes?: boolean,
+): Promise<Headers> {
   const authHeaders = await authenticationManager.getAuthorizationHeaders()
-  return mergeHeaders(permExcludeHeaders, authHeaders)
+  if (disablePermissionExcludes) {
+    return authHeaders
+  } else {
+    const permissionsStore = usePermissionsStore()
+    const permissionExcludeHeaders =
+      await permissionsStore.getPermissionsExcludesHeader()
+    return mergeHeaders(permissionExcludeHeaders, authHeaders)
+  }
 }
 
 export function mergeHeaders(headers1: Headers, headers2: Headers): Headers {
