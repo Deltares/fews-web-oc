@@ -1,7 +1,11 @@
 <template>
   <Suspense>
     <template #default>
-      <component style="height: 100%" :is="layoutComponent"></component>
+      <component
+        style="height: 100%"
+        :is="layoutComponent"
+        :key="permissionsStore.excludedPermissionsKey"
+      ></component>
     </template>
     <template #fallback>
       <span>Loading...</span>
@@ -42,7 +46,7 @@ const isDark = useDark()
 
 // Initialise task run monitoring and permissions store.
 useTaskRunMonitorStore()
-usePermissionsStore()
+const permissionsStore = usePermissionsStore()
 
 const layoutComponent = computed(() => {
   if (globalThis.location.href.includes('/embed/')) {
