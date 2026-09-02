@@ -2,12 +2,7 @@
   <div>
     <v-btn v-if="requiresLogin" @click="login" variant="text"> Sign in</v-btn>
     <div v-else>
-      <v-menu
-        location="bottom"
-        width="260"
-        :close-on-content-click="false"
-        v-model="menuOpen"
-      >
+      <v-menu location="bottom" width="260" :close-on-content-click="false">
         <template #activator="{ props }">
           <v-btn v-bind="props" variant="text" icon>
             {{ initials }}
@@ -20,7 +15,7 @@
               <span class="user-name">{{ name }}</span>
             </div>
           </v-list-item>
-          <ExcludedPermissionsControl @close-menu="menuOpen = false" />
+          <ExcludedPermissionsControl />
           <v-list-item @click="logout" v-if="hasUserManager">
             <v-list-item-title>{{ t('auth.signOut') }}</v-list-item-title>
           </v-list-item>
@@ -54,8 +49,6 @@ const roles = ref([''])
 const name = ref(PLACEHOLDER_NAME)
 const user = ref<User | null>(null)
 const requiresLogin = ref(hasUserManager)
-
-const menuOpen = ref(false)
 
 function setUser() {
   if (!hasUserManager) return
