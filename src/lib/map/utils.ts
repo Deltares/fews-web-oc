@@ -1,3 +1,5 @@
+import { AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
+import { GetMapFilter } from '@deltares/fews-wms-requests'
 import type { StyleSpecification } from 'maplibre-gl'
 
 const LAYER_PREFIX = 'weboc-layer-'
@@ -65,4 +67,26 @@ export function transformStyle(
     layers,
     glyphs,
   }
+}
+
+export function getFilterFromLayerOptions(options: AnimatedRasterLayerOptions) {
+  const filter: Omit<GetMapFilter, 'time' | 'bbox'> = {
+    service: 'WMS',
+    version: '1.3',
+    crs: 'EPSG:3857',
+    layers: options.name,
+    aggregation: options.aggregationLabel,
+    useLastValue: options.useLastValue,
+    styles: options.style,
+    elevation: options.elevation ?? undefined,
+    layerType: options.layerType,
+    taskRunId: options.taskRunId,
+  }
+
+  if (options.colorScaleRange) {
+    filter.colorscalerange = options.colorScaleRange
+    filter.useDisplayUnits = options.useDisplayUnits
+  }
+
+  return filter
 }
