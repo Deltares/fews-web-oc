@@ -12,6 +12,7 @@ export interface Range {
 
 export interface ColourScale {
   id: string
+  title: string
   style: Style
   range: Range
   initialRange: Range
@@ -55,6 +56,8 @@ const useColourScalesStore = defineStore('colourScales', () => {
     const legend = initialLegendGraphic.legend
     const newColourScale = reactive({
       id: styleId,
+      // @ts-expect-error: title has not yet been added to response
+      title: initialLegendGraphic.title,
       unit: initialLegendGraphic.unit,
       style: style,
       colourMap: legend,

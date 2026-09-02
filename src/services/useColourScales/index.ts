@@ -12,7 +12,6 @@ export interface UseColourScalesReturn {
 export function useColourScales(
   currentIds: MaybeRefOrGetter<string[]>,
   scales: MaybeRefOrGetter<Record<string, ColourScale>>,
-  title?: MaybeRefOrGetter<string>,
 ): UseColourScalesReturn {
   const currentScale = ref<ColourScale | undefined>(undefined)
   const currentScales = ref<ColourScale[]>([])
@@ -39,9 +38,12 @@ export function useColourScales(
   })
 
   const currentScaleTitle = computed(() => {
-    const unit = currentScale.value?.unit
+    const scale = currentScale.value
+    if (!scale) return ''
+
+    const unit = scale.unit
     const unitString = unit ? ` [${unit}]` : ''
-    return `${toValue(title)}${unitString}`
+    return `${scale.title}${unitString}`
   })
 
   return {

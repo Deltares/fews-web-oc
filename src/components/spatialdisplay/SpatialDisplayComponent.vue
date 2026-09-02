@@ -369,7 +369,6 @@ const {
 } = useColourScales(
   currentColourScaleIds,
   () => colourScalesStore.scales,
-  () => props.layerCapabilities?.title ?? props.layerName,
 )
 
 const workflowsStore = useWorkflowsStore()
