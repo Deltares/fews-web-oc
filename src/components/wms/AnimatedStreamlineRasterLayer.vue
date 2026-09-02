@@ -16,6 +16,7 @@ import { type AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRaster
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { useLayer } from '@/services/useLayer'
+import { absoluteUrl } from '@/lib/utils/absoluteUrl'
 
 type StreamlineLayerOptionsFews = Layer['animatedVectors']
 
@@ -193,7 +194,7 @@ function mergeOptions(
   streamlineOptions: StreamlineLayerOptionsFews,
 ): WMSStreamlineLayerOptions {
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const baseUrlWms = `${baseUrl}/wms`
+  const baseUrlWms = absoluteUrl(`${baseUrl}/wms`)
 
   const isWaveCrest = streamlineOptions?.particleType === 'wave-crest'
 
@@ -209,7 +210,7 @@ function mergeOptions(
   } = isWaveCrest ? DEFAULT_WAVECREST_OPTIONS : DEFAULT_STREAMLINE_OPTIONS
 
   return {
-    baseUrl: baseUrlWms,
+    baseUrl: baseUrlWms.toString(),
     layer: layerOptions.name,
     style: layerOptions.style,
     useDisplayUnits: layerOptions.useDisplayUnits,
