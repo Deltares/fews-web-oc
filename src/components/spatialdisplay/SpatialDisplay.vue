@@ -56,14 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  defineAsyncComponent,
-  onMounted,
-  onUnmounted,
-  ref,
-  watch,
-} from 'vue'
+import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { configManager } from '@/services/application-config'
 import { useWmsLayerCapabilities } from '@/services/useWms'
@@ -136,8 +129,11 @@ const filterOptions = computed(() => {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { layerCapabilities, times, timesDefault, startPolling, stopPolling } =
-  useWmsLayerCapabilities(baseUrl, () => props.layerName, taskRunId)
+const { layerCapabilities, times, timesDefault } = useWmsLayerCapabilities(
+  baseUrl,
+  () => props.layerName,
+  taskRunId,
+)
 
 function getDisplayEnabledFromLocationAttributes(
   locations: Location[],
@@ -345,14 +341,6 @@ function closeTimeSeriesDisplay(): void {
   maximized.value = false
   emit('navigate', { name: 'SpatialDisplay' })
 }
-
-onMounted(() => {
-  startPolling(60_000)
-})
-
-onUnmounted(() => {
-  stopPolling()
-})
 
 watch(locations, () => {
   if (

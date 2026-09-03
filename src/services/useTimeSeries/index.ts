@@ -27,7 +27,7 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { difference } from 'lodash-es'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 import { type Pausable } from '@vueuse/core'
-import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
+import { useRefreshCoordinator } from '@/services/useRefreshCoordinator'
 
 export interface UseTimeSeriesReturn {
   series: ShallowRef<Record<string, Series>>
@@ -146,13 +146,13 @@ export function useTimeSeries(
     }
   }
 
-  let interval: Pausable | undefined = undefined
+  let interval: Pausable
   if (refresh) {
-    interval = useFocusAwareInterval(
-      loadTimeSeries,
-      TIMESERIES_POLLING_INTERVAL,
-      { immediateCallback: true },
-    )
+    interval = useRefreshCoordinator(loadTimeSeries, {
+      policies: ['onInterval', 'onVisibilityResume'],
+      intervalMs: TIMESERIES_POLLING_INTERVAL,
+      immediateCallback: true,
+    })
   } else {
     loadTimeSeries()
   }

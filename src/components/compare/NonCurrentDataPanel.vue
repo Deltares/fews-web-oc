@@ -66,7 +66,7 @@ import { RelativePeriod } from '@/lib/period'
 import { sortTasks, isTaskRun } from '@/lib/taskruns'
 
 import { useCurrentUser } from '@/services/useCurrentUser'
-import { useTaskRuns } from '@/services/useTasksRuns'
+import { useTasksRuns } from '@/services/useTasksRuns'
 
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 
@@ -100,7 +100,7 @@ const {
   outputStartTime,
   outputEndTime,
   fetch: refreshTaskRuns,
-} = useTaskRuns(period, availableWorkflowsStore.workflowIds, {
+} = useTasksRuns(period, availableWorkflowsStore.workflowIds, {
   topologyNodeId: () => props.topologyNode?.id,
   taskRunStatusIds: [
     TaskStatus.A, // Complete

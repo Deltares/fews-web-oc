@@ -1,12 +1,14 @@
 import { ActionPeriod } from '@deltares/fews-pi-requests'
 import { AbsolutePeriod, RelativePeriod } from './types'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
+import { systemTimeAuthority } from '@/services/system-time'
 
 export function convertRelativeToAbsolutePeriod(
   relative: RelativePeriod,
   reference?: Date,
 ): AbsolutePeriod {
-  const referenceTimestamp = reference?.getTime() ?? Date.now()
+  const referenceTimestamp =
+    reference?.getTime() ?? systemTimeAuthority.now().getTime()
   return {
     startTimestamp: referenceTimestamp + relative.startOffsetSeconds * 1000,
     endTimestamp: referenceTimestamp + relative.endOffsetSeconds * 1000,
