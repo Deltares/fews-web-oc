@@ -59,7 +59,7 @@ const useColourScalesStore = defineStore('colourScales', () => {
     const legend = initialLegendGraphic.legend
     const newColourScale = reactive({
       id: styleId,
-      title: getScaleTitle(initialLegendGraphic),
+      title: getScaleTitle(initialLegendGraphic, style),
       style: style.name,
       colourMap: legend,
       range: legendToRange(legend),
@@ -101,9 +101,12 @@ const useColourScalesStore = defineStore('colourScales', () => {
 
 export { useColourScalesStore }
 
-function getScaleTitle(response: GetLegendGraphicResponse) {
+function getScaleTitle(
+  response: GetLegendGraphicResponse,
+  style: Style,
+): string {
   // @ts-expect-error: title has not yet been added to response
-  const title = response.title ?? ''
+  const title = response.title ?? style.title
   const unitString = response.unit ? ` [${response.unit}]` : ''
   return `${title}${unitString}`
 }
