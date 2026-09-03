@@ -1,7 +1,6 @@
 import {
   useDocumentVisibility,
   useIntervalFn,
-  type Fn,
   type Pausable,
   type UseIntervalFnOptions,
 } from '@vueuse/core'
@@ -25,7 +24,7 @@ export interface RefreshCoordinator extends Pausable {
 }
 
 export function useRefreshCoordinator(
-  callback: Fn,
+  callback: () => void | Promise<void>,
   options: UseRefreshCoordinatorOptions,
 ): RefreshCoordinator {
   const visibility = useDocumentVisibility()

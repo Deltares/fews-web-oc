@@ -6,7 +6,10 @@ import {
 } from '@deltares/fews-pi-requests'
 import type { MaybeRefOrGetter } from 'vue'
 import { ref, shallowRef, toValue, watch } from 'vue'
-import { useRefreshCoordinator } from '@/services/useRefreshCoordinator'
+import {
+  RefreshPolicy,
+  useRefreshCoordinator,
+} from '@/services/useRefreshCoordinator'
 import { configManager } from '@/services/application-config'
 import { convertFewsPiTaskRunToTaskRun, type TaskRun } from '@/lib/taskruns'
 
@@ -69,8 +72,18 @@ export function useTaskRuns(
     }
   }
 
+  const policies: RefreshPolicy[] = [
+    'onSystemTick',
+    'onVisibilityResume',
+    'manual',
+  ]
+
+  if (intervalMs !== undefined) {
+    policies.push('onInterval')
+  }
+
   const refreshCoordinator = useRefreshCoordinator(loadTaskRun, {
-    policies: ['onSystemTick', 'onInterval', 'onVisibilityResume', 'manual'],
+    policies,
     immediateCallback: true,
     intervalMs,
   })

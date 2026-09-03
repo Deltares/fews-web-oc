@@ -146,12 +146,16 @@ export function useTimeSeries(
     }
   }
 
-  const interval = useRefreshCoordinator(loadTimeSeries, {
-    policies: ['onInterval', 'onVisibilityResume'],
-    intervalMs: TIMESERIES_POLLING_INTERVAL,
-    immediateCallback: true,
-    enabled: refresh,
-  })
+  let interval: Pausable
+  if (refresh) {
+    interval = useRefreshCoordinator(loadTimeSeries, {
+      policies: ['onInterval', 'onVisibilityResume'],
+      intervalMs: TIMESERIES_POLLING_INTERVAL,
+      immediateCallback: true,
+    })
+  } else {
+    loadTimeSeries()
+  }
 
   if (selectedTime !== undefined) {
     watch(
