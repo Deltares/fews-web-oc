@@ -10,6 +10,7 @@
       :src="url"
       title="Information Document"
       class="w-100 h-100 ma-0 pa-0 border-none"
+      @load="postTheme"
     ></iframe>
     <div v-else class="pa-4">
       <span>No information document configured</span>
@@ -18,12 +19,13 @@
 </template>
 <script setup lang="ts">
 import type { TopologyNode } from '@deltares/fews-pi-requests'
-import { computed, useTemplateRef } from 'vue'
+import { computed, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 
 import SidePanelContent from './SidePanelContent.vue'
+import { useDark } from '@vueuse/core'
 
 const { t } = useI18n()
 
@@ -38,6 +40,7 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 const frame = useTemplateRef('frame')
+const isDark = useDark()
 
 const url = computed<string | null>(() => {
   const resource = props.topologyNode?.documentFile
@@ -54,4 +57,15 @@ function goHome(): void {
   frame.value.removeAttribute('src')
   frame.value.src = url.value
 }
+
+function postTheme() {
+  const message = {
+    type: 'FEWS_WEB_OC:SET_THEME',
+    theme: isDark.value ? 'dark' : 'light',
+  }
+
+  frame.value?.contentWindow?.postMessage(message, '*')
+}
+
+watch(isDark, postTheme)
 </script>
