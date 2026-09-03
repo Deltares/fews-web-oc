@@ -70,16 +70,11 @@ export function useTasksRuns(
     refreshPolicies.push('onInterval')
   }
 
-  useRefreshCoordinator(
-    () => {
-      fetch().catch((error) => console.error(`Failed to fetch tasks: ${error}`))
-    },
-    {
-      policies: refreshPolicies,
-      intervalMs: refreshIntervalSeconds * 1000,
-      immediateCallback: true,
-    },
-  )
+  useRefreshCoordinator(fetch, {
+    policies: refreshPolicies,
+    intervalMs: refreshIntervalSeconds * 1000,
+    immediateCallback: true,
+  })
 
   watch(
     [
