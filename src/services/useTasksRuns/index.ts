@@ -38,7 +38,7 @@ export function refreshTaskRuns() {
 
 const DEFAULT_REFRESH_INTERVAL_SECONDS = 15
 
-interface UseTaskRunsOptions {
+interface UseTasksRunsOptions {
   userId?: MaybeRefOrGetter<string | null>
   topologyNodeId?: MaybeRefOrGetter<string | undefined>
   includeWhatIfScenario?: MaybeRefOrGetter<boolean>
@@ -47,10 +47,10 @@ interface UseTaskRunsOptions {
   statuses?: MaybeRefOrGetter<TaskStatus[]>
 }
 
-export function useTaskRuns(
+export function useTasksRuns(
   dispatchPeriod: MaybeRefOrGetter<RelativePeriod | null>,
   workflowIds: MaybeRefOrGetter<string[]>,
-  options: UseTaskRunsOptions = {},
+  options: UseTasksRunsOptions = {},
 ) {
   const isLoading = ref(false)
   const lastUpdatedTimestamp = ref<number | null>(null)
