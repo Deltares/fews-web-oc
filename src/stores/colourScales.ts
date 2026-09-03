@@ -1,5 +1,9 @@
 import { defineStore } from 'pinia'
-import type { ColourMap, Style } from '@deltares/fews-wms-requests'
+import type {
+  ColourMap,
+  GetLegendGraphicResponse,
+  Style,
+} from '@deltares/fews-wms-requests'
 import { computed, MaybeRefOrGetter, reactive, ref, toValue, watch } from 'vue'
 import { configManager } from '@/services/application-config'
 import { fetchWmsLegend, useWmsLegend } from '@/services/useWms'
@@ -12,12 +16,12 @@ export interface Range {
 
 export interface ColourScale {
   id: string
-  style: Style
+  title: string
+  style?: string
   range: Range
   initialRange: Range
   colourMap: ColourMap
   useGradients: boolean
-  unit?: string
 }
 
 const useColourScalesStore = defineStore('colourScales', () => {
@@ -55,8 +59,8 @@ const useColourScalesStore = defineStore('colourScales', () => {
     const legend = initialLegendGraphic.legend
     const newColourScale = reactive({
       id: styleId,
-      unit: initialLegendGraphic.unit,
-      style: style,
+      title: getScaleTitle(initialLegendGraphic, style),
+      style: style.name,
       colourMap: legend,
       range: legendToRange(legend),
       initialRange: legendToRange(legend),
@@ -96,3 +100,13 @@ const useColourScalesStore = defineStore('colourScales', () => {
 })
 
 export { useColourScalesStore }
+
+function getScaleTitle(
+  response: GetLegendGraphicResponse,
+  style: Style,
+): string {
+  // @ts-expect-error: title has not yet been added to response
+  const title = response.title ?? style.title
+  const unitString = response.unit ? ` [${response.unit}]` : ''
+  return `${title}${unitString}`
+}
