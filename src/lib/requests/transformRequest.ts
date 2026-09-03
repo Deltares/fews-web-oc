@@ -1,11 +1,31 @@
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
+import { usePermissionsStore } from '@/stores/permissions'
 
-export function createTransformRequestFn(controller?: AbortController) {
+export function createTransformRequestFn(
+  controller?: AbortController,
+  disablePermissionExcludes?: boolean,
+) {
   return async (request: Request): Promise<Request> => {
-    return await authenticationManager.transformRequestAuth(
-      request,
-      controller?.signal,
-    )
+    const additionalHeaders = await getRequestHeaders(disablePermissionExcludes)
+    const headers = mergeHeaders(request.headers, additionalHeaders)
+    return new Request(request, {
+      headers,
+      signal: controller?.signal,
+    })
+  }
+}
+
+export async function getRequestHeaders(
+  disablePermissionExcludes?: boolean,
+): Promise<Headers> {
+  const authHeaders = await authenticationManager.getAuthorizationHeaders()
+  if (disablePermissionExcludes) {
+    return authHeaders
+  } else {
+    const permissionsStore = usePermissionsStore()
+    const permissionExcludeHeaders =
+      await permissionsStore.getPermissionsExcludesHeader()
+    return mergeHeaders(permissionExcludeHeaders, authHeaders)
   }
 }
 

@@ -40,8 +40,6 @@
 </template>
 
 <script setup lang="ts">
-import { configManager } from '@/services/application-config'
-import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import SyncMap from '@/components/map/SyncMap.vue'
 import MaintainLayerOrder from '@/components/map/MaintainLayerOrder.vue'
 import NetCdfDownloadControl from '@/components/map/NetCdfDownloadControl.vue'
@@ -61,6 +59,7 @@ import type {
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { transformStyle } from '@/lib/map'
+import { getRequestHeaders } from '@/lib/requests/transformRequest'
 import { useLayerOrder } from '@/services/useLayerOrder'
 
 interface Props {
@@ -135,13 +134,8 @@ async function transformRequest(
   url: string,
   resourceType?: ResourceType,
 ): Promise<RequestParameters> {
-  if (!configManager.authenticationIsEnabled)
-    return {
-      url,
-    }
   if (resourceType === 'Image' && url.indexOf('GetMap') > -1) {
-    const requestAuthHeaders =
-      await authenticationManager.getAuthorizationHeaders()
+    const requestAuthHeaders = await getRequestHeaders()
     return {
       url,
       headers: requestAuthHeaders,

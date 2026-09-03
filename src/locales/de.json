@@ -17,7 +17,9 @@
     "finished": "abgeschlossen",
     "failed": "fehlgeschlagen",
     "maximizeChart": "Diagramm maximieren",
-    "restoreChart": "Diagramm wiederherstellen"
+    "restoreChart": "Diagramm wiederherstellen",
+    "apply": "Anwenden",
+    "reset": "Zurücksetzen"
   },
   "layout": {
     "about": "Über",
@@ -74,7 +76,8 @@
   },
   "userSettings": {
     "allSettings": "Alle Einstellungen",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "permissions": "Berechtigungen"
   },
   "wms": {
     "layers": "Layer",
