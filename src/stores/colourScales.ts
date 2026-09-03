@@ -1,6 +1,13 @@
 import { defineStore } from 'pinia'
 import type { ColourMap, Style } from '@deltares/fews-wms-requests'
-import { MaybeRefOrGetter, reactive, ref, toValue, watch } from 'vue'
+import {
+  MaybeRefOrGetter,
+  reactive,
+  ref,
+  toValue,
+  watch,
+  watchEffect,
+} from 'vue'
 import { configManager } from '@/services/application-config'
 import { fetchWmsLegend, useWmsLegend } from '@/services/useWms'
 import { legendToRange, rangeToString, styleToId } from '@/lib/legend'
@@ -14,8 +21,9 @@ export interface ColourScale {
   id: string
   style: Style
   range: Range
-  initialRange: string
+  initialRange: Range
   requestRange?: string
+  isInitialRange: boolean
   colourMap: ColourMap
   useGradients: boolean
   unit?: string
@@ -54,42 +62,46 @@ const useColourScalesStore = defineStore('colourScales', () => {
     )
 
     const legend = initialLegendGraphic.legend
-    const newColourScale = reactive<ColourScale>({
+    const scale = reactive<ColourScale>({
       id: styleId,
       unit: initialLegendGraphic.unit,
       style: style,
       colourMap: legend,
       range: legendToRange(legend),
-      initialRange: rangeToString(legendToRange(legend)),
+      initialRange: legendToRange(legend),
+      isInitialRange: true,
       requestRange: undefined,
       useGradients: !legend.some((entry) => entry.colorSmoothing === false),
     })
     processingScaleIds.value = processingScaleIds.value.filter(
       (id) => id !== styleId,
     )
-    scales.value[styleId] = newColourScale
+    scales.value[styleId] = scale
 
-    watch(
-      () => rangeToString(newColourScale.range),
-      (newRange) => {
-        const isInitialRange = newRange === newColourScale.initialRange
-        const requestRange = isInitialRange ? undefined : newRange
-        newColourScale.requestRange = requestRange
-      },
-    )
+    watchEffect(() => {
+      scale.isInitialRange =
+        scale.range.min === scale.initialRange.min &&
+        scale.range.max === scale.initialRange.max
+
+      if (scale.isInitialRange) {
+        scale.requestRange = undefined
+      } else {
+        scale.requestRange = rangeToString(scale.range)
+      }
+    })
 
     const newLegendGraphic = useWmsLegend(
       baseUrl,
       layerName,
       useDisplayUnits,
-      () => newColourScale.requestRange,
+      () => scale.requestRange,
       style,
       activeStyles,
     )
 
     watch(newLegendGraphic, () => {
       if (newLegendGraphic.value?.legend === undefined) return
-      newColourScale.colourMap = newLegendGraphic.value.legend
+      scale.colourMap = newLegendGraphic.value.legend
     })
   }
   return {

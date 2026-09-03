@@ -59,7 +59,7 @@
           variant="plain"
           density="compact"
           aria-label="Reset current colour scale range"
-          :disabled="currentScaleIsInitialRange"
+          :disabled="currentScale?.isInitialRange"
           @click="resetCurrentScaleRange"
         />
       </div>
@@ -97,14 +97,6 @@ const rules = {
 
 const currentScale = computed(() => modelValue.value)
 const currentScales = computed(() => props.items)
-
-const currentScaleIsInitialRange = computed(() => {
-  if (!currentScale.value) return false
-  return (
-    currentScale.value.range.min === currentScale.value.initialRange.min &&
-    currentScale.value.range.max === currentScale.value.initialRange.max
-  )
-})
 
 const mutableColorScaleRange = ref<Range>()
 watch(
