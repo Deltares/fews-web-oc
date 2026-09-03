@@ -8,18 +8,16 @@ import type { MaybeRefOrGetter } from 'vue'
 import { ref, shallowRef, toValue, watch } from 'vue'
 import { useRefreshCoordinator } from '@/services/useRefreshCoordinator'
 import { configManager } from '@/services/application-config'
-import { Pausable } from '@vueuse/core'
 import { convertFewsPiTaskRunToTaskRun, type TaskRun } from '@/lib/taskruns'
 
 export function useTaskRuns(
   baseUrl: string,
   filter: MaybeRefOrGetter<TaskRunsFilter>,
-  refreshInterval?: number,
+  intervalMs?: number,
 ) {
   const taskRuns = shallowRef<TaskRun[]>([])
   const isLoading = ref(false)
   const error = shallowRef<string>()
-  const interval = ref<Pausable>()
 
   async function fetchTaskRunsForFilter(_filter: TaskRunsFilter) {
     const explodeQueryParameters = configManager.get(
@@ -71,22 +69,23 @@ export function useTaskRuns(
     }
   }
 
-  if (refreshInterval) {
-    interval.value = useRefreshCoordinator(loadTaskRun, {
-      policies: ['onSystemTick', 'onInterval', 'onVisibilityResume', 'manual'],
-      intervalMs: refreshInterval,
-      immediateCallback: true,
-    })
-  } else {
-    loadTaskRun()
-  }
+  const refreshCoordinator = useRefreshCoordinator(loadTaskRun, {
+    policies: ['onSystemTick', 'onInterval', 'onVisibilityResume', 'manual'],
+    immediateCallback: true,
+    intervalMs,
+  })
 
-  watch(() => toValue(filter), loadTaskRun)
+  watch(
+    () => toValue(filter),
+    () => {
+      refreshCoordinator.trigger()
+    },
+  )
 
   return {
     taskRuns,
     isLoading,
-    interval,
+    pause: refreshCoordinator.pause,
     error,
   }
 }
