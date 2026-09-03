@@ -18,7 +18,6 @@
         :layer-capabilities="layerCapabilities"
         :bounding-box="boundingBox"
         :times="times"
-        :times-default="timesDefault"
         :settings="settings.map"
         v-model:elevation="elevation"
         @update:current-time="currentTime = $event"
@@ -136,7 +135,7 @@ const filterOptions = computed(() => {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { layerCapabilities, times, timesDefault, startPolling, stopPolling } =
+const { layerCapabilities, times, startPolling, stopPolling } =
   useWmsLayerCapabilities(baseUrl, () => props.layerName, taskRunId)
 
 function getDisplayEnabledFromLocationAttributes(
