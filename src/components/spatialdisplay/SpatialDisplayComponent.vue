@@ -40,7 +40,6 @@
         :colourMap="currentColourScale.colourMap"
         :title="currentColourScale.title"
         :useGradients="currentColourScale.useGradients"
-        v-model:range="currentColourScale.range"
       />
     </div>
     <SelectedCoordinateLayer
