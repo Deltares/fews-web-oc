@@ -1,9 +1,5 @@
 <template>
-  <SidePanelContent
-    :title="t('sidePanel.logDisplay')"
-    @close="emit('close')"
-    class="h-100"
-  >
+  <SidePanelContent :title="title" @close="emit('close')" class="h-100">
     <div class="d-flex align-center w-100">
       <div v-if="!isSearchVisible" class="d-flex pa-2 ga-2 w-100 align-center">
         <v-btn density="compact" icon @click="toggleSearch" class="ms-1">
@@ -104,7 +100,6 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 
 import {
   type LogDisplayDisseminationAction,
@@ -142,15 +137,14 @@ import { useLogActions } from '@/components/logdisplay/useLogActions'
 
 interface Props {
   topologyNode?: TopologyNode
+  title: string
   settings: {
-    logDisplayId: string
+    logDisplayId: string | undefined
     taskRunId?: string
   }
 }
 
 const props = defineProps<Props>()
-
-const { t } = useI18n()
 
 interface Emits {
   close: []
@@ -159,9 +153,8 @@ const emit = defineEmits<Emits>()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const { logDisplay } = useLogDisplay(baseUrl, () => props.settings.logDisplayId)
+const { logDisplay } = useLogDisplay(() => props.settings.logDisplayId)
 const { noteGroup } = useNoteGroup(
-  baseUrl,
   () => logDisplay.value?.manualLog?.noteGroupId,
 )
 
@@ -288,7 +281,7 @@ const {
   unacknowledgeLog,
 } = useLogActions({
   baseUrl,
-  getLogDisplayId: () => props.settings.logDisplayId,
+  getLogDisplayId: () => props.settings.logDisplayId ?? '',
   getNoteGroupId: () => noteGroup.value?.id ?? '',
   onRefresh: refreshLogs,
 })

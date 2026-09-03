@@ -216,7 +216,7 @@ const drawer = ref(true)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const actionIsActive = ref(false) // Flag to indicate if a dissemination action is active
-const { logDisplay } = useLogDisplay(baseUrl, () => LOG_DISPLAY_ID)
+const { logDisplay } = useLogDisplay(() => LOG_DISPLAY_ID)
 
 const canUpload = computed(() => archiveProductSets.length > 0)
 

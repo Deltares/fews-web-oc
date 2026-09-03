@@ -1,5 +1,5 @@
 <template>
-  <SidePanelContent :title="t('sidePanel.taskOverview')" @close="emit('close')">
+  <SidePanelContent :title="title" @close="emit('close')">
     <div class="task-runs-panel h-100">
       <div class="d-flex pt-3 pb-2 align-center">
         <WorkflowFilterControl v-model="selectedWorkflowIds" />
@@ -92,6 +92,7 @@ const { t } = useI18n()
 
 interface Props {
   topologyNode?: TopologyNode
+  title: string
 }
 const props = defineProps<Props>()
 

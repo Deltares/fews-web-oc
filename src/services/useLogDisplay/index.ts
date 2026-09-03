@@ -6,6 +6,7 @@ import {
 } from '@deltares/fews-pi-requests'
 import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
 import { ref, shallowRef, toValue, watchEffect } from 'vue'
+import { configManager } from '@/services/application-config'
 
 export interface UseLogDisplayReturn {
   error: Ref<string | undefined>
@@ -15,9 +16,10 @@ export interface UseLogDisplayReturn {
 }
 
 export function useLogDisplay(
-  baseUrl: string,
   logDisplayId: MaybeRefOrGetter<string | undefined>,
 ): UseLogDisplayReturn {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+
   const logDisplay = shallowRef<LogsDisplay>()
   const isReady = ref(false)
   const isLoading = ref(false)
