@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import type { ColourMap, Style } from '@deltares/fews-wms-requests'
 import {
+  effectScope,
+  EffectScope,
   MaybeRefOrGetter,
   reactive,
   ref,
@@ -32,10 +34,40 @@ export interface ColourScale {
 const useColourScalesStore = defineStore('colourScales', () => {
   const scales = ref<Record<string, ColourScale>>({})
   const processingScaleIds = ref<string[]>([])
+  // Each scale owns background watchers (legend polling, derived range state).
+  // Track their effect scopes so they can be stopped when a scale is removed,
+  // instead of leaking indefinitely.
+  const scopes = new Map<string, EffectScope>()
+
+  function stopScope(styleId: string) {
+    scopes.get(styleId)?.stop()
+    scopes.delete(styleId)
+  }
+
+  function removeScale(styleId: string) {
+    stopScope(styleId)
+    const { [styleId]: _removed, ...rest } = scales.value
+    scales.value = rest
+  }
 
   function clearScales() {
+    for (const styleId of scopes.keys()) {
+      stopScope(styleId)
+    }
     scales.value = {}
     processingScaleIds.value = []
+  }
+
+  function setRange(styleId: string, range: Range) {
+    const scale = scales.value[styleId]
+    if (!scale) return
+    scale.range = range
+  }
+
+  function resetRange(styleId: string) {
+    const scale = scales.value[styleId]
+    if (!scale) return
+    scale.range = { ...scale.initialRange }
   }
 
   async function addScale(
@@ -53,13 +85,23 @@ const useColourScalesStore = defineStore('colourScales', () => {
 
     const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-    const initialLegendGraphic = await fetchWmsLegend(
-      baseUrl,
-      toValue(layerName),
-      useDisplayUnits,
-      undefined,
-      style,
-    )
+    let initialLegendGraphic
+    try {
+      initialLegendGraphic = await fetchWmsLegend(
+        baseUrl,
+        toValue(layerName),
+        useDisplayUnits,
+        undefined,
+        style,
+      )
+    } catch (error) {
+      console.error(`Failed to fetch legend for style "${styleId}":`, error)
+      return
+    } finally {
+      processingScaleIds.value = processingScaleIds.value.filter(
+        (id) => id !== styleId,
+      )
+    }
 
     const legend = initialLegendGraphic.legend
     const scale = reactive<ColourScale>({
@@ -73,41 +115,47 @@ const useColourScalesStore = defineStore('colourScales', () => {
       requestRange: undefined,
       useGradients: !legend.some((entry) => entry.colorSmoothing === false),
     })
-    processingScaleIds.value = processingScaleIds.value.filter(
-      (id) => id !== styleId,
-    )
     scales.value[styleId] = scale
 
-    watchEffect(() => {
-      scale.isInitialRange =
-        scale.range.min === scale.initialRange.min &&
-        scale.range.max === scale.initialRange.max
+    // Run this scale's watchers in their own scope so they can be disposed
+    // together when the scale is removed or the store is cleared.
+    const scope = effectScope()
+    scopes.set(styleId, scope)
 
-      if (scale.isInitialRange) {
-        scale.requestRange = undefined
-      } else {
-        scale.requestRange = rangeToString(scale.range)
-      }
-    })
+    scope.run(() => {
+      watchEffect(() => {
+        scale.isInitialRange =
+          scale.range.min === scale.initialRange.min &&
+          scale.range.max === scale.initialRange.max
 
-    const newLegendGraphic = useWmsLegend(
-      baseUrl,
-      layerName,
-      useDisplayUnits,
-      () => scale.requestRange,
-      style,
-      activeStyles,
-    )
+        scale.requestRange = scale.isInitialRange
+          ? undefined
+          : rangeToString(scale.range)
+      })
 
-    watch(newLegendGraphic, () => {
-      if (newLegendGraphic.value?.legend === undefined) return
-      scale.colourMap = newLegendGraphic.value.legend
+      const newLegendGraphic = useWmsLegend(
+        baseUrl,
+        layerName,
+        useDisplayUnits,
+        () => scale.requestRange,
+        style,
+        activeStyles,
+      )
+
+      watch(newLegendGraphic, () => {
+        if (newLegendGraphic.value?.legend === undefined) return
+        scale.colourMap = newLegendGraphic.value.legend
+      })
     })
   }
+
   return {
     scales,
     addScale,
+    removeScale,
     clearScales,
+    setRange,
+    resetRange,
   }
 })
 
