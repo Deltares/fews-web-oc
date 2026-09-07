@@ -1,4 +1,5 @@
 import { DocumentFormat } from '@deltares/fews-pi-requests'
+import { useDownloadDisclaimerStore } from '@/stores/downloadDisclaimer'
 
 export function filterToParams(filter: Record<string, any>): string {
   const filterArgs = Object.entries(filter).flatMap(([key, value]) => {
@@ -34,6 +35,7 @@ export async function downloadFileAttachment(
 ) {
   const extension = getExtension(documentFormat)
   const downloadFileName = fileName + extension
+  if (!(await useDownloadDisclaimerStore().requestAcceptance())) return
   await downloadFileWithFetch(url, downloadFileName, headers)
 }
 
@@ -42,6 +44,7 @@ export async function downloadFileWithXhr(
   fileName: string,
   headers: Headers,
 ): Promise<void> {
+  if (!(await useDownloadDisclaimerStore().requestAcceptance())) return
   return new Promise((resolve, reject) => {
     const req = new XMLHttpRequest()
     req.responseType = 'blob'
@@ -104,11 +107,19 @@ async function downloadFileWithFetch(
 
 function clickDownloadBlob(blob: Blob, fileName: string) {
   const blobUrl = window.URL.createObjectURL(blob)
-  clickDownloadUrl(blobUrl, fileName)
+  clickDownloadUrlUnchecked(blobUrl, fileName)
   window.URL.revokeObjectURL(blobUrl)
 }
 
-export function clickDownloadUrl(url: string, fileName: string) {
+export async function clickDownloadUrl(
+  url: string,
+  fileName: string,
+): Promise<void> {
+  if (!(await useDownloadDisclaimerStore().requestAcceptance())) return
+  clickDownloadUrlUnchecked(url, fileName)
+}
+
+function clickDownloadUrlUnchecked(url: string, fileName: string) {
   const a = document.createElement('a')
   a.href = url
   a.setAttribute('download', fileName)
@@ -122,6 +133,7 @@ export async function downloadImageAsPng(
   image: HTMLImageElement,
   defaultFilename: string,
 ): Promise<void> {
+  if (!(await useDownloadDisclaimerStore().requestAcceptance())) return
   const blob = await convertImageToBlob(image)
   clickDownloadBlob(blob, defaultFilename)
 }

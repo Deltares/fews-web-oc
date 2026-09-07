@@ -349,14 +349,14 @@ function sanitizeHtmlContent(content: string) {
   return DOMPurify.sanitize(content, { USE_PROFILES: { html: true } })
 }
 
-function downloadProduct() {
+async function downloadProduct() {
   if (!src.value) return
   if (!selectedProduct.value) return
 
   const productUrl = getProductURL(baseUrl, selectedProduct.value)
   const fileExtension = getFileExtension(productUrl)
   const fileName = `${selectedProduct.value.attributes.name}.${fileExtension}`
-  clickDownloadUrl(src.value, fileName)
+  await clickDownloadUrl(src.value, fileName)
 }
 
 async function onSave() {

@@ -8,6 +8,7 @@
     </template>
   </Suspense>
   <Alerts />
+  <DownloadDisclaimerDialog />
 </template>
 
 <script setup lang="ts">
@@ -15,6 +16,7 @@ import { computed, watch, watchEffect } from 'vue'
 import DefaultLayout from './layouts/DefaultLayout.vue'
 import EmptyLayout from './layouts/EmptyLayout.vue'
 import Alerts from '@/components/general/Alerts.vue'
+import DownloadDisclaimerDialog from '@/components/download/DownloadDisclaimerDialog.vue'
 
 import { useRoute } from 'vue-router'
 import { useConfigStore } from '@/stores/config.ts'
