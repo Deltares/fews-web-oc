@@ -1,5 +1,5 @@
 <template>
-  <v-list-item :title="item.style.title" density="compact">
+  <v-list-item :title="item.title" density="compact">
     <div class="d-flex align-center ga-1">
       <ColourStrip
         v-if="item.useGradients !== false"

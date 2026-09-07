@@ -1,6 +1,6 @@
 <template>
   <div class="map__colour-legend">
-    <p>{{ title }}</p>
+    <p class="my-1">{{ title }}</p>
     <ColourLegendTable :colourMap="colourMap" />
   </div>
 </template>
