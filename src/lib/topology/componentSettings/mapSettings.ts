@@ -19,7 +19,7 @@ export const defaultMapSettings: MapSettings = {
   },
   locationsLayer: {
     show: true,
-    locationNames: true, // TODO: Implement
+    locationNames: true,
     singleClickAction: true,
     locationSearchEnabled: true,
   },

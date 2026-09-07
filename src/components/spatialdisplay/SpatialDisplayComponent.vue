@@ -50,7 +50,7 @@
       v-if="showLocationsLayer && hasLocations"
       :locationsGeoJson="geojson"
       :selectedLocationIds="selectedLocationIds"
-      :locationsClickable="settings.locationsLayer.singleClickAction"
+      :settings="settings.locationsLayer"
       @click="onLocationClick"
     />
     <CoordinateSelectorMarker

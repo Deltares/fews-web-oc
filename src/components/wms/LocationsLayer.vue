@@ -63,15 +63,19 @@ import {
 } from '@/lib/map'
 import { useMap } from '@/services/useMap'
 import { useSource } from '@/services/useLayer'
+import {
+  defaultMapSettings,
+  type MapSettings,
+} from '@/lib/topology/componentSettings'
 
-const settings = useUserSettingsStore()
+const userSettings = useUserSettingsStore()
 const isDark = useDark()
 const { map } = useMap()
 
 interface Props {
   locationsGeoJson: FeatureCollection<Geometry, Location>
   selectedLocationIds?: string[]
-  locationsClickable?: boolean
+  settings?: MapSettings['locationsLayer']
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -80,17 +84,23 @@ const props = withDefaults(defineProps<Props>(), {
     features: [],
   }),
   selectedLocationId: null,
-  locationsClickable: true,
+  settings: () => defaultMapSettings.locationsLayer,
   selectedLocationIds: () => [],
 })
 
 const showNames = computed(() => {
-  return Boolean(settings.get('ui.map.showLocationNames')?.value)
+  const showNamesUserSetting = Boolean(
+    userSettings.get('ui.map.showLocationNames')?.value ?? false,
+  )
+  const showNamesComponentSetting = props.settings.locationNames
+  return showNamesUserSetting && showNamesComponentSetting
 })
 
 const showDataAvailability = computed(() => {
-  return Boolean(settings.get('ui.map.showDataAvailability')?.value)
+  return Boolean(userSettings.get('ui.map.showDataAvailability')?.value)
 })
+
+const locationsClickable = computed(() => props.settings.singleClickAction)
 
 const geojson = computed(() =>
   addPropertiesToLocationGeojson(
@@ -121,13 +131,10 @@ onBeforeUnmount(() => {
   removeHooksFromMapObject()
 })
 
-watch(
-  () => props.locationsClickable,
-  () => {
-    removeHooksFromMapObject()
-    addHooksToMapObject()
-  },
-)
+watch(locationsClickable, () => {
+  removeHooksFromMapObject()
+  addHooksToMapObject()
+})
 
 async function addLocationIcons() {
   if (!map) return
@@ -138,7 +145,7 @@ async function addLocationIcons() {
 }
 
 function clickHandler(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
-  if (map && props.locationsClickable) {
+  if (map && locationsClickable.value) {
     const layers = clickableLocationLayerIds.filter((layerId) =>
       map.getLayer(layerId),
     )
@@ -186,7 +193,7 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 
 function addHooksToMapObject() {
   if (map) {
-    if (props.locationsClickable) {
+    if (locationsClickable.value) {
       for (const layerId of clickableLocationLayerIds) {
         map.on('click', layerId, clickHandler)
         map.on('mouseenter', layerId, setCursorPointer)
