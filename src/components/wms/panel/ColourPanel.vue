@@ -59,7 +59,7 @@
           variant="plain"
           density="compact"
           aria-label="Reset current colour scale range"
-          :disabled="currentScaleIsInitialRange"
+          :disabled="currentScale?.isInitialRange"
           @click="resetCurrentScaleRange"
         />
       </div>
@@ -70,7 +70,11 @@
 <script setup lang="ts">
 import ColourItem from '@/components/wms/panel/ColourItem.vue'
 import SelectIcon from '@/components/general/SelectIcon.vue'
-import { type ColourScale, type Range } from '@/stores/colourScales'
+import {
+  useColourScalesStore,
+  type ColourScale,
+  type Range,
+} from '@/stores/colourScales'
 import { computed, ref, watch } from 'vue'
 
 interface Props {
@@ -79,6 +83,8 @@ interface Props {
 
 const props = defineProps<Props>()
 const modelValue = defineModel<ColourScale | undefined>()
+
+const colourScalesStore = useColourScalesStore()
 
 const showMenu = ref(false)
 
@@ -98,14 +104,6 @@ const rules = {
 const currentScale = computed(() => modelValue.value)
 const currentScales = computed(() => props.items)
 
-const currentScaleIsInitialRange = computed(() => {
-  if (!currentScale.value) return false
-  return (
-    currentScale.value.range.min === currentScale.value.initialRange.min &&
-    currentScale.value.range.max === currentScale.value.initialRange.max
-  )
-})
-
 const mutableColorScaleRange = ref<Range>()
 watch(
   () => currentScale.value?.range,
@@ -121,12 +119,15 @@ const changeCurrentColourScaleRange = () => {
   if (mutableColorScaleRange.value === undefined) return
   if (currentScale.value === undefined) return
 
-  currentScale.value.range = mutableColorScaleRange.value
+  colourScalesStore.setRange(
+    currentScale.value.id,
+    mutableColorScaleRange.value,
+  )
 }
 
 function resetCurrentScaleRange() {
   if (!currentScale.value) return
-  currentScale.value.range = currentScale.value.initialRange
+  colourScalesStore.resetRange(currentScale.value.id)
 }
 
 function selectScale(index: number) {
