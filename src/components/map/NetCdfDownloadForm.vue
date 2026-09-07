@@ -311,7 +311,6 @@ async function download() {
       'PI_NETCDF',
       headers,
     )
-    dialogOpen.value = false
   } catch (error) {
     console.error('NetCDF download error:', error)
     errorMessage.value = t('download.errors.failed')
