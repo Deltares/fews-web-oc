@@ -3,12 +3,7 @@ import type { MapSettings as PiMapSettings } from '@deltares/fews-pi-requests'
 
 type DeepRequiredMapSettings = DeepRequired<PiMapSettings>
 
-export type MapSettings = Omit<DeepRequiredMapSettings, 'locationsLayer'> & {
-  locationsLayer: Omit<
-    DeepRequiredMapSettings['locationsLayer'],
-    'minZoom' | 'maxZoom'
-  >
-}
+export type MapSettings = DeepRequiredMapSettings
 
 export const defaultMapSettings: MapSettings = {
   wmsLayer: {
@@ -22,6 +17,8 @@ export const defaultMapSettings: MapSettings = {
     locationNames: true, // TODO: Implement
     singleClickAction: true,
     locationSearchEnabled: true,
+    minZoom: { level: -Infinity, levelLocationAttribute: '' },
+    maxZoom: { level: Infinity, levelLocationAttribute: '' },
   },
   overlays: [],
 }

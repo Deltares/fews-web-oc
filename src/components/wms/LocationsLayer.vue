@@ -45,7 +45,10 @@ import LocationsSymbolLayer from '@/components/wms/locations/LocationsSymbolLaye
 import LocationsTextLayer from '@/components/wms/locations/LocationsTextLayer.vue'
 import LocationsMarkers from '@/components/wms/locations/LocationsMarkers.vue'
 import type { FeatureCollection, Geometry } from 'geojson'
-import { type Location } from '@deltares/fews-pi-requests'
+import {
+  type Location,
+  type LocationsLayerZoomSettings,
+} from '@deltares/fews-pi-requests'
 import {
   type MapGeoJSONFeature,
   type MapLayerMouseEvent,
@@ -66,12 +69,14 @@ import { useSource } from '@/services/useLayer'
 
 const settings = useUserSettingsStore()
 const isDark = useDark()
-const { map } = useMap()
+const { map, zoom } = useMap()
 
 interface Props {
   locationsGeoJson: FeatureCollection<Geometry, Location>
   selectedLocationIds?: string[]
   locationsClickable?: boolean
+  minZoom?: LocationsLayerZoomSettings
+  maxZoom?: LocationsLayerZoomSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -82,6 +87,8 @@ const props = withDefaults(defineProps<Props>(), {
   selectedLocationId: null,
   locationsClickable: true,
   selectedLocationIds: () => [],
+  minZoom: () => ({ level: -Infinity, levelLocationAttribute: '' }),
+  maxZoom: () => ({ level: Infinity, levelLocationAttribute: '' }),
 })
 
 const showNames = computed(() => {
@@ -98,6 +105,9 @@ const geojson = computed(() =>
     props.selectedLocationIds,
     showNames.value,
     showDataAvailability.value,
+    zoom.value,
+    props.minZoom,
+    props.maxZoom,
   ),
 )
 
