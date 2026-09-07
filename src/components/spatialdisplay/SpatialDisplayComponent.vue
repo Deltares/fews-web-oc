@@ -158,6 +158,7 @@
       class="spatial-display__slider"
       :hide-speed-controls="mobile"
       :isLoading="isLoading"
+      :auto-play="settings.wmsLayer.autoPlay"
     >
       <template #below-track>
         <SnapshotStrip
