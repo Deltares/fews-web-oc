@@ -3,7 +3,7 @@
     <LogSidePanelComponent
       v-if="logDisplay"
       :logDisplay="logDisplay"
-      :taskRunId="settings.taskRunId"
+      :taskRunId="taskRunId"
       :noteGroup="noteGroup"
       :key="logDisplay.id"
     />
@@ -20,10 +20,8 @@ import { useNoteGroup } from '@/services/useNoteGroup/index.ts'
 interface Props {
   topologyNode?: TopologyNode
   title: string
-  settings: {
-    logDisplayId: string | undefined
-    taskRunId?: string
-  }
+  logDisplayId: string | undefined
+  taskRunId?: string
 }
 
 const props = defineProps<Props>()
@@ -33,7 +31,7 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
-const { logDisplay } = useLogDisplay(() => props.settings.logDisplayId)
+const { logDisplay } = useLogDisplay(() => props.logDisplayId)
 const { noteGroup } = useNoteGroup(
   () => logDisplay.value?.manualLog?.noteGroupId,
 )

@@ -170,10 +170,8 @@ const { logDisplay } = useLogDisplay(logDisplayId)
 function propsForSidePanel(type: GeneralSidePanelType) {
   if (type === 'logDisplay') {
     return {
-      settings: {
-        logDisplayId: logDisplayId.value,
-        taskRunId: selectedLogTaskRunId.value,
-      },
+      logDisplayId: logDisplayId.value,
+      taskRunId: selectedLogTaskRunId.value,
     }
   }
 
