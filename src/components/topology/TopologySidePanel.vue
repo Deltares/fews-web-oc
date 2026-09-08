@@ -47,6 +47,7 @@
       v-if="activeSidePanelType === sidePanel.type"
       :is="sidePanel.component"
       :topology-node="topologyNode"
+      :title="getTitleForSidePanel(sidePanel.type)"
       v-bind="propsForSidePanel(sidePanel.type)"
       @close="closeSidePanel()"
       @open-log-task-run="openLogTaskRun"
