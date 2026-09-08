@@ -1,9 +1,9 @@
 import { computed, ref, toValue, type MaybeRefOrGetter } from 'vue'
 
-import type {
-  SidePanelProps,
-  SidePanelRequest,
-  SidePanelType,
+import {
+  type SidePanelProps,
+  type SidePanelRequest,
+  type SidePanelType,
 } from '@/lib/sidepanel'
 
 /**
@@ -43,7 +43,7 @@ export function useSidePanelStack(
 
   function open<T extends SidePanelType>(
     type: T,
-    props: SidePanelProps[T] | Record<string, never> = {},
+    props: SidePanelProps<T> | Record<string, never> = {},
   ): void {
     if (!isAvailable(type)) return
     stack.value = [{ type, props }]
@@ -51,7 +51,7 @@ export function useSidePanelStack(
 
   function push<T extends SidePanelType>(
     type: T,
-    props: SidePanelProps[T] | Record<string, never> = {},
+    props: SidePanelProps<T> | Record<string, never> = {},
   ): void {
     if (!isAvailable(type)) return
 
@@ -65,7 +65,7 @@ export function useSidePanelStack(
   }
 
   function pushRequest(request: SidePanelRequest): void {
-    push(request.type, request.props)
+    push(request.type, request.props ?? {})
   }
 
   function pop(): void {

@@ -1,4 +1,4 @@
-import type { Component } from 'vue'
+import type { AllowedComponentProps, Component, VNodeProps } from 'vue'
 import type { SidePanelConfig } from '@deltares/fews-pi-requests'
 
 import ThresholdsButton from '@/components/thresholds/ThresholdsButton.vue'
@@ -11,19 +11,10 @@ import RunTasksSidePanel from '@/components/sidepanel/RunTasksSidePanel.vue'
 import ShareSidePanel from '@/components/sidepanel/ShareSidePanel.vue'
 import TaskOverviewSidePanel from '@/components/sidepanel/TaskOverviewSidePanel.vue'
 import ThresholdsSidePanel from '@/components/sidepanel/ThresholdsSidePanel.vue'
+import type { ComponentProps } from '@/lib/utils/types'
 
-export type SidePanelType =
-  | 'taskOverview'
-  | 'nonCurrentData'
-  | 'importStatus'
-  | 'runTask'
-  | 'documentFile'
-  | 'logDisplay'
-  | 'share'
-  | 'thresholds'
-
-export interface SidePanel {
-  type: SidePanelType
+interface SidePanelDefinition {
+  type: string
   /** Icon used for the default toolbar button and the side panel menu. */
   icon: string
   /** Component rendered as the contents of the side panel. */
@@ -41,33 +32,12 @@ export interface SidePanel {
 }
 
 /**
- * Props that can be passed to a side panel when it is opened, per panel type.
- */
-export interface SidePanelProps {
-  taskOverview: Record<string, never>
-  importStatus: Record<string, never>
-  nonCurrentData: Record<string, never>
-  runTask: Record<string, never>
-  logDisplay: { taskRunId?: string }
-  documentFile: Record<string, never>
-  share: Record<string, never>
-  thresholds: { locationIds?: string }
-}
-
-/**
- * A request to open a side panel, optionally with props for that panel.
+ * All side panels that exist.
  *
- * This allows a side panel to open any other side panel, without having to know
- * how side panels are managed.
+ * This is the single source of truth for side panels: the available side panel
+ * types and the props each panel accepts are derived from it.
  */
-export type SidePanelRequest = {
-  [T in SidePanelType]: {
-    type: T
-    props?: SidePanelProps[T]
-  }
-}[SidePanelType]
-
-export const sidePanels: SidePanel[] = [
+const sidePanelDefinitions = [
   {
     type: 'taskOverview',
     icon: 'mdi-clipboard-text-clock',
@@ -110,7 +80,48 @@ export const sidePanels: SidePanel[] = [
     button: ThresholdsButton,
     persistent: true,
   },
-]
+] as const satisfies readonly SidePanelDefinition[]
+
+export type SidePanelType = (typeof sidePanelDefinitions)[number]['type']
+
+export interface SidePanel extends SidePanelDefinition {
+  type: SidePanelType
+}
+
+export const sidePanels: SidePanel[] = [...sidePanelDefinitions]
+
+/** The component that renders the contents of a side panel. */
+type SidePanelComponent<T extends SidePanelType> = Extract<
+  (typeof sidePanelDefinitions)[number],
+  { type: T }
+>['component']
+
+/**
+ * Props that are always supplied by the component that renders the side panels,
+ * so they cannot be passed when opening a side panel.
+ */
+type ManagedSidePanelProp = 'topologyNode' | 'logDisplayId'
+
+/**
+ * Props that can be passed to a side panel when it is opened.
+ *
+ * These are derived from the props of the panel's component, excluding the
+ * props that are managed by the component that renders the side panels.
+ */
+export type SidePanelProps<T extends SidePanelType> = Omit<
+  ComponentProps<SidePanelComponent<T>>,
+  | keyof VNodeProps
+  | keyof AllowedComponentProps
+  | `on${string}` /* NOSONAR(S6571) */
+  | ManagedSidePanelProp /* NOSONAR(S6571) */
+>
+
+export type SidePanelRequest = {
+  [T in SidePanelType]: {
+    type: T
+    props?: SidePanelProps<T>
+  }
+}[SidePanelType]
 
 /**
  * Returns the side panels that are enabled.
