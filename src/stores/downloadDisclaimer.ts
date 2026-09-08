@@ -52,10 +52,4 @@ export const useDownloadDisclaimerStore = defineStore(
       decline,
     }
   },
-  {
-    persist: {
-      storage: sessionStorage,
-      pick: ['hasAccepted'],
-    },
-  },
 )
