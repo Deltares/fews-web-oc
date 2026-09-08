@@ -9,13 +9,11 @@
         <v-btn
           v-if="canGoBack"
           @click="emit('back')"
-          icon
           size="small"
           class="ms-1"
           aria-label="Back"
-        >
-          <v-icon size="small">mdi-arrow-left</v-icon>
-        </v-btn>
+          icon="mdi-arrow-left"
+        />
         <div id="sidepanel-prepend-teleport-target" />
         <span class="w-100" :class="canGoBack ? 'ps-2' : 'ps-4'">
           {{ title }}
