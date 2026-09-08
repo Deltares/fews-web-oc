@@ -134,6 +134,7 @@ interface Properties {
   playInterval?: number
   followNowInterval?: number
   hideSpeedControls?: boolean
+  autoPlay?: boolean
 }
 
 const props = withDefaults(defineProps<Properties>(), {
@@ -141,6 +142,7 @@ const props = withDefaults(defineProps<Properties>(), {
   playInterval: 1000,
   followNowInterval: 60000,
   hideSpeedControls: false,
+  autoPlay: false,
 })
 const emit = defineEmits(['update:selectedDate'])
 
@@ -369,8 +371,8 @@ function unwatchPlayLoading(): void {
 }
 
 function stopPlay(): void {
+  unwatchPlayLoading()
   if (playTimeoutTimer.value) {
-    unwatchPlayLoading()
     clearTimeout(playTimeoutTimer.value)
     playTimeoutTimer.value = undefined
   }
@@ -438,6 +440,10 @@ onMounted(() => {
   window.addEventListener('pointermove', onPointerMove)
   window.addEventListener('pointerup', onPointerUp)
   window.addEventListener('pointercancel', onPointerUp)
+
+  if (props.autoPlay) {
+    startPlay()
+  }
 })
 
 onUnmounted(() => {

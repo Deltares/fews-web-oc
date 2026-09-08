@@ -50,7 +50,7 @@
       v-if="showLocationsLayer && hasLocations"
       :locationsGeoJson="geojson"
       :selectedLocationIds="selectedLocationIds"
-      :locationsClickable="settings.locationsLayer.singleClickAction"
+      :settings="settings.locationsLayer"
       @click="onLocationClick"
     />
     <CoordinateSelectorMarker
@@ -158,6 +158,7 @@
       class="spatial-display__slider"
       :hide-speed-controls="mobile"
       :isLoading="isLoading"
+      :auto-play="settings.wmsLayer.autoPlay"
     >
       <template #below-track>
         <SnapshotStrip
