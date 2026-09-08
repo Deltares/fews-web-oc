@@ -1,6 +1,8 @@
 import type { Component } from 'vue'
 import type { SidePanelConfig } from '@deltares/fews-pi-requests'
 
+import ThresholdsButton from '@/components/thresholds/ThresholdsButton.vue'
+
 import ImportStatusSidePanel from '@/components/sidepanel/ImportStatusSidePanel.vue'
 import LogSidePanel from '@/components/sidepanel/LogSidePanel.vue'
 import MoreInfoSidePanel from '@/components/sidepanel/MoreInfoSidePanel.vue'
@@ -8,17 +10,31 @@ import NonCurrentDataSidePanel from '@/components/sidepanel/NonCurrentDataSidePa
 import RunTasksSidePanel from '@/components/sidepanel/RunTasksSidePanel.vue'
 import ShareSidePanel from '@/components/sidepanel/ShareSidePanel.vue'
 import TaskOverviewSidePanel from '@/components/sidepanel/TaskOverviewSidePanel.vue'
+import ThresholdsSidePanel from '@/components/sidepanel/ThresholdsSidePanel.vue'
 
-// FIXME: Remove 'share' once SidePanel configuration is implemented for it.
+// FIXME: Remove 'share' and 'thresholds' once SidePanel configuration is
+// implemented for them.
 export type SidePanelType = Exclude<
-  keyof SidePanelConfig | 'share',
+  keyof SidePanelConfig | 'share' | 'thresholds',
   'exportStatus'
 >
 
 export interface SidePanel {
   type: SidePanelType
+  /** Icon used for the default toolbar button and the side panel menu. */
   icon: string
+  /** Component rendered as the contents of the side panel. */
   component: Component
+  /**
+   * Component rendered instead of the default toolbar button; it is passed an
+   * `active` prop and should emit a `click` event.
+   */
+  button?: Component
+  /**
+   * Whether the panel has a permanent button in the toolbar. Persistent panels
+   * are not part of the side panel menu.
+   */
+  persistent?: boolean
 }
 
 export const sidePanels: SidePanel[] = [
@@ -57,15 +73,37 @@ export const sidePanels: SidePanel[] = [
     icon: 'mdi-share-variant',
     component: ShareSidePanel,
   },
+  {
+    type: 'thresholds',
+    icon: 'mdi-alert',
+    component: ThresholdsSidePanel,
+    button: ThresholdsButton,
+    persistent: true,
+  },
 ]
 
+/**
+ * Returns the side panels that are enabled.
+ *
+ * @param config side panel configuration from the FEWS configuration.
+ * @param overrides enables or disables panels that are not part of the FEWS
+ *   side panel configuration, regardless of the configuration.
+ */
 export function getEnabledSidePanels(
   config: SidePanelConfig | undefined,
+  overrides: Partial<Record<SidePanelType, boolean>> = {},
 ): SidePanel[] {
   // FIXME: For now we always enable share, should be removed once SidePanel
   // configuration is implemented for it.
+  const defaultOverrides: Partial<Record<SidePanelType, boolean>> = {
+    share: true,
+  }
+  const allOverrides = { ...defaultOverrides, ...overrides }
+
   return sidePanels.filter(
     (sidePanel) =>
-      sidePanel.type === 'share' || config?.[sidePanel.type]?.enabled,
+      allOverrides[sidePanel.type] ??
+      config?.[sidePanel.type as keyof SidePanelConfig]?.enabled ??
+      false,
   )
 }

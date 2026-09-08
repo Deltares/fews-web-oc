@@ -1,9 +1,13 @@
 <template>
   <BtnGroup class="me-2">
-    <template #persistent v-if="showActiveThresholdCrossingsForFilters">
-      <ThresholdsButton
-        :active="isThresholdsOpen"
-        @click="toggleThresholdsSidePanel()"
+    <template #persistent v-if="persistentSidePanels.length">
+      <component
+        v-for="sidePanel in persistentSidePanels"
+        :key="sidePanel.type"
+        :is="sidePanel.button"
+        :active="rootPanelType === sidePanel.type"
+        size="small"
+        @click="toggleSidePanel(sidePanel.type)"
       />
     </template>
 
@@ -17,7 +21,7 @@
       <v-icon :icon="menuSidePanel.icon"></v-icon>
     </v-btn>
 
-    <v-menu v-if="enabledSidePanels.length > 1" location="bottom right">
+    <v-menu v-if="menuSidePanels.length > 1" location="bottom right">
       <template #activator="{ isActive, props }">
         <v-btn
           icon
@@ -31,7 +35,7 @@
 
       <v-list>
         <v-list-item
-          v-for="sidePanel in enabledSidePanels"
+          v-for="sidePanel in menuSidePanels"
           :key="sidePanel.type"
           :prepend-icon="sidePanel.icon"
           :title="getTitleForSidePanel(sidePanel.type)"
@@ -61,17 +65,10 @@
         :topology-node="topologyNode"
         v-bind="propsForSidePanel(panel)"
         @open-log-task-run="openLogSidePanelForTaskRun"
+        @navigate="emit('navigate', $event)"
       />
     </div>
   </SidePanelContent>
-
-  <ThresholdsSidePanel
-    v-if="isThresholdsOpen"
-    :topologyNode="topologyNode"
-    :locationIds="locationIds"
-    @close="isThresholdsOpen = false"
-    @navigate="emit('navigate', $event)"
-  />
 </template>
 
 <script setup lang="ts">
@@ -94,16 +91,14 @@ import {
 } from '@/services/useSidePanelStack'
 
 import BtnGroup from '@/components/general/BtnGroup.vue'
-import ThresholdsButton from '@/components/thresholds/ThresholdsButton.vue'
 import SidePanelContent from '@/components/sidepanel/SidePanelContent.vue'
-import ThresholdsSidePanel from '@/components/sidepanel/ThresholdsSidePanel.vue'
 
 interface Props {
   topologyNode?: TopologyNode
   locationIds?: string
   showActiveThresholdCrossingsForFilters?: boolean
 }
-defineProps<Props>()
+const props = defineProps<Props>()
 
 interface Emits {
   navigate: [to: NavigateRoute]
@@ -114,7 +109,17 @@ const { t } = useI18n()
 const configStore = useConfigStore()
 
 const enabledSidePanels = computed<SidePanel[]>(() =>
-  getEnabledSidePanels(configStore.general.sidePanel),
+  getEnabledSidePanels(configStore.general.sidePanel, {
+    thresholds: props.showActiveThresholdCrossingsForFilters ?? false,
+  }),
+)
+// Persistent panels have their own permanent button in the toolbar, the other
+// panels share a single button with a menu to select the panel to show.
+const persistentSidePanels = computed<SidePanel[]>(() =>
+  enabledSidePanels.value.filter((sidePanel) => sidePanel.persistent),
+)
+const menuSidePanels = computed<SidePanel[]>(() =>
+  enabledSidePanels.value.filter((sidePanel) => !sidePanel.persistent),
 )
 
 const {
@@ -130,18 +135,13 @@ const {
   enabledSidePanels.value.map((sidePanel) => sidePanel.type),
 )
 
-// Only one side panel is shown in the top bar at all times; the others are
-// available from the menu next to it.
+// Only one of the non-persistent panels is shown in the toolbar at a time.
 const menuSidePanelType = ref<SidePanelType | null>(
-  enabledSidePanels.value[0]?.type ?? null,
+  menuSidePanels.value[0]?.type ?? null,
 )
 const menuSidePanel = computed<SidePanel | null>(
   () => findSidePanel(menuSidePanelType.value) ?? null,
 )
-
-// The thresholds side panel is a special panel with its own permanent button
-// and component, so it cannot be part of the stack.
-const isThresholdsOpen = ref(false)
 
 const logDisplayId = computed(
   () => configStore.general.sidePanel?.logDisplay?.logDisplayId,
@@ -168,16 +168,18 @@ function getTitleForSidePanel(type: SidePanelType): string {
 }
 
 function propsForSidePanel(panel: OpenSidePanel): Record<string, unknown> {
-  if (panel.type === 'logDisplay') {
-    return { logDisplayId: logDisplayId.value, ...panel.props }
+  switch (panel.type) {
+    case 'logDisplay':
+      return { logDisplayId: logDisplayId.value, ...panel.props }
+    case 'thresholds':
+      return { locationIds: props.locationIds, ...panel.props }
+    default:
+      return panel.props
   }
-
-  return panel.props
 }
 
 function openSidePanel(type: SidePanelType): void {
-  isThresholdsOpen.value = false
-  menuSidePanelType.value = type
+  if (!findSidePanel(type)?.persistent) menuSidePanelType.value = type
   openPanel(type)
 }
 
@@ -187,11 +189,6 @@ function toggleSidePanel(type: SidePanelType): void {
   } else {
     openSidePanel(type)
   }
-}
-
-function toggleThresholdsSidePanel(): void {
-  isThresholdsOpen.value = !isThresholdsOpen.value
-  if (isThresholdsOpen.value) closePanels()
 }
 
 function openLogSidePanelForTaskRun(taskRunId: string): void {
