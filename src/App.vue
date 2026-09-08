@@ -137,8 +137,4 @@ function setTheme(setDark: boolean): void {
 .pointer-events-none {
   pointer-events: none;
 }
-
-:root {
-  --selected-color: rgba(var(--v-theme-on-surface), var(--v-activated-opacity));
-}
 </style>
