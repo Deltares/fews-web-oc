@@ -2,19 +2,19 @@
   <BtnGroup class="me-2">
     <template #persistent v-if="showActiveThresholdCrossingsForFilters">
       <ThresholdsButton
-        :active="activeSidePanelType === 'thresholds'"
-        @click="toggleActiveSidePanel('thresholds')"
+        :active="isThresholdsOpen"
+        @click="toggleThresholdsSidePanel()"
       />
     </template>
 
     <v-btn
-      v-if="currentGeneralSidePanel !== null"
-      :active="activeSidePanelType === currentGeneralSidePanel.type"
+      v-if="menuSidePanel !== null"
+      :active="openPanelType === menuSidePanel.type"
       size="small"
       icon
-      @click="toggleActiveSidePanel(currentGeneralSidePanel.type)"
+      @click="toggleSidePanel(menuSidePanel.type)"
     >
-      <v-icon :icon="currentGeneralSidePanel.icon"></v-icon>
+      <v-icon :icon="menuSidePanel.icon"></v-icon>
     </v-btn>
 
     <v-menu v-if="hasMultipleEnabledSidePanels" location="bottom right">
@@ -31,39 +31,50 @@
 
       <v-list>
         <v-list-item
-          v-for="generalSidePanel in enabledGeneralSidePanels"
-          :key="generalSidePanel.type"
-          :prepend-icon="generalSidePanel.icon"
-          :title="getTitleForSidePanel(generalSidePanel.type)"
-          :active="activeSidePanelType === generalSidePanel.type"
-          @click="setCurrentGeneralSidePanel(generalSidePanel)"
+          v-for="sidePanel in enabledGeneralSidePanels"
+          :key="sidePanel.type"
+          :prepend-icon="sidePanel.icon"
+          :title="getTitleForSidePanel(sidePanel.type)"
+          :active="openPanelType === sidePanel.type"
+          @click="openSidePanel(sidePanel.type)"
         />
       </v-list>
     </v-menu>
   </BtnGroup>
 
   <SidePanelContent
-    v-if="
-      currentGeneralSidePanel &&
-      activeSidePanelType === currentGeneralSidePanel.type
-    "
-    :title="getTitleForSidePanel(currentGeneralSidePanel.type)"
+    v-if="activePanel !== null"
+    :title="getTitleForSidePanel(activePanel.type)"
+    :can-go-back="panelStack.length > 1"
     class="h-100"
+    @back="popSidePanel()"
     @close="closeSidePanel()"
   >
-    <component
-      :is="currentGeneralSidePanel.component"
-      :topology-node="topologyNode"
-      @open-log-task-run="openLogTaskRun"
-      v-bind="propsForSidePanel(currentGeneralSidePanel.type)"
-    />
+    <!--
+      All panels in the stack stay mounted, so that panels that are temporarily
+      overlaid by another panel do not lose their state. Only the top-most panel
+      of the stack is visible.
+    -->
+    <div
+      v-for="(panel, index) in panelStack"
+      v-show="index === panelStack.length - 1"
+      :key="`${index}-${panel.type}`"
+      class="d-flex flex-column flex-1-1 overflow-hidden"
+    >
+      <component
+        :is="getComponentForSidePanel(panel.type)"
+        :topology-node="topologyNode"
+        v-bind="propsForSidePanel(panel)"
+        @open-log-task-run="openLogTaskRunSidePanel"
+      />
+    </div>
   </SidePanelContent>
 
   <ThresholdsSidePanel
-    v-if="activeSidePanelType === 'thresholds'"
+    v-if="isThresholdsOpen"
     :topologyNode="topologyNode"
     :locationIds="locationIds"
-    @close="closeSidePanel()"
+    @close="isThresholdsOpen = false"
     @navigate="emit('navigate', $event)"
   />
 </template>
@@ -111,14 +122,25 @@ type GeneralSidePanelType = Exclude<
   keyof SidePanelConfig | 'share',
   'exportStatus'
 >
-type SpecialSidePanelType = 'thresholds'
-type SidePanelType = GeneralSidePanelType | SpecialSidePanelType
 
 interface GeneralSidePanel {
   type: GeneralSidePanelType
   icon: string
   component: Component
 }
+
+/**
+ * A side panel that is currently open, with the props it was opened with.
+ *
+ * Side panels are kept in a stack, so a panel can temporarily be overlaid by
+ * another panel (e.g. opening the logs for a task run from the import status
+ * panel) without losing its state.
+ */
+interface OpenSidePanel {
+  type: GeneralSidePanelType
+  props: Record<string, unknown>
+}
+
 const generalSidePanels: GeneralSidePanel[] = [
   {
     type: 'taskOverview',
@@ -167,21 +189,54 @@ const enabledGeneralSidePanels = computed<GeneralSidePanel[]>(() => {
   )
 })
 
+const hasMultipleEnabledSidePanels = computed<boolean>(
+  () => enabledGeneralSidePanels.value.length > 1,
+)
+
 const logDisplayId = computed(() => {
   const sidePanelConfig = configStore.general.sidePanel
   return sidePanelConfig?.logDisplay?.logDisplayId
 })
 const { logDisplay } = useLogDisplay(logDisplayId)
 
-function propsForSidePanel(type: GeneralSidePanelType) {
-  if (type === 'logDisplay') {
-    return {
-      logDisplayId: logDisplayId.value,
-      taskRunId: selectedLogTaskRunId.value,
-    }
-  }
+// Stack of open general side panels; the last entry is the visible one. An
+// empty stack means no general side panel is open.
+const panelStack = ref<OpenSidePanel[]>([])
+const activePanel = computed<OpenSidePanel | null>(
+  () => panelStack.value.at(-1) ?? null,
+)
+// The type of the side panel that was opened from the toolbar; panels overlaid
+// on top of it do not change the toolbar state.
+const openPanelType = computed<GeneralSidePanelType | null>(
+  () => panelStack.value[0]?.type ?? null,
+)
 
-  return {}
+// Only one "general" side panel is shown in the top bar at all times. "Special"
+// side panels (e.g. thresholds) have their own permanent button.
+const selectedSidePanelType = ref<GeneralSidePanelType | null>(
+  enabledGeneralSidePanels.value[0]?.type ?? null,
+)
+const menuSidePanel = computed<GeneralSidePanel | null>(
+  () => findSidePanel(selectedSidePanelType.value) ?? null,
+)
+
+// Thresholds is a "special" side panel with its own button and component; it
+// cannot be part of the stack.
+const isThresholdsOpen = ref(false)
+
+function findSidePanel(
+  type: GeneralSidePanelType | null,
+): GeneralSidePanel | undefined {
+  if (type === null) return undefined
+  return enabledGeneralSidePanels.value.find(
+    (sidePanel) => sidePanel.type === type,
+  )
+}
+
+function getComponentForSidePanel(
+  type: GeneralSidePanelType,
+): Component | undefined {
+  return findSidePanel(type)?.component
 }
 
 function getTitleForSidePanel(type: GeneralSidePanelType): string {
@@ -194,49 +249,77 @@ function getTitleForSidePanel(type: GeneralSidePanelType): string {
   return title
 }
 
-const hasMultipleEnabledSidePanels = computed<boolean>(
-  () => enabledGeneralSidePanels.value.length > 1,
-)
-// Only one "general" side panel is shown in the top bar at all times. "Special"
-// side panels (e.g. thresholds) have their own permanent button.
-const currentGeneralSidePanel = ref<GeneralSidePanel | null>(
-  enabledGeneralSidePanels.value[0] ?? null,
-)
-// There can be only one active side panel, special or general, at a time.
-const activeSidePanelType = ref<SidePanelType | null>(null)
-const selectedLogTaskRunId = ref<string | undefined>(undefined)
-
-function setCurrentGeneralSidePanel(sidePanel: GeneralSidePanel): void {
-  if (sidePanel.type === 'logDisplay') {
-    // Manual opening of logs panel should not carry a stale task run filter.
-    selectedLogTaskRunId.value = undefined
+function propsForSidePanel(panel: OpenSidePanel): Record<string, unknown> {
+  if (panel.type === 'logDisplay') {
+    return { logDisplayId: logDisplayId.value, ...panel.props }
   }
-  currentGeneralSidePanel.value = sidePanel
-  activeSidePanelType.value = sidePanel.type
+
+  return panel.props
+}
+
+/**
+ * Opens a side panel as the only panel, replacing any panels that are open.
+ */
+function openSidePanel(
+  type: GeneralSidePanelType,
+  props: Record<string, unknown> = {},
+): void {
+  if (!findSidePanel(type)) return
+
+  isThresholdsOpen.value = false
+  selectedSidePanelType.value = type
+  panelStack.value = [{ type, props }]
+}
+
+/**
+ * Opens a side panel on top of the currently open panel, which keeps its state
+ * and can be returned to with the back button.
+ */
+function pushSidePanel(
+  type: GeneralSidePanelType,
+  props: Record<string, unknown> = {},
+): void {
+  if (!findSidePanel(type)) return
+
+  if (panelStack.value.length === 0) {
+    openSidePanel(type, props)
+    return
+  }
+
+  if (activePanel.value?.type === type) {
+    // Do not stack the same panel twice; update its props instead.
+    panelStack.value.splice(panelStack.value.length - 1, 1, { type, props })
+    return
+  }
+
+  panelStack.value.push({ type, props })
+}
+
+/**
+ * Closes the top-most panel and returns to the panel below it, if any.
+ */
+function popSidePanel(): void {
+  panelStack.value.pop()
 }
 
 function closeSidePanel(): void {
-  activeSidePanelType.value = null
-  selectedLogTaskRunId.value = undefined
+  panelStack.value = []
 }
 
-function toggleActiveSidePanel(type: SidePanelType): void {
-  if (type === 'logDisplay' && activeSidePanelType.value !== 'logDisplay') {
-    // Manual opening of logs panel should not carry a stale task run filter.
-    selectedLogTaskRunId.value = undefined
+function toggleSidePanel(type: GeneralSidePanelType): void {
+  if (openPanelType.value === type) {
+    closeSidePanel()
+  } else {
+    openSidePanel(type)
   }
-  activeSidePanelType.value = activeSidePanelType.value === type ? null : type
 }
 
-function openLogTaskRun(taskRunId: string): void {
-  const logDisplayPanel = enabledGeneralSidePanels.value.find(
-    (panel) => panel.type === 'logDisplay',
-  )
+function toggleThresholdsSidePanel(): void {
+  isThresholdsOpen.value = !isThresholdsOpen.value
+  if (isThresholdsOpen.value) closeSidePanel()
+}
 
-  if (!logDisplayPanel) return
-
-  selectedLogTaskRunId.value = taskRunId
-  currentGeneralSidePanel.value = logDisplayPanel
-  activeSidePanelType.value = 'logDisplay'
+function openLogTaskRunSidePanel(taskRunId: string): void {
+  pushSidePanel('logDisplay', { taskRunId })
 }
 </script>

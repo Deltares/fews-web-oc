@@ -6,8 +6,18 @@
       aria-label="Side panel"
     >
       <v-toolbar density="compact">
+        <v-btn
+          v-if="canGoBack"
+          @click="emit('back')"
+          icon
+          size="small"
+          class="ms-1"
+          aria-label="Back"
+        >
+          <v-icon size="small">mdi-arrow-left</v-icon>
+        </v-btn>
         <div id="sidepanel-prepend-teleport-target" />
-        <span class="ps-4 w-100">
+        <span class="w-100" :class="canGoBack ? 'ps-2' : 'ps-4'">
           {{ title }}
         </span>
         <template #append>
@@ -28,11 +38,13 @@ import { useDisplay } from 'vuetify'
 
 interface Props {
   title: string
+  canGoBack?: boolean
 }
 defineProps<Props>()
 
 interface Emits {
   close: []
+  back: []
 }
 const emit = defineEmits<Emits>()
 
