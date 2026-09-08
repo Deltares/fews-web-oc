@@ -6,7 +6,6 @@
         :key="sidePanel.type"
         :is="sidePanel.button"
         :active="rootPanelType === sidePanel.type"
-        size="small"
         @click="toggleSidePanel(sidePanel.type)"
       />
     </template>

@@ -14,7 +14,7 @@
           aria-label="Back"
           icon="mdi-arrow-left"
         />
-        <div id="sidepanel-prepend-teleport-target" />
+        <div id="sidepanel-prepend-teleport-target"></div>
         <span class="w-100" :class="canGoBack ? 'ps-2' : 'ps-4'">
           {{ title }}
         </span>
