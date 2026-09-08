@@ -76,7 +76,7 @@ function formatDurationTitle(duration: DurationLikeObject | null): string {
   // Without 1's
   const human = Duration.fromObject(duration, { locale: locale.value })
     .toHuman()
-    .replace(/1 /g, '')
+    .replace(/\b1 /g, '')
   return t('periodFilter.last', { duration: human })
 }
 
