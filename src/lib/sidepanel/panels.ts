@@ -12,12 +12,15 @@ import ShareSidePanel from '@/components/sidepanel/ShareSidePanel.vue'
 import TaskOverviewSidePanel from '@/components/sidepanel/TaskOverviewSidePanel.vue'
 import ThresholdsSidePanel from '@/components/sidepanel/ThresholdsSidePanel.vue'
 
-// FIXME: Remove 'share' and 'thresholds' once SidePanel configuration is
-// implemented for them.
-export type SidePanelType = Exclude<
-  keyof SidePanelConfig | 'share' | 'thresholds',
-  'exportStatus'
->
+export type SidePanelType =
+  | 'taskOverview'
+  | 'nonCurrentData'
+  | 'importStatus'
+  | 'runTask'
+  | 'documentFile'
+  | 'logDisplay'
+  | 'share'
+  | 'thresholds'
 
 export interface SidePanel {
   type: SidePanelType
@@ -120,7 +123,7 @@ export function getEnabledSidePanels(
   config: SidePanelConfig | undefined,
   overrides: Partial<Record<SidePanelType, boolean>> = {},
 ): SidePanel[] {
-  // FIXME: For now we always enable share, should be removed once SidePanel
+  // NOTE: For now we always enable share, should be removed once SidePanel
   // configuration is implemented for it.
   const defaultOverrides: Partial<Record<SidePanelType, boolean>> = {
     share: true,

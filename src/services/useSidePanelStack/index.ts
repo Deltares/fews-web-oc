@@ -57,7 +57,7 @@ export function useSidePanelStack(
 
     if (activePanel.value?.type === type) {
       // Do not stack the same panel twice; update its props instead.
-      stack.value.splice(stack.value.length - 1, 1, { type, props })
+      stack.value.splice(-1, 1, { type, props })
       return
     }
 
