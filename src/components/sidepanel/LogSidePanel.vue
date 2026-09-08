@@ -1,6 +1,6 @@
 <template>
   <SidePanelContent
-    :title="t('sidePanel.logDisplay')"
+    :title="logDisplay?.name ?? t('sidePanel.logDisplay')"
     @close="emit('close')"
     class="h-100"
   >
@@ -21,14 +21,13 @@ import LogSidePanelComponent from '@/components/logdisplay/LogSidePanelComponent
 import { type TopologyNode } from '@deltares/fews-pi-requests'
 
 import SidePanelContent from './SidePanelContent.vue'
-import { configManager } from '@/services/application-config'
 import { useLogDisplay } from '@/services/useLogDisplay'
 import { useNoteGroup } from '@/services/useNoteGroup/index.ts'
 
 interface Props {
   topologyNode?: TopologyNode
   settings: {
-    logDisplayId: string
+    logDisplayId: string | undefined
     taskRunId?: string
   }
 }
@@ -42,11 +41,8 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-
-const { logDisplay } = useLogDisplay(baseUrl, () => props.settings.logDisplayId)
+const { logDisplay } = useLogDisplay(() => props.settings.logDisplayId)
 const { noteGroup } = useNoteGroup(
-  baseUrl,
   () => logDisplay.value?.manualLog?.noteGroupId,
 )
 </script>
