@@ -42,23 +42,28 @@
     </v-menu>
   </BtnGroup>
 
-  <template v-for="sidePanel in enabledGeneralSidePanels" :key="sidePanel.type">
+  <SidePanelContent
+    v-if="
+      currentGeneralSidePanel &&
+      activeSidePanelType === currentGeneralSidePanel.type
+    "
+    :title="getTitleForSidePanel(currentGeneralSidePanel.type)"
+    class="h-100"
+    @close="closeSidePanel()"
+  >
     <component
-      v-if="activeSidePanelType === sidePanel.type"
-      :is="sidePanel.component"
+      :is="currentGeneralSidePanel.component"
       :topology-node="topologyNode"
-      :title="getTitleForSidePanel(sidePanel.type)"
-      v-bind="propsForSidePanel(sidePanel.type)"
-      @close="closeSidePanel()"
       @open-log-task-run="openLogTaskRun"
+      v-bind="propsForSidePanel(currentGeneralSidePanel.type)"
     />
-  </template>
+  </SidePanelContent>
 
   <ThresholdsSidePanel
     v-if="activeSidePanelType === 'thresholds'"
     :topologyNode="topologyNode"
     :locationIds="locationIds"
-    @close="toggleActiveSidePanel('thresholds')"
+    @close="closeSidePanel()"
     @navigate="emit('navigate', $event)"
   />
 </template>
@@ -75,6 +80,7 @@ import { useConfigStore } from '@/stores/config'
 import BtnGroup from '@/components/general/BtnGroup.vue'
 import ThresholdsButton from '@/components/thresholds/ThresholdsButton.vue'
 
+import SidePanelContent from '@/components/sidepanel/SidePanelContent.vue'
 import ImportStatusSidePanel from '@/components/sidepanel/ImportStatusSidePanel.vue'
 import LogSidePanel from '@/components/sidepanel/LogSidePanel.vue'
 import MoreInfoSidePanel from '@/components/sidepanel/MoreInfoSidePanel.vue'

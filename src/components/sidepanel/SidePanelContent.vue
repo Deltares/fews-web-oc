@@ -6,9 +6,7 @@
       aria-label="Side panel"
     >
       <v-toolbar density="compact">
-        <template #prepend>
-          <slot name="prepend"></slot>
-        </template>
+        <div id="sidepanel-prepend-teleport-target" />
         <span class="ps-4 w-100">
           {{ title }}
         </span>
