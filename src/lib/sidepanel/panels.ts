@@ -37,6 +37,33 @@ export interface SidePanel {
   persistent?: boolean
 }
 
+/**
+ * Props that can be passed to a side panel when it is opened, per panel type.
+ */
+export interface SidePanelProps {
+  taskOverview: Record<string, never>
+  importStatus: Record<string, never>
+  nonCurrentData: Record<string, never>
+  runTask: Record<string, never>
+  logDisplay: { taskRunId?: string }
+  documentFile: Record<string, never>
+  share: Record<string, never>
+  thresholds: { locationIds?: string }
+}
+
+/**
+ * A request to open a side panel, optionally with props for that panel.
+ *
+ * This allows a side panel to open any other side panel, without having to know
+ * how side panels are managed.
+ */
+export type SidePanelRequest = {
+  [T in SidePanelType]: {
+    type: T
+    props?: SidePanelProps[T]
+  }
+}[SidePanelType]
+
 export const sidePanels: SidePanel[] = [
   {
     type: 'taskOverview',

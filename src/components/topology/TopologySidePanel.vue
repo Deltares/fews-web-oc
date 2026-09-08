@@ -64,7 +64,7 @@
         :is="getComponentForSidePanel(panel.type)"
         :topology-node="topologyNode"
         v-bind="propsForSidePanel(panel)"
-        @open-log-task-run="openLogSidePanelForTaskRun"
+        @open-side-panel="pushRequestedPanel"
         @navigate="emit('navigate', $event)"
       />
     </div>
@@ -128,7 +128,7 @@ const {
   rootPanelType,
   canGoBack,
   open: openPanel,
-  push: pushPanel,
+  pushRequest: pushRequestedPanel,
   pop: popPanel,
   close: closePanels,
 } = useSidePanelStack(() =>
@@ -189,9 +189,5 @@ function toggleSidePanel(type: SidePanelType): void {
   } else {
     openSidePanel(type)
   }
-}
-
-function openLogSidePanelForTaskRun(taskRunId: string): void {
-  pushPanel('logDisplay', { taskRunId })
 }
 </script>

@@ -24,7 +24,7 @@
           <ImportStatusSummary
             :item="item"
             v-model:expanded="expandedItems[item.dataFeed]"
-            @open-log-task-run="emit('openLogTaskRun', $event)"
+            @open-side-panel="emit('openSidePanel', $event)"
           />
         </div>
       </template>
@@ -41,10 +41,11 @@ import type {
   StatusSource,
 } from './statusTypes'
 import ImportStatusSummary from './ImportStatusSummary.vue'
+import type { SidePanelRequest } from '@/lib/sidepanel'
 import { useImportExportStatus } from './useImportExportStatus'
 
 interface Emits {
-  openLogTaskRun: [taskRunId: string]
+  openSidePanel: [request: SidePanelRequest]
 }
 const emit = defineEmits<Emits>()
 

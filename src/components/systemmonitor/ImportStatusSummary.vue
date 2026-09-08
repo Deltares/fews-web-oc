@@ -181,6 +181,7 @@ import type { ImportExportStatusItem } from './statusTypes'
 import { toHumanReadableDateTime } from '@/lib/date'
 import { useDark } from '@/services/useDark'
 import { useConfigStore } from '@/stores/config'
+import type { SidePanelRequest } from '@/lib/sidepanel'
 
 interface Props {
   item: ImportExportStatusItem
@@ -188,7 +189,7 @@ interface Props {
 const { item } = defineProps<Props>()
 
 interface Emits {
-  openLogTaskRun: [taskRunId: string]
+  openSidePanel: [request: SidePanelRequest]
 }
 const emit = defineEmits<Emits>()
 
@@ -278,7 +279,10 @@ function onTaskRunIdClick(taskRunId?: string): void {
   }
 
   showLogsNotFoundTooltip.value = false
-  emit('openLogTaskRun', normalizedTaskRunId)
+  emit('openSidePanel', {
+    type: 'logDisplay',
+    props: { taskRunId: normalizedTaskRunId },
+  })
 }
 </script>
 
