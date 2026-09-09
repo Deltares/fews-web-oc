@@ -435,15 +435,19 @@ function formatSpeed(speed: number) {
   return speed === defaultSpeed ? 'Normal' : `${speed}x`
 }
 
+watch(
+  () => props.autoPlay,
+  () => {
+    if (props.autoPlay) startPlay()
+  },
+  { immediate: true },
+)
+
 onMounted(() => {
   sliderContainer.value?.addEventListener('pointerdown', onPointerDown)
   window.addEventListener('pointermove', onPointerMove)
   window.addEventListener('pointerup', onPointerUp)
   window.addEventListener('pointercancel', onPointerUp)
-
-  if (props.autoPlay) {
-    startPlay()
-  }
 })
 
 onUnmounted(() => {
