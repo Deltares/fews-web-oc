@@ -5,19 +5,29 @@
     width="800"
     persistent
     scrollable
-    @update:model-value="(value: boolean) => !value && store.decline()"
+    @update:model-value="(value) => !value && store.decline()"
   >
     <v-card :loading="isLoading">
       <v-card-text class="py-0">
         <pre>{{ txt }}</pre>
         <v-alert v-if="error" type="error" class="mt-2">{{ error }}</v-alert>
       </v-card-text>
-      <v-card-actions class="justify-end">
-        <v-btn icon="mdi-download" :href="url" download="DISCLAIMER.txt" />
-        <v-btn @click="store.decline()">{{ t('common.cancel') }}</v-btn>
-        <v-btn variant="flat" color="primary" @click="store.accept()">
-          {{ t('download.disclaimer.accept') }}
-        </v-btn>
+      <v-card-actions>
+        <v-btn
+          v-if="!isLoading && !error"
+          prepend-icon="mdi-download"
+          :href="url"
+          download="DISCLAIMER.txt"
+          :text="t('download.disclaimer.download')"
+        />
+        <v-spacer />
+        <v-btn @click="store.decline()" :text="t('common.cancel')" />
+        <v-btn
+          variant="flat"
+          color="primary"
+          @click="store.accept()"
+          :text="t('download.disclaimer.accept')"
+        />
       </v-card-actions>
     </v-card>
   </v-dialog>

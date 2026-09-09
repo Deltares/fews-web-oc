@@ -68,7 +68,8 @@
     "selectBoundingBox": "Select bounding box",
     "startTime": "Start Time",
     "disclaimer": {
-      "accept": "Accept and download"
+      "accept": "Accept and download",
+      "download": "Download disclaimer"
     }
   },
   "search": {

@@ -68,7 +68,8 @@
     "selectBoundingBox": "Begrenzungsrahmen auswählen",
     "startTime": "Startzeit",
     "disclaimer": {
-      "accept": "Akzeptieren und herunterladen"
+      "accept": "Akzeptieren und herunterladen",
+      "download": "Download-Haftungsausschluss"
     }
   },
   "search": {
