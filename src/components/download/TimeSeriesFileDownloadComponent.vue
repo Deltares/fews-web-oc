@@ -240,7 +240,8 @@ async function downloadFileSafe(
   try {
     await downloadFileAttachment(url, fileName, documentFormat, headers)
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error'
+    const message =
+      error instanceof Error ? error.message : t('download.errors.failed')
     alertStore.addAlert({
       type: 'error',
       message,

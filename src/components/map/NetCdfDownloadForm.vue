@@ -124,15 +124,6 @@
           hide-details
           class="mb-3"
         />
-
-        <v-alert
-          v-if="errorMessage"
-          type="error"
-          density="compact"
-          class="mb-3"
-        >
-          {{ errorMessage }}
-        </v-alert>
       </v-card-text>
 
       <v-card-actions>
@@ -166,6 +157,7 @@ import DrawBoundingBoxControl from './DrawBoundingBoxControl.vue'
 import type { BoundingBox } from '@/services/useBoundingBox'
 import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
 import { useDownloadDisclaimerStore } from '@/stores/downloadDisclaimer'
+import { useAlertsStore } from '@/stores/alerts'
 
 interface Props {
   layerName?: string
@@ -182,8 +174,8 @@ const fileFormat = ref<'netcdf3' | 'netcdf4'>('netcdf4')
 const startTimeInput = ref('')
 const endTimeInput = ref('')
 const isDownloading = ref(false)
-const errorMessage = ref('')
 const downloadDisclaimerStore = useDownloadDisclaimerStore()
+const alertStore = useAlertsStore()
 
 const downloadOptions = computed(() => [
   { title: t('download.fullGrid'), value: 'fullGrid' },
@@ -272,7 +264,6 @@ async function download() {
   const accepted = await downloadDisclaimerStore.requestAcceptance()
   if (!accepted) return
 
-  errorMessage.value = ''
   isDownloading.value = true
 
   try {
@@ -317,8 +308,12 @@ async function download() {
       headers,
     )
   } catch (error) {
-    console.error('NetCDF download error:', error)
-    errorMessage.value = t('download.errors.failed')
+    const message =
+      error instanceof Error ? error.message : t('download.errors.failed')
+    alertStore.addAlert({
+      type: 'error',
+      message,
+    })
   } finally {
     isDownloading.value = false
   }
