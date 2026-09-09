@@ -1,9 +1,5 @@
 <template>
-  <v-card
-    v-if="store.isConfigured"
-    variant="tonal"
-    class="d-flex align-center"
-  >
+  <v-card v-if="store.isConfigured" variant="tonal" class="d-flex align-center">
     <v-checkbox
       v-model="store.hasAccepted"
       :label="t('download.disclaimer.acceptText')"
