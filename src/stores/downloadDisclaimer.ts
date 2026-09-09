@@ -5,42 +5,45 @@ import { getResourcesStaticUrl } from '@/lib/fews-config'
 export const useDownloadDisclaimerStore = defineStore(
   'downloadDisclaimer',
   () => {
-    const url = getResourcesStaticUrl('download-disclaimer.txt')
+    const url = getResourcesStaticUrl('data-usage-agreement.txt')
 
     const isVisible = ref(false)
     const hasAccepted = ref(false)
+    const isConfigured = ref<boolean | null>(null)
 
     const text = ref<string>()
     const error = ref<string>()
     const isLoading = ref(false)
 
     let resolveRequest: ((accepted: boolean) => void) | null = null
-    let fetchDisclaimerPromise: Promise<boolean> | null = null
+    let fetchDisclaimerPromise: Promise<void> | null = null
 
     /**
-     * Fetches the download disclaimer text, if configured. Resolves to true
-     * when a disclaimer is available (and populates `text`), or false when
-     * no disclaimer is configured or it could not be loaded (and populates
-     * `error`). The result is cached for the lifetime of the store, so the
-     * resource is only requested once per session.
+     * Fetches the download disclaimer text, if configured. Populates
+     * `isConfigured` and, when available, `text` (or `error` on failure).
+     * The result is cached for the lifetime of the store, so the resource is
+     * only requested once per session.
      */
-    function fetchDisclaimer(): Promise<boolean> {
+    function fetchDisclaimer(): Promise<void> {
       if (!fetchDisclaimerPromise) {
-        const load = async (): Promise<boolean> => {
+        const load = async (): Promise<void> => {
           isLoading.value = true
           try {
             const response = await fetch(url)
-            if (response.status === 404) return false
+            if (response.status === 404) {
+              isConfigured.value = false
+              return
+            }
+            isConfigured.value = true
             if (!response.ok) {
               error.value = `Failed to load disclaimer: ${response.status} ${response.statusText}`
-              return true
+              return
             }
             text.value = await response.text()
-            return true
           } catch (e) {
             console.error('Error fetching disclaimer:', e)
+            isConfigured.value = true
             error.value = 'Failed to load disclaimer.'
-            return true
           } finally {
             isLoading.value = false
           }
@@ -51,22 +54,23 @@ export const useDownloadDisclaimerStore = defineStore(
     }
 
     /**
-     * Asks the user to accept the download disclaimer.
-     *
-     * The disclaimer only has to be accepted once per session. Resolves to true
-     * when the user accepts, when it was already accepted this session, or when
-     * no disclaimer is configured. Resolves to false when the user declines, in
-     * which case the download should be aborted.
+     * Ensures that a configured disclaimer has been shown to the user at
+     * least once before a download dialog is opened. Does nothing when no
+     * disclaimer is configured, or when the user already accepted it in a
+     * previous session. Does not throw or block the caller when the user
+     * declines; callers should inspect `hasAccepted` afterwards if needed.
      */
-    async function requestAcceptance(): Promise<boolean> {
-      if (hasAccepted.value) return true
+    async function ensureShown(): Promise<void> {
+      await fetchDisclaimer()
+      if (!isConfigured.value || hasAccepted.value) return
+      await showDisclaimer()
+    }
 
-      const shouldShowDialog = await fetchDisclaimer()
-      if (!shouldShowDialog) {
-        hasAccepted.value = true
-        return true
-      }
-
+    /**
+     * Shows the disclaimer dialog and resolves once the user accepts or
+     * declines it.
+     */
+    function showDisclaimer(): Promise<boolean> {
       isVisible.value = true
 
       return new Promise<boolean>((resolve) => {
@@ -82,6 +86,7 @@ export const useDownloadDisclaimerStore = defineStore(
     }
 
     function decline(): void {
+      hasAccepted.value = false
       resolve(false)
     }
 
@@ -94,13 +99,22 @@ export const useDownloadDisclaimerStore = defineStore(
     return {
       isVisible,
       hasAccepted,
+      isConfigured,
       url,
       text,
       error,
       isLoading,
-      requestAcceptance,
+      ensureShown,
+      showDisclaimer,
       accept,
       decline,
     }
+  },
+  {
+    persist: {
+      key: 'weboc-download-disclaimer-v1.0.0',
+      storage: window.localStorage,
+      pick: ['hasAccepted'],
+    },
   },
 )

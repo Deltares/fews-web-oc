@@ -126,20 +126,22 @@
         />
       </v-card-text>
 
-      <v-card-actions>
-        <v-spacer />
-        <v-btn variant="text" @click="dialogOpen = false">{{
-          t('common.cancel')
-        }}</v-btn>
-        <v-btn
-          color="primary"
-          variant="flat"
-          :loading="isDownloading"
-          :disabled="!canDownload"
-          @click="download"
-        >
-          {{ t('download.download') }}
-        </v-btn>
+      <v-card-actions class="justify-space-between flex-wrap">
+        <DownloadDisclaimerAcceptance />
+        <div class="d-flex w-100 justify-end ga-2">
+          <v-btn variant="text" @click="dialogOpen = false">{{
+            t('common.cancel')
+          }}</v-btn>
+          <v-btn
+            color="primary"
+            variant="flat"
+            :loading="isDownloading"
+            :disabled="!canDownload"
+            @click="download"
+          >
+            {{ t('download.download') }}
+          </v-btn>
+        </div>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -158,6 +160,7 @@ import type { BoundingBox } from '@/services/useBoundingBox'
 import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
 import { useDownloadDisclaimerStore } from '@/stores/downloadDisclaimer'
 import { useAlertsStore } from '@/stores/alerts'
+import DownloadDisclaimerAcceptance from '@/components/download/DownloadDisclaimerAcceptance.vue'
 
 interface Props {
   layerName?: string
@@ -241,7 +244,9 @@ const canDownload = computed(() => {
     !!props.layerName &&
     !!startTimeInput.value &&
     !!endTimeInput.value &&
-    !isDownloading.value
+    !isDownloading.value &&
+    (!downloadDisclaimerStore.isConfigured ||
+      downloadDisclaimerStore.hasAccepted)
 
   // For point cloud, also require a bounding box
   if (downloadType.value === 'pointCloud') {
@@ -251,6 +256,15 @@ const canDownload = computed(() => {
   return basicRequirements
 })
 
+watch(
+  dialogOpen,
+  (newValue) => {
+    if (!newValue) return
+    downloadDisclaimerStore.ensureShown()
+  },
+  { immediate: true },
+)
+
 function toggleDrawingMode() {
   if (bbox.value && !isDrawingBbox.value) {
     bbox.value = null
@@ -259,10 +273,7 @@ function toggleDrawingMode() {
 }
 
 async function download() {
-  if (!props.layerName) return
-
-  const accepted = await downloadDisclaimerStore.requestAcceptance()
-  if (!accepted) return
+  if (!props.layerName || !canDownload.value) return
 
   isDownloading.value = true
 

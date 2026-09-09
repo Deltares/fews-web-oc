@@ -34,15 +34,19 @@
           </template>
         </v-text-field>
       </v-card-text>
-      <v-card-actions class="justify-end">
-        <v-btn
-          variant="flat"
-          color="primary"
-          @click="() => downloadFile(fileType.format)"
-        >
-          Download
-        </v-btn>
-        <v-btn @click="() => cancelDialog()">{{ t('common.cancel') }}</v-btn>
+      <v-card-actions class="justify-space-between flex-wrap">
+        <DownloadDisclaimerAcceptance />
+        <div class="d-flex w-100 justify-end ga-2">
+          <v-btn @click="() => cancelDialog()">{{ t('common.cancel') }}</v-btn>
+          <v-btn
+            variant="flat"
+            color="primary"
+            :disabled="!canDownload"
+            @click="() => downloadFile(fileType.format)"
+          >
+            Download
+          </v-btn>
+        </div>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -73,6 +77,7 @@ import { convertFewsPiDateTimeToJsDate, getFilenameTimestamp } from '@/lib/date'
 import { useI18n } from 'vue-i18n'
 import { getDownloadFileUrl } from '@/lib/download/download'
 import { useDownloadDisclaimerStore } from '@/stores/downloadDisclaimer'
+import DownloadDisclaimerAcceptance from '@/components/download/DownloadDisclaimerAcceptance.vue'
 
 const { t } = useI18n()
 interface Props {
@@ -159,12 +164,19 @@ const cancelDialog = () => {
 }
 const fileNameInput = ref('timeseries')
 
+const canDownload = computed(
+  () =>
+    !downloadDisclaimerStore.isConfigured ||
+    downloadDisclaimerStore.hasAccepted,
+)
+
 watch(
   () => showDialog.value,
   (newValue) => {
     if (!newValue) return
     const timestamp = getFilenameTimestamp()
     fileNameInput.value = `timeseries_${timestamp}`
+    downloadDisclaimerStore.ensureShown()
   },
 )
 
@@ -220,8 +232,7 @@ function getTopologyActionsFilter(): TimeSeriesTopologyActionsFilter {
 }
 
 async function downloadFile(downloadFormat: DocumentFormat) {
-  const accepted = await downloadDisclaimerStore.requestAcceptance()
-  if (!accepted) return
+  if (!canDownload.value) return
   const viewPeriod = determineViewPeriod()
   const filter = props.filter ?? getTopologyActionsFilter()
 

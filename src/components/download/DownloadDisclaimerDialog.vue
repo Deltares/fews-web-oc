@@ -19,7 +19,7 @@
           v-if="!store.isLoading && !store.error"
           prepend-icon="mdi-download"
           :href="store.url"
-          download="DISCLAIMER.txt"
+          download="DATA-USAGE-AGREEMENT.txt"
           :text="t('download.disclaimer.download')"
         />
         <v-spacer />

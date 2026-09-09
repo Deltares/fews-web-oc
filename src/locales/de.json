@@ -68,8 +68,10 @@
     "selectBoundingBox": "Begrenzungsrahmen auswählen",
     "startTime": "Startzeit",
     "disclaimer": {
-      "accept": "Akzeptieren und herunterladen",
-      "download": "Download-Haftungsausschluss"
+      "accept": "Datennutzungsvereinbarung akzeptieren",
+      "acceptCheckbox": "Ich habe die Datennutzungsvereinbarung gelesen und akzeptiere sie",
+      "download": "Datennutzungsvereinbarung",
+      "viewDisclaimer": "Datennutzungsvereinbarung anzeigen"
     }
   },
   "search": {
