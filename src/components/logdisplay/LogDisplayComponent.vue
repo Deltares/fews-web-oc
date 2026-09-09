@@ -157,8 +157,6 @@ import {
   type LogLevel,
   logLevels,
   filterLog,
-  getSystemFilters,
-  getManualFilters,
   logTypes,
   toTitleCase,
   LogMessage,
@@ -179,6 +177,7 @@ import NewLogMessage from './NewLogMessage.vue'
 import { useTaskRuns } from '@/services/useTaskRuns'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { useLogActions } from './useLogActions'
+import { useLogFilters } from '@/services/useLogFilters'
 
 interface Props {
   logDisplay: LogsDisplay
@@ -226,42 +225,11 @@ const baseFilters = computed(() => {
   }
 })
 
-const manualFilters = computed(() => {
-  const manualEventCodeId = props.noteGroup?.note.eventCodeId
-  return manualEventCodeId
-    ? getManualFilters(baseFilters.value, manualEventCodeId)
-    : []
-})
-
-const systemFilters = computed(() => {
-  const systemLogSettings = props.logDisplay.systemLog
-  return systemLogSettings
-    ? getSystemFilters(baseFilters.value, systemLogSettings)
-    : []
-})
-
-// To keep requests in sync between manual and system logs
-const filters = computed(() => {
-  const hasManual = props.logDisplay.manualLog
-  const hasSystem = props.logDisplay.systemLog
-  if (
-    (hasManual && !manualFilters.value.length) ||
-    (hasSystem && !systemFilters.value.length)
-  ) {
-    return {
-      manual: [],
-      system: [],
-    }
-  }
-
-  return {
-    manual: manualFilters.value,
-    system: systemFilters.value,
-  }
-})
-
-const requestDebounce = 500
-const debouncedFilters = refDebounced(filters, requestDebounce)
+const { manualFilters, systemFilters, debouncedFilters } = useLogFilters(
+  baseFilters,
+  () => props.noteGroup,
+  () => props.logDisplay,
+)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -284,7 +252,7 @@ const customFilter = (log: LogMessage) =>
 
 const { logMessages, isLoading, groupedByTaskRunId } = useLogDisplayLogs(
   baseUrl,
-  () => debouncedFilters.value,
+  debouncedFilters,
   customFilter,
   false,
 )
