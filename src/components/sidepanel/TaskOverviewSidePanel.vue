@@ -1,69 +1,67 @@
 <template>
-  <SidePanelContent :title="title" @close="emit('close')">
-    <div class="task-runs-panel h-100">
-      <div class="d-flex pt-3 pb-2 align-center">
-        <WorkflowFilterControl v-model="selectedWorkflowIds" />
-        <TaskStatusFilterControl v-model="selectedTaskStatuses" />
-        <CurrentUserFilterControl v-model="showCurrentUserOnly" />
-        <v-spacer />
-        <PeriodFilterControl v-model="period" />
-      </div>
-      <div v-if="hasLoadedAtLeastOnce" class="task-content">
-        <v-list-item v-if="sortedTasks.length === 0">
-          {{ t('workflow.noTasksAvailable') }}
-        </v-list-item>
-
-        <!-- Important to have item-height as it greatly improves performance -->
-        <v-virtual-scroll
-          v-else
-          class="overflow-y-auto h-100"
-          :items="groupedTasks"
-          :item-height="62"
-        >
-          <template #default="{ item: task }">
-            <v-btn
-              v-if="!isTaskRun(task)"
-              class="mx-2 px-1"
-              variant="plain"
-              :append-icon="getTaskSectionIcon(task.label)"
-              @click="toggleTaskSection(task.label)"
-            >
-              {{ task.label }}
-            </v-btn>
-            <div v-else class="my-1 mx-2">
-              <TaskRunSummary
-                :task="task"
-                :key="task.taskRunId"
-                :is-current-users-task="user.isCurrentUser(task.userId)"
-                :is-followed="taskRunMonitor.isFollowed(task.taskRunId)"
-                v-model:expanded="expandedItems[task.taskRunId]"
-                @follow="taskRunMonitor.follow"
-                @unfollow="taskRunMonitor.unfollow"
-              />
-            </div>
-          </template>
-        </v-virtual-scroll>
-      </div>
-      <v-divider />
-      <v-footer>
-        <div class="refresh-container ms-3">
-          Last updated: {{ lastUpdatedString }}
-        </div>
-        <v-spacer />
-        <v-btn
-          density="compact"
-          variant="plain"
-          icon="mdi-refresh"
-          :loading="isLoading"
-          @click="refreshTaskRuns()"
-        >
-          <template #loader>
-            <v-progress-circular size="20" indeterminate />
-          </template>
-        </v-btn>
-      </v-footer>
+  <div class="task-runs-panel h-100">
+    <div class="d-flex pt-3 pb-2 align-center">
+      <WorkflowFilterControl v-model="selectedWorkflowIds" />
+      <TaskStatusFilterControl v-model="selectedTaskStatuses" />
+      <CurrentUserFilterControl v-model="showCurrentUserOnly" />
+      <v-spacer />
+      <PeriodFilterControl v-model="period" />
     </div>
-  </SidePanelContent>
+    <div v-if="hasLoadedAtLeastOnce" class="task-content">
+      <v-list-item v-if="sortedTasks.length === 0">
+        {{ t('workflow.noTasksAvailable') }}
+      </v-list-item>
+
+      <!-- Important to have item-height as it greatly improves performance -->
+      <v-virtual-scroll
+        v-else
+        class="overflow-y-auto h-100"
+        :items="groupedTasks"
+        :item-height="62"
+      >
+        <template #default="{ item: task }">
+          <v-btn
+            v-if="!isTaskRun(task)"
+            class="mx-2 px-1"
+            variant="plain"
+            :append-icon="getTaskSectionIcon(task.label)"
+            @click="toggleTaskSection(task.label)"
+          >
+            {{ task.label }}
+          </v-btn>
+          <div v-else class="my-1 mx-2">
+            <TaskRunSummary
+              :task="task"
+              :key="task.taskRunId"
+              :is-current-users-task="user.isCurrentUser(task.userId)"
+              :is-followed="taskRunMonitor.isFollowed(task.taskRunId)"
+              v-model:expanded="expandedItems[task.taskRunId]"
+              @follow="taskRunMonitor.follow"
+              @unfollow="taskRunMonitor.unfollow"
+            />
+          </div>
+        </template>
+      </v-virtual-scroll>
+    </div>
+    <v-divider />
+    <v-footer>
+      <div class="refresh-container ms-3">
+        Last updated: {{ lastUpdatedString }}
+      </div>
+      <v-spacer />
+      <v-btn
+        density="compact"
+        variant="plain"
+        icon="mdi-refresh"
+        :loading="isLoading"
+        @click="refreshTaskRuns()"
+      >
+        <template #loader>
+          <v-progress-circular size="20" indeterminate />
+        </template>
+      </v-btn>
+    </v-footer>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -86,20 +84,12 @@ import TaskRunSummary from '@/components/tasks/TaskRunSummary.vue'
 import TaskStatusFilterControl from '@/components/tasks/TaskStatusFilterControl.vue'
 import WorkflowFilterControl from '@/components/tasks/WorkflowFilterControl.vue'
 
-import SidePanelContent from './SidePanelContent.vue'
-
 const { t } = useI18n()
 
 interface Props {
   topologyNode?: TopologyNode
-  title: string
 }
 const props = defineProps<Props>()
-
-interface Emits {
-  close: []
-}
-const emit = defineEmits<Emits>()
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const taskRunMonitor = useTaskRunMonitorStore()

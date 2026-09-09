@@ -1,22 +1,12 @@
 <template>
-  <SidePanelContent :title="title" @close="emit('close')">
-    <NonCurrentDataPanel :topologyNode="topologyNode" />
-  </SidePanelContent>
+  <NonCurrentDataPanel :topologyNode="topologyNode" />
 </template>
 <script setup lang="ts">
-import type { TopologyNode } from '@deltares/fews-pi-requests'
-
-import SidePanelContent from './SidePanelContent.vue'
 import NonCurrentDataPanel from '@/components/compare/NonCurrentDataPanel.vue'
+import type { TopologyNode } from '@deltares/fews-pi-requests'
 
 interface Props {
   topologyNode?: TopologyNode
-  title: string
 }
 defineProps<Props>()
-
-interface Emits {
-  close: []
-}
-const emit = defineEmits<Emits>()
 </script>

@@ -36,7 +36,7 @@ function configureLogPanel(enabled: boolean) {
 
 export const LogsEnabled = defineComponent(() => {
   const expanded = ref(true)
-  const emittedTaskRunId = ref('')
+  const emittedTaskRunId = ref<string>()
 
   configureLogPanel(true)
 
@@ -48,8 +48,10 @@ export const LogsEnabled = defineComponent(() => {
         'onUpdate:expanded': (value: boolean) => {
           expanded.value = value
         },
-        onOpenLogTaskRun: (taskRunId: string) => {
-          emittedTaskRunId.value = taskRunId
+        onOpenSidePanel: (request) => {
+          if (request.type === 'logDisplay') {
+            emittedTaskRunId.value = request.props?.taskRunId
+          }
         },
       }),
       h('div', { 'data-testid': 'emitted-task-run' }, emittedTaskRunId.value),
@@ -58,7 +60,7 @@ export const LogsEnabled = defineComponent(() => {
 
 export const LogsDisabled = defineComponent(() => {
   const expanded = ref(true)
-  const emittedTaskRunId = ref('')
+  const emittedTaskRunId = ref<string>()
 
   configureLogPanel(false)
 
@@ -70,8 +72,10 @@ export const LogsDisabled = defineComponent(() => {
         'onUpdate:expanded': (value: boolean) => {
           expanded.value = value
         },
-        onOpenLogTaskRun: (taskRunId: string) => {
-          emittedTaskRunId.value = taskRunId
+        onOpenSidePanel: (request) => {
+          if (request.type === 'logDisplay') {
+            emittedTaskRunId.value = request.props?.taskRunId
+          }
         },
       }),
       h('div', { 'data-testid': 'emitted-task-run' }, emittedTaskRunId.value),
