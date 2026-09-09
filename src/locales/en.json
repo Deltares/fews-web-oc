@@ -68,8 +68,8 @@
     "selectBoundingBox": "Select bounding box",
     "startTime": "Start Time",
     "disclaimer": {
-      "accept": "Accept data usage agreement",
-      "acceptCheckbox": "I have read and accept the data usage agreement",
+      "accept": "Accept",
+      "acceptText": "I accept the data usage agreement",
       "download": "Data usage agreement",
       "viewDisclaimer": "View data usage agreement"
     }

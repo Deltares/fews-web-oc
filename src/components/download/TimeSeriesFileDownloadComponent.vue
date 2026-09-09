@@ -35,8 +35,10 @@
           </template>
         </v-text-field>
       </v-card-text>
-      <v-card-actions class="justify-space-between flex-wrap">
+      <v-card-item>
         <DownloadDisclaimerAcceptance />
+      </v-card-item>
+      <v-card-actions class="justify-space-between flex-wrap">
         <div class="d-flex w-100 justify-end ga-2">
           <v-btn @click="() => cancelDialog()">{{ t('common.cancel') }}</v-btn>
           <v-btn

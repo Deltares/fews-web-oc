@@ -1,19 +1,26 @@
 <template>
-  <div v-if="store.isConfigured" class="d-flex align-center">
+  <v-card
+    v-if="store.isConfigured"
+    variant="tonal"
+    class="d-flex align-center"
+  >
     <v-checkbox
       v-model="store.hasAccepted"
-      :label="t('download.disclaimer.acceptCheckbox')"
+      :label="t('download.disclaimer.acceptText')"
       hide-details
-      density="comfortable"
+      density="compact"
+      class="flex-grow-1"
     />
+
     <v-btn
       icon="mdi-information-outline"
       variant="text"
       size="small"
       :aria-label="t('download.disclaimer.viewDisclaimer')"
+      :title="t('download.disclaimer.viewDisclaimer')"
       @click="store.showDisclaimer()"
     />
-  </div>
+  </v-card>
 </template>
 
 <script setup lang="ts">

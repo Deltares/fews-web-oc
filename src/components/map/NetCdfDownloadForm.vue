@@ -125,9 +125,10 @@
           class="mb-3"
         />
       </v-card-text>
-
-      <v-card-actions class="justify-space-between flex-wrap">
+      <v-card-item>
         <DownloadDisclaimerAcceptance />
+      </v-card-item>
+      <v-card-actions class="justify-space-between flex-wrap">
         <div class="d-flex w-100 justify-end ga-2">
           <v-btn variant="text" @click="dialogOpen = false">{{
             t('common.cancel')
