@@ -165,6 +165,7 @@ import { toMercator } from '@turf/projection'
 import DrawBoundingBoxControl from './DrawBoundingBoxControl.vue'
 import type { BoundingBox } from '@/services/useBoundingBox'
 import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
+import { useDownloadDisclaimerStore } from '@/stores/downloadDisclaimer'
 
 interface Props {
   layerName?: string
@@ -182,6 +183,7 @@ const startTimeInput = ref('')
 const endTimeInput = ref('')
 const isDownloading = ref(false)
 const errorMessage = ref('')
+const downloadDisclaimerStore = useDownloadDisclaimerStore()
 
 const downloadOptions = computed(() => [
   { title: t('download.fullGrid'), value: 'fullGrid' },
@@ -266,6 +268,9 @@ function toggleDrawingMode() {
 
 async function download() {
   if (!props.layerName) return
+
+  const accepted = await downloadDisclaimerStore.requestAcceptance()
+  if (!accepted) return
 
   errorMessage.value = ''
   isDownloading.value = true

@@ -72,6 +72,7 @@ import { convertFewsPiDateTimeToJsDate, getFilenameTimestamp } from '@/lib/date'
 
 import { useI18n } from 'vue-i18n'
 import { getDownloadFileUrl } from '@/lib/download/download'
+import { useDownloadDisclaimerStore } from '@/stores/downloadDisclaimer'
 
 const { t } = useI18n()
 interface Props {
@@ -95,6 +96,7 @@ const showDialog = defineModel<boolean>({
 })
 
 const store = useSystemTimeStore()
+const downloadDisclaimerStore = useDownloadDisclaimerStore()
 const viewPeriodFromStore = computed<UseTimeSeriesOptions>(() => {
   return {
     startTime: store.startTime,
@@ -218,6 +220,8 @@ function getTopologyActionsFilter(): TimeSeriesTopologyActionsFilter {
 }
 
 async function downloadFile(downloadFormat: DocumentFormat) {
+  const accepted = await downloadDisclaimerStore.requestAcceptance()
+  if (!accepted) return
   const viewPeriod = determineViewPeriod()
   const filter = props.filter ?? getTopologyActionsFilter()
 

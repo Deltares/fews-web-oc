@@ -42,6 +42,7 @@ import { getDownloadFileUrl } from '@/lib/download/download'
 import { configManager } from '@/services/application-config'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import { useAlertsStore } from '@/stores/alerts'
+import { useDownloadDisclaimerStore } from '@/stores/downloadDisclaimer'
 import { DocumentFormat } from '@deltares/fews-pi-requests'
 import type { FilterActionsFilter } from '@deltares/fews-pi-requests'
 import { computed, ref } from 'vue'
@@ -56,6 +57,7 @@ const props = defineProps<Props>()
 const disabled = computed(() => props.filters.length === 0)
 
 const alertStore = useAlertsStore()
+const downloadDisclaimerStore = useDownloadDisclaimerStore()
 
 const fileTypes = [
   { title: 'csv', format: DocumentFormat.PI_CSV_ID_AND_NAME },
@@ -68,6 +70,9 @@ const selectedFileType = ref(fileTypes[0])
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 async function downloadFilters() {
+  const accepted = await downloadDisclaimerStore.requestAcceptance()
+  if (!accepted) return
+
   const viewPeriod = {
     startTime: convertJSDateToFewsPiParameter(props.startTime),
     endTime: convertJSDateToFewsPiParameter(props.endTime),
