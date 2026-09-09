@@ -108,10 +108,7 @@ function clickDownloadBlob(blob: Blob, fileName: string) {
   window.URL.revokeObjectURL(blobUrl)
 }
 
-export async function clickDownloadUrl(
-  url: string,
-  fileName: string,
-): Promise<void> {
+export function clickDownloadUrl(url: string, fileName: string) {
   const a = document.createElement('a')
   a.href = url
   a.setAttribute('download', fileName)
