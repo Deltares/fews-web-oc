@@ -20,8 +20,10 @@
           :href="store.url"
           class="ms-4 text-label-medium"
           target="_blank"
-          text="data-usage-agreement.txt"
-        />
+          rel="noopener noreferrer"
+        >
+          data-usage-agreement.txt
+        </a>
         <v-spacer />
         <v-btn @click="store.decline()" :text="t('common.cancel')" />
         <v-btn
