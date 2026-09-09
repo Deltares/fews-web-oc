@@ -75,8 +75,15 @@
     </SelectCard>
 
     <div class="d-flex pt-2 align-center">
-      <AnalysisDataDownload
-        :filters="filters"
+      <v-btn
+        variant="plain"
+        @click="showDownloadDialog = true"
+        :disabled="filters.length === 0"
+        icon="mdi-download"
+      />
+      <TimeSeriesFileDownloadComponent
+        v-model="showDownloadDialog"
+        :filter="filters"
         :startTime="startTime"
         :endTime="endTime"
       />
@@ -103,7 +110,7 @@ import SelectCard from '@/components/general/SelectCard.vue'
 import AnalysisMap from '@/components/analysis/AnalysisMap.vue'
 import AnalysisAddToButton from '@/components/analysis/AnalysisAddToButton.vue'
 import AnalysisAttributesFilter from '@/components/analysis/AnalysisAttributesFilter.vue'
-import AnalysisDataDownload from '@/components/analysis/AnalysisDataDownload.vue'
+import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import { computed, ref, watch } from 'vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
@@ -131,6 +138,7 @@ interface Props {
 const props = defineProps<Props>()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const showMap = ref(false)
+const showDownloadDialog = ref(false)
 
 const isLoadingNewCharts = ref(false)
 const isLoadingAddToChart = ref(false)
