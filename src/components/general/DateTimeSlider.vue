@@ -371,8 +371,8 @@ function unwatchPlayLoading(): void {
 }
 
 function stopPlay(): void {
-  unwatchPlayLoading()
   if (playTimeoutTimer.value) {
+    unwatchPlayLoading()
     clearTimeout(playTimeoutTimer.value)
     playTimeoutTimer.value = undefined
   }
