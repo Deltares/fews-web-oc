@@ -7,6 +7,7 @@
           :label="t('download.fileName')"
           variant="underlined"
           density="compact"
+          hide-details
         >
           <template #append>
             <v-menu>
@@ -34,15 +35,21 @@
           </template>
         </v-text-field>
       </v-card-text>
-      <v-card-actions class="justify-end">
-        <v-btn
-          variant="flat"
-          color="primary"
-          @click="() => downloadFile(fileType.format)"
-        >
-          Download
-        </v-btn>
-        <v-btn @click="() => cancelDialog()">{{ t('common.cancel') }}</v-btn>
+      <v-card-item>
+        <DownloadDisclaimerAcceptance />
+      </v-card-item>
+      <v-card-actions class="justify-space-between flex-wrap">
+        <div class="d-flex w-100 justify-end ga-2">
+          <v-btn @click="() => cancelDialog()">{{ t('common.cancel') }}</v-btn>
+          <v-btn
+            variant="flat"
+            color="primary"
+            :disabled="!canDownload"
+            @click="() => downloadFile(fileType.format)"
+          >
+            Download
+          </v-btn>
+        </div>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -72,18 +79,22 @@ import { convertFewsPiDateTimeToJsDate, getFilenameTimestamp } from '@/lib/date'
 
 import { useI18n } from 'vue-i18n'
 import { getDownloadFileUrl } from '@/lib/download/download'
+import { useDownloadDisclaimerStore } from '@/stores/downloadDisclaimer'
+import DownloadDisclaimerAcceptance from '@/components/download/DownloadDisclaimerAcceptance.vue'
 
 const { t } = useI18n()
+type SingleFilter =
+  | FilterActionsFilter
+  | TimeSeriesGridActionsFilter
+  | DataDownloadFilter
+  | CorrelationFilter
+  | TimeSeriesTopologyActionsFilter
+
 interface Props {
   config?: DisplayConfig | null
   options?:
     Pick<FilterActionsFilter, 'useDisplayUnits' | 'convertDatum'> | undefined
-  filter?:
-    | FilterActionsFilter
-    | TimeSeriesGridActionsFilter
-    | DataDownloadFilter
-    | CorrelationFilter
-    | undefined
+  filter?: SingleFilter | SingleFilter[]
   startTime?: Date | undefined
   endTime?: Date | undefined
 }
@@ -95,6 +106,7 @@ const showDialog = defineModel<boolean>({
 })
 
 const store = useSystemTimeStore()
+const downloadDisclaimerStore = useDownloadDisclaimerStore()
 const viewPeriodFromStore = computed<UseTimeSeriesOptions>(() => {
   return {
     startTime: store.startTime,
@@ -104,10 +116,17 @@ const viewPeriodFromStore = computed<UseTimeSeriesOptions>(() => {
 
 const alertStore = useAlertsStore()
 
+// Normalize the filter prop, which can be a single filter or an array of
+// filters, to always work with an array internally.
+const filters = computed<SingleFilter[]>(() => {
+  if (!props.filter) return []
+  return Array.isArray(props.filter) ? props.filter : [props.filter]
+})
+
 const isOnlyHeadersDownload = computed(() => {
-  return props.filter && isDataDownloadFilter(props.filter)
-    ? props.filter.onlyHeaders
-    : false
+  return filters.value.some(
+    (filter) => isDataDownloadFilter(filter) && filter.onlyHeaders,
+  )
 })
 
 interface FileType {
@@ -116,13 +135,15 @@ interface FileType {
   disabled?: boolean
 }
 
+const hasCorrelationFilter = computed(() =>
+  filters.value.some((filter) => isCorrelationFilter(filter)),
+)
+
 const fileTypes = computed<FileType[]>(() => [
   {
     title: 'csv',
     format: DocumentFormat.PI_CSV_ID_AND_NAME,
-    disabled:
-      isOnlyHeadersDownload.value ||
-      (props.filter && isCorrelationFilter(props.filter)),
+    disabled: isOnlyHeadersDownload.value || hasCorrelationFilter.value,
   },
   {
     title: 'json',
@@ -132,7 +153,7 @@ const fileTypes = computed<FileType[]>(() => [
   {
     title: 'xml',
     format: DocumentFormat.PI_XML,
-    disabled: props.filter && isCorrelationFilter(props.filter),
+    disabled: hasCorrelationFilter.value,
   },
 ])
 
@@ -157,12 +178,19 @@ const cancelDialog = () => {
 }
 const fileNameInput = ref('timeseries')
 
+const canDownload = computed(
+  () =>
+    !downloadDisclaimerStore.isConfigured ||
+    downloadDisclaimerStore.hasAccepted,
+)
+
 watch(
   () => showDialog.value,
   (newValue) => {
     if (!newValue) return
     const timestamp = getFilenameTimestamp()
     fileNameInput.value = `timeseries_${timestamp}`
+    downloadDisclaimerStore.ensureShown()
   },
 )
 
@@ -217,14 +245,33 @@ function getTopologyActionsFilter(): TimeSeriesTopologyActionsFilter {
   }
 }
 
-async function downloadFile(downloadFormat: DocumentFormat) {
-  const viewPeriod = determineViewPeriod()
-  const filter = props.filter ?? getTopologyActionsFilter()
+// When downloading multiple filters, disambiguate the file names using the
+// filter's parameter ids (falling back to the index if not available).
+function getFileNameSuffix(filter: SingleFilter, index: number): string {
+  const parameterIds = (filter as FilterActionsFilter).parameterIds
+  if (parameterIds) {
+    return Array.isArray(parameterIds) ? parameterIds.join('_') : parameterIds
+  }
+  return `${index + 1}`
+}
 
-  const url = getDownloadFileUrl(baseUrl, filter, downloadFormat, viewPeriod)
+async function downloadFile(downloadFormat: DocumentFormat) {
+  if (!canDownload.value) return
+  const viewPeriod = determineViewPeriod()
+  const filterList = filters.value.length
+    ? filters.value
+    : [getTopologyActionsFilter()]
   const headers = await authenticationManager.getAuthorizationHeaders()
 
-  await downloadFileSafe(url.href, fileNameInput.value, downloadFormat, headers)
+  filterList.forEach((filter, index) => {
+    const url = getDownloadFileUrl(baseUrl, filter, downloadFormat, viewPeriod)
+    const fileName =
+      filterList.length > 1
+        ? `${fileNameInput.value}_${getFileNameSuffix(filter, index)}`
+        : fileNameInput.value
+
+    downloadFileSafe(url.href, fileName, downloadFormat, headers)
+  })
 }
 
 async function downloadFileSafe(
@@ -236,7 +283,8 @@ async function downloadFileSafe(
   try {
     await downloadFileAttachment(url, fileName, documentFormat, headers)
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error'
+    const message =
+      error instanceof Error ? error.message : t('download.errors.failed')
     alertStore.addAlert({
       type: 'error',
       message,

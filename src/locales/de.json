@@ -66,7 +66,13 @@
     "pointCloud": "Punktwolke",
     "redraw": "Neu zeichnen",
     "selectBoundingBox": "Begrenzungsrahmen auswählen",
-    "startTime": "Startzeit"
+    "startTime": "Startzeit",
+    "disclaimer": {
+      "accept": "Akzeptieren",
+      "acceptText": "Ich akzeptiere die Datennutzungsvereinbarung",
+      "download": "Datennutzungsvereinbarung",
+      "viewDisclaimer": "Datennutzungsvereinbarung anzeigen"
+    }
   },
   "search": {
     "searchForLocations": "Messstelle",

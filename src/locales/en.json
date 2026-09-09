@@ -66,7 +66,13 @@
     "pointCloud": "Point Cloud",
     "redraw": "Redraw",
     "selectBoundingBox": "Select bounding box",
-    "startTime": "Start Time"
+    "startTime": "Start Time",
+    "disclaimer": {
+      "accept": "Accept",
+      "acceptText": "I accept the data usage agreement",
+      "download": "Data usage agreement",
+      "viewDisclaimer": "View data usage agreement"
+    }
   },
   "search": {
     "searchForLocations": "Search for locations",
