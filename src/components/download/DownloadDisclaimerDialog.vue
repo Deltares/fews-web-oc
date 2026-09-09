@@ -8,19 +8,19 @@
     @update:model-value="(value) => !value && store.decline()"
   >
     <v-card :loading="store.isLoading">
-      <v-card-text class="py-0">
-        <pre>{{ store.text }}</pre>
+      <v-card-text class="py-0 text-pre-wrap">
+        <pre class="text-body-small text-pre-wrap">{{ store.text }}</pre>
         <v-alert v-if="store.error" type="error" class="mt-2">{{
           store.error
         }}</v-alert>
       </v-card-text>
       <v-card-actions>
-        <v-btn
+        <a
           v-if="!store.isLoading && !store.error"
-          prepend-icon="mdi-download"
           :href="store.url"
-          download
-          :text="t('download.disclaimer.download')"
+          class="ms-4 text-label-medium"
+          target="_blank"
+          text="data-usage-agreement.txt"
         />
         <v-spacer />
         <v-btn @click="store.decline()" :text="t('common.cancel')" />
