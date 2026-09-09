@@ -7,16 +7,18 @@
     scrollable
     @update:model-value="(value) => !value && store.decline()"
   >
-    <v-card :loading="isLoading">
+    <v-card :loading="store.isLoading">
       <v-card-text class="py-0">
-        <pre>{{ txt }}</pre>
-        <v-alert v-if="error" type="error" class="mt-2">{{ error }}</v-alert>
+        <pre>{{ store.text }}</pre>
+        <v-alert v-if="store.error" type="error" class="mt-2">{{
+          store.error
+        }}</v-alert>
       </v-card-text>
       <v-card-actions>
         <v-btn
-          v-if="!isLoading && !error"
+          v-if="!store.isLoading && !store.error"
           prepend-icon="mdi-download"
-          :href="url"
+          :href="store.url"
           download="DISCLAIMER.txt"
           :text="t('download.disclaimer.download')"
         />
@@ -36,34 +38,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { useDownloadDisclaimerStore } from '@/stores/downloadDisclaimer'
-import { getResourcesStaticUrl } from '@/lib/fews-config'
-import { onMounted, ref } from 'vue'
-
-const url = getResourcesStaticUrl('download-disclaimer.txt')
-
-const txt = ref<string>()
-const error = ref<string>()
-const isLoading = ref<boolean>(true)
-
-async function fetchDisclaimer() {
-  try {
-    const response = await fetch(url)
-    if (response.ok) {
-      txt.value = await response.text()
-    } else {
-      error.value = `Failed to load disclaimer: ${response.status} ${response.statusText}`
-    }
-  } catch (e) {
-    console.error('Error fetching disclaimer:', e)
-    error.value = 'Failed to load disclaimer.'
-  } finally {
-    isLoading.value = false
-  }
-}
-
-onMounted(() => {
-  fetchDisclaimer()
-})
 
 const { t } = useI18n()
 const store = useDownloadDisclaimerStore()
