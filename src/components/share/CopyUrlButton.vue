@@ -2,6 +2,7 @@
   <v-btn
     :icon="state.icon"
     :color="state.color"
+    :disabled="disabled"
     v-tooltip:bottom="state.tooltip"
     @click.stop="copyToClipboard"
     density="comfortable"
@@ -17,6 +18,7 @@ import { useI18n } from 'vue-i18n'
 
 interface Props {
   url: string
+  disabled?: boolean
 }
 const props = defineProps<Props>()
 

@@ -32,6 +32,7 @@
     />
     <mgl-scale-control v-if="showScale" position="bottom-right" />
     <NetCdfDownloadControl
+      v-if="layerName"
       :layer-name="layerName"
       :layer-capabilities="layerCapabilities"
     />

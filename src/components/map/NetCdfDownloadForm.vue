@@ -8,7 +8,7 @@
       <v-card-title class="text-h6">{{
         t('download.downloadData')
       }}</v-card-title>
-      <v-card-text>
+      <v-card-text class="pb-0">
         <v-select
           v-model="downloadType"
           :items="downloadOptions"
@@ -122,27 +122,26 @@
           density="compact"
           variant="outlined"
           hide-details
-          class="mb-3"
         />
       </v-card-text>
       <v-card-item>
         <DownloadDisclaimerAcceptance />
       </v-card-item>
-      <v-card-actions class="justify-space-between flex-wrap">
-        <div class="d-flex w-100 justify-end ga-2">
-          <v-btn variant="text" @click="dialogOpen = false">{{
-            t('common.cancel')
-          }}</v-btn>
-          <v-btn
-            color="primary"
-            variant="flat"
-            :loading="isDownloading"
-            :disabled="!canDownload"
-            @click="download"
-          >
-            {{ t('download.download') }}
-          </v-btn>
-        </div>
+      <v-card-actions>
+        <v-btn variant="text" @click="dialogOpen = false">
+          {{ t('common.cancel') }}
+        </v-btn>
+        <v-spacer />
+        <CopyUrlButton :url="url" :disabled="!canDownload" />
+        <v-btn
+          color="primary"
+          variant="flat"
+          :loading="isDownloading"
+          :disabled="!canDownload"
+          @click="download"
+        >
+          {{ t('download.download') }}
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -156,15 +155,19 @@ import { downloadFileAttachment } from '@/lib/download/downloadFiles'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import { convertDateToDateTimeString } from '@/lib/date'
 import { toMercator } from '@turf/projection'
+import CopyUrlButton from '@/components/share/CopyUrlButton.vue'
 import DrawBoundingBoxControl from './DrawBoundingBoxControl.vue'
 import type { BoundingBox } from '@/services/useBoundingBox'
-import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
+import {
+  PiWebserviceProvider,
+  TimeSeriesGridFilter,
+} from '@deltares/fews-pi-requests'
 import { useDownloadDisclaimerStore } from '@/stores/downloadDisclaimer'
 import { useAlertsStore } from '@/stores/alerts'
 import DownloadDisclaimerAcceptance from '@/components/download/DownloadDisclaimerAcceptance.vue'
 
 interface Props {
-  layerName?: string
+  layerName: string
   defaultStartTime?: string | null
   defaultEndTime?: string | null
 }
@@ -174,7 +177,7 @@ const dialogOpen = defineModel<boolean>({ default: false })
 const { t } = useI18n()
 const bbox = ref<BoundingBox | null>(null)
 const downloadType = ref<'fullGrid' | 'pointCloud'>('fullGrid')
-const fileFormat = ref<'netcdf3' | 'netcdf4'>('netcdf4')
+const fileFormat = ref<NetCdfFormat>('netcdf4')
 const startTimeInput = ref('')
 const endTimeInput = ref('')
 const isDownloading = ref(false)
@@ -186,7 +189,12 @@ const downloadOptions = computed(() => [
   { title: t('download.pointCloud'), value: 'pointCloud' },
 ])
 
-const fileFormatOptions = [
+interface FileFormatOption {
+  title: string
+  value: NetCdfFormat
+}
+
+const fileFormatOptions: FileFormatOption[] = [
   { title: 'netcdf4', value: 'netcdf4' },
   { title: 'netcdf3', value: 'netcdf3' },
 ]
@@ -273,47 +281,59 @@ function toggleDrawingMode() {
   isDrawingBbox.value = !isDrawingBbox.value
 }
 
+type NetCdfFormat = 'netcdf3' | 'netcdf4'
+
+interface NetCdfFilter extends Omit<TimeSeriesGridFilter, 'documentFormat'> {
+  documentFormat: 'PI_NETCDF'
+  netcdfFormat?: NetCdfFormat
+  pointCloud?: boolean
+}
+
+const url = computed(() => {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const piProvider = new PiWebserviceProvider(baseUrl)
+
+  const startTime = new Date(startTimeInput.value).toISOString()
+  const endTime = new Date(endTimeInput.value).toISOString()
+
+  // Build the filter for the grid timeseries request
+  const filter: NetCdfFilter = {
+    documentFormat: 'PI_NETCDF',
+    layers: props.layerName,
+    importFromExternalDataSource: false,
+    useDisplayUnits: false,
+    netcdfFormat: fileFormat.value === 'netcdf3' ? fileFormat.value : undefined,
+    startTime,
+    endTime,
+  }
+
+  if (downloadType.value === 'pointCloud') {
+    filter.pointCloud = true
+
+    if (bbox.value) {
+      const [minX, minY] = toMercator([bbox.value.lonMin, bbox.value.latMin])
+      const [maxX, maxY] = toMercator([bbox.value.lonMax, bbox.value.latMax])
+      filter.bbox = [minX, minY, maxX, maxY]
+    }
+  }
+
+  // @ts-expect-error PI_NETCDF is not yet in documentFormat type
+  return piProvider.timeSeriesGridUrl(filter).toString()
+})
+
 async function download() {
-  if (!props.layerName || !canDownload.value) return
+  if (!url.value || !canDownload.value) return
 
   isDownloading.value = true
 
   try {
+    const headers = await authenticationManager.getAuthorizationHeaders()
+
     const startTime = new Date(startTimeInput.value).toISOString()
     const endTime = new Date(endTimeInput.value).toISOString()
 
-    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-
-    const piProvider = new PiWebserviceProvider(baseUrl)
-
-    // Build the filter for the grid timeseries request
-    const filter: Record<string, any> = {
-      documentFormat: 'PI_NETCDF',
-      layers: props.layerName,
-      importFromExternalDataSource: false,
-      useDisplayUnits: false,
-      netcdfFormat:
-        fileFormat.value === 'netcdf3' ? fileFormat.value : undefined,
-      startTime,
-      endTime,
-    }
-
-    if (downloadType.value === 'pointCloud') {
-      filter.pointCloud = true
-
-      if (bbox.value) {
-        const [minX, minY] = toMercator([bbox.value.lonMin, bbox.value.latMin])
-        const [maxX, maxY] = toMercator([bbox.value.lonMax, bbox.value.latMax])
-        filter.bbox = [minX, minY, maxX, maxY]
-      }
-    }
-
-    const headers = await authenticationManager.getAuthorizationHeaders()
-
-    const url = piProvider.timeSeriesGridUrl(filter)
-
     await downloadFileAttachment(
-      url.toString(),
+      url.value,
       `${props.layerName}_${startTime}_${endTime}`,
       // @ts-expect-error enum value should be added to fews-pi-requests
       'PI_NETCDF',
