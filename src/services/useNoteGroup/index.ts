@@ -6,6 +6,7 @@ import {
 } from '@deltares/fews-pi-requests'
 import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
 import { ref, shallowRef, toValue, watchEffect } from 'vue'
+import { configManager } from '@/services/application-config'
 
 export interface UseNoteGroupReturn {
   error: Ref<string | undefined>
@@ -15,9 +16,10 @@ export interface UseNoteGroupReturn {
 }
 
 export function useNoteGroup(
-  baseUrl: string,
   noteGroupId: MaybeRefOrGetter<string | undefined>,
 ): UseNoteGroupReturn {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+
   const noteGroup = shallowRef<ForecasterNoteGroup>()
   const isReady = ref(false)
   const isLoading = ref(false)

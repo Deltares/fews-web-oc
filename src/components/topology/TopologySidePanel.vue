@@ -34,7 +34,7 @@
           v-for="generalSidePanel in enabledGeneralSidePanels"
           :key="generalSidePanel.type"
           :prepend-icon="generalSidePanel.icon"
-          :title="t(`sidePanel.${generalSidePanel.type}`)"
+          :title="getTitleForSidePanel(generalSidePanel.type)"
           :active="activeSidePanelType === generalSidePanel.type"
           @click="setCurrentGeneralSidePanel(generalSidePanel)"
         />
@@ -47,11 +47,8 @@
       v-if="activeSidePanelType === sidePanel.type"
       :is="sidePanel.component"
       :topology-node="topologyNode"
-      v-bind="
-        sidePanel.type === 'logDisplay'
-          ? { settings: settingsForSidePanel() }
-          : {}
-      "
+      :title="getTitleForSidePanel(sidePanel.type)"
+      v-bind="propsForSidePanel(sidePanel.type)"
       @close="closeSidePanel()"
       @open-log-task-run="openLogTaskRun"
     />
@@ -86,6 +83,7 @@ import RunTasksSidePanel from '@/components/sidepanel/RunTasksSidePanel.vue'
 import ShareSidePanel from '@/components/sidepanel/ShareSidePanel.vue'
 import TaskOverviewSidePanel from '@/components/sidepanel/TaskOverviewSidePanel.vue'
 import ThresholdsSidePanel from '@/components/sidepanel/ThresholdsSidePanel.vue'
+import { useLogDisplay } from '@/services/useLogDisplay'
 
 const { t } = useI18n()
 const configStore = useConfigStore()
@@ -163,12 +161,33 @@ const enabledGeneralSidePanels = computed<GeneralSidePanel[]>(() => {
   )
 })
 
-function settingsForSidePanel(): { logDisplayId: string; taskRunId?: string } {
+const logDisplayId = computed(() => {
   const sidePanelConfig = configStore.general.sidePanel
-  return {
-    logDisplayId: sidePanelConfig?.logDisplay?.logDisplayId ?? '',
-    taskRunId: selectedLogTaskRunId.value,
+  return sidePanelConfig?.logDisplay?.logDisplayId
+})
+const { logDisplay } = useLogDisplay(logDisplayId)
+
+function propsForSidePanel(type: GeneralSidePanelType) {
+  if (type === 'logDisplay') {
+    return {
+      settings: {
+        logDisplayId: logDisplayId.value,
+        taskRunId: selectedLogTaskRunId.value,
+      },
+    }
   }
+
+  return {}
+}
+
+function getTitleForSidePanel(type: GeneralSidePanelType): string {
+  const title = t(`sidePanel.${type}`)
+
+  if (type === 'logDisplay') {
+    return logDisplay.value?.name ?? title
+  }
+
+  return title
 }
 
 const hasMultipleEnabledSidePanels = computed<boolean>(
