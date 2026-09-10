@@ -4,6 +4,19 @@ The Delft-FEWS Web OC is a single page web application. The build consists of st
 
 Next to the static hosting service, the web services requires the [Delft-FEWS Web Services](https://publicwiki.deltares.nl/x/84vFBw) to communicate with the Delft FEWS system. The FEWS Web Services are used to obtain configuration, spatio temporal data (PI & WMS), reports, schematic status displays (SSD) and system status. It can also be used to edit time series & reports and run workflows, tasks & what if scenarios. For the last functionality it is essential that authentication and authorization are in place. The Web OC and FEWS Web Services support the [OpenID Connect](https://openid.net/) standard, and are known to work with [Azure Entra ID](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id), [AWS Identity and Access Management](https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html) and [Keycloak](https://www.keycloak.org/). Standard basemaps providers (external) like [CARTO](https://carto.com/basemaps/), [Mapbox](https://www.mapbox.com/) and [MapTiler](https://www.maptiler.com/maps/base/). An active subscription and MAP API key is required to load base maps.
 
+## Public hosting
+
+>[!NOTE]
+> We are investigating the impact on the FEWS Web Services and FEWS system for a publicly available Web OC
+
+Making the Web OC publicly available does not by itself require the FEWS Web Services to be public. The browser must be able to reach the configured FEWS Web Services URL, either directly or through a reverse proxy. If the FEWS Web Services are exposed outside the trusted network, assess the following impacts before deployment:
+
+- Require HTTPS and OpenID Connect authentication for protected environments. Do not use `VITE_REQUEST_HEADER_AUTHORIZATION: Off` for sensitive data or operations unless the Web Services are protected by an equivalent control.
+- Review `WebServices.xml` and FEWS permissions with least privilege. Pay particular attention to endpoints that edit time series or reports, run workflows and tasks, or execute what-if scenarios; these require both authentication and authorization.
+- Prefer a same-origin reverse proxy where possible. Otherwise configure CORS for the exact Web OC origin and verify that no unintended origins, methods, headers, or credentials are allowed.
+- Protect the FEWS Web Services with a firewall or gateway, rate limiting, request-size limits, monitoring, and audit logging. Do not expose the FEWS database or other internal services directly to the internet.
+- Assess the expected increase in concurrent requests and load-test the read and write operations. Public static assets can be cached, but FEWS Web Services responses should only be cached when their data and authorization semantics allow it.
+
 ## Example container overview of Web OC infrastructure with OIDC provider
 
 The schematic gives an often used infrastructure for Web OC hosting. All Web OC build assests are served by a self hosted Nginx web server. The FEWS WebServices are running in Tomcat and have a conncetion to the FEWS database. Azure Entra ID is used ase OIDC identy provider. Basemaps layers are provided by CARTO.
