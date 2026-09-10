@@ -1,10 +1,20 @@
 # Delft-FEWS Web OC Deployments
 
-The Delft-FEWS Web OC is distributed as a single page web application.
-When deployed to a server like Nginx or Tomcat it is required to make sure that all requests are mapped to the index.html page of the web oc.
-This means that the server will have to redirect all HTTP 404 errors to the index.html. How this can be done is explained per deployment option.
+The Delft-FEWS Web OC is a single page web application. The build consists of static HTML, JavaScript, CSS and other assets. These files need to be made available on a static hosting service like [Nginx](https://nginx.org/), [Apache HTTP Server](https://httpd.apache.org/), [IIS](https://www.iis.net/), [Tomcat](https://tomcat.apache.org/), Azure [Static Web Apps](https://azure.microsoft.com/en-us/products/app-service/static) and [AWS Amplify](https://aws.amazon.com/amplify/hosting/). How to configure the static hosting and a list of advised Content Security Policies are provided in this document.
 
-## Tomcat
+Next to the static hosting service, the web services requires the [Delft-FEWS Web Services](https://publicwiki.deltares.nl/x/84vFBw) to communicate with the Delft FEWS system. The FEWS Web Services are used to obtain configuration, spatio temporal data (PI & WMS), reports, schematic status displays (SSD) and system status. It can also be used to edit time series & reports and run workflows, tasks & what if scenarios. For the last functionality it is essential that authentication and authorization are in place. The Web OC and FEWS Web Services support the [OpenID Connect](https://openid.net/) standard, and are known to work with [Azure Entra ID](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id), [AWS Identity and Access Management](https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html) and [Keycloak](https://www.keycloak.org/). Standard basemaps providers (external) like [CARTO](https://carto.com/basemaps/), [Mapbox](https://www.mapbox.com/) and [MapTiler](https://www.maptiler.com/maps/base/). An active subscription and MAP API key is required to load base maps.
+
+## Example container overview of Web OC infrastructure with OIDC provider
+
+The schematic gives an often used infrastructure for Web OC hosting. All Web OC build assests are served by a self hosted Nginx web server. The FEWS WebServices are running in Tomcat and have a conncetion to the FEWS database. Azure Entra ID is used ase OIDC identy provider. Basemaps layers are provided by CARTO.
+
+![Container overview of Web OC infrastructure with OIDC provider](./infrastructure.drawio.svg)
+
+## Static hosting setup
+
+When deployed to a server like Nginx or Tomcat it is required to make sure that all requests are mapped to the `index.html` page of the web oc. This means that the server will have to redirect all HTTP 404 errors to the `index.html`. How this can be done is explained per deployment option.
+
+### Tomcat
 
 The Delft-FEWS Web OC can be deployed in Tomcat. The Web OC can be provided as different distributions: root or weboc.
 
@@ -35,13 +45,13 @@ Customize the app-config.json file.
 
 After starting tomcat, the Delft-FEWS Web OC is available at: http://localhost:8080
 
-## Azure Static Web App using Azure DevOps
+### Azure Static Web App using Azure DevOps
 
 Using Azure DevOps a pipeline can be created to build and deploy the Delft-FEWS Web OC.
 The following is an example of a pipeline: [azure-pipelines.yml](azure/azure-pipelines.yml).
 To make sure all requests are redirected to the index.html, the following [staticwebapp.config.json](azure/staticwebapp.config.json) has to be added to the deployment.
 
-## Delft-FEWS Standalone
+### Delft-FEWS Standalone
 
 The Delft-FEWS Web OC can be deployed in a Delft-FEWS Standalone as follows.
 
@@ -69,12 +79,12 @@ version="3.0">
 
 Customize the app-config.json file where appropriate.
 
-After starting tomcat using F12+M (embedded servers, start embedded tomcat web services) in the Standalone the Delft-FEWS Web OC is available at: http://localhost:8080. Log message in Delft-FEWS SA: 
+After starting tomcat using F12+M (embedded servers, start embedded tomcat web services) in the Standalone the Delft-FEWS Web OC is available at: http://localhost:8080. Log message in Delft-FEWS SA:
 `INFO - StartFewsWebServices.FewsWebServicesEmbeddedTomcatServer.run - The Web OC will be available at: http://localhost:8080`.
 
-In order to display Web OC, navigate to http://localhost:8080 in a browser (copy-paste http://localhost:8080 in browser window). Please use an incognito browser window to avoid looking at cached content.  
+In order to display Web OC, navigate to http://localhost:8080 in a browser (copy-paste http://localhost:8080 in browser window). Please use an incognito browser window to avoid looking at cached content.
 
-## Nginx
+### Nginx
 
 In Nginx the recommended way is to use try_files. See: https://router.vuejs.org/guide/essentials/history-mode.html#nginx
 
@@ -100,14 +110,13 @@ unzip the weboc.zip file into the Nginx html folder:
 
 /usr/share/nginx/html/
 
-the WebOC will be available in the root at port 80: http://mynginxserver/
+the Web OC will be available in the root at port 80: http://mynginxserver/
 
-## Apache HTTPD
+### Apache HTTP Server
 
-The Delft-FEWS Web OC can be deployed in Apache HTTPD as follows:
+The Delft-FEWS Web OC can be deployed in Apache HTTP Server as follows:
 
 ```xml
-
 <VirtualHost *:80>
         ServerName localhost
         DocumentRoot "/var/www/weboc"
@@ -122,8 +131,6 @@ The Delft-FEWS Web OC can be deployed in Apache HTTPD as follows:
 
 ```
 
-## Access to FewsWebServices
-
 Please note that every user of Web OC requires direct access to the FewsWebServices endpoints by default. If needed, FewsWebServices requests can be re-directed. Please find an apache example below.
 
 ```
@@ -137,11 +144,11 @@ Please note that every user of Web OC requires direct access to the FewsWebServi
 
 ## Content Security Policy (CSP) Headers
 
-These headers are used to define the security policies for a web page, 
+These headers are used to define the security policies for a web page,
 specifying which resources can be loaded and executed by the browser.
 It is advised to add CSP headers in the server configuration.
 
-The WebOC requires the following policies:
+The Web OC requires the following policies:
 
 | Header | Value |
 | ------ | ----- |
@@ -156,12 +163,11 @@ The WebOC requires the following policies:
 | style-src | 'self' 'unsafe-inline' `FEWS_WEBSERVICES_DOMAIN`[^2] |
 | worker-src | blob:|
 
-Replace `FEWS_WEBSERVICES_DOMAIN` with the domain of the FEWS web services are available. Leave empty when this is the same domain as where the Web OC is hosted. 
+Replace `FEWS_WEBSERVICES_DOMAIN` with the domain of the FEWS web services are available. Leave empty when this is the same domain as where the Web OC is hosted.
 Replace `AUTHORITY_DOMAIN` with the domain of the configured OIDC authority provider (e.g. https://login.microsoftonline.com for Microsoft identity platform). Leave empty when no authority provider is used.
 
-[^1]: When a custom `VITE_APP_MANIFEST_URL` is configured make sure the `manifest-src` and `img-src`  configuration includes the `FEWS_WEBSERVICES_DOMAIN` value.  
+[^1]: When a custom `VITE_APP_MANIFEST_URL` is configured make sure the `manifest-src` and `img-src`  configuration includes the `FEWS_WEBSERVICES_DOMAIN` value.
 [^2]: When a custom `customStyleSheet` is configured in the `WebOperatorClient.xml` make sure the `style-src` configuration includes the `FEWS_WEBSERVICES_DOMAIN` value.
 
 For more information, refer to the MDN documentation:
 [Content Security Policy (CSP) - MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
- 
