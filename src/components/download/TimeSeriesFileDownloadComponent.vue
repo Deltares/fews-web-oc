@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="showDialog" max-width="400">
     <v-card :title="t('download.downloadTimeSeries')">
-      <v-card-text>
+      <v-card-text class="pb-0">
         <v-text-field
           v-model="fileNameInput"
           :label="t('download.fileName')"
@@ -38,18 +38,17 @@
       <v-card-item>
         <DownloadDisclaimerAcceptance />
       </v-card-item>
-      <v-card-actions class="justify-space-between flex-wrap">
-        <div class="d-flex w-100 justify-end ga-2">
-          <v-btn @click="() => cancelDialog()">{{ t('common.cancel') }}</v-btn>
-          <v-btn
-            variant="flat"
-            color="primary"
-            :disabled="!canDownload"
-            @click="() => downloadFile(fileType.format)"
-          >
-            Download
-          </v-btn>
-        </div>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn @click="() => cancelDialog()">{{ t('common.cancel') }}</v-btn>
+        <v-btn
+          variant="flat"
+          color="primary"
+          :disabled="!canDownload"
+          @click="() => downloadFile(fileType.format)"
+        >
+          Download
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
