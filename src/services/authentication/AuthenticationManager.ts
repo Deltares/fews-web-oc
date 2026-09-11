@@ -1,7 +1,6 @@
 import { configManager } from '../application-config/'
 import { UserManager, User, UserManagerSettings } from 'oidc-client-ts'
 import { RequestHeaderAuthorization } from '../application-config/ApplicationConfig'
-import { mergeHeaders } from '@/lib/requests/transformRequest'
 
 export class AuthenticationManager {
   userManager!: UserManager
@@ -84,19 +83,6 @@ export class AuthenticationManager {
       default:
         return new Headers({})
     }
-  }
-
-  public async transformRequestAuth(
-    request: Request,
-    signal?: AbortSignal,
-  ): Promise<Request> {
-    const requestAuthHeaders = await this.getAuthorizationHeaders()
-    const requestInit = {
-      headers: mergeHeaders(request.headers, requestAuthHeaders),
-      signal: signal,
-    }
-    const newRequest = new Request(request, requestInit)
-    return newRequest
   }
 }
 
