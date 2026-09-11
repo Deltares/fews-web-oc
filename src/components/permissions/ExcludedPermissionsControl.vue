@@ -1,42 +1,44 @@
 <template>
-  <v-list-group v-if="hasAssignedPermissions" subgroup>
-    <template #activator="{ props }">
-      <v-list-item v-bind="props" :title="t('userSettings.permissions')" />
-    </template>
-
-    <v-list-item
-      v-for="(permissionId, index) in permissionsStore.assignedPermissionIds"
-      :key="index"
-    >
-      {{ permissionId }}
-      <template #append>
-        <v-list-item-action>
-          <v-checkbox-btn v-model="isActive[permissionId]" />
-        </v-list-item-action>
+  <v-list>
+    <v-list-group>
+      <template #activator="{ props }">
+        <v-list-item v-bind="props" :title="t('userSettings.permissions')" />
       </template>
-    </v-list-item>
 
-    <v-list-item>
-      <div class="d-flex justify-space-between">
-        <v-btn
-          color="primary"
-          size="small"
-          variant="flat"
-          :text="t('common.reset')"
-          :disabled="!hasExcludedPermissions"
-          @click="resetPermissions()"
-        />
-        <v-btn
-          color="primary"
-          size="small"
-          variant="flat"
-          :text="t('common.apply')"
-          :disabled="!hasPendingChanges"
-          @click="applyPendingChanges()"
-        />
-      </div>
-    </v-list-item>
-  </v-list-group>
+      <v-list-item
+        v-for="(permissionId, index) in permissionsStore.assignedPermissionIds"
+        :key="index"
+      >
+        {{ permissionId }}
+        <template #append>
+          <v-list-item-action>
+            <v-checkbox-btn v-model="isActive[permissionId]" />
+          </v-list-item-action>
+        </template>
+      </v-list-item>
+
+      <v-list-item>
+        <div class="d-flex justify-space-between">
+          <v-btn
+            color="primary"
+            size="small"
+            variant="flat"
+            :text="t('common.reset')"
+            :disabled="!hasExcludedPermissions"
+            @click="resetPermissions()"
+          />
+          <v-btn
+            color="primary"
+            size="small"
+            variant="flat"
+            :text="t('common.apply')"
+            :disabled="!hasPendingChanges"
+            @click="applyPendingChanges()"
+          />
+        </div>
+      </v-list-item>
+    </v-list-group>
+  </v-list>
 </template>
 
 <script setup lang="ts">
@@ -49,9 +51,6 @@ const { t } = useI18n()
 
 const permissionsStore = usePermissionsStore()
 
-const hasAssignedPermissions = computed<boolean>(
-  () => permissionsStore.assignedPermissionIds.length > 0,
-)
 const hasExcludedPermissions = computed<boolean>(
   () => permissionsStore.excludedPermissionIds.length > 0,
 )

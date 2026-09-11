@@ -15,7 +15,6 @@
               <span class="user-name">{{ name }}</span>
             </div>
           </v-list-item>
-          <ExcludedPermissionsControl />
           <v-list-item @click="logout" v-if="hasUserManager">
             <v-list-item-title>{{ t('auth.signOut') }}</v-list-item-title>
           </v-list-item>
@@ -35,8 +34,6 @@ import {
   initialsFromUpperCaseName,
   initialsFromPreferredUserName,
 } from '@/lib/auth/initials.ts'
-
-import ExcludedPermissionsControl from '@/components/permissions/ExcludedPermissionsControl.vue'
 
 const { t } = useI18n()
 const route = useRoute()
