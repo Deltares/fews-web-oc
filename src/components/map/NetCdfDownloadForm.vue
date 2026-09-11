@@ -124,15 +124,17 @@
           hide-details
         />
       </v-card-text>
-      <v-card-item>
+      <div class="d-flex mx-6 my-2">
+        <CopyUrlLink :url="url" :disabled="!canDownload" />
+      </div>
+      <div class="d-flex mx-6">
         <DownloadDisclaimerAcceptance />
-      </v-card-item>
+      </div>
       <v-card-actions>
+        <v-spacer />
         <v-btn variant="text" @click="dialogOpen = false">
           {{ t('common.cancel') }}
         </v-btn>
-        <v-spacer />
-        <CopyUrlButton :url="url" :disabled="!canDownload" />
         <v-btn
           color="primary"
           variant="flat"
@@ -155,7 +157,7 @@ import { downloadFileAttachment } from '@/lib/download/downloadFiles'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import { convertDateToDateTimeString } from '@/lib/date'
 import { toMercator } from '@turf/projection'
-import CopyUrlButton from '@/components/share/CopyUrlButton.vue'
+import CopyUrlLink from '@/components/share/CopyUrlLink.vue'
 import DrawBoundingBoxControl from './DrawBoundingBoxControl.vue'
 import type { BoundingBox } from '@/services/useBoundingBox'
 import {
