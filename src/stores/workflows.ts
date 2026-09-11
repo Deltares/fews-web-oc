@@ -6,12 +6,14 @@ import {
 import { defineStore } from 'pinia'
 
 import { downloadFileWithXhr } from '@/lib/download'
-import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import {
+  createTransformRequestFn,
+  getRequestHeaders,
+} from '@/lib/requests/transformRequest'
 import { configManager } from '@/services/application-config'
 import type { BoundingBox } from '@/services/useBoundingBox'
 import type { LngLat } from 'maplibre-gl'
 import { toISOString } from '@/lib/date'
-import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 
 interface WorkflowsState {
   startTime: string | null
@@ -79,7 +81,7 @@ export const useWorkflowsStore = defineStore('workflows', {
           .replaceAll('-', '')
           .replaceAll(':', '')
         const fileName = `${now}${options?.fileName ?? '_DATA'}`
-        const headers = await authenticationManager.getAuthorizationHeaders()
+        const headers = await getRequestHeaders()
 
         await downloadFileWithXhr(url.toString(), fileName, headers)
       } else if (type === WorkflowType.RunTask) {
