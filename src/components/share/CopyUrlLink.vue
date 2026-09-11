@@ -39,6 +39,12 @@
       <CopyUrlButton :url="url" />
     </div>
     <table v-if="expanded" class="copy-url-link__query-table text-label-small">
+      <thead>
+        <tr>
+          <th class="d-none">Key</th>
+          <th class="d-none">Value</th>
+        </tr>
+      </thead>
       <tbody>
         <tr v-for="param in queryParams" :key="param.name">
           <td class="copy-url-link__query-name">{{ param.name }}</td>
