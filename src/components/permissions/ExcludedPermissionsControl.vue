@@ -13,7 +13,7 @@
         v-for="(permissionId, index) in permissionsStore.assignedPermissionIds"
         :key="index"
       >
-        {{ permissionId }}
+        {{ permissionsStore.getPermissionName(permissionId) }}
         <template #append>
           <v-list-item-action>
             <v-checkbox-btn

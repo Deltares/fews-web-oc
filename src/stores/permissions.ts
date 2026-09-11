@@ -42,6 +42,18 @@ export const usePermissionsStore = defineStore(
       return !excludedPermissionIds.value.includes(permissionId)
     }
 
+    function getPermissionName(permissionId: string): string {
+      const permission = permissions.value.find(
+        (permission) => permission.id === permissionId,
+      )
+      if (permission === undefined) {
+        throw new Error(
+          `Could not get name for non-existent permission with ID "${permissionId}".`,
+        )
+      }
+      return permission.name ?? permission.id
+    }
+
     async function getPermissionsExcludesHeader(): Promise<Headers> {
       await waitUntilPermissionsLoaded()
       return excludedPermissionIds.value.length === 0
@@ -139,6 +151,7 @@ export const usePermissionsStore = defineStore(
       excludedPermissionIds,
       excludedPermissionsKey,
       isActivePermission,
+      getPermissionName,
       getPermissionsExcludesHeader,
       setPermissions,
       resetPermissions,
