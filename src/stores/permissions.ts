@@ -6,9 +6,14 @@ import { until } from '@vueuse/core'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
-import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import {
+  createTransformRequestFn,
+  getRequestHeaders,
+} from '@/lib/requests/transformRequest'
 
 import { configManager } from '@/services/application-config'
+
+const FEWS_PERMISSION_EXCLUDES_HEADER = 'fews-ws-permissions-excludes'
 
 export const usePermissionsStore = defineStore(
   'permissions',
@@ -16,6 +21,7 @@ export const usePermissionsStore = defineStore(
     const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
     const hasLoaded = ref<boolean>(false)
+    const excludingPermissionsIsAllowed = ref<boolean>(false)
 
     const permissions = ref<Permission[]>([])
 
@@ -43,7 +49,7 @@ export const usePermissionsStore = defineStore(
       return excludedPermissionIds.value.length === 0
         ? new Headers()
         : new Headers({
-            'fews-ws-permissions-excludes':
+            [FEWS_PERMISSION_EXCLUDES_HEADER]:
               excludedPermissionIds.value.join(','),
           })
     }
@@ -91,13 +97,39 @@ export const usePermissionsStore = defineStore(
       }
     }
 
+    async function checkExcludedPermissionsHeaderAllowed(): Promise<void> {
+      const piProvider = new PiWebserviceProvider(baseUrl)
+      const versionUrl = piProvider.versionUrl('')
+
+      const headers = await getRequestHeaders(true)
+      headers.set(FEWS_PERMISSION_EXCLUDES_HEADER, 'dummy')
+
+      // Try an options request with the permission excludes header on the
+      // version endpoint to see whether the server accepts the header. There
+      // might be several reasons why it might not, e.g. web server
+      // configuration.
+      const request = new Request(versionUrl, { headers, method: 'OPTIONS' })
+      try {
+        const response = await fetch(request)
+        excludingPermissionsIsAllowed.value = response.ok
+      } catch {
+        excludingPermissionsIsAllowed.value = false
+      }
+    }
+
     // Load permissions upon store initialisation.
     loadPermissions().catch((error) =>
       console.error(`Failed to load permissions: ${error}`),
     )
+    checkExcludedPermissionsHeaderAllowed().catch((error) =>
+      console.error(
+        `Failed to check whether excluded permissions header is allowed: ${error}`,
+      ),
+    )
 
     return {
       permissions,
+      excludingPermissionsIsAllowed,
       assignedPermissionIds,
       excludedPermissionIds,
       excludedPermissionsKey,

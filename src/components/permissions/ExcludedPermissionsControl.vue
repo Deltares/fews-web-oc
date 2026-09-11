@@ -2,7 +2,11 @@
   <v-list>
     <v-list-group>
       <template #activator="{ props }">
-        <v-list-item v-bind="props" :title="t('userSettings.permissions')" />
+        <v-list-item
+          v-bind="props"
+          :title="t('userSettings.permissions')"
+          :subtitle="subtitle"
+        />
       </template>
 
       <v-list-item
@@ -10,14 +14,14 @@
         :key="permissionId"
       >
         {{ permissionId }}
-        <template #append>
+        <template v-if="canExcludePermissions" #append>
           <v-list-item-action>
             <v-checkbox-btn v-model="isActive[permissionId]" />
           </v-list-item-action>
         </template>
       </v-list-item>
 
-      <v-list-item>
+      <v-list-item v-if="canExcludePermissions">
         <div class="d-flex justify-space-between">
           <v-btn
             color="primary"
@@ -51,8 +55,17 @@ const { t } = useI18n()
 
 const permissionsStore = usePermissionsStore()
 
+const canExcludePermissions = computed<boolean>(
+  () => permissionsStore.excludingPermissionsIsAllowed,
+)
 const hasExcludedPermissions = computed<boolean>(
   () => permissionsStore.excludedPermissionIds.length > 0,
+)
+
+const subtitle = computed<string | undefined>(() =>
+  !canExcludePermissions.value
+    ? t('userSettings.excluding-permissions-disallowed')
+    : undefined,
 )
 
 const isActive = ref<Record<string, boolean>>({})
