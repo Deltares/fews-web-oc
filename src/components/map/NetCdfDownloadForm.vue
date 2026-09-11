@@ -156,7 +156,6 @@ import { configManager } from '@/services/application-config'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import { convertDateToDateTimeString } from '@/lib/date'
-import { toMercator } from '@turf/projection'
 import CopyUrlLink from '@/components/share/CopyUrlLink.vue'
 import DrawBoundingBoxControl from './DrawBoundingBoxControl.vue'
 import type { BoundingBox } from '@/services/useBoundingBox'
@@ -313,8 +312,8 @@ const url = computed(() => {
     filter.pointCloud = true
 
     if (bbox.value) {
-      const [minX, minY] = toMercator([bbox.value.lonMin, bbox.value.latMin])
-      const [maxX, maxY] = toMercator([bbox.value.lonMax, bbox.value.latMax])
+      const [minX, minY] = [bbox.value.lonMin, bbox.value.latMin]
+      const [maxX, maxY] = [bbox.value.lonMax, bbox.value.latMax]
       filter.bbox = [minX, minY, maxX, maxY]
     }
   }
