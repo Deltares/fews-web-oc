@@ -83,7 +83,8 @@
   "userSettings": {
     "allSettings": "Alle Einstellungen",
     "settings": "Einstellungen",
-    "permissions": "Berechtigungen"
+    "permissions": "Berechtigungen",
+    "excluding-permissions-disallowed": "Das Simulieren deaktivierter Berechtigungen ist auf dem Server nicht erlaubt."
   },
   "wms": {
     "layers": "Layer",

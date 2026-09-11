@@ -83,7 +83,8 @@
   "userSettings": {
     "allSettings": "All settings",
     "settings": "Settings",
-    "permissions": "Permissions"
+    "permissions": "Permissions",
+    "excluding-permissions-disallowed": "Simulating disabled permissions is not allowed by the server."
   },
   "wms": {
     "layers": "Layers",
