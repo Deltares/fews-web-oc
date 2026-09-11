@@ -80,7 +80,7 @@ import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import type { NavigateRoute } from '@/lib/router'
 import { fetchWmsCapabilitiesHeaders } from '@/lib/capabilities'
 import { useNodesStore } from '@/stores/nodes'
-import { nodeButtonItems } from '@/lib/topology/nodes'
+import { nodeButtonItems, nodeHasReports } from '@/lib/topology/nodes'
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 
@@ -325,7 +325,7 @@ async function reroute(
           topologyId,
         },
       }
-    } else {
+    } else if (!nodeHasReports(node)) {
       return nodesStore.getRouteTarget(
         nodeButtonItems(
           node,

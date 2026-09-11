@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex position-relative flex-column h-100 w-100">
+  <div class="d-flex flex-column h-100 w-100">
     <v-toolbar v-if="showToolbar" density="compact">
       <template v-if="settings.report.reportName">
         <div v-if="!reports?.length" class="ml-5">No reports available</div>
@@ -61,9 +61,13 @@
         >
       </v-btn>
     </v-toolbar>
-    <div
-      class="report-display-view__canvas position-absolute w-100 overflow-y-auto"
-    >
+    <ReportSnapshotStrip
+      v-if="showReportSnapshots"
+      v-model:selectedReport="selectedReport"
+      :baseUrl="baseUrl"
+      :reports="reports ?? []"
+    />
+    <div class="report-display-view__canvas w-100 flex-grow-1 overflow-y-auto">
       <ReactiveIframe
         :src="src"
         class="report-display-view__item w-100"
@@ -87,8 +91,10 @@ import {
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
 import ReactiveIframe from '@/components/products/ReactiveIframe.vue'
+import ReportSnapshotStrip from '@/components/reports/ReportSnapshotStrip.vue'
 import { getReportUrl, useReport } from '@/services/useReport'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
+import { getReportModuleInstanceIdsForNode } from '@/lib/topology/nodes'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -107,16 +113,18 @@ const showToolbar = computed(
 )
 
 const moduleInstanceIds = computed(() => {
-  return (
-    props.topologyNode?.reportDisplay?.reports.map((r) => r.moduleInstanceId) ??
-    []
-  )
+  return getReportModuleInstanceIdsForNode(props.topologyNode)
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { reports } = useReports(baseUrl, moduleInstanceIds)
 
 const selectedReport = ref<Report>()
+const showReportSnapshots = computed(
+  () =>
+    props.topologyNode?.topologyNodes !== undefined &&
+    (reports.value?.length ?? 0) > 0,
+)
 const reportItems = computed(() => {
   return selectedReport.value?.items ?? []
 })
@@ -184,11 +192,6 @@ async function downloadFile() {
 </script>
 
 <style scoped>
-.report-display-view__canvas {
-  top: 48px;
-  bottom: 0;
-}
-
 .report-display-view__item {
   background-color: white;
 }
