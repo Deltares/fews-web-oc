@@ -65,7 +65,6 @@ import {
 } from '@deltares/fews-pi-requests'
 import { configManager } from '@/services/application-config'
 import { DisplayConfig } from '@/lib/display/DisplayConfig.ts'
-import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
 import { computed, ref, watchEffect, watch } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime.ts'
@@ -80,6 +79,7 @@ import { useI18n } from 'vue-i18n'
 import { getDownloadFileUrl } from '@/lib/download/download'
 import { useDownloadDisclaimerStore } from '@/stores/downloadDisclaimer'
 import DownloadDisclaimerAcceptance from '@/components/download/DownloadDisclaimerAcceptance.vue'
+import { getRequestHeaders } from '@/lib/requests/transformRequest'
 
 const { t } = useI18n()
 type SingleFilter =
@@ -260,7 +260,7 @@ async function downloadFile(downloadFormat: DocumentFormat) {
   const filterList = filters.value.length
     ? filters.value
     : [getTopologyActionsFilter()]
-  const headers = await authenticationManager.getAuthorizationHeaders()
+  const headers = await getRequestHeaders()
 
   filterList.forEach((filter, index) => {
     const url = getDownloadFileUrl(baseUrl, filter, downloadFormat, viewPeriod)
