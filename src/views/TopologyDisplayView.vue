@@ -80,7 +80,11 @@ import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import type { NavigateRoute } from '@/lib/router'
 import { fetchWmsCapabilitiesHeaders } from '@/lib/capabilities'
 import { useNodesStore } from '@/stores/nodes'
-import { nodeButtonItems, nodeHasReports } from '@/lib/topology/nodes'
+import {
+  nodeButtonItems,
+  nodeHasMap,
+  nodeHasReports,
+} from '@/lib/topology/nodes'
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 
@@ -152,9 +156,7 @@ const topologyDisplayNodes = computed<string[] | undefined>(() => {
   return topologyComponentConfig.value?.topologyDisplayNodes
 })
 
-const showLeafsAsButton = computed(
-  () => topologyComponentConfig.value?.showLeafNodesAsButtons ?? false,
-)
+const showLeafsAsButton = computed(() => false)
 
 const showActiveThresholdCrossingsForFilters = computed(
   () =>
@@ -325,7 +327,7 @@ async function reroute(
           topologyId,
         },
       }
-    } else if (!nodeHasReports(node)) {
+    } else if (!nodeHasReports(node) && !nodeHasMap(node)) {
       return nodesStore.getRouteTarget(
         nodeButtonItems(
           node,

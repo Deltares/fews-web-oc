@@ -81,6 +81,7 @@ import {
   filterFeaturesByThresholds,
   filterLocationsByThresholds,
 } from '@/lib/thresholds/utils'
+import { getFilterIdsForNode } from '@/lib/topology/nodes'
 
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
@@ -118,7 +119,7 @@ const locationNamesStore = useLocationNamesStore()
 const userSettings = useUserSettingsStore()
 
 const boundingBox = computed(() => props.topologyNode?.boundingBox)
-const filterIds = computed(() => props.topologyNode?.filterIds ?? [])
+const filterIds = computed(() => getFilterIdsForNode(props.topologyNode))
 const filterOptions = computed(() => {
   const attributeIds = [
     props.settings.charts.timeSeriesChart.locationEnabledAttribute,

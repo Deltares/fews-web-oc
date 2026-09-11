@@ -1,12 +1,27 @@
 import { describe, expect, it } from 'vitest'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import {
+  getFilterIdsForNode,
   getReportModuleInstanceIdsForNode,
   nodeHasReports,
   recursiveUpdateNode,
 } from './nodes'
 
 describe('getReportModuleInstanceIdsForNode', () => {
+  it('normalizes plural and singular filter ids', () => {
+    const topologyNode = {
+      id: 'viewer_meteorology_rainfall',
+      name: 'Rainfall',
+      filterIds: ['Rain Gauges'],
+      filterId: 'Forecast Rainfall',
+    } as unknown as TopologyNode
+
+    expect(getFilterIdsForNode(topologyNode)).toEqual([
+      'Rain Gauges',
+      'Forecast Rainfall',
+    ])
+  })
+
   it('collects report module instance ids from nested topology nodes', () => {
     const topologyNode = {
       id: 'viewer_meteorology_rainfall',
@@ -84,7 +99,7 @@ describe('getReportModuleInstanceIdsForNode', () => {
     })
   })
 
-  it('only makes branch nodes selectable when they contain reports', () => {
+  it('makes branch nodes selectable when they contain reports or have their own filter ids', () => {
     const topologyNodes = [
       {
         id: 'forecast',
@@ -96,6 +111,21 @@ describe('getReportModuleInstanceIdsForNode', () => {
             gridDisplaySelection: {
               groupId: 'precipitation',
               plotId: 'saws4',
+            },
+          },
+        ],
+      },
+      {
+        id: 'comparison',
+        name: 'Comparison',
+        filterIds: ['Rain Gauges'],
+        topologyNodes: [
+          {
+            id: 'comparison_rain_gauges',
+            name: 'Rain Gauges',
+            gridDisplaySelection: {
+              groupId: 'precipitation',
+              plotId: 'rain_gauges',
             },
           },
         ],
@@ -118,6 +148,13 @@ describe('getReportModuleInstanceIdsForNode', () => {
     expect(items[0].to).toBeUndefined()
     expect(items[0].children?.[0].to).toBeDefined()
     expect(items[1].to).toEqual({
+      name: 'TopologyDisplay',
+      params: {
+        nodeId: 'comparison',
+        topologyId: 'main',
+      },
+    })
+    expect(items[2].to).toEqual({
       name: 'TopologyDisplay',
       params: {
         nodeId: 'observed',

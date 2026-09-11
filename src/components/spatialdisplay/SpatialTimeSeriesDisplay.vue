@@ -33,6 +33,7 @@ import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
+import { getFilterIdsForNode } from '@/lib/topology/nodes'
 
 interface Props {
   layerName?: string
@@ -57,7 +58,7 @@ const isGridCoordinateMode = computed(
   () => !!(props.longitude && props.latitude),
 )
 
-const filterIds = computed(() => props.topologyNode?.filterIds ?? [])
+const filterIds = computed(() => getFilterIdsForNode(props.topologyNode))
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { layerCapabilities } = useWmsLayerCapabilities(
