@@ -13,7 +13,7 @@
         v-for="permissionId in permissionsStore.assignedPermissionIds"
         :key="permissionId"
       >
-        {{ permissionId }}
+        {{ permissionsStore.getPermissionName(permissionId) }}
         <template v-if="canExcludePermissions" #append>
           <v-list-item-action>
             <v-checkbox-btn v-model="isActive[permissionId]" />
