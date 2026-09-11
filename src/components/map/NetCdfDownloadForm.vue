@@ -154,7 +154,6 @@ import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { configManager } from '@/services/application-config'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles'
-import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import { convertDateToDateTimeString } from '@/lib/date'
 import { toMercator } from '@turf/projection'
 import CopyUrlLink from '@/components/share/CopyUrlLink.vue'
@@ -167,6 +166,7 @@ import {
 import { useDownloadDisclaimerStore } from '@/stores/downloadDisclaimer'
 import { useAlertsStore } from '@/stores/alerts'
 import DownloadDisclaimerAcceptance from '@/components/download/DownloadDisclaimerAcceptance.vue'
+import { getRequestHeaders } from '@/lib/requests/transformRequest.ts'
 
 interface Props {
   layerName: string
@@ -329,7 +329,7 @@ async function download() {
   isDownloading.value = true
 
   try {
-    const headers = await authenticationManager.getAuthorizationHeaders()
+    const headers = await getRequestHeaders()
 
     const startTime = new Date(startTimeInput.value).toISOString()
     const endTime = new Date(endTimeInput.value).toISOString()
