@@ -2,18 +2,55 @@
   <template v-for="item in props.items" :key="item.id">
     <template v-if="item.children?.length">
       <v-list-group :value="item.id" class="tree-menu--list-group">
-        <template v-slot:activator="{ props }">
-          <v-list-item v-bind="props">
+        <template v-slot:activator="{ props: activatorProps }">
+          <v-list-item
+            v-if="item.to"
+            :to="item.to"
+            :active="props.active === item.id"
+            class="tree-menu--list-group-item tree-menu--list-group-item--selectable"
+          >
             <template v-slot:prepend>
               <ColumnItemIcon :item="item" />
             </template>
             <v-list-item-title>{{ item.name }}</v-list-item-title>
-            <template v-slot:append="{ isActive }">
+            <template v-slot:append>
+              <v-icon v-if="item.appendIcon">
+                {{ item.appendIcon }}
+              </v-icon>
+              <v-btn
+                v-bind="activatorProps"
+                size="x-small"
+                variant="text"
+                density="compact"
+                :icon="
+                  activatorProps['aria-expanded'] === 'true'
+                    ? 'mdi-chevron-up'
+                    : 'mdi-chevron-down'
+                "
+                :aria-label="
+                  activatorProps['aria-expanded'] === 'true'
+                    ? 'Collapse node'
+                    : 'Expand node'
+                "
+                @click.prevent.stop
+              />
+            </template>
+          </v-list-item>
+          <v-list-item v-else v-bind="activatorProps">
+            <template v-slot:prepend>
+              <ColumnItemIcon :item="item" />
+            </template>
+            <v-list-item-title>{{ item.name }}</v-list-item-title>
+            <template v-slot:append>
               <v-icon v-if="item.appendIcon">
                 {{ item.appendIcon }}
               </v-icon>
               <v-icon>
-                {{ isActive ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+                {{
+                  activatorProps['aria-expanded'] === 'true'
+                    ? 'mdi-chevron-up'
+                    : 'mdi-chevron-down'
+                }}
               </v-icon>
             </template>
           </v-list-item>
@@ -99,6 +136,14 @@ const props = withDefaults(defineProps<Props>(), {
 
 :deep(.v-list-item__spacer) {
   width: 12px !important;
+}
+
+.tree-menu--list-group-item--selectable {
+  border-left: 2px solid rgb(var(--v-theme-primary));
+}
+
+.tree-menu--list-group-item--selectable > :deep(.v-list-item__prepend) {
+  margin-left: -2px;
 }
 
 .alert-icon {

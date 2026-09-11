@@ -21,6 +21,7 @@
       <template v-for="child in item.children" v-bind:key="child.id">
         <v-list-item
           v-if="child.children?.length"
+          :to="child.to"
           @click="
             (event) => {
               onItemClick(event, child)
@@ -34,7 +35,18 @@
           </template>
           <v-list-item-title>{{ child.name }}</v-list-item-title>
           <template v-slot:append>
-            <v-icon v-if="child.children?.length">mdi-chevron-right</v-icon>
+            <v-btn
+              v-if="child.to"
+              size="x-small"
+              variant="text"
+              density="compact"
+              icon="mdi-chevron-right"
+              aria-label="Open child nodes"
+              @click.prevent.stop="openChildNodes($event, child)"
+            />
+            <v-icon v-else-if="child.children?.length"
+              >mdi-chevron-right</v-icon
+            >
             <v-icon v-else-if="child.appendIcon" small>{{
               child.appendIcon
             }}</v-icon>
@@ -131,6 +143,15 @@ function onTitleClick(): void {
 }
 
 function onItemClick(event: Event, item: ColumnItem): void {
+  if (item.children?.length && item.to) {
+    active.value = item.id
+    return
+  }
+
+  openChildNodes(event, item)
+}
+
+function openChildNodes(event: Event, item: ColumnItem): void {
   const s = stack.value
   if (item.children?.length) {
     event.preventDefault()
