@@ -20,7 +20,6 @@ import {
   watch,
   watchEffect,
 } from 'vue'
-import type { RefreshPolicy, RefreshCoordinator } from '@/services/useRefreshCoordinator'
 import { useRefreshCoordinator } from '@/services/useRefreshCoordinator'
 // @ts-ignore
 import { toWgs84 } from '@turf/projection'
@@ -47,9 +46,10 @@ export interface UseWmsReturn {
   timesDefault: Ref<Date | undefined>
   refresh: () => Promise<void>
   loading: Ref<boolean>
-  startPolling: (intervalMs: number) => void
-  stopPolling: () => void
 }
+
+const WMS_CAPABILITIES_POLLING_INTERVAL = 60_000
+
 export function useWmsLayerCapabilities(
   baseUrl: string,
   layerName: MaybeRefOrGetter<string>,
@@ -62,7 +62,6 @@ export function useWmsLayerCapabilities(
   }
 
   const loading = ref(false)
-  let pollingCoordinator: RefreshCoordinator | undefined
 
   const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl, {
@@ -127,30 +126,16 @@ export function useWmsLayerCapabilities(
     }
   }
 
-  const startPolling = (intervalMs: number) => {
-    stopPolling()
-
-    const policies: RefreshPolicy[] = ['onSystemTick', 'onVisibilityResume']
-    if (intervalMs > 0) {
-      policies.push('onInterval')
-    }
-
-    pollingCoordinator = useRefreshCoordinator(
-      async () => {
-        if (loading.value) return
-        await refresh()
-      },
-      {
-        policies,
-        intervalMs,
-      },
-    )
-  }
-
-  const stopPolling = () => {
-    pollingCoordinator?.pause()
-    pollingCoordinator = undefined
-  }
+  useRefreshCoordinator(
+    async () => {
+      if (loading.value) return
+      await refresh()
+    },
+    {
+      policies: ['onSystemTick', 'onVisibilityResume', 'onInterval'],
+      intervalMs: WMS_CAPABILITIES_POLLING_INTERVAL,
+    },
+  )
 
   watchEffect(refresh)
 
@@ -160,8 +145,6 @@ export function useWmsLayerCapabilities(
     timesDefault,
     refresh,
     loading,
-    startPolling,
-    stopPolling,
   }
   provide(WMS_LAYER_CAPABILITIES_KEY, result)
   return result
