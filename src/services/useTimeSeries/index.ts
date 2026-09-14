@@ -85,7 +85,7 @@ export function useTimeSeries(
     controller.abort()
     controller = new AbortController()
     const piProvider = new PiWebserviceProvider(baseUrl, {
-      transformRequestFn: createTransformRequestFn(controller),
+      transformRequestFn: createTransformRequestFn({ controller }),
     })
     const _requests = toValue(requests)
     const _selectedTime = toValue(selectedTime)

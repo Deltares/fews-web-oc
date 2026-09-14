@@ -100,10 +100,9 @@ export const usePermissionsStore = defineStore(
       // initialising this store.
       const disablePermissionExcludes = true
       const piProvider = new PiWebserviceProvider(baseUrl, {
-        transformRequestFn: createTransformRequestFn(
-          undefined,
+        transformRequestFn: createTransformRequestFn({
           disablePermissionExcludes,
-        ),
+        }),
       })
       try {
         const response = await piProvider.getPermissions()
@@ -117,7 +116,9 @@ export const usePermissionsStore = defineStore(
       const piProvider = new PiWebserviceProvider(baseUrl)
       const versionUrl = piProvider.versionUrl('')
 
-      const headers = await getRequestHeaders(true)
+      const headers = await getRequestHeaders({
+        disablePermissionExcludes: true,
+      })
       headers.set(FEWS_PERMISSION_EXCLUDES_HEADER, 'dummy')
 
       // Try an options request with the permission excludes header on the
