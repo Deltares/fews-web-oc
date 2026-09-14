@@ -5,7 +5,7 @@ import type {
   SystemTimeBasis,
   SystemTimeUpdatePattern,
 } from '@/services/system-time/model'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 export const CLOCK_TICK_MS = 1000
 const RESYNC_INTERVAL_MS = 60_000
@@ -78,7 +78,7 @@ export const useSystemTimeStore = defineStore('systemTime', () => {
     resyncTimer.value = undefined
   }
 
-  function changeInterval() {
+  watch(selectedInterval, () => {
     if (selectedInterval.value === 'default') {
       startTime.value = undefined
       endTime.value = undefined
@@ -90,7 +90,7 @@ export const useSystemTimeStore = defineStore('systemTime', () => {
       startTime.value = newStartTime
       endTime.value = newEndTime
     }
-  }
+  })
 
   void startClock()
 
@@ -109,6 +109,5 @@ export const useSystemTimeStore = defineStore('systemTime', () => {
     syncFromBackend,
     startClock,
     stopClock,
-    changeInterval,
   }
 })

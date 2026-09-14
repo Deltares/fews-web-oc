@@ -65,7 +65,6 @@
             v-model="store.selectedInterval"
             :items="intervalItems"
             :now="store.systemTime"
-            @update:modelValue="onIntervalChange"
           />
         </v-col>
       </v-row>
@@ -198,10 +197,6 @@ watch(
     }, 0)
   },
 )
-
-function onIntervalChange() {
-  store.changeInterval()
-}
 </script>
 <style scoped>
 .menu {
