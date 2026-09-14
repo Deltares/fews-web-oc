@@ -4,12 +4,10 @@
       <div class="icon-group" v-bind="props">
         <div class="icon-group__underlay"></div>
         <span
-          class="systemtime-status"
-          :class="{ 'systemtime-status--running': isRunningMode }"
-          :title="modeLabel"
+          class="systemtime-status systemtime-status--running"
           aria-label="System time mode"
         >
-          <v-icon class="systemtime-status__icon">{{ modeIcon }}</v-icon>
+          <v-icon class="systemtime-status__icon">mdi-clock-outline</v-icon>
           <span
             class="systemtime-status__dot"
             :class="{ 'systemtime-status__dot--pulse': syncPulseActive }"
@@ -68,12 +66,6 @@
           />
         </v-col>
       </v-row>
-      <v-card-actions>
-        <span>System time:</span>
-        <v-chip small>
-          {{ store.timeBasis }} | {{ store.updatePattern }}
-        </v-chip>
-      </v-card-actions>
     </v-card>
   </v-menu>
 </template>
@@ -129,42 +121,9 @@ const systemTimeLabel = computed(() => {
     : d(store.systemTime, 'timeControl')
 })
 
-const isRunningMode = computed(() => store.updatePattern !== 'static')
-
 const runningDotStyle = computed(() => ({
   animationDuration: `${CLOCK_TICK_MS}ms`,
 }))
-
-const modeIcon = computed(() => {
-  if (store.updatePattern === 'static') {
-    return 'mdi-history'
-  }
-
-  if (store.timeBasis === 'offset') {
-    if (store.updatePattern === 'step') {
-      return 'mdi-clock-edit-outline'
-    }
-    return 'mdi-clock-star-four-points-outline'
-  }
-
-  if (store.updatePattern === 'step') {
-    return 'mdi-clock-time-eight-outline'
-  }
-
-  return 'mdi-clock-outline'
-})
-
-const modeLabel = computed(() => {
-  if (store.updatePattern === 'static') {
-    return `System time mode: ${store.timeBasis}, static`
-  }
-
-  if (store.updatePattern === 'step') {
-    return `System time mode: ${store.timeBasis}, step`
-  }
-
-  return `System time mode: ${store.timeBasis}, continuous`
-})
 
 watchEffect(() => {
   if (isCustomInterval.value && dateOrderIsCorrect.value) {

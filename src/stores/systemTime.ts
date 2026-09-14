@@ -1,22 +1,19 @@
 import { intervalToDateRange, type Interval } from '@/lib/TimeControl/interval'
 import { defineStore } from 'pinia'
-import { systemTimeAuthority } from '@/services/system-time'
-import type {
-  SystemTimeBasis,
-  SystemTimeUpdatePattern,
-} from '@/services/system-time/model'
+import {
+  systemTimeAuthority,
+  SystemTimeSyncSnapshot,
+} from '@/services/system-time'
 import { ref, watch } from 'vue'
 
 export const CLOCK_TICK_MS = 1000
 const RESYNC_INTERVAL_MS = 60_000
 
 export const useSystemTimeStore = defineStore('systemTime', () => {
+  let intervalTimer: ReturnType<typeof setInterval> | undefined = undefined
+  let resyncTimer: ReturnType<typeof setInterval> | undefined = undefined
+
   const systemTime = ref(new Date())
-  const intervalTimer = ref<ReturnType<typeof setInterval>>()
-  const resyncTimer = ref<ReturnType<typeof setInterval>>()
-  const timeBasis = ref<SystemTimeBasis>('actual')
-  const updatePattern = ref<SystemTimeUpdatePattern>('continuous')
-  const updateIntervalMs = ref<number>()
   const lastSyncedAt = ref<Date>()
   const syncError = ref<string>()
   const startTime = ref<Date>()
@@ -24,58 +21,45 @@ export const useSystemTimeStore = defineStore('systemTime', () => {
   const selectedInterval = ref<Interval>('default')
 
   async function syncFromBackend() {
+    syncError.value = undefined
+
+    let snapshot: SystemTimeSyncSnapshot
     try {
-      const snapshot = await systemTimeAuthority.syncFromBackend()
-      systemTime.value = snapshot.systemTime
-      timeBasis.value = snapshot.timeBasis
-      updatePattern.value = snapshot.updatePattern
-      updateIntervalMs.value = snapshot.updateIntervalMs
-      lastSyncedAt.value = new Date(snapshot.fetchedAtClientMs)
-      syncError.value = undefined
+      snapshot = await systemTimeAuthority.syncFromBackend()
     } catch (error) {
-      const snapshot = systemTimeAuthority.hasAnchor()
+      snapshot = systemTimeAuthority.hasAnchor()
         ? {
             systemTime: systemTimeAuthority.now(),
-            timeBasis: systemTimeAuthority.timeBasis(),
-            updatePattern: systemTimeAuthority.updatePattern(),
-            updateIntervalMs: systemTimeAuthority.updateIntervalMs(),
             fetchedAtClientMs: Date.now(),
           }
         : systemTimeAuthority.setFallbackRunningNow()
 
-      systemTime.value = snapshot.systemTime
-      timeBasis.value = snapshot.timeBasis
-      updatePattern.value = snapshot.updatePattern
-      updateIntervalMs.value = snapshot.updateIntervalMs
-      lastSyncedAt.value = new Date(snapshot.fetchedAtClientMs)
       syncError.value = error instanceof Error ? error.message : String(error)
       console.warn(`Failed to synchronise FEWS system time: ${syncError.value}`)
     }
+
+    systemTime.value = snapshot.systemTime
+    lastSyncedAt.value = new Date(snapshot.fetchedAtClientMs)
   }
 
   async function startClock() {
     await syncFromBackend()
 
-    if (updatePattern.value === 'static') {
-      stopClock()
-      return
-    }
-
     stopClock()
-    intervalTimer.value = setInterval(() => {
+    intervalTimer = setInterval(() => {
       systemTime.value = systemTimeAuthority.now()
     }, CLOCK_TICK_MS)
 
-    resyncTimer.value = setInterval(() => {
+    resyncTimer = setInterval(() => {
       void syncFromBackend()
     }, RESYNC_INTERVAL_MS)
   }
 
   function stopClock() {
-    clearInterval(intervalTimer.value)
-    clearInterval(resyncTimer.value)
-    intervalTimer.value = undefined
-    resyncTimer.value = undefined
+    clearInterval(intervalTimer)
+    clearInterval(resyncTimer)
+    intervalTimer = undefined
+    resyncTimer = undefined
   }
 
   watch(selectedInterval, () => {
@@ -96,18 +80,10 @@ export const useSystemTimeStore = defineStore('systemTime', () => {
 
   return {
     systemTime,
-    intervalTimer,
-    resyncTimer,
-    timeBasis,
-    updatePattern,
-    updateIntervalMs,
     lastSyncedAt,
     syncError,
     startTime,
     endTime,
     selectedInterval,
-    syncFromBackend,
-    startClock,
-    stopClock,
   }
 })
