@@ -32,6 +32,10 @@ export const usePermissionsStore = defineStore(
     )
     const excludedPermissionIds = ref<string[]>([])
 
+    const hasAssignedPermissions = computed<boolean>(
+      () => assignedPermissionIds.value.length > 0,
+    )
+
     const excludedPermissionsKey = computed<string>(() => {
       if (excludedPermissionIds.value.length === 0) return 'none-excluded'
       return excludedPermissionIds.value.toSorted().join(',')
@@ -145,6 +149,7 @@ export const usePermissionsStore = defineStore(
       assignedPermissionIds,
       excludedPermissionIds,
       excludedPermissionsKey,
+      hasAssignedPermissions,
       isActivePermission,
       getPermissionName,
       getPermissionsExcludesHeader,

@@ -46,7 +46,7 @@
           <a :href="webServiceUrl">{{ webServiceUrl }} </a>
         </v-col>
       </v-row>
-      <v-row>
+      <v-row v-if="permissionsStore.hasAssignedPermissions">
         <v-col cols="12">
           <ExcludedPermissionsControl />
         </v-col>
@@ -60,6 +60,7 @@ import { onMounted, ref } from 'vue'
 import packageConfig from '../../package.json'
 import { PiWebserviceProvider, Version } from '@deltares/fews-pi-requests'
 import { useConfigStore } from '../stores/config.ts'
+import { usePermissionsStore } from '@/stores/permissions.ts'
 import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
@@ -78,6 +79,7 @@ const webServiceVersion = ref<Version>({
   buildTime: '',
 })
 const configStore = useConfigStore()
+const permissionsStore = usePermissionsStore()
 
 onMounted(async () => {
   const webServiceProvider = new PiWebserviceProvider(webServiceUrl, {
