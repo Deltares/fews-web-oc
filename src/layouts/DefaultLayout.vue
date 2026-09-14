@@ -216,6 +216,7 @@ watch(
   () => {
     nextTick(updateAppBarStyles)
   },
+  { immediate: true },
 )
 
 useCustomStyleSheet({ onload: updateAppBarStyles })
