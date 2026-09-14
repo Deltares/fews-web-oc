@@ -21,6 +21,8 @@
             :style="active ? activeStyle : style"
             @mouseover="hideLabel = false"
             @mouseleave="hideLabel = true"
+            @focus="hideLabel = false"
+            @blur="hideLabel = true"
           ></div>
         </template>
         <template v-slot:label="{ label }">
