@@ -109,7 +109,7 @@
           v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort }"
         >
           <tr>
-            <template v-for="(column, index) in columns" :key="column.key">
+            <template v-for="(column, index) in columns" :key="index">
               <th v-if="index === 0" scope="col"></th>
               <th v-else-if="column.key === 'actions'" scope="col">
                 <v-btn icon size="small" variant="plain">
