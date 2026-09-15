@@ -17,7 +17,9 @@
     "finished": "finished",
     "failed": "failed",
     "maximizeChart": "Maximize chart",
-    "restoreChart": "Restore chart"
+    "restoreChart": "Restore chart",
+    "apply": "Apply",
+    "reset": "Reset"
   },
   "layout": {
     "about": "About",
@@ -80,7 +82,9 @@
   },
   "userSettings": {
     "allSettings": "All settings",
-    "settings": "Settings"
+    "settings": "Settings",
+    "permissions": "Permissions",
+    "excluding-permissions-disallowed": "Simulating disabled permissions is not allowed by the server."
   },
   "wms": {
     "layers": "Layers",
