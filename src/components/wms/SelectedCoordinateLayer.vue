@@ -82,7 +82,7 @@ useLayer(
   source,
 )
 
-const onMove = (e: MapMouseEvent) => {
+const onMove = (e: MapMouseEvent | MapTouchEvent) => {
   coordinate.value = e.lngLat
   canvas.style.cursor = 'grabbing'
 }
