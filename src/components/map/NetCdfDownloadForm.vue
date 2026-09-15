@@ -156,7 +156,6 @@ import { configManager } from '@/services/application-config'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import { convertDateToDateTimeString } from '@/lib/date'
-import { toMercator } from '@turf/projection'
 import CopyUrlLink from '@/components/share/CopyUrlLink.vue'
 import DrawBoundingBoxControl from './DrawBoundingBoxControl.vue'
 import type { BoundingBox } from '@/services/useBoundingBox'
@@ -289,6 +288,7 @@ interface NetCdfFilter extends Omit<TimeSeriesGridFilter, 'documentFormat'> {
   documentFormat: 'PI_NETCDF'
   netcdfFormat?: NetCdfFormat
   pointCloud?: boolean
+  crs?: 'EPSG:3857' | 'EPSG:4326'
 }
 
 const url = computed(() => {
@@ -311,10 +311,10 @@ const url = computed(() => {
 
   if (downloadType.value === 'pointCloud') {
     filter.pointCloud = true
-
+    filter.crs = 'EPSG:4326' // https://epsg.io/?q=4326
     if (bbox.value) {
-      const [minX, minY] = toMercator([bbox.value.lonMin, bbox.value.latMin])
-      const [maxX, maxY] = toMercator([bbox.value.lonMax, bbox.value.latMax])
+      const [minX, minY] = [bbox.value.lonMin, bbox.value.latMin]
+      const [maxX, maxY] = [bbox.value.lonMax, bbox.value.latMax]
       filter.bbox = [minX, minY, maxX, maxY]
     }
   }
