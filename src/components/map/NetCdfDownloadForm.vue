@@ -288,6 +288,7 @@ interface NetCdfFilter extends Omit<TimeSeriesGridFilter, 'documentFormat'> {
   documentFormat: 'PI_NETCDF'
   netcdfFormat?: NetCdfFormat
   pointCloud?: boolean
+  crs?: 'EPSG:3857' | 'EPSG:4326'
 }
 
 const url = computed(() => {
@@ -310,7 +311,7 @@ const url = computed(() => {
 
   if (downloadType.value === 'pointCloud') {
     filter.pointCloud = true
-
+    filter.crs = 'EPSG:4326' // https://epsg.io/?q=4326
     if (bbox.value) {
       const [minX, minY] = [bbox.value.lonMin, bbox.value.latMin]
       const [maxX, maxY] = [bbox.value.lonMax, bbox.value.latMax]
