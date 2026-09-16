@@ -70,6 +70,7 @@ import {
   useTemplateRef,
   type CSSProperties,
 } from 'vue'
+import { useResizeObserver } from '@vueuse/core'
 import {
   AlertLines,
   CrossSectionSelect,
@@ -150,8 +151,6 @@ const legendContainerHeight = ref(0)
 const brushContainerHeight = ref(0)
 const axisTime = ref<CrossSectionSelect<Date>>()
 let zoomedY = false
-let legendResizeObserver: ResizeObserver | undefined
-let brushResizeObserver: ResizeObserver | undefined
 
 onMounted(() => {
   if (!chartContainer.value) return
@@ -201,10 +200,18 @@ onMounted(() => {
   attachAxisVisitors(mouseOver, currentTime)
   resize()
   onValueChange()
-  setupLegendMeasurement()
-  setupBrushMeasurement()
-  globalThis.addEventListener('resize', resize)
 })
+
+// Resizes whenever the chart's own container changes size (e.g. maximize toggle, window resize, layout shifts)
+useResizeObserver(chartContainer, () => resize())
+useResizeObserver(
+  legendContainer,
+  ([entry]) => (legendContainerHeight.value = entry.contentRect.height),
+)
+useResizeObserver(
+  brushContainer,
+  ([entry]) => (brushContainerHeight.value = entry.contentRect.height),
+)
 
 watch(
   () => userSettingsStore.scrollZoomMode,
@@ -222,13 +229,6 @@ watch(
   () => props.highlightTime,
   (newValue) => {
     if (newValue !== undefined) onCrossValueChange(newValue)
-  },
-)
-
-watch(
-  () => props.settings.legend.placement,
-  () => {
-    setupLegendMeasurement()
   },
 )
 
@@ -331,7 +331,7 @@ const toggleLine = (tag: Tag) => {
 
 const resize = () => {
   nextTick(() => {
-    axis.resize()
+    axis?.resize()
   })
 }
 
@@ -349,13 +349,8 @@ const onValueChange = () => {
 }
 
 const beforeDestroy = () => {
-  globalThis.removeEventListener('resize', resize)
   zoom.removeEventListener('zoom', onZoom)
   zoom.removeEventListener('reset-zoom', onResetZoom)
-  legendResizeObserver?.disconnect()
-  legendResizeObserver = undefined
-  brushResizeObserver?.disconnect()
-  brushResizeObserver = undefined
 }
 
 watch(domain, (newDomain) => {
@@ -386,10 +381,6 @@ const plotWeight = computed(() => {
   return props.config.plotWeight
 })
 
-function updateBrushContainerHeight() {
-  brushContainerHeight.value = brushContainer.value?.offsetHeight ?? 0
-}
-
 function attachAxisVisitors(mouseOver: MouseOver, currentTime: CurrentTime) {
   if (props.highlightTime !== undefined) {
     axisTime.value = new CrossSectionSelect(
@@ -409,38 +400,6 @@ function attachAxisVisitors(mouseOver: MouseOver, currentTime: CurrentTime) {
   axis.accept(zoom)
   axis.accept(mouseOver)
   axis.accept(currentTime)
-}
-
-function setupBrushMeasurement() {
-  updateBrushContainerHeight()
-  if (!brushContainer.value) return
-
-  brushResizeObserver = new ResizeObserver(() => {
-    updateBrushContainerHeight()
-  })
-  brushResizeObserver.observe(brushContainer.value)
-}
-
-function updateLegendContainerHeight() {
-  legendContainerHeight.value = legendContainer.value?.offsetHeight ?? 0
-}
-
-function setupLegendMeasurement() {
-  nextTick(() => {
-    legendResizeObserver?.disconnect()
-    legendResizeObserver = undefined
-
-    if (legendContainer.value) {
-      updateLegendContainerHeight()
-      legendResizeObserver = new ResizeObserver(() => {
-        updateLegendContainerHeight()
-      })
-      legendResizeObserver.observe(legendContainer.value)
-      return
-    }
-
-    legendContainerHeight.value = 0
-  })
 }
 
 function getPlotContainerStyle(): CSSProperties {
