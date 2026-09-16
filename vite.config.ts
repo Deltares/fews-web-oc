@@ -63,7 +63,7 @@ export default defineConfig(({ mode }) => {
           `script-src 'self' blob: ${env.DEV_CSP_MEDIA_SRC}`,
           `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_FONT_SRC}`,
           `style-src 'self' blob: ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_STYLE_SRC} 'unsafe-inline'`, // vuetify
-          `worker-src blob: ${env.DEV_CSP_WORKER_SRC}`, // maplibre-gl
+          `worker-src 'self' ${env.DEV_CSP_WORKER_SRC}`, // maplibre-gl
           `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_IMG_SRC}`, // FEWS webservices
           `media-src 'self' ${env.DEV_CSP_MEDIA_SRC}`,
           [
