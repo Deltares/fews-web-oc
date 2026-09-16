@@ -68,7 +68,7 @@ function addToChart(
     case 'bar':
       chart = new ChartBar(data, { tooltip })
       break
-    case 'horizontalColorCode':
+    case 'horizontalColorCode': {
       const matrixData = horizontalColorCodeDataFromData(chartSeries, data)
       chart = new ChartMatrix(matrixData, {
         y: {
@@ -80,6 +80,7 @@ function addToChart(
         tooltip,
       })
       break
+    }
     default:
       chart = new ChartMarker(data, {
         symbol: chartSeries.marker,
@@ -96,17 +97,15 @@ export function refreshChart(
   series: Record<string, Series>,
 ) {
   /* Adds charts to the axis if not yet present, and removes charts that should no longer be there */
-  const ids: string[] = axis.charts.map((c: any) => c.id)
+  const ids: Set<string> = new Set(axis.charts.map((c: any) => c.id))
   const removeIds: string[] = axis.charts.map((c: any) => c.id)
   if (config?.series === undefined) return
   for (const seriesData of config.series) {
     if (!seriesData.visibleInPlot) continue
-    if (!ids.includes(seriesData.id)) {
+    if (!ids.has(seriesData.id)) {
       addToChart(axis, seriesData, series)
     }
-    const index = removeIds.findIndex((item) => {
-      return item === seriesData.id
-    })
+    const index = removeIds.indexOf(seriesData.id)
     if (index >= 0) removeIds.splice(index, 1)
   }
   for (const id of removeIds) {
