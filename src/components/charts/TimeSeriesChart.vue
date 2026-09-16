@@ -411,13 +411,14 @@ function getPlotContainerStyle(): CSSProperties {
     }
   }
   const plotContainerBasis = getPlotContainerBasis()
+  const minAxisHeight = Math.max(plotWeight.value, 80)
   return {
     flexDirection: props.settings.legend.placement.includes('under')
       ? 'column-reverse'
       : 'column',
     flexBasis: `${plotContainerBasis}px`,
     flexGrow: plotWeight.value,
-    minHeight: `${plotContainerBasis + plotWeight.value}px`,
+    minHeight: `${plotContainerBasis + minAxisHeight}px`,
     flexShrink: 0,
   }
 }
