@@ -1,20 +1,26 @@
 <template>
   <div
     class="chart-with-chips d-flex flex-column"
-    :class="{ 'vertical-profile': verticalProfile, maximized: maximized }"
+    :class="{
+      'vertical-profile': verticalProfile,
+      maximized: maximized,
+    }"
     :style="getPlotContainerStyle()"
   >
-    <ChartLegend
+    <div
       v-if="
         settings.legend.placement === 'above chart' ||
         settings.legend.placement === 'under chart'
       "
-      :tags="legendTags"
-      :margin="margin"
-      :settings="settings.legend"
-      @toggle-line="toggleLine"
       ref="legendContainer"
-    />
+    >
+      <ChartLegend
+        :tags="legendTags"
+        :margin="margin"
+        :settings="settings.legend"
+        @toggle-line="toggleLine"
+      />
+    </div>
     <ChartLegendOverlay
       v-else
       :tags="legendTags"
