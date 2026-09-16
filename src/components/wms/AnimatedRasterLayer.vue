@@ -10,6 +10,8 @@ import {
   LngLatBounds,
   MapLayerMouseEvent,
   MapLayerTouchEvent,
+  MapStyleDataEvent,
+  type ErrorEvent as MapLibreErrorEvent,
   type MapSourceDataEvent,
 } from 'maplibre-gl'
 import { configManager } from '@/services/application-config'
@@ -100,8 +102,8 @@ function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   emit('doubleclick', event)
 }
 
-function onStartLoading(e: MapSourceDataEvent): void {
-  if (e.sourceId === props.sourceId) {
+function onStartLoading(e: MapSourceDataEvent | MapStyleDataEvent): void {
+  if (e.dataType === 'source' && e.sourceId === props.sourceId) {
     isLoading.value = true
   }
 }
@@ -112,12 +114,12 @@ function onEndLoading(e: MapSourceDataEvent): void {
   }
 }
 
-function onError(e: ErrorEvent) {
+function onError(e: MapLibreErrorEvent): void {
   // NOTE: All maplibre errors are printed to the console
   //       if no error event listener is added. Abort errors
   //       happen mostly when the user moves the map before
   //       the image is loaded. This is almost never an error.
-  if (e.error.name === 'AbortError' || e.error.message.includes('aborted')) {
+  if (e.error.message.includes('aborted')) {
     return
   }
   console.error(e)

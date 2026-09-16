@@ -71,8 +71,9 @@ export function useLayer(
     if (!map) return
     if (!newLayout) return
 
+    type LayoutProperty = Parameters<typeof map.setLayoutProperty>[1]
     Object.entries(newLayout).forEach(([property, value]) => {
-      map.setLayoutProperty(layerId, property, value)
+      map.setLayoutProperty(layerId, property as LayoutProperty, value)
     })
   })
 
@@ -80,8 +81,9 @@ export function useLayer(
     if (!map) return
     if (!newPaint) return
 
+    type LayoutProperty = Parameters<typeof map.setLayoutProperty>[1]
     Object.entries(newPaint).forEach(([property, value]) => {
-      map.setPaintProperty(layerId, property, value)
+      map.setLayoutProperty(layerId, property as LayoutProperty, value)
     })
   })
 
@@ -190,8 +192,8 @@ export function useSource(
 
 function isImageSourceSpecification(
   source: SourceSpecification | undefined,
-): source is ImageSourceSpecification {
-  return source?.type === 'image'
+): source is ImageSourceSpecification & { url: string } {
+  return source?.type === 'image' && typeof source.url === 'string'
 }
 
 function isGeojsonSourceSpecification(

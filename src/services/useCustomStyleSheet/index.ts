@@ -7,19 +7,22 @@ export function useCustomStyleSheet(options?: { onload: () => void }) {
   const configStore = useConfigStore()
 
   watch(
-    () => configStore.general,
+    () => configStore.general.customStyleSheet,
     async () => {
-      const css = document.getElementById('custom-style-sheet')
-      if (css) return
+      let link = document.getElementById(id) as HTMLLinkElement | null
 
-      const link = document.createElement('link')
-      link.id = id
-      link.rel = 'stylesheet'
+      if (link === null) {
+        link = document.createElement('link')
+        link.id = id
+        link.rel = 'stylesheet'
+        document.head.appendChild(link)
+      }
+
       link.href = await configStore.getCustomStyleSheet()
       if (options?.onload) {
         link.onload = options.onload
       }
-      document.head.appendChild(link)
     },
+    { immediate: true },
   )
 }

@@ -1,7 +1,7 @@
 import type { App as VueApp } from 'vue'
 import { configManager } from '../../services/application-config'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
-import router from '../../router/index.js'
+import router, { initializeRoutes } from '../../router/index.js'
 import { i18n, setI18nLanguage } from '../../plugins/i18n.js'
 import { loadApplicationConfig } from './config-loader.js'
 import { appendConfiguredHeadLinks } from './resource-links.js'
@@ -24,6 +24,8 @@ async function bootstrapApp(app: VueApp<Element>): Promise<void> {
   if (configManager.authenticationIsEnabled) {
     authenticationManager.init(configManager.getUserManagerSettings())
   }
+
+  await initializeRoutes()
 
   const locale = configManager.getWithDefault('VITE_I18N_LOCALE', 'en-GB')
   await setI18nLanguage(i18n, locale)

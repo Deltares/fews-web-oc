@@ -370,6 +370,13 @@ async function addDynamicRoutes() {
   }
 }
 
+export async function initializeRoutes(): Promise<void> {
+  if (routesAreInitialized) return
+
+  await addDynamicRoutes()
+  routesAreInitialized = true
+}
+
 function applyDefaultPathParams(
   component: WebOcComponent,
   params: RouteLocationNormalized['params'],
@@ -434,8 +441,7 @@ router.beforeEach(async (to) => {
   }
 
   if (!routesAreInitialized) {
-    await addDynamicRoutes()
-    routesAreInitialized = true
+    await initializeRoutes()
     if (redirect) {
       return redirect
     }
