@@ -473,7 +473,7 @@ function getChartLayoutStyle() {
   const grow = plotWeight.value
   if (grow === undefined) {
     return {
-      flex: '1 1 332px',
+      flex: '1 1 100%',
     }
   }
   const flexbasis = 25 + 40 // axis.top + axis.bottom
@@ -487,7 +487,7 @@ function getChartLayoutStyle() {
 .chart-container {
   display: flex;
   position: relative;
-  flex: 1 1 332px;
+  flex: 1 1 100%;
   width: 100%;
   fill: currentColor;
   margin: 0px auto;
@@ -506,14 +506,29 @@ function getChartLayoutStyle() {
   display: flex;
   position: relative;
   flex: 1 1 80%;
-  max-height: max(50%, 400px);
+  max-height: max(50%, 275px);
   width: 100%;
+}
+
+@container (height >= 825px) {
+  .chart-with-chips {
+    max-height: max(33.333%, 275px);
+  }
 }
 
 .chart-with-chips.maximized {
   flex: 1 1 100%;
   max-height: none;
   max-width: none;
+}
+
+.chart-with-chips:not(.maximized):nth-child(1):nth-last-child(1) {
+  max-height: 100%;
+}
+
+.chart-with-chips:not(.maximized):nth-child(1):nth-last-child(2),
+.chart-with-chips:not(.maximized):nth-child(2):nth-last-child(1) {
+  max-height: 50%;
 }
 
 .chart-maximize-btn {
