@@ -43,11 +43,13 @@ export function useFetchDomain() {
   }
 
   function refetchChartTimeSeries(newDomain: [Date, Date]) {
-    if (!shouldRefetchAfterDomainUpdate(newDomain)) return
+    const dateDomain = toDateDomain(newDomain)
+    if (!dateDomain) return
+    if (!shouldRefetchAfterDomainUpdate(dateDomain)) return
 
     // Request a time series update with the new domain by updating the
     // domain override, which feeds back into chartOptions via the computed.
-    const [startTime, endTime] = newDomain
+    const [startTime, endTime] = dateDomain
     domain.value = { startTime, endTime }
   }
   const debouncedRefetchChartTimeSeries = debounce(refetchChartTimeSeries, 500)
@@ -56,4 +58,16 @@ export function useFetchDomain() {
     debouncedRefetchChartTimeSeries,
     domain,
   }
+}
+
+function toDateDomain(domain: unknown): [Date, Date] | undefined {
+  if (!Array.isArray(domain) || domain.length !== 2) return
+  if (domain.some((date) => date === null || date === undefined)) return
+
+  const dateDomain = domain.map((date) =>
+    date instanceof Date ? date : new Date(date),
+  )
+  if (dateDomain.some((date) => Number.isNaN(date.getTime()))) return
+
+  return dateDomain as [Date, Date]
 }

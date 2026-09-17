@@ -139,12 +139,14 @@ export function updateChartData(
   hasResetAxes: boolean = false,
 ) {
   let allMissingData = true
+  let hasAddedChart = false
   chartSeries.forEach((chartSeries) => {
     const charts = axis.charts.filter((chart) => chart.id == chartSeries.id)
     if (hasMissingDataResource(chartSeries, series)) return
 
     if (charts.length === 0) {
       addToChart(axis, chartSeries, series)
+      hasAddedChart = true
       return
     }
 
@@ -165,26 +167,16 @@ export function updateChartData(
       chart.data = matrixData ?? data
     })
   })
-  const needsAxisRescale = allMissingData || hasResetAxes
+  const needsAxisRescale = allMissingData || hasAddedChart || hasResetAxes
   if (needsAxisRescale) {
     // Autoscale only the y-axis, the x-axis should keep the domain set from
     // the start and end time or zooming.
     axis.redraw({
-      x: {
-        nice: false,
-        domain: undefined,
-        fullExtent: false,
-      },
       y: { autoScale: true },
     })
   } else {
     // Ensure the current zoom, which might be user-selected, does not change
     axis.redraw({
-      x: {
-        nice: false,
-        domain: undefined,
-        fullExtent: false,
-      },
       y: {
         nice: false,
         domain: undefined,
