@@ -1,13 +1,19 @@
 <template>
   <template v-for="item in props.items" :key="item.id">
     <template v-if="item.children?.length">
-      <v-list-group :value="item.id" class="tree-menu--list-group">
+      <v-list-group
+        :value="item.id"
+        v-model="openGroups[item.id]"
+        :open-on-click="false"
+        class="tree-menu--list-group"
+      >
         <template v-slot:activator="{ props: activatorProps }">
           <v-list-item
             v-if="item.to"
             :to="item.to"
             :active="props.active === item.id"
             class="tree-menu--list-group-item"
+            @click="openGroup(item)"
           >
             <template v-slot:prepend>
               <ColumnItemIcon :item="item" />
@@ -21,7 +27,6 @@
               </v-icon>
               <v-btn
                 v-bind="activatorProps"
-                size="x-small"
                 variant="text"
                 density="compact"
                 :icon="
@@ -34,11 +39,15 @@
                     ? 'Collapse node'
                     : 'Expand node'
                 "
-                @click.prevent.stop
+                @click.prevent.stop="closeGroup(item)"
               />
             </template>
           </v-list-item>
-          <v-list-item v-else v-bind="activatorProps">
+          <v-list-item
+            v-else
+            v-bind="activatorProps"
+            @click="openGroup(item)"
+          >
             <template v-slot:prepend>
               <ColumnItemIcon :item="item" />
             </template>
@@ -103,6 +112,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import ColumnItemIcon from '@/components/general/ColumnItemIcon.vue'
 import type { ColumnItem } from './ColumnItem.js'
 
@@ -117,6 +127,24 @@ const props = withDefaults(defineProps<Props>(), {
   },
   active: '',
 })
+
+const openGroups = ref<Record<string, boolean>>({})
+
+function openGroup(item: ColumnItem) {
+  if (!item.children?.length) {
+    return
+  }
+
+  openGroups.value[item.id] = true
+}
+
+function closeGroup(item: ColumnItem) {
+  if (!item.children?.length) {
+    return
+  }
+
+  openGroups.value[item.id] = false
+}
 </script>
 
 <style scoped>
