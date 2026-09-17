@@ -30,7 +30,7 @@
             class="report-display-view__label ml-5"
           >
             {{ reportToTitle(selectedReport) }}
-        </v-sheet>
+          </v-sheet>
         </template>
         <v-spacer />
         <template v-if="settings.report.analysisTimes">

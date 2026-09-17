@@ -178,6 +178,7 @@ export function toShortHumanReadableDate(
 export function toRelativeTimeString(
   date: Date | string | number | undefined | null,
   referenceDate: Date | string | number = new Date(),
+  locale: string = 'en',
 ): string {
   if (date === undefined || date === null) {
     return '—'
@@ -194,10 +195,13 @@ export function toRelativeTimeString(
   const absoluteDiffMs = Math.abs(diffMs)
 
   if (absoluteDiffMs < 1000) {
-    return 'now'
+    return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(
+      0,
+      'second',
+    )
   }
 
-  const formatter = new Intl.RelativeTimeFormat('en', { numeric: 'always' })
+  const formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'always' })
   const units: Array<{ unit: Intl.RelativeTimeFormatUnit; ms: number }> = [
     { unit: 'year', ms: 1000 * 60 * 60 * 24 * 365.25 },
     { unit: 'month', ms: 1000 * 60 * 60 * 24 * 30.44 },
@@ -215,7 +219,10 @@ export function toRelativeTimeString(
     }
   }
 
-  return 'now'
+  return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(
+    0,
+    'second',
+  )
 }
 
 export function toDateRangeString(
@@ -273,7 +280,7 @@ export function toDateAbsDifferenceString(
     .slice(0, 2)
     .join(' ')
 
-  const result = differenceString ? differenceString : '0s'
+  const result = differenceString || '0s'
 
   if (options?.relativeFormat) {
     return endDateObj.getTime() - startDateObj.getTime() < 0

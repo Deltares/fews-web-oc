@@ -140,6 +140,12 @@ describe('toRelativeTimeString', () => {
     const referenceDate = new Date('2023-10-02T12:00:00Z')
     expect(toRelativeTimeString(date, referenceDate)).toBe('in 12 hours')
   })
+
+  test('respects the requested locale', () => {
+    const date = new Date('2023-10-01T00:00:00Z')
+    const referenceDate = new Date('2023-10-02T12:00:00Z')
+    expect(toRelativeTimeString(date, referenceDate, 'de')).toBe('vor 1 Tag')
+  })
 })
 
 describe('convertJSDateToFewsPiParameter', () => {

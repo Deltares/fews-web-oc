@@ -70,7 +70,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const emit = defineEmits<{
   (e: 'update:selectedReport', report: Report): void
@@ -99,7 +99,9 @@ function currentReportItem(report: Report): ReportItem | undefined {
 
 function formatReportTime(report: Report): string {
   const item = currentReportItem(report)
-  return item?.timeZero ? toRelativeTimeString(item.timeZero) : ''
+  return item?.timeZero
+    ? toRelativeTimeString(item.timeZero, new Date(), locale.value)
+    : ''
 }
 
 function reportToTitle(report: Report) {
