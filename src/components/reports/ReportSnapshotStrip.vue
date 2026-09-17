@@ -33,7 +33,7 @@
             v-if="currentReportItem(report)?.isCurrent"
             class="report-snapshot-strip__label"
           >
-            {{ t('reports.latest') }}
+            {{ t('reports.current') }}
           </span>
           <span class="report-snapshot-strip__time">
             {{ formatReportTime(report) }}

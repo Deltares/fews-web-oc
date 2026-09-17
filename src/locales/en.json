@@ -139,7 +139,7 @@
     "last": "Last {duration}"
   },
   "reports": {
-    "latest": "latest",
+    "current": "current",
     "expandSnapshots": "Expand report snapshots",
     "collapseSnapshots": "Collapse report snapshots"
   }

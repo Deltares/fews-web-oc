@@ -139,7 +139,7 @@
     "last": "Letzte {duration}"
   },
   "reports": {
-    "latest": "aktuell",
+    "current": "aktuell",
     "expandSnapshots": "Berichts-Schnappschüsse erweitern",
     "collapseSnapshots": "Berichts-Schnappschüsse reduzieren"
   }
