@@ -11,7 +11,8 @@
           v-model:domain="visibleDomain"
           :key="subplot.id"
           v-show="
-            maximizedSubplotId === null || maximizedSubplotId === subplot.id
+            maximizedChartSubplotId === null ||
+            maximizedChartSubplotId === subplot.id
           "
           :config="subplot"
           :series="chartSeries"
@@ -20,8 +21,8 @@
           :panHandler="sharedPanHandler"
           :settings="settings.timeSeriesChart"
           :forecastLegend="config.forecastLegend"
-          :maximized="maximizedSubplotId === subplot.id"
-          @toggle-maximize="toggleMaximizeSubplot(subplot.id)"
+          :maximized="maximizedChartSubplotId === subplot.id"
+          @toggle-maximize="toggleMaximizeSubplot('chart', subplot.id)"
         >
           <template #brush="{ margin: chartMargin }">
             <TimeSeriesChartBrush
@@ -46,7 +47,8 @@
         <TimeSeriesChart
           v-for="subplot in elevationChartSubplots"
           v-show="
-            maximizedSubplotId === null || maximizedSubplotId === subplot.id
+            maximizedElevationSubplotId === null ||
+            maximizedElevationSubplotId === subplot.id
           "
           verticalProfile
           :config="subplot"
@@ -55,8 +57,8 @@
           :style="{ minWidth: `${getElevationChartMinWidth(subplot.id)}%` }"
           :zoomHandler="sharedVerticalZoomHandler"
           :settings="settings.verticalProfileChart"
-          :maximized="maximizedSubplotId === subplot.id"
-          @toggle-maximize="toggleMaximizeSubplot(subplot.id)"
+          :maximized="maximizedElevationSubplotId === subplot.id"
+          @toggle-maximize="toggleMaximizeSubplot('elevation', subplot.id)"
         >
         </TimeSeriesChart>
       </KeepAlive>
@@ -206,18 +208,23 @@ const { xs } = useDisplay()
 const { sharedZoomHandler, sharedPanHandler, sharedVerticalZoomHandler } =
   useChartHandlers()
 
-const maximizedSubplotId = ref<string | null>(null)
+type SubplotListKey = 'chart' | 'elevation'
 
-function toggleMaximizeSubplot(id: string): void {
-  maximizedSubplotId.value = maximizedSubplotId.value === id ? null : id
+const maximizedChartSubplotId = ref<string | null>(null)
+const maximizedElevationSubplotId = ref<string | null>(null)
+
+function toggleMaximizeSubplot(list: SubplotListKey, id: string): void {
+  const target =
+    list === 'chart' ? maximizedChartSubplotId : maximizedElevationSubplotId
+  target.value = target.value === id ? null : id
 }
 
 function getElevationChartMinWidth(subplotId: string): number {
-  if (maximizedSubplotId.value === null) {
+  if (maximizedElevationSubplotId.value === null) {
     return xs.value ? 100 : 50
   }
 
-  return maximizedSubplotId.value === subplotId ? 100 : 0
+  return maximizedElevationSubplotId.value === subplotId ? 100 : 0
 }
 
 const tab = defineModel<DisplayType>('displayType', {
@@ -329,6 +336,27 @@ const elevationChartSubplots = computed(() => {
     return props.elevationChartConfig.subplots
   } else {
     return []
+  }
+})
+
+// Clear a maximized id once its subplot no longer exists in the (possibly new) list.
+watch(subplots, (newSubplots) => {
+  if (
+    maximizedChartSubplotId.value !== null &&
+    !newSubplots.some((subplot) => subplot.id === maximizedChartSubplotId.value)
+  ) {
+    maximizedChartSubplotId.value = null
+  }
+})
+
+watch(elevationChartSubplots, (newSubplots) => {
+  if (
+    maximizedElevationSubplotId.value !== null &&
+    !newSubplots.some(
+      (subplot) => subplot.id === maximizedElevationSubplotId.value,
+    )
+  ) {
+    maximizedElevationSubplotId.value = null
   }
 })
 
