@@ -80,7 +80,7 @@ function createSeries(value: number, lastUpdated?: Date): Series {
 }
 
 describe('timeSeriesChart helpers', () => {
-  it('does not create a chart while a required data resource is missing', () => {
+  it('creates configured charts in order even while a required data resource is missing', () => {
     const axis = createAxis()
     const chartSeries = createChartSeries()
 
@@ -88,7 +88,9 @@ describe('timeSeriesChart helpers', () => {
       'resource-a': createSeries(1),
     })
 
-    expect(axis.charts).toEqual([])
+    expect(axis.charts).toHaveLength(1)
+    expect(axis.charts[0].id).toBe('combined-series')
+    expect(axis.charts[0].data).toEqual([])
   })
 
   it('creates a missing chart when the data update has all required resources', () => {
@@ -109,7 +111,10 @@ describe('timeSeriesChart helpers', () => {
         flag: ['', ''],
       },
     ])
-    expect(axis.redraw).toHaveBeenCalledWith({ y: { autoScale: true } })
+    expect(axis.redraw).toHaveBeenCalledWith({
+      x: { autoScale: true },
+      y: { autoScale: true },
+    })
   })
 
   it('reconciles a missing chart when its data resource updates', async () => {
@@ -138,10 +143,13 @@ describe('timeSeriesChart helpers', () => {
     expect(axis.charts[0].data).toEqual([
       { x: new Date('2026-01-01T00:00:00Z'), y: 1, flag: '' },
     ])
-    expect(axis.redraw).toHaveBeenCalledWith({ y: { autoScale: true } })
+    expect(axis.redraw).toHaveBeenCalledWith({
+      x: { autoScale: true },
+      y: { autoScale: true },
+    })
   })
 
-  it('does not redraw the x-axis after data updates', async () => {
+  it('does not redraw the x-axis after non-initial data updates', async () => {
     const scope = effectScope()
     const originalDomain: [Date, Date] = [
       new Date('2026-01-01T00:00:00Z'),
@@ -149,7 +157,10 @@ describe('timeSeriesChart helpers', () => {
     ]
     const axis = createAxis()
     const chartSeries = createChartSeries('series', ['resource-a'])
-    axis.charts.push({ id: 'series', data: [] })
+    axis.charts.push({
+      id: 'series',
+      data: [{ x: new Date('2026-01-01T00:00:00Z'), y: 1, flag: '' }],
+    })
 
     const config = ref(createConfig(chartSeries, originalDomain))
     const series = ref<Record<string, Series>>({
@@ -171,6 +182,12 @@ describe('timeSeriesChart helpers', () => {
       x: { domain: originalDomain },
       y: { autoScale: true },
     })
-    expect(axis.redraw).toHaveBeenCalledWith({ y: { autoScale: true } })
+    expect(axis.redraw).toHaveBeenCalledWith({
+      y: {
+        nice: false,
+        domain: undefined,
+        fullExtent: false,
+      },
+    })
   })
 })

@@ -30,8 +30,6 @@ function addToChart(
   chartSeries: ChartSeries,
   series: Record<string, Series>,
 ) {
-  if (hasMissingDataResource(chartSeries, series)) return
-
   const id = chartSeries.id
 
   const rawData = dataFromResources(chartSeries.dataResources, series)
@@ -167,13 +165,14 @@ export function updateChartData(
       chart.data = matrixData ?? data
     })
   })
-  const needsAxisRescale = allMissingData || hasAddedChart || hasResetAxes
+  const needsInitialScale = allMissingData || hasAddedChart
+  const needsAxisRescale = needsInitialScale || hasResetAxes
   if (needsAxisRescale) {
-    // Autoscale only the y-axis, the x-axis should keep the domain set from
-    // the start and end time or zooming.
-    axis.redraw({
+    const options = {
       y: { autoScale: true },
-    })
+      ...(needsInitialScale ? { x: { autoScale: true } } : {}),
+    }
+    axis.redraw(options)
   } else {
     // Ensure the current zoom, which might be user-selected, does not change
     axis.redraw({
