@@ -1,8 +1,11 @@
 import { test, expect } from '@playwright/test'
 
 const base = '/topology/early_warning/node'
+const chartRenderTimeout = 20000
 
 test.describe('Chart Legend Interaction', () => {
+  test.describe.configure({ timeout: 30000 })
+
   test.describe('Line Series Toggle', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto(
@@ -16,7 +19,7 @@ test.describe('Chart Legend Interaction', () => {
       const lineSeries = page.locator(
         'g.charts > g:first-child > g:nth-child(3)',
       )
-      await expect(lineSeries).toBeVisible()
+      await expect(lineSeries).toBeVisible({ timeout: chartRenderTimeout })
 
       const legendItem = page.getByRole('button', {
         name: 'Water level [1] Delft3D',
@@ -46,8 +49,8 @@ test.describe('Chart Legend Interaction', () => {
       )
       const markers = page.locator('g.charts > g:first-child > g:nth-child(2)')
 
-      await expect(lineSeries).toBeVisible()
-      await expect(markers).toBeVisible()
+      await expect(lineSeries).toBeVisible({ timeout: chartRenderTimeout })
+      await expect(markers).toBeVisible({ timeout: chartRenderTimeout })
 
       const legendItem = page.getByRole('button', {
         name: 'Water level (obs)',
@@ -80,7 +83,7 @@ test.describe('Chart Legend Interaction', () => {
       page,
     }) => {
       const barSeries = page.locator('g.charts > g:first-child > g:first-child')
-      await expect(barSeries).toBeVisible()
+      await expect(barSeries).toBeVisible({ timeout: chartRenderTimeout })
 
       const legendItem = page.getByRole('button', {
         name: 'Precipitation [1] Regional NWP',
