@@ -33,7 +33,7 @@
             v-if="currentReportItem(report)?.isCurrent"
             class="report-snapshot-strip__label"
           >
-            latest
+            {{ t('reports.latest') }}
           </span>
           <span class="report-snapshot-strip__time">
             {{ formatReportTime(report) }}
@@ -46,7 +46,9 @@
         density="compact"
         :icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
         :aria-label="
-          expanded ? 'Collapse report snapshots' : 'Expand report snapshots'
+          expanded
+            ? t('reports.collapseSnapshots')
+            : t('reports.expandSnapshots')
         "
         @click="expanded = !expanded"
       />
@@ -56,6 +58,7 @@
 
 <script setup lang="ts">
 import type { Report, ReportItem } from '@deltares/fews-pi-requests'
+import { useI18n } from 'vue-i18n'
 import { ref } from 'vue'
 import { toRelativeTimeString } from '@/lib/date'
 import ReportSnapshotFrame from './ReportSnapshotFrame.vue'
@@ -67,6 +70,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useI18n()
 
 const emit = defineEmits<{
   (e: 'update:selectedReport', report: Report): void

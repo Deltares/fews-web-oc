@@ -137,5 +137,10 @@
   "periodFilter": {
     "all": "Alle",
     "last": "Letzte {duration}"
+  },
+  "reports": {
+    "latest": "aktuell",
+    "expandSnapshots": "Berichts-Schnappschüsse erweitern",
+    "collapseSnapshots": "Berichts-Schnappschüsse reduzieren"
   }
 }
