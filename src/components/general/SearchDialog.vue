@@ -64,6 +64,16 @@
               :key="item.id"
               :open-all="showAll(item, debouncedSearch)"
             >
+              <template #prepend="{ item: subItem }">
+                <v-img
+                  v-if="subItem.iconName"
+                  :src="getResourcesIconsUrl(subItem.iconName)"
+                  width="24"
+                  height="24"
+                  contain
+                />
+                <v-icon v-else>mdi-map-marker</v-icon>
+              </template>
               <template #title="{ item: subItem }">
                 <HighlightMatch
                   :value="subItem.title"
@@ -95,10 +105,12 @@ import HighlightMatch from './HighlightMatch.vue'
 import { cascadeStrategy } from '@/lib/selection'
 import { refDebounced } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
+import { getResourcesIconsUrl } from '@/lib/fews-config'
 
 interface SearchItem {
   id: string
   title: string
+  iconName?: string
   children?: SearchItem[]
 }
 
