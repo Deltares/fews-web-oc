@@ -175,6 +175,49 @@ export function toShortHumanReadableDate(
   })
 }
 
+export function toRelativeTimeString(
+  date: Date | string | number | undefined | null,
+  referenceDate: Date | string | number = new Date(),
+): string {
+  if (date === undefined || date === null) {
+    return '—'
+  }
+
+  const dateObj = new Date(date)
+  const referenceObj = new Date(referenceDate)
+
+  if (Number.isNaN(dateObj.getTime()) || Number.isNaN(referenceObj.getTime())) {
+    return '—'
+  }
+
+  const diffMs = dateObj.getTime() - referenceObj.getTime()
+  const absoluteDiffMs = Math.abs(diffMs)
+
+  if (absoluteDiffMs < 1000) {
+    return 'now'
+  }
+
+  const formatter = new Intl.RelativeTimeFormat('en', { numeric: 'always' })
+  const units: Array<{ unit: Intl.RelativeTimeFormatUnit; ms: number }> = [
+    { unit: 'year', ms: 1000 * 60 * 60 * 24 * 365.25 },
+    { unit: 'month', ms: 1000 * 60 * 60 * 24 * 30.44 },
+    { unit: 'week', ms: 1000 * 60 * 60 * 24 * 7 },
+    { unit: 'day', ms: 1000 * 60 * 60 * 24 },
+    { unit: 'hour', ms: 1000 * 60 * 60 },
+    { unit: 'minute', ms: 1000 * 60 },
+    { unit: 'second', ms: 1000 },
+  ]
+
+  for (const { unit, ms } of units) {
+    const value = Math.floor(absoluteDiffMs / ms)
+    if (value >= 1) {
+      return formatter.format(Math.sign(diffMs) * value, unit)
+    }
+  }
+
+  return 'now'
+}
+
 export function toDateRangeString(
   startDate: Date | string | number | undefined | null,
   endDate: Date | string | number | undefined | null,
