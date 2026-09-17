@@ -43,11 +43,7 @@
               />
             </template>
           </v-list-item>
-          <v-list-item
-            v-else
-            v-bind="activatorProps"
-            @click="openGroup(item)"
-          >
+          <v-list-item v-else v-bind="activatorProps" @click="openGroup(item)">
             <template v-slot:prepend>
               <ColumnItemIcon :item="item" />
             </template>
