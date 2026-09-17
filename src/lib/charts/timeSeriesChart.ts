@@ -30,6 +30,8 @@ function addToChart(
   chartSeries: ChartSeries,
   series: Record<string, Series>,
 ) {
+  if (hasMissingDataResource(chartSeries, series)) return
+
   const id = chartSeries.id
 
   const rawData = dataFromResources(chartSeries.dataResources, series)
@@ -91,6 +93,13 @@ function addToChart(
   chart.addTo(axis, chartSeries.options, id, chartSeries.style)
 }
 
+function hasMissingDataResource(
+  chartSeries: ChartSeries,
+  series: Record<string, Series>,
+) {
+  return chartSeries.dataResources.some((id) => series[id] === undefined)
+}
+
 export function refreshChart(
   axis: CartesianAxes,
   config: ChartConfig,
@@ -132,12 +141,12 @@ export function updateChartData(
   let allMissingData = true
   chartSeries.forEach((chartSeries) => {
     const charts = axis.charts.filter((chart) => chart.id == chartSeries.id)
-    if (charts.length === 0) return
+    if (hasMissingDataResource(chartSeries, series)) return
 
-    const hasMissingResource = chartSeries.dataResources.some(
-      (id) => series[id] === undefined,
-    )
-    if (hasMissingResource) return
+    if (charts.length === 0) {
+      addToChart(axis, chartSeries, series)
+      return
+    }
 
     const rawData = dataFromResources(chartSeries.dataResources, series)
     const data = removeUnreliableData(rawData)

@@ -65,7 +65,6 @@ import {
   watch,
   onMounted,
   onBeforeUnmount,
-  nextTick,
   computed,
   useTemplateRef,
   type CSSProperties,
@@ -215,7 +214,7 @@ useResizeObserver(
 
 watch(
   () => userSettingsStore.scrollZoomMode,
-  (scrollZoomMode) => zoom.updateOptions({ wheelMode: scrollZoomMode }),
+  (scrollZoomMode) => zoom?.updateOptions({ wheelMode: scrollZoomMode }),
 )
 
 const xTicksDisplay = computed(() =>
@@ -329,9 +328,16 @@ const toggleLine = (tag: Tag) => {
   }
 }
 
+// The svg has a fixed pixel width/height (set by axis.resize()), so while a resize is in
+// flight it still occupies its old size and can skew the surrounding flex layout (e.g. when
+// siblings are toggling visibility). Take it out of flow (rather than hiding it, which would
+// flash) so the container is sized by pure flexbox rules, then resize once that has settled.
 const resize = () => {
-  nextTick(() => {
+  const svgNode = axis?.svg.node()
+  svgNode?.style.setProperty('position', 'absolute')
+  requestAnimationFrame(() => {
     axis?.resize()
+    svgNode?.style.removeProperty('position')
   })
 }
 
@@ -349,11 +355,12 @@ const onValueChange = () => {
 }
 
 const beforeDestroy = () => {
-  zoom.removeEventListener('zoom', onZoom)
-  zoom.removeEventListener('reset-zoom', onResetZoom)
+  zoom?.removeEventListener('zoom', onZoom)
+  zoom?.removeEventListener('reset-zoom', onResetZoom)
 }
 
 watch(domain, (newDomain) => {
+  if (!axis) return
   axis.redraw({ x: { domain: newDomain } })
   resetAxes(!zoomedY)
 })
@@ -364,7 +371,30 @@ const { resetAxes } = useSeriesUpdateChartData(
   () => axis,
 )
 
-watch(() => props.config, onValueChange)
+watch(
+  () => props.config,
+  () => {
+    if (!axis) return
+    onValueChange()
+  },
+)
+
+// KeepAlive can reuse this component for a subplot whose requests changed;
+// when the config update ran before the new data resources had arrived,
+// re-run the full refresh once they become available.
+watch(
+  () => props.series,
+  () => {
+    if (!axis) return
+    const hasUncreatedChart = props.config.series.some(
+      (s) =>
+        s.dataResources.every((id) => props.series[id] !== undefined) &&
+        !axis.charts.some((c: any) => c.id === s.id),
+    )
+    if (hasUncreatedChart) onValueChange()
+  },
+)
+
 onBeforeUnmount(() => {
   beforeDestroy()
 })
