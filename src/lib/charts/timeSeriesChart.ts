@@ -30,6 +30,8 @@ function addToChart(
   chartSeries: ChartSeries,
   series: Record<string, Series>,
 ) {
+  if (hasMissingDataResource(chartSeries, series)) return
+
   const id = chartSeries.id
 
   const rawData = dataFromResources(chartSeries.dataResources, series)
@@ -68,7 +70,7 @@ function addToChart(
     case 'bar':
       chart = new ChartBar(data, { tooltip })
       break
-    case 'horizontalColorCode':
+    case 'horizontalColorCode': {
       const matrixData = horizontalColorCodeDataFromData(chartSeries, data)
       chart = new ChartMatrix(matrixData, {
         y: {
@@ -80,6 +82,7 @@ function addToChart(
         tooltip,
       })
       break
+    }
     default:
       chart = new ChartMarker(data, {
         symbol: chartSeries.marker,
@@ -90,23 +93,28 @@ function addToChart(
   chart.addTo(axis, chartSeries.options, id, chartSeries.style)
 }
 
+function hasMissingDataResource(
+  chartSeries: ChartSeries,
+  series: Record<string, Series>,
+) {
+  return chartSeries.dataResources.some((id) => series[id] === undefined)
+}
+
 export function refreshChart(
   axis: CartesianAxes,
   config: ChartConfig,
   series: Record<string, Series>,
 ) {
   /* Adds charts to the axis if not yet present, and removes charts that should no longer be there */
-  const ids: string[] = axis.charts.map((c: any) => c.id)
+  const ids: Set<string> = new Set(axis.charts.map((c: any) => c.id))
   const removeIds: string[] = axis.charts.map((c: any) => c.id)
   if (config?.series === undefined) return
   for (const seriesData of config.series) {
     if (!seriesData.visibleInPlot) continue
-    if (!ids.includes(seriesData.id)) {
+    if (!ids.has(seriesData.id)) {
       addToChart(axis, seriesData, series)
     }
-    const index = removeIds.findIndex((item) => {
-      return item === seriesData.id
-    })
+    const index = removeIds.indexOf(seriesData.id)
     if (index >= 0) removeIds.splice(index, 1)
   }
   for (const id of removeIds) {
@@ -133,12 +141,12 @@ export function updateChartData(
   let allMissingData = true
   chartSeries.forEach((chartSeries) => {
     const charts = axis.charts.filter((chart) => chart.id == chartSeries.id)
-    if (charts.length === 0) return
+    if (hasMissingDataResource(chartSeries, series)) return
 
-    const hasMissingResource = chartSeries.dataResources.some(
-      (id) => series[id] === undefined,
-    )
-    if (hasMissingResource) return
+    if (charts.length === 0) {
+      addToChart(axis, chartSeries, series)
+      return
+    }
 
     const rawData = dataFromResources(chartSeries.dataResources, series)
     const data = removeUnreliableData(rawData)

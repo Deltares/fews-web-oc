@@ -17,14 +17,29 @@ import {
   AxisPosition,
   AxisType,
 } from '@deltares/fews-web-oc-charts'
+import { hashString } from '../utils/hash.js'
 
 const MAX_MILLISECONDS_FROM_EPOCH = 8.64e15
+
+// Deduplicated axis labels, since subplot items may share the same axisLabel.
+function getAxisLabels(subplot: TimeSeriesDisplaySubplot): Set<string> {
+  const axisLabels = new Set<string>()
+  if (subplot.xAxis?.axisLabel !== undefined) {
+    axisLabels.add(subplot.xAxis.axisLabel)
+  }
+  for (const item of subplot.items) {
+    if (item.yAxis?.axisLabel !== undefined) {
+      axisLabels.add(item.yAxis.axisLabel)
+    }
+  }
+  return axisLabels
+}
 
 export function timeSeriesDisplayToChartConfig(
   subplot: TimeSeriesDisplaySubplot,
 ): ChartConfig {
   const xAxis = subplot.xAxis ? xAxisFromPlotItemXAxis(subplot.xAxis) : []
-  const subplotId = subplot.items.map((plot) => plot.request).toString()
+  const subplotId = hashString([...getAxisLabels(subplot)].join('|'))
   const plotWeight = subplot.items?.[0]?.plotWeight
 
   const config: ChartConfig = {
