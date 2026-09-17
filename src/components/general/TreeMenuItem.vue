@@ -7,12 +7,14 @@
             v-if="item.to"
             :to="item.to"
             :active="props.active === item.id"
-            class="tree-menu--list-group-item tree-menu--list-group-item--selectable"
+            class="tree-menu--list-group-item"
           >
             <template v-slot:prepend>
               <ColumnItemIcon :item="item" />
             </template>
-            <v-list-item-title>{{ item.name }}</v-list-item-title>
+            <v-list-item-title>
+              <span class="tree-menu--selectable-label">{{ item.name }}</span>
+            </v-list-item-title>
             <template v-slot:append>
               <v-icon v-if="item.appendIcon">
                 {{ item.appendIcon }}
@@ -138,12 +140,8 @@ const props = withDefaults(defineProps<Props>(), {
   width: 12px !important;
 }
 
-.tree-menu--list-group-item--selectable {
-  border-left: 2px solid rgb(var(--v-theme-primary));
-}
-
-.tree-menu--list-group-item--selectable > :deep(.v-list-item__prepend) {
-  margin-left: -2px;
+.tree-menu--selectable-label {
+  text-decoration: underline;
 }
 
 .alert-icon {
