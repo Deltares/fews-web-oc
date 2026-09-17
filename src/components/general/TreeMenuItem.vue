@@ -1,19 +1,63 @@
 <template>
   <template v-for="item in props.items" :key="item.id">
     <template v-if="item.children?.length">
-      <v-list-group :value="item.id" class="tree-menu--list-group">
-        <template v-slot:activator="{ props }">
-          <v-list-item v-bind="props">
+      <v-list-group
+        :value="item.id"
+        v-model="openGroups[item.id]"
+        :open-on-click="false"
+        class="tree-menu--list-group"
+      >
+        <template v-slot:activator="{ props: activatorProps }">
+          <v-list-item
+            v-if="item.to"
+            :to="item.to"
+            :active="props.active === item.id"
+            class="tree-menu--list-group-item"
+            @click="openGroup(item)"
+          >
+            <template v-slot:prepend>
+              <ColumnItemIcon :item="item" />
+            </template>
+            <v-list-item-title>
+              <span class="tree-menu--selectable-label">{{ item.name }}</span>
+            </v-list-item-title>
+            <template v-slot:append>
+              <v-icon v-if="item.appendIcon">
+                {{ item.appendIcon }}
+              </v-icon>
+              <v-btn
+                v-bind="activatorProps"
+                variant="text"
+                density="compact"
+                :icon="
+                  activatorProps['aria-expanded'] === 'true'
+                    ? 'mdi-chevron-up'
+                    : 'mdi-chevron-down'
+                "
+                :aria-label="
+                  activatorProps['aria-expanded'] === 'true'
+                    ? 'Collapse node'
+                    : 'Expand node'
+                "
+                @click.prevent.stop="closeGroup(item)"
+              />
+            </template>
+          </v-list-item>
+          <v-list-item v-else v-bind="activatorProps" @click="openGroup(item)">
             <template v-slot:prepend>
               <ColumnItemIcon :item="item" />
             </template>
             <v-list-item-title>{{ item.name }}</v-list-item-title>
-            <template v-slot:append="{ isActive }">
+            <template v-slot:append>
               <v-icon v-if="item.appendIcon">
                 {{ item.appendIcon }}
               </v-icon>
               <v-icon>
-                {{ isActive ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+                {{
+                  activatorProps['aria-expanded'] === 'true'
+                    ? 'mdi-chevron-up'
+                    : 'mdi-chevron-down'
+                }}
               </v-icon>
             </template>
           </v-list-item>
@@ -64,6 +108,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import ColumnItemIcon from '@/components/general/ColumnItemIcon.vue'
 import type { ColumnItem } from './ColumnItem.js'
 
@@ -78,6 +123,24 @@ const props = withDefaults(defineProps<Props>(), {
   },
   active: '',
 })
+
+const openGroups = ref<Record<string, boolean>>({})
+
+function openGroup(item: ColumnItem) {
+  if (!item.children?.length) {
+    return
+  }
+
+  openGroups.value[item.id] = true
+}
+
+function closeGroup(item: ColumnItem) {
+  if (!item.children?.length) {
+    return
+  }
+
+  openGroups.value[item.id] = false
+}
 </script>
 
 <style scoped>
@@ -99,6 +162,10 @@ const props = withDefaults(defineProps<Props>(), {
 
 :deep(.v-list-item__spacer) {
   width: 12px !important;
+}
+
+.tree-menu--selectable-label {
+  text-decoration: underline;
 }
 
 .alert-icon {

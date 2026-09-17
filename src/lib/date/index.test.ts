@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'vitest'
-import { convertJSDateToFewsPiParameter, toDateAbsDifferenceString } from '.'
+import {
+  convertJSDateToFewsPiParameter,
+  toDateAbsDifferenceString,
+  toRelativeTimeString,
+} from '.'
 
 describe('toDateAbsDifferenceString', () => {
   test('with valid dates', () => {
@@ -121,6 +125,26 @@ describe('toDateAbsDifferenceString', () => {
     const endDate = new Date('2023-10-08T05:00:00Z')
     const result = toDateAbsDifferenceString(startDate, endDate)
     expect(result).toBe('1w 5h')
+  })
+})
+
+describe('toRelativeTimeString', () => {
+  test('formats a time in the past as a human readable relative date', () => {
+    const date = new Date('2023-10-01T00:00:00Z')
+    const referenceDate = new Date('2023-10-02T12:00:00Z')
+    expect(toRelativeTimeString(date, referenceDate)).toBe('1 day ago')
+  })
+
+  test('formats a future time as an upcoming relative date', () => {
+    const date = new Date('2023-10-03T00:00:00Z')
+    const referenceDate = new Date('2023-10-02T12:00:00Z')
+    expect(toRelativeTimeString(date, referenceDate)).toBe('in 12 hours')
+  })
+
+  test('respects the requested locale', () => {
+    const date = new Date('2023-10-01T00:00:00Z')
+    const referenceDate = new Date('2023-10-02T12:00:00Z')
+    expect(toRelativeTimeString(date, referenceDate, 'de')).toBe('vor 1 Tag')
   })
 })
 

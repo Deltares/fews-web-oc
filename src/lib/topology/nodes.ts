@@ -4,6 +4,15 @@ import type {
   TopologyThresholdNode,
 } from '@deltares/fews-pi-requests'
 
+interface TopologyNodeWithReportModuleInstanceId extends TopologyNode {
+  reportModuleInstanceId?: string | string[]
+}
+
+type TopologyNodeWithRuntimeFilterIds = TopologyNode & {
+  filterId?: unknown
+  filterIds?: unknown
+}
+
 export function nodeButtonItems(
   node: TopologyNode,
   topologyId: string | undefined,
@@ -107,7 +116,7 @@ function getColumnItemFromTopologyNode(
   }
   if (!hasSupportedDisplay(node) && node.url !== undefined) {
     result.href = getUrl(node)
-  } else {
+  } else if (nodeIsSelectable(node)) {
     result.to = {
       name: 'TopologyDisplay',
       params: {
@@ -117,6 +126,13 @@ function getColumnItemFromTopologyNode(
     }
   }
   return result
+}
+
+function nodeIsSelectable(node: TopologyNode): boolean {
+  if (node.topologyNodes !== undefined) {
+    return nodeHasReports(node) || nodeHasMap(node)
+  }
+  return hasSupportedDisplay(node)
 }
 
 function topologyNodeIsVisible(node: TopologyNode): boolean {
@@ -147,8 +163,20 @@ function hasSupportedDisplay(node: TopologyNode): boolean {
 export function nodeHasMap(node: TopologyNode) {
   return (
     node.gridDisplaySelection !== undefined ||
-    (node.filterIds !== undefined && !node.disableMap)
+    (getFilterIdsForNode(node).length > 0 && !node.disableMap)
   )
+}
+
+export function getFilterIdsForNode(node?: TopologyNode): string[] {
+  if (!node) return []
+
+  const nodeWithFilterIds = node as TopologyNodeWithRuntimeFilterIds
+  return [nodeWithFilterIds.filterIds, nodeWithFilterIds.filterId]
+    .flatMap((filterIds) => {
+      if (Array.isArray(filterIds)) return filterIds
+      return typeof filterIds === 'string' ? [filterIds] : []
+    })
+    .filter((filterId) => filterId.trim() !== '')
 }
 
 export function nodeHasCharts(node: TopologyNode) {
@@ -164,7 +192,38 @@ export function nodeHasDataDownload(node: TopologyNode) {
 }
 
 export function nodeHasReports(node: TopologyNode) {
-  return node.reportDisplay?.reports !== undefined
+  return getReportModuleInstanceIdsForNode(node).length > 0
+}
+
+export function getReportModuleInstanceIdsForNode(
+  node?: TopologyNode,
+): string[] {
+  if (!node) return []
+
+  const nodeWithReportModuleInstanceId =
+    node as TopologyNodeWithReportModuleInstanceId
+  const reportModuleInstanceIds =
+    nodeWithReportModuleInstanceId.reportModuleInstanceId
+  let directReportModuleInstanceIds: string[] = []
+  if (Array.isArray(reportModuleInstanceIds)) {
+    directReportModuleInstanceIds = reportModuleInstanceIds
+  } else if (reportModuleInstanceIds !== undefined) {
+    directReportModuleInstanceIds = [reportModuleInstanceIds]
+  }
+  const reportDisplayModuleInstanceIds =
+    node.reportDisplay?.reports.map((report) => report.moduleInstanceId) ?? []
+  const childReportModuleInstanceIds: string[] =
+    node.topologyNodes?.flatMap((childNode) =>
+      getReportModuleInstanceIdsForNode(childNode),
+    ) ?? []
+
+  return Array.from(
+    new Set([
+      ...directReportModuleInstanceIds,
+      ...reportDisplayModuleInstanceIds,
+      ...childReportModuleInstanceIds,
+    ]),
+  )
 }
 
 export function nodeHasDynamicReportDisplay(node: TopologyNode) {
