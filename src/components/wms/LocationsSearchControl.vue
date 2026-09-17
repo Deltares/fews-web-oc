@@ -85,6 +85,7 @@ function showLocationsSearch() {
 type TreeNode = {
   id: string
   title: string
+  iconName?: string
   children?: TreeNode[]
 }
 
@@ -94,6 +95,7 @@ function buildTree(location: Location): TreeNode {
   return {
     id: location.locationId,
     title: location.locationName ?? '',
+    iconName: location.thresholdIconName ?? location.iconName,
     children,
   }
 }
