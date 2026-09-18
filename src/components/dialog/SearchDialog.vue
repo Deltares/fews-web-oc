@@ -114,6 +114,25 @@
                   >
                     {{ routeForItem(subItem).fullPath }}
                   </span>
+                  <span
+                    v-if="
+                      subItem.type === 'location' &&
+                      isSelectedTreeItem(subItem)
+                    "
+                    class="search-dialog__item-hint"
+                  >
+                    <span>
+                      <kbd>Enter</kbd>
+                      {{
+                        isLocationSelected(subItem)
+                          ? 'Deselect location'
+                          : 'Select location'
+                      }}
+                    </span>
+                    <span>
+                      <kbd>Shift</kbd>+<kbd>Enter</kbd> Add location
+                    </span>
+                  </span>
                 </v-list-item-title>
               </template>
             </v-treeview>
@@ -158,7 +177,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { refDebounced } from '@vueuse/core'
 import { useSearchContext } from '@/stores/searchContext'
 import type { SearchItem } from '@/stores/searchContext'
@@ -172,6 +191,7 @@ const modelValue = defineModel({
 })
 
 const router = useRouter()
+const route = useRoute()
 const searchContext = useSearchContext()
 const searchInput = useTemplateRef<HTMLInputElement>('searchInput')
 const searchResultsContainer =
@@ -294,6 +314,13 @@ function selectTreeItem(item: SearchTreeItem): void {
   if (item.type !== 'group') selectItem(item)
 }
 
+function isLocationSelected(item: SearchItem): boolean {
+  if (item.type !== 'location') return false
+
+  const locationId = String(item.params.locationId)
+  return getCurrentLocationIds().includes(locationId)
+}
+
 function iconForTreeItem(item: SearchTreeItem): string {
   return item.type === 'group' ? 'mdi-map-marker' : iconForItem(item)
 }
@@ -347,12 +374,23 @@ const routeFactories: Record<
     }),
 
   location: (params) =>
-    router.resolve({
-      name: 'SpatialDisplayWithLocation',
-      params: {
-        locationId: params.locationId,
-      },
-    }),
+    route.params.topologyId !== undefined
+      ? router.resolve({
+          name: 'TopologySpatialDisplayWithLocation',
+          params: {
+            topologyId: route.params.topologyId,
+            nodeId: route.params.nodeId,
+            layerName: route.params.layerName,
+            locationIds: params.locationId,
+          },
+          query: route.query,
+        })
+      : router.resolve({
+          name: 'SpatialDisplayWithLocation',
+          params: {
+            locationId: params.locationId,
+          },
+        }),
 
   topology: (params) =>
     router.resolve({
@@ -364,21 +402,70 @@ const routeFactories: Record<
     }),
 }
 
-function routeForItem(item: SearchItem) {
+function routeForItem(item: SearchItem, addLocation = false) {
+  if (item.type === 'location') {
+    return routeForLocation(item, addLocation)
+  }
+
   return routeFactories[item.type](item.params)
 }
 
-function selectItem(item: SearchItem) {
-  router.push(routeForItem(item))
+function routeForLocation(item: SearchItem, addLocation: boolean) {
+  const locationId = String(item.params.locationId)
+  const currentLocationIds = getCurrentLocationIds()
+
+  if (route.params.topologyId !== undefined) {
+    const locationIds = addLocation || !currentLocationIds.includes(locationId)
+      ? [...new Set([...currentLocationIds, locationId])]
+      : currentLocationIds.filter((id) => id !== locationId)
+
+    return router.resolve({
+      name:
+        locationIds.length > 0
+          ? 'TopologySpatialDisplayWithLocation'
+          : 'TopologySpatialDisplay',
+      params: {
+        topologyId: route.params.topologyId,
+        nodeId: route.params.nodeId,
+        layerName: route.params.layerName,
+        ...(locationIds.length > 0
+          ? { locationIds: locationIds.join(',') }
+          : {}),
+      },
+      query: route.query,
+    })
+  }
+
+  if (route.params.locationId === locationId && !addLocation) {
+    return router.resolve({
+      name: 'SpatialDisplay',
+      params: {
+        layerName: route.params.layerName,
+      },
+      query: route.query,
+    })
+  }
+
+  return routeFactories.location(item.params)
+}
+
+function getCurrentLocationIds(): string[] {
+  const currentLocationIds = route.params.locationIds
+  if (Array.isArray(currentLocationIds)) return currentLocationIds
+  return currentLocationIds?.split(',') ?? []
+}
+
+function selectItem(item: SearchItem, addLocation = false) {
+  router.push(routeForItem(item, addLocation))
 }
 
 function close() {
   modelValue.value = false
 }
 
-function selectSelectedItem(): void {
+function selectSelectedItem(event?: KeyboardEvent): void {
   const item = searchResults.value[selectedIndex.value]
-  if (item) selectItem(item)
+  if (item) selectItem(item, event?.shiftKey === true)
 }
 
 function onKeydown(event: KeyboardEvent) {
@@ -548,5 +635,13 @@ watch(modelValue, async (value) => {
   font-style: italic;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.search-dialog__item-hint {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: rgb(var(--v-theme-on-surface), 0.6);
+  font-size: 0.8em;
 }
 </style>
