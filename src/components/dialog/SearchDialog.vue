@@ -1,5 +1,10 @@
 <template>
-  <v-dialog v-model="modelValue" max-width="640" @keydown="onKeydown">
+  <v-dialog
+    v-model="modelValue"
+    max-width="640"
+    class="search-dialog"
+    @keydown="onKeydown"
+  >
     <v-card rounded="lg">
       <v-text-field
         v-model="searchContext.search"
@@ -13,42 +18,38 @@
 
       <v-divider />
 
-      <v-list
-        v-if="searchContext.filteredItems.length"
-        density="comfortable"
-        class="py-2"
-      >
-        <v-list-item
-          v-for="(item, index) in searchContext.filteredItems"
-          :key="item.id"
-          :active="index === selectedIndex"
-          @click="selectItem(item)"
-          @mouseenter="selectedIndex = index"
-        >
-          <template #prepend>
-            <v-icon>
-              {{
-                item.type === 'user'
-                  ? 'mdi-account'
-                  : item.type === 'project'
-                    ? 'mdi-folder'
-                    : 'mdi-file-document'
-              }}
-            </v-icon>
+      <v-list v-if="filteredItems.length" slim class="search-scroll-container py-0">
+        <v-virtual-scroll :items="filteredItems" item-key="id" item-height="40">
+          <template #default="{ item }">
+            <v-treeview
+              :items="[item]"
+              item-title="label"
+              item-value="id"
+              density="compact"
+              indent-lines="simple"
+              class="py-0"
+              :open-all="showAll(item, debouncedSearch)"
+              :key="item.id"
+            >
+              <template #prepend="{ item: subItem }">
+                <v-icon>{{ iconForItem(subItem) }}</v-icon>
+              </template>
+              <template #title="{ item: subItem }">
+                <v-list-item-title
+                  :class="{
+                    'search-dialog__item-title--selected': isSelected(subItem),
+                  }"
+                  @click.stop="selectItem(subItem)"
+                >
+                  <HighlightMatch
+                    :value="subItem.label"
+                    :query="debouncedSearch"
+                  />
+                </v-list-item-title>
+              </template>
+            </v-treeview>
           </template>
-
-          <v-list-item-title>
-            {{ item.label }}
-          </v-list-item-title>
-
-          <v-list-item-subtitle>
-            {{ item.type }}
-          </v-list-item-subtitle>
-
-          <template #append>
-            <v-icon size="small"> mdi-arrow-top-right </v-icon>
-          </template>
-        </v-list-item>
+        </v-virtual-scroll>
       </v-list>
 
       <div v-else class="pa-8 text-center text-medium-emphasis">
@@ -83,10 +84,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { refDebounced } from '@vueuse/core'
 import { useSearchContext } from '@/stores/searchContext'
 import type { SearchItem } from '@/stores/searchContext'
+import { containsSubstring } from '@/lib/search'
+import HighlightMatch from '@/components/general/HighlightMatch.vue'
 
 const modelValue = defineModel({
   type: Boolean,
@@ -97,6 +101,57 @@ const router = useRouter()
 const searchContext = useSearchContext()
 
 const selectedIndex = ref(0)
+const debouncedSearch = refDebounced(
+  computed(() => searchContext.search),
+  100,
+)
+
+const filteredItems = computed(() => {
+  const query = debouncedSearch.value.trim()
+  if (!query) return searchContext.items
+
+  return searchContext.items.filter((item) => isMatchingItem(item, query))
+})
+
+const searchResults = computed(() =>
+  filteredItems.value.flatMap((item) => flattenItems(item)),
+)
+
+function flattenItems(item: SearchItem): SearchItem[] {
+  return [item, ...(item.children?.flatMap(flattenItems) ?? [])]
+}
+
+function isMatchingItem(item: SearchItem, query: string): boolean {
+  return (
+    containsSubstring(item.label, query) ||
+    item.children?.some((child) => isMatchingItem(child, query)) === true
+  )
+}
+
+function showAll(item: SearchItem, query: string): boolean {
+  return Boolean(
+    (query && item.children?.some((child) => isMatchingItem(child, query))) ||
+      item.children?.some((child) => isSelected(child) || hasSelectedChild(child)),
+  )
+}
+
+function hasSelectedChild(item: SearchItem): boolean {
+  return item.children?.some((child) => isSelected(child) || hasSelectedChild(child)) === true
+}
+
+function isSelected(item: SearchItem): boolean {
+  return searchResults.value[selectedIndex.value]?.id === item.id
+}
+
+function iconForItem(item: SearchItem): string {
+  return item.type === 'user'
+    ? 'mdi-account'
+    : item.type === 'project'
+      ? 'mdi-folder'
+      : item.type === 'document'
+        ? 'mdi-file-document'
+        : 'mdi-map-marker'
+}
 
 /**
  * Each search item type defines how its params become a route.
@@ -130,6 +185,14 @@ const routeFactories: Record<
         id: params.id,
       },
     }),
+
+  location: (params) =>
+    router.resolve({
+      name: 'SpatialDisplayWithLocation',
+      params: {
+        locationId: params.locationId,
+      },
+    }),
 }
 
 function routeForItem(item: SearchItem) {
@@ -150,7 +213,7 @@ function onKeydown(event: KeyboardEvent) {
     return
   }
 
-  const items = searchContext.filteredItems
+  const items = searchResults.value
 
   if (event.key === 'ArrowDown') {
     event.preventDefault()
@@ -192,6 +255,10 @@ watch(
   },
 )
 
+watch(filteredItems, () => {
+  selectedIndex.value = 0
+})
+
 watch(modelValue, (value) => {
   if (!value) {
     searchContext.search = ''
@@ -199,3 +266,13 @@ watch(modelValue, (value) => {
   }
 })
 </script>
+
+<style scoped>
+.search-dialog:not(.v-dialog--fullscreen) {
+  max-height: 60vh;
+}
+
+.search-dialog__item-title--selected {
+  background-color: rgb(var(--v-theme-primary), 0.12);
+}
+</style>
