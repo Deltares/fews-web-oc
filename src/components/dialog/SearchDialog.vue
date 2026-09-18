@@ -62,7 +62,7 @@
               density="compact"
               indent-lines="simple"
               class="py-0"
-              open-all
+              v-model:opened="openedTreeIds"
             >
               <template #prepend="{ item: subItem }">
                 <v-icon v-if="subItem.type === 'group'">
@@ -285,14 +285,38 @@ const treeItems = computed<SearchTreeItem[]>(() => {
   }))
 })
 
-const searchResults = computed(() =>
-  resultGroups.value.flatMap((group) =>
-    group.items.flatMap((item) => flattenItems(item)),
-  ),
-)
+const openedTreeIds = ref<string[]>([])
 
-function flattenItems(item: SearchItem): SearchItem[] {
-  return [item, ...(item.children?.flatMap(flattenItems) ?? [])]
+function defaultOpenedTreeIds(): string[] {
+  const query = searchQuery.value
+  const openedIds = treeItems.value.map((group) => group.id)
+
+  if (query) {
+    for (const group of treeItems.value) {
+      collectOpenedDescendants(group.children ?? [], query, openedIds)
+    }
+  }
+
+  return openedIds
+}
+
+const searchResults = computed(() => {
+  const results: SearchItem[] = []
+
+  for (const group of treeItems.value) {
+    collectVisibleItems(group.children ?? [], results)
+  }
+
+  return results
+})
+
+function collectVisibleItems(items: SearchItem[], results: SearchItem[]): void {
+  for (const item of items) {
+    results.push(item)
+    if (item.children && openedTreeIds.value.includes(item.id)) {
+      collectVisibleItems(item.children, results)
+    }
+  }
 }
 
 function isMatchingItem(item: SearchItem, query: string): boolean {
@@ -300,6 +324,30 @@ function isMatchingItem(item: SearchItem, query: string): boolean {
     containsSubstring(item.label, query) ||
     item.children?.some((child) => isMatchingItem(child, query)) === true
   )
+}
+
+function hasMatchingDescendant(
+  item: SearchTreeItem,
+  query: string,
+): boolean {
+  return item.children?.some(
+    (child) =>
+      containsSubstring(child.label, query) ||
+      hasMatchingDescendant(child, query),
+  ) === true
+}
+
+function collectOpenedDescendants(
+  items: SearchItem[],
+  query: string,
+  openedIds: string[],
+): void {
+  for (const item of items) {
+    if (item.children?.length && hasMatchingDescendant(item, query)) {
+      openedIds.push(item.id)
+      collectOpenedDescendants(item.children, query, openedIds)
+    }
+  }
 }
 
 function isSelected(item: SearchItem): boolean {
@@ -465,7 +513,23 @@ function close() {
 
 function selectSelectedItem(event?: KeyboardEvent): void {
   const item = searchResults.value[selectedIndex.value]
-  if (item) selectItem(item, event?.shiftKey === true)
+  if (!item) return
+
+  if (item.children?.length) {
+    toggleTreeItem(item)
+    return
+  }
+
+  selectItem(item, event?.shiftKey === true)
+}
+
+function toggleTreeItem(item: SearchItem): void {
+  const index = openedTreeIds.value.indexOf(item.id)
+  if (index === -1) {
+    openedTreeIds.value = [...openedTreeIds.value, item.id]
+  } else {
+    openedTreeIds.value = openedTreeIds.value.filter((id) => id !== item.id)
+  }
 }
 
 function onKeydown(event: KeyboardEvent) {
@@ -525,6 +589,36 @@ watch(
     selectedIndex.value = 0
   },
 )
+
+watch(
+  searchQuery,
+  () => {
+    openedTreeIds.value = defaultOpenedTreeIds()
+  },
+  { immediate: true },
+)
+
+watch(treeItems, (items) => {
+  const validIds = new Set<string>()
+
+  function collectIds(nodes: SearchTreeItem[]): void {
+    for (const node of nodes) {
+      validIds.add(node.id)
+      if (node.children) {
+        collectIds(node.children)
+      }
+    }
+  }
+
+  collectIds(items)
+  openedTreeIds.value = openedTreeIds.value.filter((id) => validIds.has(id))
+
+  for (const group of items) {
+    if (!openedTreeIds.value.includes(group.id)) {
+      openedTreeIds.value.push(group.id)
+    }
+  }
+})
 
 watch(filteredItems, () => {
   if (searchResults.value.length === 0) {

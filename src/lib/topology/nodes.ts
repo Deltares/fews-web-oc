@@ -119,7 +119,7 @@ function getColumnItemFromTopologyNode(
   return result
 }
 
-function topologyNodeIsVisible(node: TopologyNode): boolean {
+export function topologyNodeIsVisible(node: TopologyNode): boolean {
   if (node.url !== undefined) return true
   if (hasSupportedDisplay(node)) return true
   if (node.topologyNodes === undefined) return false
