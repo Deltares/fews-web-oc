@@ -251,6 +251,7 @@ import { useAggregations } from '@/services/useAggregations'
 import { provideLayerOrder } from '@/services/useLayerOrder'
 import { useOverlays } from '@/services/useOverlays'
 import SnapshotStrip from '@/components/spatialdisplay/SnapshotStrip.vue'
+import { useSearchContext } from '@/stores/searchContext'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -314,6 +315,13 @@ watch(taskRunId, () => {
 
 const locationToChildrenMap = computed(() =>
   createLocationToChildrenMap(props.locations ?? []),
+)
+
+const searchContext = useSearchContext()
+watch(
+  () => props.locations,
+  (locations) => searchContext.setLocations(locations ?? []),
+  { immediate: true },
 )
 
 const selectedDateOfSlider = ref<Date>()
