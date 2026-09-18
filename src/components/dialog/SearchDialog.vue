@@ -75,8 +75,8 @@
                 <v-img
                   v-else-if="subItem.type === 'location' && subItem.iconName"
                   :src="getResourcesIconsUrl(subItem.iconName)"
-                  width="24"
-                  height="24"
+                    width="16"
+                    height="16"
                   contain
                 />
                 <v-icon
