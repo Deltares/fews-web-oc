@@ -73,7 +73,19 @@
                 :open-all="showAll(item, searchQuery)"
               >
                 <template #prepend="{ item: subItem }">
-                  <v-icon>{{ iconForItem(subItem) }}</v-icon>
+                  <v-img
+                    v-if="subItem.type === 'location' && subItem.iconName"
+                    :src="getResourcesIconsUrl(subItem.iconName)"
+                    width="24"
+                    height="24"
+                    contain
+                  />
+                  <v-icon
+                    v-else-if="subItem.type === 'topology' && subItem.iconName"
+                  >
+                    {{ subItem.iconName }}
+                  </v-icon>
+                  <v-icon v-else>{{ iconForItem(subItem) }}</v-icon>
                 </template>
                 <template #title="{ item: subItem }">
                   <v-list-item-title
@@ -137,6 +149,7 @@ import { useSearchContext } from '@/stores/searchContext'
 import type { SearchItem } from '@/stores/searchContext'
 import { containsSubstring } from '@/lib/search'
 import HighlightMatch from '@/components/general/HighlightMatch.vue'
+import { getResourcesIconsUrl } from '@/lib/fews-config'
 
 const modelValue = defineModel({
   type: Boolean,
