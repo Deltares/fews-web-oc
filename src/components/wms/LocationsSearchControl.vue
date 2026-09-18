@@ -350,9 +350,13 @@ const categories = computed(() => {
       })
     }
   })
-  return Array.from(items.values()).toSorted((first, second) =>
-    (first.iconLabel ?? '').localeCompare(second.iconLabel ?? ''),
-  )
+  return Array.from(items.values()).toSorted((first, second) => {
+    const firstHasIcon = (first.iconName !== undefined)
+    const secondHasIcon = (second.iconName !== undefined)
+    if (firstHasIcon && !secondHasIcon) return -1
+    if (!firstHasIcon && secondHasIcon) return 1
+    return (first.iconLabel ?? '').localeCompare(second.iconLabel ?? '')
+  })
 })
 
 const categoriesByLabel = computed(() => {
