@@ -110,12 +110,55 @@
                   />
                   <span
                     v-if="subItem.type === 'topology'"
-                    class="search-dialog__route-path"
+                    class="search-dialog__route-details"
                   >
-                    {{ routeForItem(subItem).fullPath }}
+                    <span
+                      v-if="isSelectedTreeItem(subItem)"
+                      class="search-dialog__route-hint"
+                    >
+                      <template v-if="subItem.children?.length">
+                        <kbd>Space</kbd>
+                        {{
+                          isTreeItemExpanded(subItem) ? 'Collapse' : 'Expand'
+                        }}
+                      </template>
+                      <template v-else>
+                        <kbd>Enter</kbd>
+                        Open
+                      </template>
+                    </span>
+                    <span
+                      v-if="!subItem.children?.length"
+                      class="search-dialog__route-path"
+                    >
+                      {{ routeForItem(subItem).fullPath }}
+                    </span>
                   </span>
                   <span
                     v-if="
+                      subItem.type === 'location' &&
+                      isSelectedTreeItem(subItem) &&
+                      subItem.children?.length
+                    "
+                    class="search-dialog__item-hint"
+                  >
+                    <span>
+                      <kbd>Space</kbd>
+                      {{
+                        isTreeItemExpanded(subItem) ? 'Collapse' : 'Expand'
+                      }}
+                    </span>
+                    <span v-if="subItem.type === 'location'">
+                      <kbd>Enter</kbd>
+                      {{
+                        isExclusivelySelected(subItem)
+                          ? 'Deselect subtree'
+                          : 'Select subtree'
+                      }}
+                    </span>
+                  </span>
+                  <span
+                    v-else-if="
                       subItem.type === 'location' &&
                       isSelectedTreeItem(subItem)
                     "
@@ -124,13 +167,18 @@
                     <span>
                       <kbd>Enter</kbd>
                       {{
-                        isLocationSelected(subItem)
+                        isExclusivelySelected(subItem)
                           ? 'Deselect location'
                           : 'Select location'
                       }}
                     </span>
-                    <span>
-                      <kbd>Shift</kbd>+<kbd>Enter</kbd> Add location
+                    <span v-if="canUseAddLocationShortcut(subItem)">
+                      <kbd>Shift</kbd>+<kbd>Enter</kbd>
+                      {{
+                        isLocationSelected(subItem)
+                          ? 'Remove location'
+                          : 'Add location'
+                      }}
                     </span>
                   </span>
                 </v-list-item-title>
@@ -159,11 +207,6 @@
           <kbd>↑</kbd>
           <kbd>↓</kbd>
           Navigate
-        </span>
-
-        <span>
-          <kbd>Enter</kbd>
-          Open
         </span>
 
         <span>
@@ -369,6 +412,28 @@ function isLocationSelected(item: SearchItem): boolean {
   return getCurrentLocationIds().includes(locationId)
 }
 
+function canUseAddLocationShortcut(item: SearchItem): boolean {
+  const currentLocationIds = getCurrentLocationIds()
+  return (
+    currentLocationIds.length > 0 &&
+    (!isLocationSelected(item) || currentLocationIds.length > 1)
+  )
+}
+
+// Matches Enter's toggle behavior: only deselects when this is the entire route selection.
+function isExclusivelySelected(item: SearchItem): boolean {
+  const locationIds = collectLocationIds(item)
+  const currentLocationIds = getCurrentLocationIds()
+  return (
+    currentLocationIds.length === locationIds.length &&
+    locationIds.every((id) => currentLocationIds.includes(id))
+  )
+}
+
+function isTreeItemExpanded(item: SearchItem): boolean {
+  return openedTreeIds.value.includes(item.id)
+}
+
 function iconForTreeItem(item: SearchTreeItem): string {
   return item.type === 'group' ? 'mdi-map-marker' : iconForItem(item)
 }
@@ -497,6 +562,37 @@ function routeForLocation(item: SearchItem, addLocation: boolean) {
   return routeFactories.location(item.params)
 }
 
+function routeForLocationIds(locationIds: string[]) {
+  if (route.params.topologyId !== undefined) {
+    return router.resolve({
+      name:
+        locationIds.length > 0
+          ? 'TopologySpatialDisplayWithLocation'
+          : 'TopologySpatialDisplay',
+      params: {
+        topologyId: route.params.topologyId,
+        nodeId: route.params.nodeId,
+        layerName: route.params.layerName,
+        ...(locationIds.length > 0
+          ? { locationIds: locationIds.join(',') }
+          : {}),
+      },
+      query: route.query,
+    })
+  }
+
+  return locationIds.length > 0
+    ? router.resolve({
+        name: 'SpatialDisplayWithLocation',
+        params: { locationId: locationIds[0] },
+      })
+    : router.resolve({
+        name: 'SpatialDisplay',
+        params: { layerName: route.params.layerName },
+        query: route.query,
+      })
+}
+
 function getCurrentLocationIds(): string[] {
   const currentLocationIds = route.params.locationIds
   if (Array.isArray(currentLocationIds)) return currentLocationIds
@@ -511,16 +607,56 @@ function close() {
   modelValue.value = false
 }
 
-function selectSelectedItem(event?: KeyboardEvent): void {
+function expandSelectedItem(): void {
   const item = searchResults.value[selectedIndex.value]
   if (!item) return
 
   if (item.children?.length) {
     toggleTreeItem(item)
-    return
+  }
+}
+
+function selectSelectedItem(event?: KeyboardEvent): void {
+  const item = searchResults.value[selectedIndex.value]
+  if (!item) return
+
+  if (item.type === 'location') {
+    selectSelectedLocation(event)
+  } else if (!item.children?.length) {
+    selectItem(item)
+  }
+}
+
+function selectSelectedLocation(event?: KeyboardEvent): void {
+  const item = searchResults.value[selectedIndex.value]
+  if (!item || item.type !== 'location') return
+
+  const locationIds = collectLocationIds(item)
+  const currentLocationIds = getCurrentLocationIds()
+  const addLocation = event?.shiftKey === true
+  let nextLocationIds: string[]
+
+  if (!addLocation) {
+    const isExclusiveSelection =
+      currentLocationIds.length === locationIds.length &&
+      locationIds.every((id) => currentLocationIds.includes(id))
+    nextLocationIds = isExclusiveSelection ? [] : locationIds
+  } else if (locationIds.every((id) => currentLocationIds.includes(id))) {
+    nextLocationIds = currentLocationIds.filter(
+      (id) => !locationIds.includes(id),
+    )
+  } else {
+    nextLocationIds = [...new Set([...currentLocationIds, ...locationIds])]
   }
 
-  selectItem(item, event?.shiftKey === true)
+  router.push(routeForLocationIds(nextLocationIds))
+}
+
+function collectLocationIds(item: SearchItem): string[] {
+  return [
+    String(item.params.locationId),
+    ...(item.children?.flatMap(collectLocationIds) ?? []),
+  ]
 }
 
 function toggleTreeItem(item: SearchItem): void {
@@ -557,15 +693,39 @@ function onKeydown(event: KeyboardEvent) {
     }
   }
 
+  if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    event.preventDefault()
+    toggleSelectedTreeItem(event.key, items)
+  }
+
+  if (event.code === 'Space') {
+    event.preventDefault()
+    expandSelectedItem()
+  }
+
   if (event.key === 'Enter') {
     event.preventDefault()
-    selectSelectedItem()
+    selectSelectedItem(event)
   }
 
   if (event.key === 'Escape') {
     event.preventDefault()
     close()
   }
+}
+
+function toggleSelectedTreeItem(
+  key: string,
+  items: SearchItem[],
+): void {
+  const item = items[selectedIndex.value]
+  if (!item?.children?.length) return
+
+  const isExpanded = isTreeItemExpanded(item)
+  const shouldExpand = key === 'ArrowRight'
+  if (isExpanded === shouldExpand) return
+
+  toggleTreeItem(item)
 }
 
 function scrollSelectedItemIntoView(): void {
@@ -729,6 +889,20 @@ watch(modelValue, async (value) => {
   font-style: italic;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.search-dialog__route-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-dialog__route-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: rgb(var(--v-theme-on-surface), 0.6);
+  font-size: 0.8em;
 }
 
 .search-dialog__item-hint {
