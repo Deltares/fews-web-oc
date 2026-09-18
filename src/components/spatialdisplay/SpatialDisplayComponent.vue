@@ -50,6 +50,7 @@
       v-if="showLocationsLayer && hasLocations"
       :locationsGeoJson="geojson"
       :selectedLocationIds="selectedLocationIds"
+      :selectedLocationCategories="selectedLocationCategories"
       :settings="settings.locationsLayer"
       @click="onLocationClick"
     />
@@ -134,6 +135,7 @@
           :locations="locations"
           :locationToChildrenMap="locationToChildrenMap"
           :selectedLocationIds="selectedLocationIds"
+          v-model:selectedLocationCategories="selectedLocationCategories"
           @changeLocationIds="onLocationsChange"
         />
       </template>
@@ -189,6 +191,7 @@ import MapComponent from '@/components/map/MapComponent.vue'
 import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 
 import { ref, computed, watch, watchEffect } from 'vue'
+import { useStorage } from '@vueuse/core'
 import {
   convertBoundingBoxToLngLatBounds,
   useWmsCapabilities,
@@ -345,6 +348,11 @@ watch(
 )
 
 const selectedLocationIds = computed(() => props.locationIds?.split(',') ?? [])
+const selectedLocationCategories = useStorage<string[]>(
+  'weboc-selected-location-categories-v1.0.0',
+  [],
+  sessionStorage,
+)
 
 const { doShowAggregated, selectedAggregationLabel, aggregations } =
   useAggregations(selectedDate, () => props.layerCapabilities)

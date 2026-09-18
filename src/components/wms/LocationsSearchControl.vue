@@ -5,16 +5,230 @@
         {{ showLocations ? 'mdi-map-marker' : 'mdi-map-marker-off' }}
       </v-icon>
     </v-btn>
+    <template v-if="showLocations">
+      <v-divider vertical />
+      <v-menu transition="slide-y-transition" :close-on-content-click="false">
+        <template #activator="{ props: menuProps, isActive }">
+          <v-btn
+            v-bind="menuProps"
+            variant="text"
+            class="locations-search pl-0"
+            :aria-label="t('search.selectedLocations')"
+          >
+            <template v-for="category in categories" :key="category.value">
+              <v-tooltip
+                v-if="category.thresholdIconName ?? category.iconName"
+                :text="category.iconLabel ?? category.iconName"
+                location="bottom"
+              >
+                <template v-slot:activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    class="location-icon"
+                    :class="{
+                      'location-icon-selected': isIconSelected(category.value),
+                    }"
+                    size="xsmall"
+                    @click.stop="toggleIcon(category.value)"
+                  >
+                    <v-img
+                      :src="
+                        getResourcesIconsUrl(
+                          category.thresholdIconName ?? category.iconName ?? '',
+                        )
+                      "
+                      width="20"
+                      height="16"
+                    />
+                  </v-btn>
+                </template>
+              </v-tooltip>
+              <v-tooltip
+                v-else
+                :text="
+                  category.iconLabel ??
+                  category.iconName ??
+                  t('search.otherLocations')
+                "
+                location="bottom"
+              >
+                <template v-slot:activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    class="location-icon"
+                    :class="{
+                      'location-icon-selected': isIconSelected(category.value),
+                    }"
+                    size="xsmall"
+                    @click.stop="toggleIcon(category.value)"
+                  >
+                    <svg
+                      viewBox="0 0 16 16"
+                      width="16"
+                      height="16"
+                      aria-hidden="true"
+                    >
+                      <circle
+                        cx="8"
+                        cy="8"
+                        r="5"
+                        fill="#dfdfdf"
+                        stroke="black"
+                        stroke-width="1.5"
+                      />
+                    </svg>
+                  </v-btn>
+                </template>
+              </v-tooltip>
+            </template>
+            <v-divider vertical />
+            <span class="ml-2">
+              {{ formatLocationsText(selectedLocations) }}
+            </span>
+            <template #append>
+              <SelectIcon :active="isActive" />
+            </template>
+          </v-btn>
+        </template>
+        <v-list class="information-panel-list" density="compact" width="280">
+          <v-list-subheader>{{ t('search.locationsLegend') }}</v-list-subheader>
+          <v-list-item
+            v-for="group in categoriesByLabel"
+            :key="group.iconLabel ?? defaultIconValue"
+            :class="{
+              'text-disabled': !isLabelSelected(group.iconLabel),
+            }"
+            @click="toggleAllByLabel(group.iconLabel)"
+          >
+            <template #prepend>
+              <v-img
+                v-if="group.thresholdIconName ?? group.iconName"
+                :src="
+                  getResourcesIconsUrl(
+                    group.thresholdIconName ?? group.iconName ?? '',
+                  )
+                "
+                class="mr-2 location-icon"
+                :class="{
+                  'location-icon-selected': isLabelSelected(group.iconLabel),
+                }"
+                width="16"
+                height="16"
+                contain
+              />
+              <svg
+                v-else
+                class="mr-2 location-icon"
+                :class="{
+                  'location-icon-selected': isLabelSelected(group.iconLabel),
+                }"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="8"
+                  cy="8"
+                  r="7"
+                  fill="#dfdfdf"
+                  stroke="black"
+                  stroke-width="2"
+                />
+              </svg>
+            </template>
+            <v-list-item-title>
+              {{ group.iconLabel ?? t('search.otherLocations') }}
+            </v-list-item-title>
+            <template #append>
+              <template
+                v-for="category in group.categories"
+                :key="category.value"
+              >
+                <v-img
+                  v-if="category.thresholdIconName"
+                  :src="getResourcesIconsUrl(category.thresholdIconName ?? '')"
+                  class="mr-2 location-icon"
+                  :class="{
+                    'location-icon-selected': isIconSelected(category.value),
+                  }"
+                  width="16"
+                  height="16"
+                  @click.stop="toggleIcon(category.value)"
+                />
+                <svg
+                  v-else-if="group.categories.length > 1"
+                  class="mr-2 location-icon empty-threshold-icon"
+                  :class="{
+                    'location-icon-selected': isIconSelected(category.value),
+                  }"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  height="16"
+                  aria-hidden="true"
+                  @click.stop="toggleIcon(category.value)"
+                >
+                  <defs>
+                    <pattern
+                      id="no-threshold-pattern"
+                      x="0"
+                      y="0"
+                      width="8"
+                      height="8"
+                      patternUnits="userSpaceOnUse"
+                    >
+                      <path
+                        d="M0 8L8 0M-2 2L2 -2M6 10L10 6"
+                        stroke="#64748b"
+                        stroke-width="3"
+                        fill="none"
+                        stroke-linecap="square"
+                      />
+                    </pattern>
+                  </defs>
+                  <circle
+                    cx="8"
+                    cy="8"
+                    r="7"
+                    fill="url(#no-threshold-pattern)"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                </svg>
+              </template>
+            </template>
+          </v-list-item>
+          <v-divider class="my-2" />
+          <v-list-subheader>{{
+            t('search.selectedLocations')
+          }}</v-list-subheader>
+          <v-list-item v-if="selectedLocations.length === 0">
+            <v-list-item-title class="text-medium-emphasis">
+              {{ t('search.noSelectedLocation') }}
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item
+            v-for="location in selectedLocations"
+            :key="location.locationId"
+            :title="location.locationName"
+          >
+            <v-list-item-subtitle>
+              {{ t('search.locationId') }}: {{ location.locationId }}
+            </v-list-item-subtitle>
+            <v-list-item-subtitle v-if="location.description">
+              {{ location.description }}
+            </v-list-item-subtitle>
+          </v-list-item>
+        </v-list>
+      </v-menu>
 
-    <v-btn
-      variant="text"
-      v-if="showLocations"
-      class="locations-search"
-      hide-details
-      @click="showLocationsSearch"
-    >
-      {{ formatLocationsText(selectedLocations) }}
-    </v-btn>
+      <v-btn
+        icon="mdi-magnify"
+        density="compact"
+        :aria-label="t('search.searchLocation')"
+        @click="showLocationsSearch"
+      />
+    </template>
   </ControlChip>
   <SearchDialog
     v-model="showSearch"
@@ -28,8 +242,36 @@ import { computed, ref, watch } from 'vue'
 import { type Location } from '@deltares/fews-pi-requests'
 import ControlChip from '@/components/wms/ControlChip.vue'
 import SearchDialog from '@/components/general/SearchDialog.vue'
-
+import SelectIcon from '@/components/general/SelectIcon.vue'
+import { getResourcesIconsUrl } from '@/lib/fews-config'
 import { useI18n } from 'vue-i18n'
+import { useStorage } from '@vueuse/core'
+
+type TreeNode = {
+  id: string
+  title: string
+  iconName?: string
+  children?: TreeNode[]
+}
+
+type LocationWithIconLabel = Location & {
+  iconLabel?: string
+}
+
+type IconOption = {
+  category: string
+  iconLabel?: string
+  iconName?: string
+  thresholdIconName?: string
+  value: string
+}
+
+type CategoryGroup = {
+  iconLabel?: string
+  iconName?: string
+  thresholdIconName?: string
+  categories: IconOption[]
+}
 
 const { t } = useI18n()
 
@@ -52,6 +294,19 @@ const showLocations = defineModel<boolean>('showLocations', { default: true })
 const showSearch = ref(false)
 const selectedItems = ref<string[]>([])
 const items = ref<TreeNode[]>([])
+const selectedLocationCategories = defineModel<string[]>(
+  'selectedLocationCategories',
+  {
+    default: () => [],
+  },
+)
+const knownLocationCategories = useStorage<string[]>(
+  'weboc-known-location-categories-v1.0.0',
+  [],
+  sessionStorage,
+)
+
+const defaultIconValue = '__default-location-icon__'
 
 watch(selectedItems, (items) => onSelectLocationIds(items), { deep: true })
 
@@ -59,7 +314,7 @@ watch(
   () => props.selectedLocationIds,
   (ids) => {
     if (ids.length === 0 && selectedItems.value.length === 0) return
-    return (selectedItems.value = ids)
+    selectedItems.value = ids
   },
   { deep: true },
 )
@@ -72,21 +327,115 @@ const selectedLocations = computed<Location[]>(() =>
 
 const hasLocations = computed(() => props.locations?.length)
 
-function getLocationsFromIds(locationIds: string[]) {
-  return props.locations.filter((location) =>
-    locationIds.includes(location.locationId),
+const getLocationCategory = (location: LocationWithIconLabel) => {
+  const activeIcon = location.thresholdIconName ?? location.iconName
+  return `${location.iconLabel}-${activeIcon}`
+}
+
+const categories = computed(() => {
+  const items = new Map<string | undefined, IconOption>()
+
+  props.locations.forEach((location) => {
+    const locationWithIconLabel = location as LocationWithIconLabel
+    const category = getLocationCategory(locationWithIconLabel)
+    console.log('category', category, locationWithIconLabel.iconLabel)
+    if (!items.has(category)) {
+      items.set(category, {
+        category,
+        iconName: location.iconName,
+        iconLabel:
+          locationWithIconLabel.iconLabel ?? locationWithIconLabel.iconName,
+        thresholdIconName: location.thresholdIconName,
+        value: category,
+      })
+    }
+  })
+  return Array.from(items.values()).toSorted((first, second) =>
+    (first.iconLabel ?? '').localeCompare(second.iconLabel ?? ''),
   )
+})
+
+const categoriesByLabel = computed(() => {
+  const groupedByLabel = new Map<string | undefined, CategoryGroup>()
+
+  categories.value.forEach((category) => {
+    const group = groupedByLabel.get(category.iconLabel)
+    if (group) {
+      group.categories.push(category)
+      return
+    }
+
+    groupedByLabel.set(category.iconLabel, {
+      iconLabel: category.iconLabel,
+      iconName: category.iconName,
+      thresholdIconName: category.thresholdIconName,
+      categories: [category],
+    })
+  })
+
+  return Array.from(groupedByLabel.values())
+})
+
+watch(
+  categories,
+  (options) => {
+    const categoryValues = options.map((category) => category.category)
+    const newCategoryValues = categoryValues.filter(
+      (category) => !knownLocationCategories.value.includes(category),
+    )
+
+    selectedLocationCategories.value = Array.from(
+      new Set([...selectedLocationCategories.value, ...newCategoryValues]),
+    )
+    knownLocationCategories.value = Array.from(
+      new Set([...knownLocationCategories.value, ...categoryValues]),
+    )
+  },
+  { immediate: true },
+)
+
+function getLocationsFromIds(locationIds: string[]) {
+  return locationIds
+    .map((locationId) =>
+      props.locations.find((location) => location.locationId === locationId),
+    )
+    .filter((location): location is Location => location !== undefined)
 }
 
 function showLocationsSearch() {
   showSearch.value = true
 }
 
-type TreeNode = {
-  id: string
-  title: string
-  iconName?: string
-  children?: TreeNode[]
+function isIconSelected(iconValue: string): boolean {
+  return selectedLocationCategories.value.includes(iconValue)
+}
+
+function toggleIcon(iconValue: string): void {
+  selectedLocationCategories.value = isIconSelected(iconValue)
+    ? selectedLocationCategories.value.filter((value) => value !== iconValue)
+    : [...selectedLocationCategories.value, iconValue]
+}
+
+function isLabelSelected(iconLabel?: string): boolean {
+  const categoryValues = categories.value
+    .filter((category) => category.iconLabel === iconLabel)
+    .map((category) => category.value)
+
+  return categoryValues.length > 0 && categoryValues.every(isIconSelected)
+}
+
+function toggleAllByLabel(iconLabel?: string): void {
+  const categoryValues = categories.value
+    .filter((category) => category.iconLabel === iconLabel)
+    .map((category) => category.value)
+
+  selectedLocationCategories.value = isLabelSelected(iconLabel)
+    ? selectedLocationCategories.value.filter(
+        (value) => !categoryValues.includes(value),
+      )
+    : Array.from(
+        new Set([...selectedLocationCategories.value, ...categoryValues]),
+      )
 }
 
 function buildTree(location: Location): TreeNode {
@@ -115,15 +464,32 @@ function onSelectLocationIds(ids: string[]) {
 }
 
 function formatLocationsText(locations: Location[]) {
-  if (!locations.length) return t('search.searchLocation')
+  if (!locations.length) return
   if (locations.length > 1) {
     return (
       locations
         .slice(0, 1)
-        .map((l) => l.locationName)
+        .map((l) => l.shortName)
         .join(', ') + ` + ${locations.length - 1} more`
     )
   }
-  return locations.map((l) => l.locationName).join(', ')
+  return locations.map((l) => l.shortName).join(', ')
 }
 </script>
+
+<style scoped>
+.location-icon {
+  padding-left: 2px;
+  padding-right: 2px;
+  opacity: 0.3;
+}
+.location-icon-selected {
+  opacity: 1;
+}
+.empty-threshold-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  opacity: 0.5;
+}
+</style>

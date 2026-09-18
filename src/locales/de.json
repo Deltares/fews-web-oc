@@ -76,6 +76,11 @@
     }
   },
   "search": {
+    "otherLocations": "Andere Messstellen",
+    "locationsLegend": "Messstellensymbole",
+    "selectedLocations": "Ausgewählte Messstellen",
+    "noSelectedLocation": "Keine Messstellen ausgewählt",
+    "locationId": "ID",
     "searchForLocations": "Messstelle",
     "searchLocation": "Messstelle"
   },
