@@ -65,7 +65,7 @@
               v-model:opened="openedTreeIds"
             >
               <template #prepend="{ item: subItem }">
-                <v-icon v-if="subItem.type === 'group'">
+                <v-icon v-if="subItem.type === 'group'" size="16">
                   {{
                     subItem.id === 'topology'
                       ? 'mdi-directions'
@@ -84,7 +84,24 @@
                 >
                   {{ subItem.iconName }}
                 </v-icon>
-                <v-icon v-else>{{ iconForTreeItem(subItem) }}</v-icon>
+                <svg
+                  v-else-if="subItem.type === 'location'"
+                  class="search-dialog__location-marker"
+                  viewBox="0 0 16 16"
+                  width="10"
+                  height="10"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="8"
+                    cy="8"
+                    r="7"
+                    fill="#dfdfdf"
+                    stroke="black"
+                    stroke-width="2"
+                  />
+                </svg>
+                <v-icon v-else size="16">{{ iconForTreeItem(subItem) }}</v-icon>
               </template>
               <template #title="{ item: subItem }">
                 <v-list-item-title
@@ -936,5 +953,9 @@ watch(modelValue, async (value) => {
   color: rgb(var(--v-theme-on-surface), 0.6);
   font-size: 0.8em;
   font-style: italic;
+}
+
+.search-dialog__location-marker {
+  flex-shrink: 0;
 }
 </style>
