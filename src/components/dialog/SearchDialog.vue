@@ -2,57 +2,95 @@
   <v-dialog
     v-model="modelValue"
     max-width="640"
+    height="60vh"
     class="search-dialog"
     @keydown="onKeydown"
   >
-    <v-card rounded="lg">
+    <v-card rounded="lg" class="search-dialog__card">
       <v-text-field
         v-model="searchContext.search"
         autofocus
         hide-details
         prepend-inner-icon="mdi-magnify"
-        placeholder="Search..."
+        :placeholder="searchPlaceholder"
         variant="plain"
-        class="px-4 pt-2"
-      />
+        class="d-flex flex-0-0 w-100 flex-column"
+        @keydown="onSearchKeydown"
+        ><template #prepend-inner>
+          <kbd v-if="searchMode">{{ shortcutForMode(searchMode) }}</kbd>
+        </template>
+      </v-text-field>
 
       <v-divider />
 
-      <v-list v-if="filteredItems.length" slim class="search-scroll-container py-0">
-        <v-virtual-scroll :items="filteredItems" item-key="id" item-height="40">
-          <template #default="{ item }">
-            <v-treeview
-              :items="[item]"
-              item-title="label"
-              item-value="id"
-              density="compact"
-              indent-lines="simple"
-              class="py-0"
-              :open-all="showAll(item, debouncedSearch)"
-              :key="item.id"
+      <div class="search-dialog__results">
+        <div
+          v-for="group in resultGroups"
+          :key="group.type"
+          class="search-dialog__group"
+          :class="{
+            'search-dialog__group--empty': !group.items.length,
+          }"
+        >
+          <div
+            class="d-flex flex-0-0 align-center ga-4 px-4 py-2 text-caption text-medium-emphasis"
+          >
+            <span
+              :class="{
+                'search-dialog__group-title--active':
+                  !searchMode || searchMode === group.type,
+              }"
             >
-              <template #prepend="{ item: subItem }">
-                <v-icon>{{ iconForItem(subItem) }}</v-icon>
-              </template>
-              <template #title="{ item: subItem }">
-                <v-list-item-title
-                  :class="{
-                    'search-dialog__item-title--selected': isSelected(subItem),
-                  }"
-                  @click.stop="selectItem(subItem)"
-                >
-                  <HighlightMatch
-                    :value="subItem.label"
-                    :query="debouncedSearch"
-                  />
-                </v-list-item-title>
-              </template>
-            </v-treeview>
-          </template>
-        </v-virtual-scroll>
-      </v-list>
+              <kbd class="search-dialog__group-shortcut">{{
+                group.shortcut
+              }}</kbd>
+              {{ group.title }}
+            </span>
+          </div>
+          <v-card
+            v-if="group.items.length"
+            variant="flat"
+            class="search-dialog__group-card flex-1"
+          >
+            <v-list slim class="search-scroll-container py-0">
+              <v-treeview
+                v-for="item in group.items"
+                :key="item.id"
+                :items="[item]"
+                item-title="label"
+                item-value="id"
+                density="compact"
+                indent-lines="simple"
+                class="py-0"
+                :open-all="showAll(item, searchQuery)"
+              >
+                <template #prepend="{ item: subItem }">
+                  <v-icon>{{ iconForItem(subItem) }}</v-icon>
+                </template>
+                <template #title="{ item: subItem }">
+                  <v-list-item-title
+                    :class="{
+                      'search-dialog__item-title--selected':
+                        isSelected(subItem),
+                    }"
+                    @click.stop="selectItem(subItem)"
+                  >
+                    <HighlightMatch
+                      :value="subItem.label"
+                      :query="searchQuery"
+                    />
+                  </v-list-item-title>
+                </template>
+              </v-treeview>
+            </v-list>
+          </v-card>
+        </div>
+      </div>
 
-      <div v-else class="pa-8 text-center text-medium-emphasis">
+      <div
+        v-if="!searchResults.length"
+        class="pa-8 text-center text-medium-emphasis"
+      >
         <v-icon size="40" class="mb-2"> mdi-magnify-close </v-icon>
 
         <div>No results found</div>
@@ -100,21 +138,65 @@ const modelValue = defineModel({
 const router = useRouter()
 const searchContext = useSearchContext()
 
+const LOCATION_SEARCH_SHORTCUT = '@' as const
+const TOPOLOGY_SEARCH_SHORTCUT = '#' as const
+
 const selectedIndex = ref(0)
+type SearchMode = 'location' | 'topology'
+const searchMode = ref<SearchMode>()
+
+const searchPlaceholder = computed(() => {
+  if (searchMode.value === 'location') return 'Search locations...'
+  if (searchMode.value === 'topology') return 'Search topology nodes...'
+  return `Search... (${LOCATION_SEARCH_SHORTCUT} locations, ${TOPOLOGY_SEARCH_SHORTCUT} topology)`
+})
+
 const debouncedSearch = refDebounced(
   computed(() => searchContext.search),
   100,
 )
 
-const filteredItems = computed(() => {
-  const query = debouncedSearch.value.trim()
-  if (!query) return searchContext.items
-
-  return searchContext.items.filter((item) => isMatchingItem(item, query))
+const searchQuery = computed(() => {
+  return debouncedSearch.value.trim()
 })
 
+const filteredItems = computed(() => {
+  const items = searchMode.value
+    ? searchContext.items.filter((item) => item.type === searchMode.value)
+    : searchContext.items
+  const query = searchQuery.value
+  if (!query) return items
+
+  return items.filter((item) => isMatchingItem(item, query))
+})
+
+const locationItems = computed(() =>
+  filteredItems.value.filter((item) => item.type === 'location'),
+)
+
+const topologyItems = computed(() =>
+  filteredItems.value.filter((item) => item.type === 'topology'),
+)
+
+const resultGroups = computed(() => [
+  {
+    type: 'topology',
+    title: 'Topology nodes',
+    shortcut: TOPOLOGY_SEARCH_SHORTCUT,
+    items: topologyItems.value,
+  },
+  {
+    type: 'location',
+    title: 'Locations for topology node',
+    shortcut: LOCATION_SEARCH_SHORTCUT,
+    items: locationItems.value,
+  },
+])
+
 const searchResults = computed(() =>
-  filteredItems.value.flatMap((item) => flattenItems(item)),
+  resultGroups.value.flatMap((group) =>
+    group.items.flatMap((item) => flattenItems(item)),
+  ),
 )
 
 function flattenItems(item: SearchItem): SearchItem[] {
@@ -131,12 +213,18 @@ function isMatchingItem(item: SearchItem, query: string): boolean {
 function showAll(item: SearchItem, query: string): boolean {
   return Boolean(
     (query && item.children?.some((child) => isMatchingItem(child, query))) ||
-      item.children?.some((child) => isSelected(child) || hasSelectedChild(child)),
+    item.children?.some(
+      (child) => isSelected(child) || hasSelectedChild(child),
+    ),
   )
 }
 
 function hasSelectedChild(item: SearchItem): boolean {
-  return item.children?.some((child) => isSelected(child) || hasSelectedChild(child)) === true
+  return (
+    item.children?.some(
+      (child) => isSelected(child) || hasSelectedChild(child),
+    ) === true
+  )
 }
 
 function isSelected(item: SearchItem): boolean {
@@ -150,7 +238,9 @@ function iconForItem(item: SearchItem): string {
       ? 'mdi-folder'
       : item.type === 'document'
         ? 'mdi-file-document'
-        : 'mdi-map-marker'
+        : item.type === 'topology'
+          ? 'mdi-file-tree'
+          : 'mdi-map-marker'
 }
 
 /**
@@ -193,6 +283,15 @@ const routeFactories: Record<
         locationId: params.locationId,
       },
     }),
+
+  topology: (params) =>
+    router.resolve({
+      name: 'TopologyDisplay',
+      params: {
+        topologyId: params.topologyId,
+        nodeId: params.nodeId,
+      },
+    }),
 }
 
 function routeForItem(item: SearchItem) {
@@ -202,6 +301,22 @@ function routeForItem(item: SearchItem) {
 function selectItem(item: SearchItem) {
   router.push(routeForItem(item))
   modelValue.value = false
+}
+
+function shortcutForMode(mode: SearchMode): string {
+  return mode === 'location'
+    ? LOCATION_SEARCH_SHORTCUT
+    : TOPOLOGY_SEARCH_SHORTCUT
+}
+
+function onSearchKeydown(event: KeyboardEvent): void {
+  if (event.key === LOCATION_SEARCH_SHORTCUT) {
+    event.preventDefault()
+    searchMode.value = 'location'
+  } else if (event.key === TOPOLOGY_SEARCH_SHORTCUT) {
+    event.preventDefault()
+    searchMode.value = 'topology'
+  }
 }
 
 function close() {
@@ -262,6 +377,7 @@ watch(filteredItems, () => {
 watch(modelValue, (value) => {
   if (!value) {
     searchContext.search = ''
+    searchMode.value = undefined
     selectedIndex.value = 0
   }
 })
@@ -269,10 +385,59 @@ watch(modelValue, (value) => {
 
 <style scoped>
 .search-dialog:not(.v-dialog--fullscreen) {
-  max-height: 60vh;
+  height: 60vh;
+}
+
+.search-dialog__card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-dialog__results {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-dialog__group {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-dialog__group--empty {
+  flex: 0 0 auto;
+}
+
+.search-dialog__group-card {
+  min-height: 0;
+  flex: 1;
+  margin: 0 8px 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-dialog__group-card .search-scroll-container {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .search-dialog__item-title--selected {
   background-color: rgb(var(--v-theme-primary), 0.12);
+}
+
+.search-dialog__group-shortcut {
+  min-width: 1.5em;
+  text-align: center;
+}
+
+.search-dialog__group-title--active,
+.search-dialog__group-title--active .search-dialog__group-shortcut {
+  color: rgb(var(--v-theme-primary));
 }
 </style>
