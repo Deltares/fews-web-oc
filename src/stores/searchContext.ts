@@ -12,6 +12,7 @@ export type SearchItemType =
 export interface SearchItem {
   id: string
   label: string
+  iconName?: string
   params: Record<string, string | number | string[] | undefined>
   type: SearchItemType
   children?: SearchItem[]
@@ -56,6 +57,7 @@ export const useSearchContext = defineStore('searchContext', () => {
         id: location.locationId,
         label:
           location.locationName ?? location.shortName ?? location.locationId,
+        iconName: location.thresholdIconName ?? location.iconName,
         type: 'location',
         params: {
           locationId: location.locationId,
@@ -95,6 +97,7 @@ export const useSearchContext = defineStore('searchContext', () => {
       return {
         id: `topology:${topologyId ?? 'default'}:${node.id}`,
         label: node.name ?? node.id,
+        iconName: node.iconId,
         type: 'topology',
         params: {
           ...(topologyId === undefined ? {} : { topologyId }),
