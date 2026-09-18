@@ -8,12 +8,14 @@
   >
     <v-card rounded="lg" class="search-dialog__card">
       <input
+        ref="searchInput"
         v-model="searchContext.search"
         type="text"
         autofocus
         :placeholder="searchPlaceholder"
         aria-label="Search"
         class="search-dialog__input"
+        @keydown.enter.stop.prevent="selectSelectedItem"
       />
 
       <div class="search-dialog__mode-hint text-caption text-medium-emphasis">
@@ -47,64 +49,65 @@
       <v-divider />
 
       <div class="search-dialog__results">
-        <div
-          v-for="group in resultGroups"
-          :key="group.type"
-          class="search-dialog__group"
-          :class="{
-            'search-dialog__group--empty': !group.items.length,
-          }"
-        >
-          <v-card
-            v-if="group.items.length"
-            variant="flat"
-            class="search-dialog__group-card flex-1"
-          >
-            <v-list slim class="search-scroll-container py-0">
-              <v-treeview
-                v-for="item in group.items"
-                :key="item.id"
-                :items="[item]"
-                item-title="label"
-                item-value="id"
-                density="compact"
-                indent-lines="simple"
-                class="py-0"
-                :open-all="showAll(item, searchQuery)"
-              >
-                <template #prepend="{ item: subItem }">
-                  <v-img
-                    v-if="subItem.type === 'location' && subItem.iconName"
-                    :src="getResourcesIconsUrl(subItem.iconName)"
-                    width="24"
-                    height="24"
-                    contain
+        <v-card variant="flat" class="search-dialog__tree-card">
+          <v-list slim class="search-scroll-container py-0">
+            <v-treeview
+              :items="treeItems"
+              item-title="label"
+              item-value="id"
+              density="compact"
+              indent-lines="simple"
+              class="py-0"
+              open-all
+            >
+              <template #prepend="{ item: subItem }">
+                <v-icon v-if="subItem.type === 'group'">
+                  {{
+                    subItem.id === 'topology'
+                      ? 'mdi-file-tree'
+                      : 'mdi-map-marker'
+                  }}
+                </v-icon>
+                <v-img
+                  v-else-if="subItem.type === 'location' && subItem.iconName"
+                  :src="getResourcesIconsUrl(subItem.iconName)"
+                  width="24"
+                  height="24"
+                  contain
+                />
+                <v-icon
+                  v-else-if="subItem.type === 'topology' && subItem.iconName"
+                >
+                  {{ subItem.iconName }}
+                </v-icon>
+                <v-icon v-else>{{ iconForTreeItem(subItem) }}</v-icon>
+              </template>
+              <template #title="{ item: subItem }">
+                <v-list-item-title
+                  :class="{
+                    'search-dialog__group-title': subItem.type === 'group',
+                    'search-dialog__item-title--selected':
+                      subItem.type !== 'group' && isSelectedTreeItem(subItem),
+                  }"
+                  @click.stop="
+                    subItem.type === 'group'
+                      ? undefined
+                      : selectTreeItem(subItem)
+                  "
+                >
+                  <span v-if="subItem.type === 'group'">{{
+                    subItem.label
+                  }}</span>
+                  <HighlightMatch
+                    v-else
+                    :value="subItem.label"
+                    :query="searchQuery"
                   />
-                  <v-icon
-                    v-else-if="subItem.type === 'topology' && subItem.iconName"
-                  >
-                    {{ subItem.iconName }}
-                  </v-icon>
-                  <v-icon v-else>{{ iconForItem(subItem) }}</v-icon>
-                </template>
-                <template #title="{ item: subItem }">
-                  <v-list-item-title
-                    :class="{
-                      'search-dialog__item-title--selected':
-                        isSelected(subItem),
-                    }"
-                    @click.stop="selectItem(subItem)"
-                  >
-                    <HighlightMatch
-                      :value="subItem.label"
-                      :query="searchQuery"
-                    />
-                  </v-list-item-title>
-                </template>
-              </v-treeview>
-            </v-list>
-          </v-card>
-        </div>
+                </v-list-item-title>
+              </template>
+            </v-treeview>
+          </v-list>
+        </v-card>
       </div>
 
       <div
@@ -142,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { refDebounced } from '@vueuse/core'
 import { useSearchContext } from '@/stores/searchContext'
@@ -158,6 +161,7 @@ const modelValue = defineModel({
 
 const router = useRouter()
 const searchContext = useSearchContext()
+const searchInput = useTemplateRef<HTMLInputElement>('searchInput')
 
 const LOCATION_SEARCH_SHORTCUT = '@' as const
 const TOPOLOGY_SEARCH_SHORTCUT = '#' as const
@@ -216,6 +220,25 @@ const resultGroups = computed(() => [
   },
 ])
 
+interface SearchGroupItem {
+  id: string
+  label: string
+  type: 'group'
+  iconName?: string
+  children: SearchItem[]
+}
+
+type SearchTreeItem = SearchItem | SearchGroupItem
+
+const treeItems = computed<SearchTreeItem[]>(() =>
+  resultGroups.value.map((group) => ({
+    id: group.type,
+    label: group.type === 'topology' ? 'Topology nodes' : 'Locations',
+    type: 'group',
+    children: group.items,
+  })),
+)
+
 const searchResults = computed(() =>
   resultGroups.value.flatMap((group) =>
     group.items.flatMap((item) => flattenItems(item)),
@@ -233,37 +256,35 @@ function isMatchingItem(item: SearchItem, query: string): boolean {
   )
 }
 
-function showAll(item: SearchItem, query: string): boolean {
-  return Boolean(
-    (query && item.children?.some((child) => isMatchingItem(child, query))) ||
-    item.children?.some(
-      (child) => isSelected(child) || hasSelectedChild(child),
-    ),
-  )
-}
-
-function hasSelectedChild(item: SearchItem): boolean {
-  return (
-    item.children?.some(
-      (child) => isSelected(child) || hasSelectedChild(child),
-    ) === true
-  )
-}
-
 function isSelected(item: SearchItem): boolean {
   return searchResults.value[selectedIndex.value]?.id === item.id
 }
 
+function isSelectedTreeItem(item: SearchTreeItem): boolean {
+  return item.type !== 'group' && isSelected(item)
+}
+
+function selectTreeItem(item: SearchTreeItem): void {
+  if (item.type !== 'group') selectItem(item)
+}
+
+function iconForTreeItem(item: SearchTreeItem): string {
+  return item.type === 'group' ? 'mdi-map-marker' : iconForItem(item)
+}
+
 function iconForItem(item: SearchItem): string {
-  return item.type === 'user'
-    ? 'mdi-account'
-    : item.type === 'project'
-      ? 'mdi-folder'
-      : item.type === 'document'
-        ? 'mdi-file-document'
-        : item.type === 'topology'
-          ? 'mdi-file-tree'
-          : 'mdi-map-marker'
+  switch (item.type) {
+    case 'user':
+      return 'mdi-account'
+    case 'project':
+      return 'mdi-folder'
+    case 'document':
+      return 'mdi-file-document'
+    case 'topology':
+      return 'mdi-file-tree'
+    case 'location':
+      return 'mdi-map-marker'
+  }
 }
 
 /**
@@ -323,11 +344,15 @@ function routeForItem(item: SearchItem) {
 
 function selectItem(item: SearchItem) {
   router.push(routeForItem(item))
-  modelValue.value = false
 }
 
 function close() {
   modelValue.value = false
+}
+
+function selectSelectedItem(): void {
+  const item = searchResults.value[selectedIndex.value]
+  if (item) selectItem(item)
 }
 
 function onKeydown(event: KeyboardEvent) {
@@ -356,12 +381,7 @@ function onKeydown(event: KeyboardEvent) {
 
   if (event.key === 'Enter') {
     event.preventDefault()
-
-    const item = items[selectedIndex.value]
-
-    if (item) {
-      selectItem(item)
-    }
+    selectSelectedItem()
   }
 
   if (event.key === 'Escape') {
@@ -378,12 +398,21 @@ watch(
 )
 
 watch(filteredItems, () => {
-  selectedIndex.value = 0
+  if (searchResults.value.length === 0) {
+    selectedIndex.value = 0
+    return
+  }
+
+  selectedIndex.value = Math.min(
+    selectedIndex.value,
+    searchResults.value.length - 1,
+  )
 })
 
-watch(modelValue, (value) => {
-  if (!value) {
-    selectedIndex.value = 0
+watch(modelValue, async (value) => {
+  if (value) {
+    await nextTick()
+    searchInput.value?.focus()
   }
 })
 </script>
@@ -423,18 +452,7 @@ watch(modelValue, (value) => {
   flex-direction: column;
 }
 
-.search-dialog__group {
-  min-height: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.search-dialog__group--empty {
-  flex: 0 0 auto;
-}
-
-.search-dialog__group-card {
+.search-dialog__tree-card {
   min-height: 0;
   flex: 1;
   margin: 0 8px 8px;
@@ -443,7 +461,7 @@ watch(modelValue, (value) => {
   flex-direction: column;
 }
 
-.search-dialog__group-card .search-scroll-container {
+.search-dialog__tree-card .search-scroll-container {
   min-height: 0;
   flex: 1;
   overflow-y: auto;
@@ -451,6 +469,11 @@ watch(modelValue, (value) => {
 
 .search-dialog__item-title--selected {
   background-color: rgb(var(--v-theme-primary), 0.12);
+}
+
+.search-dialog__group-title {
+  color: rgb(var(--v-theme-primary));
+  font-weight: 500;
 }
 
 .search-dialog__mode-hint {
