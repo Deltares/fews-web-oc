@@ -117,12 +117,6 @@ const nodesStore = useNodesStore()
 const topologyNodesStore = useTopologyNodesStore()
 const searchContext = useSearchContext()
 
-watch(
-  [() => topologyNodesStore.nodes, () => props.topologyId],
-  ([nodes, topologyId]) => searchContext.setTopologyNodes(nodes, topologyId),
-  { immediate: true },
-)
-
 topologyNodesStore
   .fetch()
   .catch(() => console.error('Failed to fetch topology nodes'))
@@ -175,6 +169,11 @@ fetchWmsCapabilitiesHeaders()
 
 const subNodes = computed(() =>
   topologyNodesStore.getSubNodesForIds(topologyDisplayNodes.value),
+)
+watch(
+  [subNodes, () => props.topologyId],
+  ([nodes, topologyId]) => searchContext.setTopologyNodes(nodes, topologyId),
+  { immediate: true },
 )
 watch(
   () => topologyNodesStore.nodes,

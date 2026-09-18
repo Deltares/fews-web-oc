@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import type { Location, TopologyNode } from '@deltares/fews-pi-requests'
+import { topologyNodeIsVisible } from '@/lib/topology/nodes'
 
 export type SearchItemType =
   | 'user'
@@ -93,6 +94,7 @@ export const useSearchContext = defineStore('searchContext', () => {
       parentNodeIds: string[],
     ): SearchItem {
       const nodePath = [...parentNodeIds, node.id]
+      const visibleChildren = node.topologyNodes?.filter(topologyNodeIsVisible)
 
       return {
         id: `topology:${topologyId ?? 'default'}:${node.id}`,
@@ -103,7 +105,7 @@ export const useSearchContext = defineStore('searchContext', () => {
           ...(topologyId === undefined ? {} : { topologyId }),
           nodeId: nodePath,
         },
-        children: node.topologyNodes?.map((child) =>
+        children: visibleChildren?.map((child) =>
           toSearchItem(child, nodePath),
         ),
       }
@@ -111,7 +113,9 @@ export const useSearchContext = defineStore('searchContext', () => {
 
     items.value = [
       ...nonTopologyItems,
-      ...nodes.map((node) => toSearchItem(node, [])),
+      ...nodes
+        .filter(topologyNodeIsVisible)
+        .map((node) => toSearchItem(node, [])),
     ]
   }
 
