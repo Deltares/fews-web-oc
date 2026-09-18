@@ -76,6 +76,11 @@
     }
   },
   "search": {
+    "otherLocations": "Other locations",
+    "locationsLegend": "Locations legend",
+    "selectedLocations": "Selected locations",
+    "noSelectedLocation": "No locations selected",
+    "locationId": "ID",
     "searchForLocations": "Search for locations",
     "searchLocation": "Search locations"
   },
