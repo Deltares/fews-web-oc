@@ -109,6 +109,13 @@
                     :query="searchQuery"
                   />
                   <span
+                    v-if="subItem.type === 'location' && showLocationId(subItem)"
+                    class="search-dialog__id-match"
+                  >
+                    ID:
+                    <HighlightMatch :value="subItem.id" :query="searchQuery" />
+                  </span>
+                  <span
                     v-if="subItem.type === 'topology'"
                     class="search-dialog__route-details"
                   >
@@ -365,8 +372,19 @@ function collectVisibleItems(items: SearchItem[], results: SearchItem[]): void {
 function isMatchingItem(item: SearchItem, query: string): boolean {
   return (
     containsSubstring(item.label, query) ||
+    (item.type === 'location' && containsSubstring(item.id, query)) ||
     item.children?.some((child) => isMatchingItem(child, query)) === true
   )
+}
+
+// Only show the ID when the query matches the ID but not the label.
+function showLocationId(item: SearchItem): boolean {
+  const query = searchQuery.value
+  if (!query) return false
+
+  const isMatchingLabel = containsSubstring(item.label, query)
+  const isMatchingId = containsSubstring(item.id, query)
+  return isMatchingId && !isMatchingLabel
 }
 
 function hasMatchingDescendant(
@@ -911,5 +929,12 @@ watch(modelValue, async (value) => {
   gap: 12px;
   color: rgb(var(--v-theme-on-surface), 0.6);
   font-size: 0.8em;
+}
+
+.search-dialog__id-match {
+  margin-left: 8px;
+  color: rgb(var(--v-theme-on-surface), 0.6);
+  font-size: 0.8em;
+  font-style: italic;
 }
 </style>
