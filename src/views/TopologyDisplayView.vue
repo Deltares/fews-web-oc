@@ -83,6 +83,7 @@ import { useNodesStore } from '@/stores/nodes'
 import { nodeButtonItems } from '@/lib/topology/nodes'
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
+import { useSearchContext } from '@/stores/searchContext'
 
 interface Props {
   topologyId?: string
@@ -114,6 +115,13 @@ const availableWorkflowsStore = useAvailableWorkflowsStore()
 const warningLevelsStore = useWarningLevelsStore()
 const nodesStore = useNodesStore()
 const topologyNodesStore = useTopologyNodesStore()
+const searchContext = useSearchContext()
+
+watch(
+  [() => topologyNodesStore.nodes, () => props.topologyId],
+  ([nodes, topologyId]) => searchContext.setTopologyNodes(nodes, topologyId),
+  { immediate: true },
+)
 
 topologyNodesStore
   .fetch()
