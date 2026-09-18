@@ -24,14 +24,14 @@
             <kbd>{{ LOCATION_SEARCH_SHORTCUT }}</kbd>
             Searching locations
           </span>
-          <span>Remove {{ LOCATION_SEARCH_SHORTCUT }} to search all groups</span>
+          <span>Remove {{ LOCATION_SEARCH_SHORTCUT }} to search for anything</span>
         </template>
-        <template v-else-if="searchMode === 'topology'">
+        <template v-else-if="searchMode === 'route'">
           <span class="search-dialog__mode-hint-current">
-            <kbd>{{ TOPOLOGY_SEARCH_SHORTCUT }}</kbd>
-            Searching topology nodes
+            <kbd>{{ ROUTE_SEARCH_SHORTCUT }}</kbd>
+            Searching routes
           </span>
-          <span>Remove {{ TOPOLOGY_SEARCH_SHORTCUT }} to search all groups</span>
+          <span>Remove {{ ROUTE_SEARCH_SHORTCUT }} to search for anything</span>
         </template>
         <template v-else>
           <span>Search all groups</span>
@@ -40,8 +40,8 @@
             Locations
           </span>
           <span>
-            <kbd>{{ TOPOLOGY_SEARCH_SHORTCUT }}</kbd>
-            Topology nodes
+            <kbd>{{ ROUTE_SEARCH_SHORTCUT }}</kbd>
+            Routes
           </span>
         </template>
       </div>
@@ -50,7 +50,11 @@
 
       <div class="search-dialog__results">
         <v-card variant="flat" class="search-dialog__tree-card">
-          <v-list slim class="search-scroll-container py-0">
+          <div
+            ref="searchResultsContainer"
+            class="search-dialog__scroll-container"
+          >
+            <v-list slim class="search-scroll-container py-0">
             <v-treeview
               :items="treeItems"
               item-title="label"
@@ -64,7 +68,7 @@
                 <v-icon v-if="subItem.type === 'group'">
                   {{
                     subItem.id === 'topology'
-                      ? 'mdi-file-tree'
+                      ? 'mdi-directions'
                       : 'mdi-map-marker'
                   }}
                 </v-icon>
@@ -84,6 +88,7 @@
               </template>
               <template #title="{ item: subItem }">
                 <v-list-item-title
+                  :data-search-item-id="subItem.id"
                   :class="{
                     'search-dialog__group-title': subItem.type === 'group',
                     'search-dialog__item-title--selected':
@@ -103,10 +108,17 @@
                     :value="subItem.label"
                     :query="searchQuery"
                   />
+                  <span
+                    v-if="subItem.type === 'topology'"
+                    class="search-dialog__route-path"
+                  >
+                    {{ routeForItem(subItem).fullPath }}
+                  </span>
                 </v-list-item-title>
               </template>
             </v-treeview>
-          </v-list>
+            </v-list>
+          </div>
         </v-card>
       </div>
 
@@ -162,23 +174,25 @@ const modelValue = defineModel({
 const router = useRouter()
 const searchContext = useSearchContext()
 const searchInput = useTemplateRef<HTMLInputElement>('searchInput')
+const searchResultsContainer =
+  useTemplateRef<HTMLDivElement>('searchResultsContainer')
 
 const LOCATION_SEARCH_SHORTCUT = '@' as const
-const TOPOLOGY_SEARCH_SHORTCUT = '#' as const
+const ROUTE_SEARCH_SHORTCUT = '#' as const
 
 const selectedIndex = ref(0)
-type SearchMode = 'location' | 'topology'
+type SearchMode = 'location' | 'route'
 const searchMode = computed<SearchMode | undefined>(() => {
   const firstCharacter = searchContext.search.charAt(0)
   if (firstCharacter === LOCATION_SEARCH_SHORTCUT) return 'location'
-  if (firstCharacter === TOPOLOGY_SEARCH_SHORTCUT) return 'topology'
+  if (firstCharacter === ROUTE_SEARCH_SHORTCUT) return 'route'
   return undefined
 })
 
 const searchPlaceholder = computed(() => {
   if (searchMode.value === 'location') return 'Search locations...'
-  if (searchMode.value === 'topology') return 'Search topology nodes...'
-  return `Search... (${LOCATION_SEARCH_SHORTCUT} locations, ${TOPOLOGY_SEARCH_SHORTCUT} topology)`
+  if (searchMode.value === 'route') return 'Search routes...'
+  return `Search... (${LOCATION_SEARCH_SHORTCUT} locations, ${ROUTE_SEARCH_SHORTCUT} routes)`
 })
 
 const debouncedSearch = refDebounced(
@@ -193,7 +207,11 @@ const searchQuery = computed(() => {
 
 const filteredItems = computed(() => {
   const items = searchMode.value
-    ? searchContext.items.filter((item) => item.type === searchMode.value)
+    ? searchContext.items.filter((item) =>
+        searchMode.value === 'location'
+          ? item.type === 'location'
+          : item.type === 'topology',
+      )
     : searchContext.items
   const query = searchQuery.value
   if (!query) return items
@@ -230,14 +248,22 @@ interface SearchGroupItem {
 
 type SearchTreeItem = SearchItem | SearchGroupItem
 
-const treeItems = computed<SearchTreeItem[]>(() =>
-  resultGroups.value.map((group) => ({
+const treeItems = computed<SearchTreeItem[]>(() => {
+  const groups = searchMode.value
+    ? resultGroups.value.filter((group) =>
+        searchMode.value === 'location'
+          ? group.type === 'location'
+          : group.type === 'topology',
+      )
+    : resultGroups.value
+
+  return groups.map((group) => ({
     id: group.type,
-    label: group.type === 'topology' ? 'Topology nodes' : 'Locations',
+    label: group.type === 'topology' ? 'Routes' : 'Locations',
     type: 'group',
     children: group.items,
-  })),
-)
+  }))
+})
 
 const searchResults = computed(() =>
   resultGroups.value.flatMap((group) =>
@@ -367,15 +393,16 @@ function onKeydown(event: KeyboardEvent) {
 
     if (items.length) {
       selectedIndex.value = (selectedIndex.value + 1) % items.length
+      scrollSelectedItemIntoView()
     }
   }
 
   if (event.key === 'ArrowUp') {
     event.preventDefault()
 
-    if (items.length) {
-      selectedIndex.value =
-        (selectedIndex.value - 1 + items.length) % items.length
+    if (selectedIndex.value > 0) {
+      selectedIndex.value -= 1
+      scrollSelectedItemIntoView()
     }
   }
 
@@ -388,6 +415,21 @@ function onKeydown(event: KeyboardEvent) {
     event.preventDefault()
     close()
   }
+}
+
+function scrollSelectedItemIntoView(): void {
+  void nextTick(() => {
+    const selectedId = searchResults.value[selectedIndex.value]?.id
+    if (!selectedId) return
+
+    const selectedElement = Array.from(
+      searchResultsContainer.value?.querySelectorAll<HTMLElement>(
+        '[data-search-item-id]',
+      ) ?? [],
+    ).find((element) => element.dataset.searchItemId === selectedId)
+
+    selectedElement?.scrollIntoView({ block: 'nearest' })
+  })
 }
 
 watch(
@@ -455,13 +497,17 @@ watch(modelValue, async (value) => {
 .search-dialog__tree-card {
   min-height: 0;
   flex: 1;
-  margin: 0 8px 8px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 .search-dialog__tree-card .search-scroll-container {
+  min-height: 0;
+  flex: 1;
+}
+
+.search-dialog__scroll-container {
   min-height: 0;
   flex: 1;
   overflow-y: auto;
@@ -492,5 +538,15 @@ watch(modelValue, async (value) => {
 
 .search-dialog__mode-hint-current {
   color: rgb(var(--v-theme-primary));
+}
+
+.search-dialog__route-path {
+  display: block;
+  overflow: hidden;
+  color: rgb(var(--v-theme-on-surface), 0.6);
+  font-size: 0.8em;
+  font-style: italic;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>
