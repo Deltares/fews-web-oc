@@ -1,8 +1,5 @@
 <template>
-  <v-layout
-    id="app"
-    @keydown.meta.k.prevent="showSearchDialog = !showSearchDialog"
-  >
+  <v-layout id="app">
     <v-app-bar
       :color="appBarColor"
       :style="appBarStyle"
@@ -173,7 +170,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, type StyleValue, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  type StyleValue,
+  watch,
+} from 'vue'
 import { useDisplay, useRtl, useTheme } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
 import { useRoute } from 'vue-router'
@@ -208,6 +213,16 @@ const isInstalledPWA = globalThis.matchMedia(
 const showHash = ref(false)
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
+
+function onGlobalKeydown(event: KeyboardEvent): void {
+  if (event.metaKey && event.key.toLowerCase() === 'k') {
+    event.preventDefault()
+    showSearchDialog.value = !showSearchDialog.value
+  }
+}
+
+onMounted(() => document.addEventListener('keydown', onGlobalKeydown))
+onUnmounted(() => document.removeEventListener('keydown', onGlobalKeydown))
 
 function updateAppBarStyles() {
   appBarColor.value = getComputedStyle(document.body).getPropertyValue(

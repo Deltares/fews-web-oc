@@ -7,19 +7,42 @@
     @keydown="onKeydown"
   >
     <v-card rounded="lg" class="search-dialog__card">
-      <v-text-field
+      <input
         v-model="searchContext.search"
+        type="text"
         autofocus
-        hide-details
-        prepend-inner-icon="mdi-magnify"
         :placeholder="searchPlaceholder"
-        variant="plain"
-        class="d-flex flex-0-0 w-100 flex-column"
-        @keydown="onSearchKeydown"
-        ><template #prepend-inner>
-          <kbd v-if="searchMode">{{ shortcutForMode(searchMode) }}</kbd>
+        aria-label="Search"
+        class="search-dialog__input"
+      />
+
+      <div class="search-dialog__mode-hint text-caption text-medium-emphasis">
+        <template v-if="searchMode === 'location'">
+          <span class="search-dialog__mode-hint-current">
+            <kbd>{{ LOCATION_SEARCH_SHORTCUT }}</kbd>
+            Searching locations
+          </span>
+          <span>Remove {{ LOCATION_SEARCH_SHORTCUT }} to search all groups</span>
         </template>
-      </v-text-field>
+        <template v-else-if="searchMode === 'topology'">
+          <span class="search-dialog__mode-hint-current">
+            <kbd>{{ TOPOLOGY_SEARCH_SHORTCUT }}</kbd>
+            Searching topology nodes
+          </span>
+          <span>Remove {{ TOPOLOGY_SEARCH_SHORTCUT }} to search all groups</span>
+        </template>
+        <template v-else>
+          <span>Search all groups</span>
+          <span>
+            <kbd>{{ LOCATION_SEARCH_SHORTCUT }}</kbd>
+            Locations
+          </span>
+          <span>
+            <kbd>{{ TOPOLOGY_SEARCH_SHORTCUT }}</kbd>
+            Topology nodes
+          </span>
+        </template>
+      </div>
 
       <v-divider />
 
@@ -32,21 +55,6 @@
             'search-dialog__group--empty': !group.items.length,
           }"
         >
-          <div
-            class="d-flex flex-0-0 align-center ga-4 px-4 py-2 text-caption text-medium-emphasis"
-          >
-            <span
-              :class="{
-                'search-dialog__group-title--active':
-                  !searchMode || searchMode === group.type,
-              }"
-            >
-              <kbd class="search-dialog__group-shortcut">{{
-                group.shortcut
-              }}</kbd>
-              {{ group.title }}
-            </span>
-          </div>
           <v-card
             v-if="group.items.length"
             variant="flat"
@@ -143,7 +151,12 @@ const TOPOLOGY_SEARCH_SHORTCUT = '#' as const
 
 const selectedIndex = ref(0)
 type SearchMode = 'location' | 'topology'
-const searchMode = ref<SearchMode>()
+const searchMode = computed<SearchMode | undefined>(() => {
+  const firstCharacter = searchContext.search.charAt(0)
+  if (firstCharacter === LOCATION_SEARCH_SHORTCUT) return 'location'
+  if (firstCharacter === TOPOLOGY_SEARCH_SHORTCUT) return 'topology'
+  return undefined
+})
 
 const searchPlaceholder = computed(() => {
   if (searchMode.value === 'location') return 'Search locations...'
@@ -157,7 +170,8 @@ const debouncedSearch = refDebounced(
 )
 
 const searchQuery = computed(() => {
-  return debouncedSearch.value.trim()
+  const value = debouncedSearch.value.trim()
+  return searchMode.value ? value.slice(1).trim() : value
 })
 
 const filteredItems = computed(() => {
@@ -181,14 +195,10 @@ const topologyItems = computed(() =>
 const resultGroups = computed(() => [
   {
     type: 'topology',
-    title: 'Topology nodes',
-    shortcut: TOPOLOGY_SEARCH_SHORTCUT,
     items: topologyItems.value,
   },
   {
     type: 'location',
-    title: 'Locations for topology node',
-    shortcut: LOCATION_SEARCH_SHORTCUT,
     items: locationItems.value,
   },
 ])
@@ -303,22 +313,6 @@ function selectItem(item: SearchItem) {
   modelValue.value = false
 }
 
-function shortcutForMode(mode: SearchMode): string {
-  return mode === 'location'
-    ? LOCATION_SEARCH_SHORTCUT
-    : TOPOLOGY_SEARCH_SHORTCUT
-}
-
-function onSearchKeydown(event: KeyboardEvent): void {
-  if (event.key === LOCATION_SEARCH_SHORTCUT) {
-    event.preventDefault()
-    searchMode.value = 'location'
-  } else if (event.key === TOPOLOGY_SEARCH_SHORTCUT) {
-    event.preventDefault()
-    searchMode.value = 'topology'
-  }
-}
-
 function close() {
   modelValue.value = false
 }
@@ -376,8 +370,6 @@ watch(filteredItems, () => {
 
 watch(modelValue, (value) => {
   if (!value) {
-    searchContext.search = ''
-    searchMode.value = undefined
     selectedIndex.value = 0
   }
 })
@@ -392,6 +384,23 @@ watch(modelValue, (value) => {
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.search-dialog__input {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 16px;
+  border: 0;
+  outline: none;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+}
+
+.search-dialog__input::placeholder {
+  color: rgb(var(--v-theme-on-surface), 0.6);
 }
 
 .search-dialog__results {
@@ -431,13 +440,21 @@ watch(modelValue, (value) => {
   background-color: rgb(var(--v-theme-primary), 0.12);
 }
 
-.search-dialog__group-shortcut {
-  min-width: 1.5em;
-  text-align: center;
+.search-dialog__mode-hint {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 16px 4px;
 }
 
-.search-dialog__group-title--active,
-.search-dialog__group-title--active .search-dialog__group-shortcut {
+.search-dialog__mode-hint span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.search-dialog__mode-hint-current {
   color: rgb(var(--v-theme-primary));
 }
 </style>
