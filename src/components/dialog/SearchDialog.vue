@@ -234,6 +234,11 @@
         </span>
 
         <span>
+          <kbd>←</kbd>
+          <kbd>→</kbd>
+          (De)collapse
+        </span>
+        <span>
           <kbd>Esc</kbd>
           Close
         </span>
