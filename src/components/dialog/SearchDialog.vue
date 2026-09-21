@@ -11,7 +11,6 @@
         ref="searchInput"
         v-model="searchContext.search"
         type="text"
-        autofocus
         :placeholder="searchPlaceholder"
         aria-label="Search"
         class="search-dialog__input"
