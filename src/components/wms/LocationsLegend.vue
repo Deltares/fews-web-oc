@@ -47,56 +47,56 @@
     </v-list-item-title>
     <template #append>
       <template v-for="category in item.categories" :key="category.value">
-        <v-img
-          v-if="category.thresholdIconName"
-          :src="getResourcesIconsUrl(category.thresholdIconName ?? '')"
-          class="mr-2 location-icon"
+        <v-btn
+          size="xsmall"
+          @click.stop="toggleItem(category.value)"
+          class="location-icon h-100"
           :class="{
             'location-icon-selected': isSelected(category.value),
           }"
-          width="16"
-          height="16"
-          @click.stop="toggleItem(category.value)"
-        />
-        <svg
-          v-else-if="item.categories.length > 1"
-          class="mr-2 location-icon empty-threshold-icon"
-          :class="{
-            'location-icon-selected': isSelected(category.value),
-          }"
-          viewBox="0 0 16 16"
-          width="16"
-          height="16"
-          aria-hidden="true"
-          @click.stop="toggleItem(category.value)"
         >
-          <defs>
-            <pattern
-              id="no-threshold-pattern"
-              x="0"
-              y="0"
-              width="8"
-              height="8"
-              patternUnits="userSpaceOnUse"
-            >
-              <path
-                d="M0 8L8 0M-2 2L2 -2M6 10L10 6"
-                stroke="#64748b"
-                stroke-width="3"
-                fill="none"
-                stroke-linecap="square"
-              />
-            </pattern>
-          </defs>
-          <circle
-            cx="8"
-            cy="8"
-            r="7"
-            fill="url(#no-threshold-pattern)"
-            stroke="currentColor"
-            stroke-width="1.5"
+          <img
+            v-if="category.thresholdIconName"
+            :src="getResourcesIconsUrl(category.thresholdIconName ?? '')"
+            :alt="`${item.iconLabel} - treshold`"
+            width="16"
           />
-        </svg>
+          <svg
+            v-else-if="item.categories.length > 1"
+            class="empty-threshold-icon"
+            viewBox="0 0 16 16"
+            width="16"
+            height="16"
+            aria-hidden="true"
+          >
+            <defs>
+              <pattern
+                id="no-threshold-pattern"
+                x="0"
+                y="0"
+                width="8"
+                height="8"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M0 8L8 0M-2 2L2 -2M6 10L10 6"
+                  stroke="#64748b"
+                  stroke-width="3"
+                  fill="none"
+                  stroke-linecap="square"
+                />
+              </pattern>
+            </defs>
+            <circle
+              cx="8"
+              cy="8"
+              r="7"
+              fill="url(#no-threshold-pattern)"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+          </svg>
+        </v-btn>
       </template>
     </template>
   </v-list-item>
@@ -166,7 +166,7 @@ function isLabelSelected(iconLabel?: string): boolean {
     .filter((category) => category.iconLabel === iconLabel)
     .map((category) => category.value)
 
-  return categoryValues.length > 0 && categoryValues.every(isSelected)
+  return categoryValues.some(isSelected)
 }
 
 function toggleAll(iconLabel?: string): void {
@@ -185,6 +185,7 @@ function toggleAll(iconLabel?: string): void {
 .location-icon {
   padding-left: 2px;
   padding-right: 2px;
+  height: 32px;
   opacity: 0.3;
 }
 
