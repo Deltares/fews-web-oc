@@ -318,10 +318,4 @@ function formatLocationsText(locations: Location[]) {
 .location-icon-selected {
   opacity: 1;
 }
-.empty-threshold-icon {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  opacity: 0.5;
-}
 </style>

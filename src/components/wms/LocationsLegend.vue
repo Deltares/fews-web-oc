@@ -180,3 +180,22 @@ function toggleAll(iconLabel?: string): void {
     : Array.from(new Set([...modelValue.value, ...itemValues]))
 }
 </script>
+
+<style scoped>
+.location-icon {
+  padding-left: 2px;
+  padding-right: 2px;
+  opacity: 0.3;
+}
+
+.location-icon-selected {
+  opacity: 1;
+}
+
+.empty-threshold-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  opacity: 0.5;
+}
+</style>
