@@ -91,113 +91,10 @@
           </v-btn>
         </template>
         <v-list class="information-panel-list" density="compact" width="280">
-          <v-list-subheader>{{ t('search.locationsLegend') }}</v-list-subheader>
-          <v-list-item
-            v-for="group in categoriesByLabel"
-            :key="group.iconLabel ?? defaultIconValue"
-            :class="{
-              'text-disabled': !isLabelSelected(group.iconLabel),
-            }"
-            @click="toggleAllByLabel(group.iconLabel)"
-          >
-            <template #prepend>
-              <v-img
-                v-if="group.thresholdIconName ?? group.iconName"
-                :src="
-                  getResourcesIconsUrl(
-                    group.thresholdIconName ?? group.iconName ?? '',
-                  )
-                "
-                class="mr-2 location-icon"
-                :class="{
-                  'location-icon-selected': isLabelSelected(group.iconLabel),
-                }"
-                width="16"
-                height="16"
-                contain
-              />
-              <svg
-                v-else
-                class="mr-2 location-icon"
-                :class="{
-                  'location-icon-selected': isLabelSelected(group.iconLabel),
-                }"
-                viewBox="0 0 16 16"
-                width="16"
-                height="16"
-                aria-hidden="true"
-              >
-                <circle
-                  cx="8"
-                  cy="8"
-                  r="7"
-                  fill="#dfdfdf"
-                  stroke="black"
-                  stroke-width="2"
-                />
-              </svg>
-            </template>
-            <v-list-item-title>
-              {{ group.iconLabel ?? t('search.otherLocations') }}
-            </v-list-item-title>
-            <template #append>
-              <template
-                v-for="category in group.categories"
-                :key="category.value"
-              >
-                <v-img
-                  v-if="category.thresholdIconName"
-                  :src="getResourcesIconsUrl(category.thresholdIconName ?? '')"
-                  class="mr-2 location-icon"
-                  :class="{
-                    'location-icon-selected': isIconSelected(category.value),
-                  }"
-                  width="16"
-                  height="16"
-                  @click.stop="toggleIcon(category.value)"
-                />
-                <svg
-                  v-else-if="group.categories.length > 1"
-                  class="mr-2 location-icon empty-threshold-icon"
-                  :class="{
-                    'location-icon-selected': isIconSelected(category.value),
-                  }"
-                  viewBox="0 0 16 16"
-                  width="16"
-                  height="16"
-                  aria-hidden="true"
-                  @click.stop="toggleIcon(category.value)"
-                >
-                  <defs>
-                    <pattern
-                      id="no-threshold-pattern"
-                      x="0"
-                      y="0"
-                      width="8"
-                      height="8"
-                      patternUnits="userSpaceOnUse"
-                    >
-                      <path
-                        d="M0 8L8 0M-2 2L2 -2M6 10L10 6"
-                        stroke="#64748b"
-                        stroke-width="3"
-                        fill="none"
-                        stroke-linecap="square"
-                      />
-                    </pattern>
-                  </defs>
-                  <circle
-                    cx="8"
-                    cy="8"
-                    r="7"
-                    fill="url(#no-threshold-pattern)"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                  />
-                </svg>
-              </template>
-            </template>
-          </v-list-item>
+          <LocationsLegend
+            v-model="selectedLocationCategories"
+            :items="categories"
+          ></LocationsLegend>
           <v-divider class="my-2" />
           <v-list-subheader>{{
             t('search.selectedLocations')
@@ -243,6 +140,7 @@ import { type Location } from '@deltares/fews-pi-requests'
 import ControlChip from '@/components/wms/ControlChip.vue'
 import SearchDialog from '@/components/general/SearchDialog.vue'
 import SelectIcon from '@/components/general/SelectIcon.vue'
+import LocationsLegend from './LocationsLegend.vue'
 import { getResourcesIconsUrl } from '@/lib/fews-config'
 import { useI18n } from 'vue-i18n'
 import { useStorage } from '@vueuse/core'
@@ -306,8 +204,6 @@ const knownLocationCategories = useStorage<string[]>(
   sessionStorage,
 )
 
-const defaultIconValue = '__default-location-icon__'
-
 watch(selectedItems, (items) => onSelectLocationIds(items), { deep: true })
 
 watch(
@@ -351,8 +247,8 @@ const categories = computed(() => {
     }
   })
   return Array.from(items.values()).toSorted((first, second) => {
-    const firstHasIcon = (first.iconName !== undefined)
-    const secondHasIcon = (second.iconName !== undefined)
+    const firstHasIcon = first.iconName !== undefined
+    const secondHasIcon = second.iconName !== undefined
     if (firstHasIcon && !secondHasIcon) return -1
     if (!firstHasIcon && secondHasIcon) return 1
     return (first.iconLabel ?? '').localeCompare(second.iconLabel ?? '')
@@ -418,28 +314,6 @@ function toggleIcon(iconValue: string): void {
   selectedLocationCategories.value = isIconSelected(iconValue)
     ? selectedLocationCategories.value.filter((value) => value !== iconValue)
     : [...selectedLocationCategories.value, iconValue]
-}
-
-function isLabelSelected(iconLabel?: string): boolean {
-  const categoryValues = categories.value
-    .filter((category) => category.iconLabel === iconLabel)
-    .map((category) => category.value)
-
-  return categoryValues.length > 0 && categoryValues.every(isIconSelected)
-}
-
-function toggleAllByLabel(iconLabel?: string): void {
-  const categoryValues = categories.value
-    .filter((category) => category.iconLabel === iconLabel)
-    .map((category) => category.value)
-
-  selectedLocationCategories.value = isLabelSelected(iconLabel)
-    ? selectedLocationCategories.value.filter(
-        (value) => !categoryValues.includes(value),
-      )
-    : Array.from(
-        new Set([...selectedLocationCategories.value, ...categoryValues]),
-      )
 }
 
 function buildTree(location: Location): TreeNode {
