@@ -151,13 +151,6 @@ type IconOption = {
   value: string
 }
 
-type CategoryGroup = {
-  iconLabel?: string
-  iconName?: string
-  thresholdIconName?: string
-  categories: IconOption[]
-}
-
 const { t } = useI18n()
 
 interface Props {
@@ -239,27 +232,6 @@ const categories = computed(() => {
     if (!firstHasIcon && secondHasIcon) return 1
     return (first.iconLabel ?? '').localeCompare(second.iconLabel ?? '')
   })
-})
-
-const categoriesByLabel = computed(() => {
-  const groupedByLabel = new Map<string | undefined, CategoryGroup>()
-
-  categories.value.forEach((category) => {
-    const group = groupedByLabel.get(category.iconLabel)
-    if (group) {
-      group.categories.push(category)
-      return
-    }
-
-    groupedByLabel.set(category.iconLabel, {
-      iconLabel: category.iconLabel,
-      iconName: category.iconName,
-      thresholdIconName: category.thresholdIconName,
-      categories: [category],
-    })
-  })
-
-  return Array.from(groupedByLabel.values())
 })
 
 watch(
