@@ -17,7 +17,6 @@
           >
             <template v-for="category in categories" :key="category.value">
               <v-tooltip
-                v-if="category.thresholdIconName ?? category.iconName"
                 :text="category.iconLabel ?? category.iconName"
                 location="bottom"
               >
@@ -31,38 +30,19 @@
                     size="xsmall"
                     @click.stop="toggleIcon(category.value)"
                   >
-                    <v-img
+                    <img
+                      v-if="category.thresholdIconName ?? category.iconName"
                       :src="
                         getResourcesIconsUrl(
                           category.thresholdIconName ?? category.iconName ?? '',
                         )
                       "
-                      width="20"
+                      :alt="category.iconLabel"
+                      width="16"
                       height="16"
                     />
-                  </v-btn>
-                </template>
-              </v-tooltip>
-              <v-tooltip
-                v-else
-                :text="
-                  category.iconLabel ??
-                  category.iconName ??
-                  t('search.otherLocations')
-                "
-                location="bottom"
-              >
-                <template v-slot:activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    class="location-icon"
-                    :class="{
-                      'location-icon-selected': isIconSelected(category.value),
-                    }"
-                    size="xsmall"
-                    @click.stop="toggleIcon(category.value)"
-                  >
                     <svg
+                      v-else
                       viewBox="0 0 16 16"
                       width="16"
                       height="16"
