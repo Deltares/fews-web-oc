@@ -28,7 +28,7 @@
     <div
       class="colourbar-container"
       aria-label="map legend"
-      v-if="currentColourScale"
+      v-if="showColourBar && currentColourScale"
     >
       <ColourLegend
         v-if="!currentColourScale.useGradients"
@@ -276,6 +276,8 @@ interface Props {
   settings: ComponentSettings['map']
 }
 
+const userSettings = useUserSettingsStore()
+
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
   filterIds: () => [],
@@ -303,6 +305,10 @@ const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
+
+const showColourBar = computed(() => {
+  return userSettings.get('ui.map.showDataLayerLegend')?.value ?? true
+})
 
 const doFollowNow = ref(taskRunId.value === undefined)
 // Set follow now to false when a task run is selected because taskRun data is typically historical data,
@@ -371,7 +377,6 @@ const layerOptions = ref<AnimatedRasterLayerOptions>()
 const isLoading = ref(false)
 
 const legendLayerStyles = ref<Style[]>()
-const userSettings = useUserSettingsStore()
 
 const showLayer = ref<boolean>(true)
 const layerKind = ref(LayerKind.Static)

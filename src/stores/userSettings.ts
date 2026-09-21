@@ -110,6 +110,13 @@ export const useUserSettingsStore = defineStore(
       return items.value.find((item) => item.id === id)
     }
 
+    function set(id: string, value: boolean) {
+      const item = items.value.find((i) => i.id === id)
+      if (item) {
+        item.value = value
+      }
+    }
+
     function add(item: UserSettingsItem) {
       const index = items.value.findIndex((i) => i.id === item.id)
       if (index === -1) {
@@ -174,6 +181,7 @@ export const useUserSettingsStore = defineStore(
       get,
       scrollZoomMode,
       add,
+      set,
       updateSettingItems,
     }
   },

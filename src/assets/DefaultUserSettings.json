@@ -124,6 +124,13 @@
     "group": "Map"
   },
   {
+    "id": "ui.map.showDataLayerLegend",
+    "type": "boolean",
+    "label": "Show data layer legend",
+    "value": true,
+    "group": "Map"
+  },
+  {
     "id": "ui.map.showDataAvailability",
     "type": "boolean",
     "label": "Show data availability",

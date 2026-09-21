@@ -9,7 +9,15 @@
       :item="currentScale"
       rounded
       class="px-0"
-    />
+    >
+      <template #append>
+        <v-btn icon density="compact" @click="toggleShowLegend">
+          <v-icon size="small">{{
+            showLegendOnMap ? 'mdi-pin-off' : 'mdi-pin'
+          }}</v-icon>
+        </v-btn>
+      </template>
+    </ColourItem>
     <v-menu v-else v-model="showMenu" :close-on-content-click="false">
       <template #activator="{ props, isActive }">
         <ColourItem :item="currentScale" v-bind="props" rounded class="px-0">
@@ -76,10 +84,13 @@ import {
   type Range,
 } from '@/stores/colourScales'
 import { computed, ref, watch } from 'vue'
+import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface Props {
   items: ColourScale[]
 }
+
+const userSettings = useUserSettingsStore()
 
 const props = defineProps<Props>()
 const modelValue = defineModel<ColourScale | undefined>()
@@ -87,6 +98,14 @@ const modelValue = defineModel<ColourScale | undefined>()
 const colourScalesStore = useColourScalesStore()
 
 const showMenu = ref(false)
+
+const showLegendOnMap = computed(() => {
+  return userSettings.get('ui.map.showDataLayerLegend')?.value ?? true
+})
+
+function toggleShowLegend() {
+  userSettings.set('ui.map.showDataLayerLegend', !showLegendOnMap.value)
+}
 
 const rules = {
   required: (v: number) =>
