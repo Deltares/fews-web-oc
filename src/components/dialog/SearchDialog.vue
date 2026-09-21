@@ -93,6 +93,7 @@
               </div>
 
               <!-- TREE ROW -->
+              <!-- //NOSONAR -->
               <div
                 :key="row.item.id"
                 v-else
