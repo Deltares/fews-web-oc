@@ -47,7 +47,8 @@
       @coordinate-moved="onCoordinateMoved"
     />
     <LocationsLayer
-      v-if="showLocationsLayer && hasLocations"
+      v-if="hasLocations"
+      :showLocations="showLocationsLayer"
       :locationsGeoJson="geojson"
       :selectedLocationIds="selectedLocationIds"
       :selectedLocationCategories="selectedLocationCategories"

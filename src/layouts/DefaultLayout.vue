@@ -19,11 +19,11 @@
           variant="tonal"
           @click="showSearchDialog = !showSearchDialog"
         >
-          <template #append>
+          <template v-if="!mobile">
             <kbd>{{ isMac ? '⌘' : 'Ctrl' }}</kbd
             >+<kbd>K</kbd>
+            Search
           </template>
-          Search
         </v-btn>
         <div id="app-bar-content-start" />
       </template>
