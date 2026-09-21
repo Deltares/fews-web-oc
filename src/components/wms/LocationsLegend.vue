@@ -170,7 +170,6 @@ function isLabelSelected(iconLabel?: string): boolean {
 }
 
 function toggleAll(iconLabel?: string): void {
-  console.log('iconLabel', iconLabel)
   const itemValues = items.value
     .filter((item) => item.iconLabel === iconLabel)
     .map((item) => item.value)

@@ -193,7 +193,6 @@ const categories = computed(() => {
   props.locations.forEach((location) => {
     const locationWithIconLabel = location as LocationWithIconLabel
     const category = getLocationCategory(locationWithIconLabel)
-    console.log('category', category, locationWithIconLabel.iconLabel)
     if (!items.has(category)) {
       items.set(category, {
         category,
