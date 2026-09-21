@@ -24,7 +24,9 @@
             <kbd>{{ LOCATION_SEARCH_SHORTCUT }}</kbd>
             Searching locations
           </span>
-          <span>Remove {{ LOCATION_SEARCH_SHORTCUT }} to search for anything</span>
+          <span
+            >Remove {{ LOCATION_SEARCH_SHORTCUT }} to search for anything</span
+          >
         </template>
         <template v-else-if="searchMode === 'route'">
           <span class="search-dialog__mode-hint-current">
@@ -55,159 +57,166 @@
             class="search-dialog__scroll-container"
           >
             <v-list slim class="search-scroll-container py-0">
-            <v-treeview
-              :items="treeItems"
-              item-title="label"
-              item-value="id"
-              density="compact"
-              indent-lines="simple"
-              class="py-0"
-              v-model:opened="openedTreeIds"
-            >
-              <template #prepend="{ item: subItem }">
-                <v-icon v-if="subItem.type === 'group'" size="16">
-                  {{
-                    subItem.id === 'topology'
-                      ? 'mdi-directions'
-                      : 'mdi-map-marker'
-                  }}
-                </v-icon>
-                <v-img
-                  v-else-if="subItem.type === 'location' && subItem.iconName"
-                  :src="getResourcesIconsUrl(subItem.iconName)"
+              <v-treeview
+                :items="treeItems"
+                item-title="label"
+                item-value="id"
+                density="compact"
+                indent-lines="simple"
+                class="py-0"
+                v-model:opened="openedTreeIds"
+              >
+                <template #prepend="{ item: subItem }">
+                  <v-icon v-if="subItem.type === 'group'" size="16">
+                    {{
+                      subItem.id === 'topology'
+                        ? 'mdi-directions'
+                        : 'mdi-map-marker'
+                    }}
+                  </v-icon>
+                  <v-img
+                    v-else-if="subItem.type === 'location' && subItem.iconName"
+                    :src="getResourcesIconsUrl(subItem.iconName)"
                     width="16"
                     height="16"
-                  contain
-                />
-                <v-icon
-                  v-else-if="subItem.type === 'topology' && subItem.iconName"
-                >
-                  {{ subItem.iconName }}
-                </v-icon>
-                <svg
-                  v-else-if="subItem.type === 'location'"
-                  class="search-dialog__location-marker"
-                  viewBox="0 0 16 16"
-                  width="10"
-                  height="10"
-                  aria-hidden="true"
-                >
-                  <circle
-                    cx="8"
-                    cy="8"
-                    r="7"
-                    fill="#dfdfdf"
-                    stroke="black"
-                    stroke-width="2"
+                    contain
                   />
-                </svg>
-                <v-icon v-else size="16">{{ iconForTreeItem(subItem) }}</v-icon>
-              </template>
-              <template #title="{ item: subItem }">
-                <v-list-item-title
-                  :data-search-item-id="subItem.id"
-                  :class="{
-                    'search-dialog__group-title': subItem.type === 'group',
-                    'search-dialog__item-title--selected':
-                      subItem.type !== 'group' && isSelectedTreeItem(subItem),
-                  }"
-                  @click.stop="
-                    subItem.type === 'group'
-                      ? undefined
-                      : selectTreeItem(subItem)
-                  "
-                >
-                  <span v-if="subItem.type === 'group'">{{
-                    subItem.label
-                  }}</span>
-                  <HighlightMatch
-                    v-else
-                    :value="subItem.label"
-                    :query="searchQuery"
-                  />
-                  <span
-                    v-if="subItem.type === 'location' && showLocationId(subItem)"
-                    class="search-dialog__id-match"
+                  <v-icon
+                    v-else-if="subItem.type === 'topology' && subItem.iconName"
                   >
-                    ID:
-                    <HighlightMatch :value="subItem.id" :query="searchQuery" />
-                  </span>
-                  <span
-                    v-if="subItem.type === 'topology'"
-                    class="search-dialog__route-details"
+                    {{ subItem.iconName }}
+                  </v-icon>
+                  <svg
+                    v-else-if="subItem.type === 'location'"
+                    class="search-dialog__location-marker"
+                    viewBox="0 0 16 16"
+                    width="10"
+                    height="10"
+                    aria-hidden="true"
                   >
+                    <circle
+                      cx="8"
+                      cy="8"
+                      r="7"
+                      fill="#dfdfdf"
+                      stroke="black"
+                      stroke-width="2"
+                    />
+                  </svg>
+                  <v-icon v-else size="16">{{
+                    iconForTreeItem(subItem)
+                  }}</v-icon>
+                </template>
+                <template #title="{ item: subItem }">
+                  <v-list-item-title
+                    :data-search-item-id="subItem.id"
+                    :class="{
+                      'search-dialog__group-title': subItem.type === 'group',
+                      'search-dialog__item-title--selected':
+                        subItem.type !== 'group' && isSelectedTreeItem(subItem),
+                    }"
+                    @click.stop="
+                      subItem.type === 'group'
+                        ? undefined
+                        : selectTreeItem(subItem)
+                    "
+                  >
+                    <span v-if="subItem.type === 'group'">{{
+                      subItem.label
+                    }}</span>
+                    <HighlightMatch
+                      v-else
+                      :value="subItem.label"
+                      :query="searchQuery"
+                    />
                     <span
-                      v-if="isSelectedTreeItem(subItem)"
-                      class="search-dialog__route-hint"
+                      v-if="
+                        subItem.type === 'location' && showLocationId(subItem)
+                      "
+                      class="search-dialog__id-match"
                     >
-                      <template v-if="subItem.children?.length">
+                      ID:
+                      <HighlightMatch
+                        :value="subItem.id"
+                        :query="searchQuery"
+                      />
+                    </span>
+                    <span
+                      v-if="subItem.type === 'topology'"
+                      class="search-dialog__route-details"
+                    >
+                      <span
+                        v-if="isSelectedTreeItem(subItem)"
+                        class="search-dialog__route-hint"
+                      >
+                        <template v-if="subItem.children?.length">
+                          <kbd>Space</kbd>
+                          {{
+                            isTreeItemExpanded(subItem) ? 'Collapse' : 'Expand'
+                          }}
+                        </template>
+                        <template v-else>
+                          <kbd>Enter</kbd>
+                          Open
+                        </template>
+                      </span>
+                      <span
+                        v-if="!subItem.children?.length"
+                        class="search-dialog__route-path"
+                      >
+                        {{ routeForItem(subItem).fullPath }}
+                      </span>
+                    </span>
+                    <span
+                      v-if="
+                        subItem.type === 'location' &&
+                        isSelectedTreeItem(subItem) &&
+                        subItem.children?.length
+                      "
+                      class="search-dialog__item-hint"
+                    >
+                      <span>
                         <kbd>Space</kbd>
                         {{
                           isTreeItemExpanded(subItem) ? 'Collapse' : 'Expand'
                         }}
-                      </template>
-                      <template v-else>
+                      </span>
+                      <span v-if="subItem.type === 'location'">
                         <kbd>Enter</kbd>
-                        Open
-                      </template>
+                        {{
+                          isExclusivelySelected(subItem)
+                            ? 'Deselect subtree'
+                            : 'Select subtree'
+                        }}
+                      </span>
                     </span>
                     <span
-                      v-if="!subItem.children?.length"
-                      class="search-dialog__route-path"
+                      v-else-if="
+                        subItem.type === 'location' &&
+                        isSelectedTreeItem(subItem)
+                      "
+                      class="search-dialog__item-hint"
                     >
-                      {{ routeForItem(subItem).fullPath }}
+                      <span>
+                        <kbd>Enter</kbd>
+                        {{
+                          isExclusivelySelected(subItem)
+                            ? 'Deselect location'
+                            : 'Select location'
+                        }}
+                      </span>
+                      <span v-if="canUseAddLocationShortcut(subItem)">
+                        <kbd>Shift</kbd>+<kbd>Enter</kbd>
+                        {{
+                          isLocationSelected(subItem)
+                            ? 'Remove location'
+                            : 'Add location'
+                        }}
+                      </span>
                     </span>
-                  </span>
-                  <span
-                    v-if="
-                      subItem.type === 'location' &&
-                      isSelectedTreeItem(subItem) &&
-                      subItem.children?.length
-                    "
-                    class="search-dialog__item-hint"
-                  >
-                    <span>
-                      <kbd>Space</kbd>
-                      {{
-                        isTreeItemExpanded(subItem) ? 'Collapse' : 'Expand'
-                      }}
-                    </span>
-                    <span v-if="subItem.type === 'location'">
-                      <kbd>Enter</kbd>
-                      {{
-                        isExclusivelySelected(subItem)
-                          ? 'Deselect subtree'
-                          : 'Select subtree'
-                      }}
-                    </span>
-                  </span>
-                  <span
-                    v-else-if="
-                      subItem.type === 'location' &&
-                      isSelectedTreeItem(subItem)
-                    "
-                    class="search-dialog__item-hint"
-                  >
-                    <span>
-                      <kbd>Enter</kbd>
-                      {{
-                        isExclusivelySelected(subItem)
-                          ? 'Deselect location'
-                          : 'Select location'
-                      }}
-                    </span>
-                    <span v-if="canUseAddLocationShortcut(subItem)">
-                      <kbd>Shift</kbd>+<kbd>Enter</kbd>
-                      {{
-                        isLocationSelected(subItem)
-                          ? 'Remove location'
-                          : 'Add location'
-                      }}
-                    </span>
-                  </span>
-                </v-list-item-title>
-              </template>
-            </v-treeview>
+                  </v-list-item-title>
+                </template>
+              </v-treeview>
             </v-list>
           </div>
         </v-card>
@@ -266,8 +275,9 @@ const router = useRouter()
 const route = useRoute()
 const searchContext = useSearchContext()
 const searchInput = useTemplateRef<HTMLInputElement>('searchInput')
-const searchResultsContainer =
-  useTemplateRef<HTMLDivElement>('searchResultsContainer')
+const searchResultsContainer = useTemplateRef<HTMLDivElement>(
+  'searchResultsContainer',
+)
 
 const LOCATION_SEARCH_SHORTCUT = '@' as const
 const ROUTE_SEARCH_SHORTCUT = '#' as const
@@ -409,15 +419,14 @@ function showLocationId(item: SearchItem): boolean {
   return isMatchingId && !isMatchingLabel
 }
 
-function hasMatchingDescendant(
-  item: SearchTreeItem,
-  query: string,
-): boolean {
-  return item.children?.some(
-    (child) =>
-      containsSubstring(child.label, query) ||
-      hasMatchingDescendant(child, query),
-  ) === true
+function hasMatchingDescendant(item: SearchTreeItem, query: string): boolean {
+  return (
+    item.children?.some(
+      (child) =>
+        containsSubstring(child.label, query) ||
+        hasMatchingDescendant(child, query),
+    ) === true
+  )
 }
 
 function collectOpenedDescendants(
@@ -568,9 +577,10 @@ function routeForLocation(item: SearchItem, addLocation: boolean) {
   const currentLocationIds = getCurrentLocationIds()
 
   if (route.params.topologyId !== undefined) {
-    const locationIds = addLocation || !currentLocationIds.includes(locationId)
-      ? [...new Set([...currentLocationIds, locationId])]
-      : currentLocationIds.filter((id) => id !== locationId)
+    const locationIds =
+      addLocation || !currentLocationIds.includes(locationId)
+        ? [...new Set([...currentLocationIds, locationId])]
+        : currentLocationIds.filter((id) => id !== locationId)
 
     return router.resolve({
       name:
@@ -754,10 +764,7 @@ function onKeydown(event: KeyboardEvent) {
   }
 }
 
-function toggleSelectedTreeItem(
-  key: string,
-  items: SearchItem[],
-): void {
+function toggleSelectedTreeItem(key: string, items: SearchItem[]): void {
   const item = items[selectedIndex.value]
   if (!item?.children?.length) return
 

@@ -4,11 +4,7 @@ import type { Location, TopologyNode } from '@deltares/fews-pi-requests'
 import { topologyNodeIsVisible } from '@/lib/topology/nodes'
 
 export type SearchItemType =
-  | 'user'
-  | 'project'
-  | 'document'
-  | 'location'
-  | 'topology'
+  'user' | 'project' | 'document' | 'location' | 'topology'
 
 export interface SearchItem {
   id: string
@@ -120,10 +116,7 @@ export const useSearchContext = defineStore('searchContext', () => {
   }
 
   function getNestedLocationIds(item: SearchItem): string[] {
-    return [
-      item.id,
-      ...(item.children?.flatMap(getNestedLocationIds) ?? []),
-    ]
+    return [item.id, ...(item.children?.flatMap(getNestedLocationIds) ?? [])]
   }
 
   return {

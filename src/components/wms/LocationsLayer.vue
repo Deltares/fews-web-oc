@@ -69,7 +69,6 @@ import {
 
 type LocationWithIconLable = Location & { iconLabel?: string }
 
-
 const userSettings = useUserSettingsStore()
 const isDark = useDark()
 const { map } = useMap()
@@ -105,7 +104,9 @@ const showDataAvailability = computed(() => {
 
 const locationsClickable = computed(() => props.settings.singleClickAction)
 
-const getLocationCategory = (feature: Feature<Geometry, LocationWithIconLable>) => {
+const getLocationCategory = (
+  feature: Feature<Geometry, LocationWithIconLable>,
+) => {
   const activeIcon =
     feature.properties.thresholdIconName ?? feature.properties.iconName
   return `${feature.properties.iconLabel}-${activeIcon}`
