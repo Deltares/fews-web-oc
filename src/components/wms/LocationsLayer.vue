@@ -1,5 +1,6 @@
 <template>
   <LocationsFillLayer
+    v-if="showLocations"
     :layerId="mapIds.location.layer.fill"
     :sourceId="mapIds.location.source"
     :source="source"
@@ -9,18 +10,21 @@
   />
 
   <LocationsCircleLayer
+    v-if="showLocations"
     :layerId="mapIds.location.layer.circle"
     :sourceId="mapIds.location.source"
     :source="source"
   />
 
   <LocationsSymbolLayer
+    v-if="showLocations"
     :layerId="mapIds.location.layer.symbol"
     :sourceId="mapIds.location.source"
     :isDark="isDark"
     :source="source"
   />
   <LocationsSymbolLayer
+    v-if="showLocations"
     :layerId="mapIds.location.layer.childSymbol"
     :sourceId="mapIds.location.source"
     :isDark="isDark"
@@ -29,6 +33,7 @@
   />
 
   <LocationsTextLayer
+    v-if="showLocations"
     :layerId="mapIds.location.layer.text"
     :sourceId="mapIds.location.source"
     :source="source"
@@ -77,6 +82,7 @@ interface Props {
   locationsGeoJson?: FeatureCollection<Geometry, Location>
   selectedLocationIds?: string[]
   selectedLocationCategories?: string[]
+  showLocations?: boolean
   settings?: MapSettings['locationsLayer']
 }
 
@@ -88,6 +94,7 @@ const props = withDefaults(defineProps<Props>(), {
   settings: () => defaultMapSettings.locationsLayer,
   selectedLocationIds: () => [],
   selectedLocationCategories: () => [],
+  showLocations: () => true,
 })
 
 const showNames = computed(() => {
