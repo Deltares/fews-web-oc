@@ -118,27 +118,14 @@
           </v-list-item>
         </v-list>
       </v-menu>
-
-      <v-btn
-        icon="mdi-magnify"
-        density="compact"
-        :aria-label="t('search.searchLocation')"
-        @click="showLocationsSearch"
-      />
     </template>
   </ControlChip>
-  <SearchDialog
-    v-model="showSearch"
-    v-model:selectedItems="selectedItems"
-    :items="items"
-  />
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { type Location } from '@deltares/fews-pi-requests'
 import ControlChip from '@/components/wms/ControlChip.vue'
-import SearchDialog from '@/components/general/SearchDialog.vue'
 import SelectIcon from '@/components/general/SelectIcon.vue'
 import LocationsLegend from './LocationsLegend.vue'
 import { getResourcesIconsUrl } from '@/lib/fews-config'
@@ -189,7 +176,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const showLocations = defineModel<boolean>('showLocations', { default: true })
 
-const showSearch = ref(false)
 const selectedItems = ref<string[]>([])
 const items = ref<TreeNode[]>([])
 const selectedLocationCategories = defineModel<string[]>(
@@ -300,10 +286,6 @@ function getLocationsFromIds(locationIds: string[]) {
       props.locations.find((location) => location.locationId === locationId),
     )
     .filter((location): location is Location => location !== undefined)
-}
-
-function showLocationsSearch() {
-  showSearch.value = true
 }
 
 function isIconSelected(iconValue: string): boolean {
