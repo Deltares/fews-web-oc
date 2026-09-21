@@ -19,7 +19,11 @@
           variant="outlined"
           @click="showSearchDialog = !showSearchDialog"
         >
-          Search <kbd>Cmd</kbd>+<kbd>K</kbd>
+          <template #append>
+            <kbd>{{ isMac ? '⌘' : 'Ctrl' }}</kbd
+            >+<kbd>K</kbd>
+          </template>
+          Search
         </v-btn>
         <div id="app-bar-content-start" />
       </template>
@@ -214,8 +218,12 @@ const showHash = ref(false)
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
 
+const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform)
+
 function onGlobalKeydown(event: KeyboardEvent): void {
-  if (event.metaKey && event.key.toLowerCase() === 'k') {
+  const modifierPressed = isMac ? event.metaKey : event.ctrlKey
+
+  if (modifierPressed && event.key.toLowerCase() === 'k') {
     event.preventDefault()
     showSearchDialog.value = !showSearchDialog.value
   }
