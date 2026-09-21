@@ -27,19 +27,23 @@ export function addPropertiesToLocationGeojson(
   showNames: boolean,
   showDataAvailability: boolean,
 ): FeatureCollection<Geometry, ExtendedLocation> {
-  const features = geojson.features.map((feature) => ({
-    ...feature,
-    properties: {
-      ...feature.properties,
-      locationName: showNames ? feature.properties.locationName : '',
-      iconName:
-        feature.properties.thresholdIconName ?? feature.properties.iconName,
-      webocIcon: getIconName(feature),
-      sortKey: getSortKey(feature),
-      invertedSortKey: getInvertedSortKey(feature),
-      selected: selectedLocationIds.includes(feature.properties.locationId),
-    },
-  }))
+  const features = geojson.features.map((feature) => {
+    const iconName =
+      feature.properties.thresholdIconName ?? feature.properties.iconName
+
+    return {
+      ...feature,
+      properties: {
+        ...feature.properties,
+        locationName: showNames ? feature.properties.locationName : '',
+        ...(iconName === undefined ? {} : { iconName }),
+        webocIcon: getIconName(feature),
+        sortKey: getSortKey(feature),
+        invertedSortKey: getInvertedSortKey(feature),
+        selected: selectedLocationIds.includes(feature.properties.locationId),
+      },
+    }
+  })
 
   return {
     ...geojson,
