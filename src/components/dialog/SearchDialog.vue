@@ -134,14 +134,14 @@
                       {{ row.item.iconName }}
                     </v-icon>
 
-                    <v-img
+                    <img
                       v-else-if="
                         row.item.type === 'location' && row.item.iconName
                       "
                       :src="getResourcesIconsUrl(row.item.iconName)"
                       width="16"
                       height="16"
-                      contain
+                      alt=""
                     />
 
                     <svg
