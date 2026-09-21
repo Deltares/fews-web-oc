@@ -16,7 +16,7 @@
         <v-btn
           prepend-icon="mdi-magnify"
           aria-keyshortcuts="Meta+K"
-          variant="outlined"
+          variant="tonal"
           @click="showSearchDialog = !showSearchDialog"
         >
           <template #append>
