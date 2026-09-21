@@ -1,22 +1,27 @@
 <template>
   <v-dialog
     v-model="modelValue"
-    max-width="640"
-    height="60vh"
+    transition="dialog-top-transition"
+    :fullscreen="mobile"
+    :max-width="mobile ? undefined : '900'"
     class="search-dialog"
     @keydown="onKeydown"
   >
     <v-card rounded="lg" class="search-dialog__card">
-      <input
-        ref="searchInput"
-        v-model="searchContext.search"
-        type="text"
-        :placeholder="searchPlaceholder"
-        aria-label="Search"
-        class="search-dialog__input"
-        @keydown.enter.stop.prevent="selectSelectedItem"
-      />
-
+      <v-toolbar class="d-flex flex-row w-100 align-items">
+        <input
+          ref="searchInput"
+          v-model="searchContext.search"
+          type="text"
+          :placeholder="searchPlaceholder"
+          aria-label="Search"
+          class="search-dialog__input ml-2"
+          @keydown.enter.stop.prevent="selectSelectedItem"
+        />
+        <v-btn size="small" icon @click="modelValue = false">
+          <v-icon size="small">mdi-close</v-icon>
+        </v-btn>
+      </v-toolbar>
       <div class="search-dialog__mode-hint text-caption text-medium-emphasis">
         <template v-if="searchMode === 'location'">
           <span class="search-dialog__mode-hint-current">
@@ -205,14 +210,15 @@
                       v-if="isSelected(row.item)"
                       class="search-dialog__item-hint"
                     >
-                      <template v-if="row.item.type === 'location'">
-                        <span v-if="row.item.children?.length">
-                          <kbd>Space</kbd>
-                          {{
-                            isTreeItemExpanded(row.item) ? 'Collapse' : 'Expand'
-                          }}
+                      <template v-if="row.item.children?.length">
+                        <span v-if="isTreeItemExpanded(row.item)">
+                          <kbd>←</kbd> Collapse
                         </span>
-
+                        <span v-if="!isTreeItemExpanded(row.item)">
+                          <kbd>→</kbd> Expand
+                        </span>
+                      </template>
+                      <template v-if="row.item.type === 'location'">
                         <span>
                           <kbd>Enter</kbd>
                           {{
@@ -232,15 +238,6 @@
                             isLocationSelected(row.item)
                               ? 'Remove location'
                               : 'Add location'
-                          }}
-                        </span>
-                      </template>
-
-                      <template v-else-if="row.item.type === 'topology'">
-                        <span v-if="row.item.children?.length">
-                          <kbd>Space</kbd>
-                          {{
-                            isTreeItemExpanded(row.item) ? 'Collapse' : 'Expand'
                           }}
                         </span>
                       </template>
@@ -297,6 +294,7 @@ import { containsSubstring } from '@/lib/search'
 import HighlightMatch from '@/components/general/HighlightMatch.vue'
 import { getResourcesIconsUrl } from '@/lib/fews-config'
 import { VVirtualScroll } from 'vuetify/components'
+import { useDisplay } from 'vuetify'
 
 const modelValue = defineModel<boolean>({
   type: Boolean,
@@ -305,6 +303,8 @@ const modelValue = defineModel<boolean>({
 
 const router = useRouter()
 const route = useRoute()
+
+const { mobile } = useDisplay()
 const searchContext = useSearchContext()
 const searchInput = useTemplateRef<HTMLInputElement>('searchInput')
 const virtualScroll = useTemplateRef<VVirtualScroll>('virtualScroll')
@@ -1003,9 +1003,8 @@ watch(modelValue, async (value) => {
 
 .search-dialog__input {
   box-sizing: border-box;
-  flex: 0 0 auto;
-  width: 100%;
-  min-height: 56px;
+  flex: 1 1 auto;
+  min-height: 48px;
   padding: 8px 16px;
   border: 0;
   outline: none;
@@ -1046,7 +1045,7 @@ watch(modelValue, async (value) => {
 .search-dialog__scroll-container {
   min-height: 0;
   flex: 1;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .search-dialog__virtual-scroll {
