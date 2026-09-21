@@ -73,6 +73,7 @@
               <!-- GROUP ROW -->
               <div
                 v-if="row.kind === 'group'"
+                :key="row.id"
                 class="search-dialog__row search-dialog__group-row"
                 :data-search-row-index="index"
               >
@@ -93,6 +94,7 @@
 
               <!-- TREE ROW -->
               <div
+                :key="row.item.id"
                 v-else
                 class="search-dialog__row"
                 :class="{
@@ -293,7 +295,6 @@ import type { SearchItem } from '@/stores/searchContext'
 import { containsSubstring } from '@/lib/search'
 import HighlightMatch from '@/components/general/HighlightMatch.vue'
 import { getResourcesIconsUrl } from '@/lib/fews-config'
-import { VVirtualScroll } from 'vuetify/components'
 import { useDisplay } from 'vuetify'
 
 const modelValue = defineModel<boolean>({
@@ -307,7 +308,9 @@ const route = useRoute()
 const { mobile } = useDisplay()
 const searchContext = useSearchContext()
 const searchInput = useTemplateRef<HTMLInputElement>('searchInput')
-const virtualScroll = useTemplateRef<VVirtualScroll>('virtualScroll')
+const searchResultsContainer = useTemplateRef<HTMLDivElement>(
+  'searchResultsContainer',
+)
 
 const LOCATION_SEARCH_SHORTCUT = '@' as const
 const ROUTE_SEARCH_SHORTCUT = '#' as const
@@ -471,6 +474,24 @@ const visibleRows = computed<VisibleRow[]>(() => {
   appendGroup(rows, 'topology', 'Routes', topologyRoots, query)
   appendGroup(rows, 'location', 'Locations', locationRoots, query)
   return rows
+})
+
+const selectedVirtualIndex = computed(() => {
+  let searchIndex = 0
+
+  for (let i = 0; i < visibleRows.value.length; i++) {
+    const row = visibleRows.value[i]
+
+    if (row.kind !== 'item') continue
+
+    if (searchIndex === selectedIndex.value) {
+      return i
+    }
+
+    searchIndex++
+  }
+
+  return -1
 })
 
 function appendGroup(
@@ -953,15 +974,23 @@ function toggleSelectedTreeItem(key: string, items: SearchItem[]): void {
 }
 
 function scrollSelectedItemIntoView(): void {
-  void nextTick(() => {
-    /**
-     * Vuetify's virtual scroll exposes `scrollToIndex`
-     * in current versions. Keeping this isolated makes it
-     * easy to adapt if the project's Vuetify version uses
-     * a slightly different API.
-     */
-    virtualScroll.value?.scrollToIndex?.(selectedIndex.value)
-  })
+  const container = searchResultsContainer.value
+  if (!container) return
+
+  const virtualIndex = selectedVirtualIndex.value
+  if (virtualIndex < 0) return
+
+  const rowTop = virtualIndex * 48
+  const rowBottom = rowTop + 48
+
+  const visibleTop = container.scrollTop
+  const visibleBottom = visibleTop + container.clientHeight
+
+  if (rowTop < visibleTop) {
+    container.scrollTop = rowTop
+  } else if (rowBottom > visibleBottom) {
+    container.scrollTop = rowBottom - container.clientHeight
+  }
 }
 
 watch(
