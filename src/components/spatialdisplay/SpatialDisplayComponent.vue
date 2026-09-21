@@ -50,6 +50,7 @@
       v-if="showLocationsLayer && hasLocations"
       :locationsGeoJson="geojson"
       :selectedLocationIds="selectedLocationIds"
+      :selectedLocationCategories="selectedLocationCategories"
       :settings="settings.locationsLayer"
       @click="onLocationClick"
     />
@@ -126,7 +127,7 @@
           </template>
         </InformationPanel>
         <TaskRunControl v-model:taskRunId="taskRunId" />
-        <LocationsSearchControl
+        <LocationsMapControl
           v-if="settings.locationsLayer.locationSearchEnabled"
           v-model:showLocations="showLocationsLayer"
           width="50vw"
@@ -134,6 +135,7 @@
           :locations="locations"
           :locationToChildrenMap="locationToChildrenMap"
           :selectedLocationIds="selectedLocationIds"
+          v-model:selectedLocationCategories="selectedLocationCategories"
           @changeLocationIds="onLocationsChange"
         />
       </template>
@@ -189,6 +191,7 @@ import MapComponent from '@/components/map/MapComponent.vue'
 import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 
 import { ref, computed, watch, watchEffect } from 'vue'
+import { useStorage } from '@vueuse/core'
 import {
   convertBoundingBoxToLngLatBounds,
   useWmsCapabilities,
@@ -198,7 +201,7 @@ import ColourBar from '@/components/wms/ColourBar.vue'
 import AnimatedRasterLayer, {
   AnimatedRasterLayerOptions,
 } from '@/components/wms/AnimatedRasterLayer.vue'
-import LocationsSearchControl from '@/components/wms/LocationsSearchControl.vue'
+import LocationsMapControl from '@/components/wms/LocationsMapControl.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import InformationPanel from '@/components/wms/panel/InformationPanel.vue'
@@ -248,6 +251,7 @@ import { useAggregations } from '@/services/useAggregations'
 import { provideLayerOrder } from '@/services/useLayerOrder'
 import { useOverlays } from '@/services/useOverlays'
 import SnapshotStrip from '@/components/spatialdisplay/SnapshotStrip.vue'
+import { useSearchContext } from '@/stores/searchContext'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -313,6 +317,13 @@ const locationToChildrenMap = computed(() =>
   createLocationToChildrenMap(props.locations ?? []),
 )
 
+const searchContext = useSearchContext()
+watch(
+  () => props.locations,
+  (locations) => searchContext.setLocations(locations ?? []),
+  { immediate: true },
+)
+
 const selectedDateOfSlider = ref<Date>()
 const { selectedDate, dateTimeSliderEnabled } =
   useSelectedDate(selectedDateOfSlider)
@@ -345,6 +356,11 @@ watch(
 )
 
 const selectedLocationIds = computed(() => props.locationIds?.split(',') ?? [])
+const selectedLocationCategories = useStorage<string[]>(
+  'weboc-selected-location-categories-v1.0.0',
+  [],
+  sessionStorage,
+)
 
 const { doShowAggregated, selectedAggregationLabel, aggregations } =
   useAggregations(selectedDate, () => props.layerCapabilities)

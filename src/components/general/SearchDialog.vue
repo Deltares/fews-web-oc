@@ -26,14 +26,14 @@
         </v-btn>
       </v-toolbar>
       <div class="d-flex px-1 pt-3 pb-2 align-center">
-        <span class="pe-1">Filter</span>
+        <span class="pe-1">{{ t('common.filter') }}</span>
         <v-btn-toggle density="compact" v-model="showOnlySelected">
-          <v-btn variant="tonal" :value="false">{{ t('all') }}</v-btn>
+          <v-btn variant="tonal" :value="false">{{ t('common.all') }}</v-btn>
           <v-btn
             prepend-icon="mdi-checkbox-marked"
             variant="tonal"
             :value="true"
-            >{{ t('selected') }}
+            >{{ t('common.selected') }}
           </v-btn>
         </v-btn-toggle>
         <v-spacer />
@@ -42,7 +42,7 @@
           variant="tonal"
           rounded
           @click.stop="selectedItems = []"
-          >{{ t('clear_all') }}</v-btn
+          >{{ t('common.clearAll') }}</v-btn
         >
       </div>
       <v-list slim class="search-scroll-container py-0">
@@ -64,6 +64,16 @@
               :key="item.id"
               :open-all="showAll(item, debouncedSearch)"
             >
+              <template #prepend="{ item: subItem }">
+                <v-img
+                  v-if="subItem.iconName"
+                  :src="getResourcesIconsUrl(subItem.iconName)"
+                  width="24"
+                  height="24"
+                  contain
+                />
+                <v-icon v-else>mdi-map-marker</v-icon>
+              </template>
               <template #title="{ item: subItem }">
                 <HighlightMatch
                   :value="subItem.title"
@@ -95,10 +105,12 @@ import HighlightMatch from './HighlightMatch.vue'
 import { cascadeStrategy } from '@/lib/selection'
 import { refDebounced } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
+import { getResourcesIconsUrl } from '@/lib/fews-config'
 
 interface SearchItem {
   id: string
   title: string
+  iconName?: string
   children?: SearchItem[]
 }
 

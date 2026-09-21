@@ -9,6 +9,7 @@
     "default": "Standard",
     "end": "Ende",
     "leave": "Verlassen",
+    "filter": "Filter",
     "selected": "Ausgewählt",
     "selectAll": "Alle auswählen",
     "start": "Start",
@@ -75,6 +76,11 @@
     }
   },
   "search": {
+    "otherLocations": "Andere Messstellen",
+    "locationsLegend": "Messstellensymbole",
+    "selectedLocations": "Ausgewählte Messstellen",
+    "noSelectedLocation": "Keine Messstellen ausgewählt",
+    "locationId": "ID",
     "searchForLocations": "Messstelle",
     "searchLocation": "Messstelle"
   },

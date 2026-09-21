@@ -13,6 +13,18 @@
         <v-btn :to="{ name: 'Default' }" v-if="!isInstalledPWA && mdAndUp">
           <img height="36px" :src="logoSrc" alt="Application Logo" />
         </v-btn>
+        <v-btn
+          prepend-icon="mdi-magnify"
+          aria-keyshortcuts="Meta+K"
+          variant="tonal"
+          @click="showSearchDialog = !showSearchDialog"
+        >
+          <template #append>
+            <kbd>{{ isMac ? '⌘' : 'Ctrl' }}</kbd
+            >+<kbd>K</kbd>
+          </template>
+          Search
+        </v-btn>
         <div id="app-bar-content-start" />
       </template>
       <div class="align-items-center" id="app-bar-content-center"></div>
@@ -156,12 +168,21 @@
         <div class="border-s h-100" id="main-side-panel" />
       </v-sheet>
       <StartupDialog />
+      <SearchDialog v-model="showSearchDialog" />
     </v-main>
   </v-layout>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, type StyleValue, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  type StyleValue,
+  watch,
+} from 'vue'
 import { useDisplay, useRtl, useTheme } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
 import { useRoute } from 'vue-router'
@@ -169,6 +190,7 @@ import LoginComponent from '../views/auth/LoginComponent.vue'
 import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
 import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
 import StartupDialog from '@/components/dialog/StartupDialog.vue'
+import SearchDialog from '@/components/dialog/SearchDialog.vue'
 
 import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
@@ -184,6 +206,7 @@ const { mobile, mdAndUp } = useDisplay()
 const theme = useTheme()
 
 const drawer = ref(true)
+const showSearchDialog = ref(false)
 const { isRtl } = useRtl()
 const route = useRoute()
 
@@ -194,6 +217,20 @@ const isInstalledPWA = globalThis.matchMedia(
 const showHash = ref(false)
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
+
+const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform)
+
+function onGlobalKeydown(event: KeyboardEvent): void {
+  const modifierPressed = isMac ? event.metaKey : event.ctrlKey
+
+  if (modifierPressed && event.key.toLowerCase() === 'k') {
+    event.preventDefault()
+    showSearchDialog.value = !showSearchDialog.value
+  }
+}
+
+onMounted(() => document.addEventListener('keydown', onGlobalKeydown))
+onUnmounted(() => document.removeEventListener('keydown', onGlobalKeydown))
 
 function updateAppBarStyles() {
   appBarColor.value = getComputedStyle(document.body).getPropertyValue(
@@ -276,5 +313,18 @@ body {
 .v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
   .v-navigation-drawer__content {
   overflow-y: hidden;
+}
+
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 5px;
+  margin-right: 3px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 4px;
+  font-size: 11px;
 }
 </style>

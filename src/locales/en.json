@@ -9,6 +9,7 @@
     "default": "Default",
     "leave": "Leave",
     "end": "End",
+    "filter": "Filter",
     "selected": "Selected",
     "selectAll": "Select all",
     "start": "Start",
@@ -75,6 +76,11 @@
     }
   },
   "search": {
+    "otherLocations": "Other locations",
+    "locationsLegend": "Locations legend",
+    "selectedLocations": "Selected locations",
+    "noSelectedLocation": "No locations selected",
+    "locationId": "ID",
     "searchForLocations": "Search for locations",
     "searchLocation": "Search locations"
   },

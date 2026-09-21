@@ -44,15 +44,14 @@ import LocationsCircleLayer from '@/components/wms/locations/LocationsCircleLaye
 import LocationsSymbolLayer from '@/components/wms/locations/LocationsSymbolLayer.vue'
 import LocationsTextLayer from '@/components/wms/locations/LocationsTextLayer.vue'
 import LocationsMarkers from '@/components/wms/locations/LocationsMarkers.vue'
-import type { FeatureCollection, Geometry } from 'geojson'
+import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
 import {
   type MapGeoJSONFeature,
   type MapLayerMouseEvent,
   type MapLayerTouchEvent,
 } from 'maplibre-gl'
-import { watch, onBeforeUnmount, computed, ref } from 'vue'
-import { onBeforeMount } from 'vue'
+import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue'
 import { addLocationIconsToMap } from '@/lib/location-icons'
 import { useDark } from '@/services/useDark'
 import { useUserSettingsStore } from '@/stores/userSettings'
@@ -68,13 +67,16 @@ import {
   type MapSettings,
 } from '@/lib/topology/componentSettings'
 
+type LocationWithIconLable = Location & { iconLabel?: string }
+
 const userSettings = useUserSettingsStore()
 const isDark = useDark()
 const { map } = useMap()
 
 interface Props {
-  locationsGeoJson: FeatureCollection<Geometry, Location>
+  locationsGeoJson?: FeatureCollection<Geometry, Location>
   selectedLocationIds?: string[]
+  selectedLocationCategories?: string[]
   settings?: MapSettings['locationsLayer']
 }
 
@@ -83,9 +85,9 @@ const props = withDefaults(defineProps<Props>(), {
     type: 'FeatureCollection',
     features: [],
   }),
-  selectedLocationId: null,
   settings: () => defaultMapSettings.locationsLayer,
   selectedLocationIds: () => [],
+  selectedLocationCategories: () => [],
 })
 
 const showNames = computed(() => {
@@ -102,14 +104,29 @@ const showDataAvailability = computed(() => {
 
 const locationsClickable = computed(() => props.settings.singleClickAction)
 
-const geojson = computed(() =>
-  addPropertiesToLocationGeojson(
-    props.locationsGeoJson,
+const getLocationCategory = (
+  feature: Feature<Geometry, LocationWithIconLable>,
+) => {
+  const activeIcon =
+    feature.properties.thresholdIconName ?? feature.properties.iconName
+  return `${feature.properties.iconLabel}-${activeIcon}`
+}
+
+const geojson = computed(() => {
+  const filteredLocations = props.selectedLocationCategories?.length
+    ? props.locationsGeoJson.features.filter((feature) => {
+        const category = getLocationCategory(feature)
+        return props.selectedLocationCategories?.includes(category)
+      })
+    : props.locationsGeoJson.features
+
+  return addPropertiesToLocationGeojson(
+    { ...props.locationsGeoJson, features: filteredLocations },
     props.selectedLocationIds,
     showNames.value,
     showDataAvailability.value,
-  ),
-)
+  )
+})
 
 const emit = defineEmits(['click'])
 
