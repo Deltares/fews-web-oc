@@ -826,6 +826,9 @@ function routeForLocationIds(locationIds: string[]) {
 
 function selectItem(item: SearchItem, addLocation = false) {
   router.push(routeForItem(item, addLocation))
+  if (mobile.value) {
+    close()
+  }
 }
 
 function selectSelectedItem(event?: KeyboardEvent): void {
