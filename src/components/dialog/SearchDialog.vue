@@ -8,7 +8,7 @@
     @keydown="onKeydown"
   >
     <v-card rounded="lg" class="search-dialog__card">
-      <v-toolbar class="d-flex flex-row w-100 align-items">
+      <v-toolbar density="compact" class="d-flex flex-row w-100 align-items">
         <input
           ref="searchInput"
           v-model="searchContext.search"
@@ -520,7 +520,24 @@ function appendVisibleItem(
   item: SearchItem,
   depth: number,
   query: string,
+  ancestorMatches = false,
 ): void {
+  const ownMatch =
+    !query ||
+    containsSubstring(item.label, query) ||
+    (item.type === 'location' && containsSubstring(item.id, query))
+
+  // If an ancestor matched, everything below it is visible.
+  // Otherwise, this item must either match or have a matching descendant.
+  if (
+    query &&
+    !ancestorMatches &&
+    !ownMatch &&
+    !findMatch(item, query).hasMatchingDescendant
+  ) {
+    return
+  }
+
   rows.push({
     kind: 'item',
     item,
@@ -530,11 +547,16 @@ function appendVisibleItem(
   if (!item.children?.length) {
     return
   }
+
   if (!openedTreeIds.value.has(item.id)) {
     return
   }
+
+  // Once a node matches, don't filter anything below it.
+  const includeAllChildren = ancestorMatches || ownMatch
+
   for (const child of item.children) {
-    appendVisibleItem(rows, child, depth + 1, query)
+    appendVisibleItem(rows, child, depth + 1, query, includeAllChildren)
   }
 }
 
@@ -1037,7 +1059,7 @@ watch(modelValue, async (value) => {
 .search-dialog__input {
   box-sizing: border-box;
   flex: 1 1 auto;
-  min-height: 48px;
+  min-height: 40px;
   padding: 8px 16px;
   border: 0;
   outline: none;
