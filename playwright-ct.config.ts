@@ -17,7 +17,7 @@ export default defineConfig({
     reuseContext: true,
   },
   webServer: {
-    command: 'npm run dev',
+    command: 'vite --config vite.config-ct.ts',
     url: 'http://localhost:5173/playwright/gallery/index.html',
     reuseExistingServer: !process.env.CI,
   },
