@@ -3,6 +3,15 @@
     <xsl:output method="xml" indent="yes"/>
 
     <xsl:param name="falsePositives" select="' (HTTP Only Site - Active/beta) (CSP - Passive/release) (CSP: Wildcard Directive) (CSP: style-src unsafe-inline) (Hidden File Finder - Active/release) (Timestamp Disclosure - Passive/release) (Hidden File Found) '"/>
+    <!--
+        Scoped false positives: like $falsePositives above, but also require the alert's
+        evidence to contain a given substring, so only matching instances are muted and
+        the rule still fails for any other occurrence (e.g. a different vulnerable JS
+        library, or the same rule on a different bundle).
+    -->
+    <xsl:variable name="scopedFalsePositives">
+        <scoped name="Vulnerable JS Library" evidenceContains="bootstrap"/>
+    </xsl:variable>
     <!-- When set to 1, minor risks are skipped.-->
     <xsl:variable name="riskCodeLimit" select="1"/>
     <xsl:param name="sourceFolder"/>
@@ -21,12 +30,15 @@
                     <xsl:variable name="confidence" select="confidence"/>
                     <xsl:variable name="riskdesc" select="riskdesc"/>
                     <xsl:variable name="name" select="name"/>
+                    <xsl:variable name="evidence" select="instances/instance[1]/evidence"/>
+                    <xsl:variable name="isScopedFalsePositive"
+                                  select="boolean($scopedFalsePositives/scoped[@name = $name][contains($evidence, @evidenceContains)])"/>
 
                     <!-- Only report for risks with a riskcode > limit -->
                     <xsl:if test="$riskcode &gt; $riskCodeLimit">
                         <xsl:choose>
                             <!-- should not be in the ignore list. Name is withouth (), -->
-                            <xsl:when test="not(contains($falsePositives, concat('(', $name, ')')))">
+                            <xsl:when test="not(contains($falsePositives, concat('(', $name, ')'))) and not($isScopedFalsePositive)">
                                 <xsl:variable name="stacktrace">
                                     <xsl:value-of select="solution"/>:
                                     <xsl:for-each select="instances/instance">
