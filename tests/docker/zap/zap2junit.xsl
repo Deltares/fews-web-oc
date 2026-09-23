@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<!-- NOTE: keep version="1.0" here. No XSLT 2.0 features are used, and declaring
+     version="2.0" causes the JDK/Ant built-in Xalan (XSLTC) processor - which only
+     implements XSLT 1.0 - to run in "forwards-compatible mode". That mode is known
+     to be buggy in Xalan/XSLTC and can silently mis-evaluate boolean expressions
+     (e.g. the isScopedFalsePositive check below), even though the very same
+     stylesheet works fine on fully XSLT-2.0-capable / .NET processors. -->
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" indent="yes"/>
 
     <xsl:param name="falsePositives" select="' (HTTP Only Site - Active/beta) (CSP - Passive/release) (CSP: Wildcard Directive) (CSP: style-src unsafe-inline) (Hidden File Finder - Active/release) (Timestamp Disclosure - Passive/release) (Hidden File Found) '"/>
@@ -20,12 +26,14 @@
                     <xsl:variable name="riskcode" select="riskcode"/>
                     <xsl:variable name="confidence" select="confidence"/>
                     <xsl:variable name="riskdesc" select="riskdesc"/>
-                    <xsl:variable name="name" select="name"/>
-                    <xsl:variable name="evidence" select="instances/instance[1]/evidence"/>
+                    <xsl:variable name="name" select="normalize-space(name)"/>
+                    <!-- Check ALL instances (not just the first) for the bootstrap evidence,
+                         using normalize-space and string() explicitly. This avoids relying on
+                         XSLT 1.0's implicit node-set-to-string conversion of a single node,
+                         which some XSLT 1.0 processors (e.g. Xalan/XSLTC) evaluate unreliably
+                         when combined with an "and" expression across xsl:variable boundaries. -->
                     <xsl:variable name="isScopedFalsePositive"
-                                  select="
-							($name = 'Vulnerable JS Library' and contains($evidence, 'bootstrap'))
-						"/>
+                                  select="$name = 'Vulnerable JS Library' and count(instances/instance[contains(normalize-space(evidence), 'bootstrap')]) &gt; 0"/>
 
                     <xsl:if test="$riskcode &gt; $riskCodeLimit">
                         <xsl:choose>
