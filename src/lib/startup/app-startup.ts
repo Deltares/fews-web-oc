@@ -7,6 +7,8 @@ import { loadApplicationConfig } from './config-loader.js'
 import { appendConfiguredHeadLinks } from './resource-links.js'
 import { handleStartupError } from './startup-error.js'
 import moduleFederationPlugin from '@/plugins/moduleFederation'
+import { useAlertsStore } from '@/stores/alerts.js'
+import { provideHostNotifications } from '@deltares/fews-web-oc-composables'
 
 export { loadApplicationConfig } from './config-loader.js'
 export {
@@ -37,6 +39,10 @@ async function bootstrapApp(app: VueApp<Element>): Promise<void> {
   }
 
   app.use(router)
+  const alerts = useAlertsStore()
+  provideHostNotifications({
+    addAlert: (alert) => alerts.addAlert(alert),
+  })
   app.mount('#app')
 }
 
