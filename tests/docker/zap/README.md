@@ -23,3 +23,34 @@ New entries to the ignore list, should be added to the zap2junit.xsl file as wel
 
 # zap2junit.xsl
 This can be used by teamcity to generate a test report and report to github all checks have passed.
+
+# convert-zap-report.sh
+Converts `zap-report/report.xml` into `zap-report/junit.xml` using `zap2junit.xsl`.
+
+## Usage
+
+```bash
+# uses the default paths, matching the old Ant build:
+#   zap-report/report.xml -> zap-report/junit.xml (style: tests/docker/zap/zap2junit.xsl)
+./tests/docker/zap/convert-zap-report.sh
+
+# or explicitly:
+./tests/docker/zap/convert-zap-report.sh zap-report/report.xml zap-report/junit.xml tests/docker/zap/zap2junit.xsl
+```
+
+All paths are resolved relative to the current working directory
+(`%teamcity.build.workingDir%` when invoked from a TeamCity "Command Line" build
+step) unless given as absolute paths.
+
+## TeamCity configuration
+Replace the Ant build runner with a "Command Line" build runner step, with:
+- **Working directory**: `%teamcity.build.workingDir%` (default)
+- **Run**: Custom script
+- **Custom script**:
+  ```bash
+  bash tests/docker/zap/convert-zap-report.sh
+  ```
+
+The build agent only needs `bash` and `docker` available; the XSLT processor itself
+runs inside the disposable `alpine:3.20` container.
+
