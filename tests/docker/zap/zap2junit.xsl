@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" indent="yes"/>
-
     <xsl:param name="falsePositives" select="' (HTTP Only Site - Active/beta) (CSP - Passive/release) (CSP: Wildcard Directive) (CSP: style-src unsafe-inline) (Hidden File Finder - Active/release) (Timestamp Disclosure - Passive/release) (Hidden File Found) '"/>
     <!-- When set to 1, minor risks are skipped.-->
     <xsl:variable name="riskCodeLimit" select="1"/>
