@@ -41,6 +41,12 @@
           </v-list-item-subtitle>
           <template #append>
             <div class="d-flex align-center ga-3">
+              <span
+                v-if="responseTimes[remote.name] !== undefined"
+                class="text-caption text-medium-emphasis"
+              >
+                {{ responseTimes[remote.name] }} ms
+              </span>
               <v-chip
                 :color="statusColor(statuses[remote.name])"
                 size="small"
@@ -48,12 +54,6 @@
               >
                 {{ statusLabel(statuses[remote.name]) }}
               </v-chip>
-              <span
-                v-if="responseTimes[remote.name] !== undefined"
-                class="text-caption text-medium-emphasis"
-              >
-                {{ responseTimes[remote.name] }} ms
-              </span>
             </div>
           </template>
         </v-list-item>
