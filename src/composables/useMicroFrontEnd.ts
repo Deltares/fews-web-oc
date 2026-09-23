@@ -1,19 +1,26 @@
 import { inject, type InjectionKey } from 'vue'
 import { type WebOCMicroFrontEndsResponse } from '@deltares/fews-pi-requests'
 import { loadRemote } from '@module-federation/enhanced/runtime'
+import { type RemoteWithEntry } from '@module-federation/sdk'
 
-interface ModuleFederationState {
-  config: WebOCMicroFrontEndsResponse
-  options: { manifestUrl: string; baseUrl: string }
+export interface ModuleFederationOptions {
+  manifestUrl: string
+  baseUrl: string
 }
 
-export const MF_REGISTRY_KEY: InjectionKey<ModuleFederationState> =
+interface MicroFrontendRegistry {
+  config: WebOCMicroFrontEndsResponse
+  options: ModuleFederationOptions
+  remotes: RemoteWithEntry[]
+}
+
+export const MF_REGISTRY_KEY: InjectionKey<MicroFrontendRegistry> =
   Symbol('WebOCMicroFrontEnd')
 
 export function useMicroFrontEnd() {
   const moduleFederation = inject(MF_REGISTRY_KEY)
 
-  function getFrontends() {
+  function microFrontEndConfig() {
     if (!moduleFederation) {
       throw new Error('Module Federation plugin is not installed.')
     }
@@ -21,7 +28,7 @@ export function useMicroFrontEnd() {
   }
 
   async function loadWebOCRemote(microFrontEndId: string) {
-    const frontends = getFrontends()
+    const frontends = microFrontEndConfig()
     const microFrontEnd = frontends.find((mfe) => mfe.id === microFrontEndId)
     if (!microFrontEnd) {
       throw new Error(`Micro Frontend with ID ${microFrontEndId} not found.`)
@@ -52,7 +59,7 @@ export function useMicroFrontEnd() {
   }
 
   function getMicroFrontEndIcon(microFrontEndId: string): string {
-    const frontends = getFrontends()
+    const frontends = microFrontEndConfig()
     const microFrontEnd = frontends.find((mfe) => mfe.id === microFrontEndId)
     if (!microFrontEnd) {
       throw new Error(`Micro Frontend with ID ${microFrontEndId} not found.`)
@@ -60,11 +67,15 @@ export function useMicroFrontEnd() {
     return microFrontEnd.icon
   }
 
+  function getRemotes() {
+    return moduleFederation?.remotes ?? []
+  }
+
   function getMicroFrontEndId(
     microFrontEndIds: string[],
     display: string,
   ): string {
-    const frontends = getFrontends()
+    const frontends = microFrontEndConfig()
     const microFrontEnd = frontends.find(
       (mfe) => microFrontEndIds.includes(mfe.id) && mfe.display === display,
     )
@@ -77,6 +88,8 @@ export function useMicroFrontEnd() {
   }
 
   return {
+    microFrontEndConfig,
+    getRemotes,
     loadWebOCRemote,
     getMicroFrontEndIcon,
     getMicroFrontEndId,
