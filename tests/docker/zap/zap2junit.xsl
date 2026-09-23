@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- NOTE: keep version="1.0" here. No XSLT 2.0 features are used, and declaring
-     version="2.0" causes the JDK/Ant built-in Xalan (XSLTC) processor - which only
-     implements XSLT 1.0 - to run in "forwards-compatible mode". That mode is known
-     to be buggy in Xalan/XSLTC and can silently mis-evaluate boolean expressions
-     (e.g. the isScopedFalsePositive check below), even though the very same
-     stylesheet works fine on fully XSLT-2.0-capable / .NET processors. -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" indent="yes"/>
 
