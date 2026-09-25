@@ -8,7 +8,10 @@ import { appendConfiguredHeadLinks } from './resource-links.js'
 import { handleStartupError } from './startup-error.js'
 import moduleFederationPlugin from '@/plugins/moduleFederation'
 import { useAlertsStore } from '@/stores/alerts.js'
-import { provideHostNotifications } from '@deltares/fews-web-oc-composables'
+import {
+  provideHostNotifications,
+  provideHostWebserviceContext,
+} from '@deltares/fews-web-oc-composables'
 
 export { loadApplicationConfig } from './config-loader.js'
 export {
@@ -32,17 +35,26 @@ async function bootstrapApp(app: VueApp<Element>): Promise<void> {
   await setI18nLanguage(i18n, locale)
   app.use(i18n)
 
-  const mfManifestUrl = configManager.get('VITE_FEWS_WEBOC_MF_MANIFEST_URL')
+  // Provide Webservice context and notifications to remotes
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  provideHostWebserviceContext({
+    getBaseUrl: () => baseUrl,
+
+    getAuthorizationHeaders: () =>
+      authenticationManager.getAuthorizationHeaders(),
+  })
+
+  const alerts = useAlertsStore()
+  provideHostNotifications({
+    addAlert: (alert) => alerts.addAlert(alert),
+  })
+
+  const mfManifestUrl = configManager.get('VITE_FEWS_WEBOC_MF_MANIFEST_URL')
   if (mfManifestUrl) {
     app.use(moduleFederationPlugin, { manifestUrl: mfManifestUrl, baseUrl })
   }
 
   app.use(router)
-  const alerts = useAlertsStore()
-  provideHostNotifications({
-    addAlert: (alert) => alerts.addAlert(alert),
-  })
   app.mount('#app')
 }
 
