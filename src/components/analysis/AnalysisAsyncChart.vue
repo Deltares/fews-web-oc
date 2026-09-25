@@ -71,7 +71,7 @@ const taskRunIds = computed(() =>
 )
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { taskRuns, interval: taskRunInterval } = useTaskRuns(
+const { taskRuns, pause: pauseTaskRunRefresh } = useTaskRuns(
   baseUrl,
   () => ({ taskRunIds: taskRunIds.value }),
   TASK_RUN_REFRESH_INTERVAL,
@@ -90,7 +90,7 @@ const category = computed(() => {
 
 watchEffect(() => {
   if (category.value === 'completed' || category.value === 'failed') {
-    taskRunInterval.value?.pause()
+    pauseTaskRunRefresh()
   }
 })
 

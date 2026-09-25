@@ -7,7 +7,7 @@ import {
 import { type Pausable } from '@vueuse/core'
 import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
 import { ref, shallowRef, toValue, watch } from 'vue'
-import { useFocusAwareInterval } from '../useFocusAwareInterval'
+import { useRefreshCoordinator } from '../useRefreshCoordinator'
 
 export interface UseTopologyThresholdsReturn {
   error: Ref<string | undefined>
@@ -16,8 +16,6 @@ export interface UseTopologyThresholdsReturn {
   isLoading: Ref<boolean>
   interval: Pausable
 }
-
-const THRESHOLDS_POLLING_INTERVAL = 1000 * 30
 
 export function useTopologyThresholds(
   baseUrl: string,
@@ -58,17 +56,15 @@ export function useTopologyThresholds(
     }
   }
 
-  const interval = useFocusAwareInterval(
-    loadTopologyThresholds,
-    THRESHOLDS_POLLING_INTERVAL,
-    { immediateCallback: true },
-  )
+  const interval = useRefreshCoordinator(loadTopologyThresholds, {
+    policies: ['onSystemTick', 'onVisibilityResume', 'manual'],
+    immediateCallback: true,
+  })
 
   watch(
     () => toValue(nodeId),
     () => {
-      interval.pause()
-      interval.resume()
+      interval.trigger()
     },
   )
 

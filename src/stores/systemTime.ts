@@ -1,54 +1,89 @@
 import { intervalToDateRange, type Interval } from '@/lib/TimeControl/interval'
 import { defineStore } from 'pinia'
+import {
+  systemTimeAuthority,
+  SystemTimeSyncSnapshot,
+} from '@/services/system-time'
+import { ref, watch } from 'vue'
 
-export interface SystemTimeStore {
-  systemTime: Date
-  intervalTimer: undefined | number | ReturnType<typeof setInterval>
-  startTime: Date | undefined
-  endTime: Date | undefined
-  selectedInterval: Interval
-}
+export const CLOCK_TICK_MS = 1000
+const RESYNC_INTERVAL_MS = 60_000
 
-export const useSystemTimeStore = () => {
-  const store = defineStore('systemTime', {
-    state: (): SystemTimeStore => ({
-      systemTime: new Date(),
-      intervalTimer: undefined,
-      startTime: undefined,
-      endTime: undefined,
-      selectedInterval: 'default',
-    }),
-    actions: {
-      startClock() {
-        this.systemTime = new Date()
-        this.intervalTimer = setInterval(() => {
-          this.systemTime = new Date()
-        }, 1000)
-      },
-      stopClock() {
-        clearInterval(this.intervalTimer)
-        this.intervalTimer = undefined
-      },
-      changeInterval() {
-        if (this.selectedInterval === 'default') {
-          // Use the FEWS default time interval.
-          this.startTime = undefined
-          this.endTime = undefined
-        } else if (this.selectedInterval === 'custom') {
-          // Use the custom time interval.
-        } else {
-          const now = this.systemTime
-          const interval = this.selectedInterval
-          const [startTime, endTime] = intervalToDateRange(interval, now)
-          this.startTime = startTime
-          this.endTime = endTime
-        }
-      },
-    },
-  })
-  const s = store()
-  if (s.intervalTimer === undefined) {
-    s.startClock()
+export const useSystemTimeStore = defineStore('systemTime', () => {
+  let intervalTimer: ReturnType<typeof setInterval> | undefined = undefined
+  let resyncTimer: ReturnType<typeof setInterval> | undefined = undefined
+
+  const systemTime = ref(new Date())
+  const lastSyncedAt = ref<Date>()
+  const syncError = ref<string>()
+  const startTime = ref<Date>()
+  const endTime = ref<Date>()
+  const selectedInterval = ref<Interval>('default')
+
+  async function syncFromBackend() {
+    syncError.value = undefined
+
+    let snapshot: SystemTimeSyncSnapshot
+    try {
+      snapshot = await systemTimeAuthority.syncFromBackend()
+    } catch (error) {
+      snapshot = systemTimeAuthority.hasAnchor()
+        ? {
+            systemTime: systemTimeAuthority.now(),
+            fetchedAtClientMs: Date.now(),
+          }
+        : systemTimeAuthority.setFallbackRunningNow()
+
+      syncError.value = error instanceof Error ? error.message : String(error)
+      console.warn(`Failed to synchronise FEWS system time: ${syncError.value}`)
+    }
+
+    systemTime.value = snapshot.systemTime
+    lastSyncedAt.value = new Date(snapshot.fetchedAtClientMs)
   }
-  return s
-}
+
+  async function startClock() {
+    await syncFromBackend()
+
+    stopClock()
+    intervalTimer = setInterval(() => {
+      systemTime.value = systemTimeAuthority.now()
+    }, CLOCK_TICK_MS)
+
+    resyncTimer = setInterval(() => {
+      void syncFromBackend()
+    }, RESYNC_INTERVAL_MS)
+  }
+
+  function stopClock() {
+    clearInterval(intervalTimer)
+    clearInterval(resyncTimer)
+    intervalTimer = undefined
+    resyncTimer = undefined
+  }
+
+  watch(selectedInterval, () => {
+    if (selectedInterval.value === 'default') {
+      startTime.value = undefined
+      endTime.value = undefined
+    } else if (selectedInterval.value !== 'custom') {
+      const [newStartTime, newEndTime] = intervalToDateRange(
+        selectedInterval.value,
+        systemTime.value,
+      )
+      startTime.value = newStartTime
+      endTime.value = newEndTime
+    }
+  })
+
+  void startClock()
+
+  return {
+    systemTime,
+    lastSyncedAt,
+    syncError,
+    startTime,
+    endTime,
+    selectedInterval,
+  }
+})

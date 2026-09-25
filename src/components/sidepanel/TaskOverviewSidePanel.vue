@@ -73,7 +73,7 @@ import { RelativePeriod } from '@/lib/period'
 import { sortTasks, isTaskRun, TaskStatus } from '@/lib/taskruns'
 
 import { useCurrentUser } from '@/services/useCurrentUser'
-import { useTaskRuns } from '@/services/useTasksRuns'
+import { useTasksRuns } from '@/services/useTasksRuns'
 
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { useTaskRunMonitorStore } from '@/stores/taskRunMonitor'
@@ -144,7 +144,7 @@ const {
   isLoading,
   lastUpdatedTimestamp,
   fetch: refreshTaskRuns,
-} = useTaskRuns(period, selectedWorkflowIds, {
+} = useTasksRuns(period, selectedWorkflowIds, {
   statuses: selectedTaskStatuses,
   userId: selectedUserId,
 })

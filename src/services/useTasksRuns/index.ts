@@ -22,8 +22,12 @@ import {
 
 import { configManager } from '../application-config'
 import { convertRelativeToAbsolutePeriod } from '@/lib/period/convert'
-import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 import { hasEqualIdentity } from '@/lib/auth/identityEquality'
+import {
+  type RefreshPolicy,
+  useRefreshCoordinator,
+} from '@/services/useRefreshCoordinator'
+import { systemTimeAuthority } from '@/services/system-time'
 
 const shouldRefreshTaskRuns = ref(false)
 
@@ -34,7 +38,7 @@ export function refreshTaskRuns() {
 
 const DEFAULT_REFRESH_INTERVAL_SECONDS = 15
 
-interface UseTaskRunsOptions {
+interface UseTasksRunsOptions {
   userId?: MaybeRefOrGetter<string | null>
   topologyNodeId?: MaybeRefOrGetter<string | undefined>
   includeWhatIfScenario?: MaybeRefOrGetter<boolean>
@@ -43,10 +47,10 @@ interface UseTaskRunsOptions {
   statuses?: MaybeRefOrGetter<TaskStatus[]>
 }
 
-export function useTaskRuns(
+export function useTasksRuns(
   dispatchPeriod: MaybeRefOrGetter<RelativePeriod | null>,
   workflowIds: MaybeRefOrGetter<string[]>,
-  options: UseTaskRunsOptions = {},
+  options: UseTasksRunsOptions = {},
 ) {
   const isLoading = ref(false)
   const lastUpdatedTimestamp = ref<number | null>(null)
@@ -57,13 +61,20 @@ export function useTaskRuns(
   const refreshIntervalSeconds =
     options.refreshIntervalSeconds ?? DEFAULT_REFRESH_INTERVAL_SECONDS
 
-  useFocusAwareInterval(
-    () => {
-      fetch().catch((error) => console.error(`Failed to fetch tasks: ${error}`))
-    },
-    refreshIntervalSeconds * 1000,
-    { immediateCallback: true },
-  )
+  const refreshPolicies: RefreshPolicy[] = [
+    'onSystemTick',
+    'onVisibilityResume',
+    'manual',
+  ]
+  if (refreshIntervalSeconds > 0) {
+    refreshPolicies.push('onInterval')
+  }
+
+  useRefreshCoordinator(fetch, {
+    policies: refreshPolicies,
+    intervalMs: refreshIntervalSeconds * 1000,
+    immediateCallback: true,
+  })
 
   watch(
     [
@@ -71,7 +82,9 @@ export function useTaskRuns(
       () => toValue(options.topologyNodeId),
       () => shouldRefreshTaskRuns.value,
     ],
-    fetch,
+    () => {
+      void fetch()
+    },
   )
 
   async function fetch(): Promise<void> {
@@ -112,7 +125,7 @@ export function useTaskRuns(
       outputEndTime.value = range.outputEndTime
     }
 
-    lastUpdatedTimestamp.value = Date.now()
+    lastUpdatedTimestamp.value = systemTimeAuthority.now().getTime()
   }
 
   function filterTasks(): TaskRun[] {
