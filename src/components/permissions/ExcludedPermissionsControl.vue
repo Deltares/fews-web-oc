@@ -1,36 +1,41 @@
 <template>
-  <v-list>
-    <v-list-group>
-      <template #activator="{ props }">
-        <v-list-item
-          v-bind="props"
-          :title="t('userSettings.permissions')"
-          :subtitle="subtitle"
-        />
-      </template>
+  <div>
+    <div class="d-flex align-center px-4 py-3">
+      <v-icon icon="mdi-shield-off-outline" class="mr-3" />
 
+      <div>
+        <div class="text-body-1">
+          {{ t('userSettings.permissions') }}
+        </div>
+        <div class="text-caption text-medium-emphasis">
+          {{ subtitle }}
+        </div>
+      </div>
+    </div>
+
+    <v-list density="compact" class="py-0">
       <v-list-item
         v-for="permissionId in permissionsStore.assignedPermissionIds"
         :key="permissionId"
+        :title="permissionsStore.getPermissionName(permissionId)"
+        class="pl-12"
       >
-        {{ permissionsStore.getPermissionName(permissionId) }}
         <template v-if="canExcludePermissions" #append>
-          <v-list-item-action>
-            <v-checkbox-btn v-model="isActive[permissionId]" />
-          </v-list-item-action>
+          <v-checkbox-btn v-model="isActive[permissionId]" />
         </template>
       </v-list-item>
 
-      <v-list-item v-if="canExcludePermissions">
-        <div class="d-flex justify-space-between">
+      <v-list-item v-if="canExcludePermissions" class="pl-12">
+        <div class="d-flex justify-end ga-2">
           <v-btn
             color="primary"
             size="small"
-            variant="flat"
+            variant="text"
             :text="t('common.reset')"
             :disabled="!hasExcludedPermissions"
             @click="resetPermissions()"
           />
+
           <v-btn
             color="primary"
             size="small"
@@ -41,8 +46,10 @@
           />
         </div>
       </v-list-item>
-    </v-list-group>
-  </v-list>
+    </v-list>
+
+    <v-divider />
+  </div>
 </template>
 
 <script setup lang="ts">
