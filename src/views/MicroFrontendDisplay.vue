@@ -26,7 +26,7 @@
       </div>
       <DateTimeSlider
         class="w-100"
-        v-if="dateTimeSliderEnabled && times?.length"
+        v-if="times?.length"
         v-model:selectedDate="selectedDateOfSlider"
         :dates="times"
       />
@@ -120,7 +120,6 @@ watchEffect(async () => {
   loaded.value = true
 })
 
-const dateTimeSliderEnabled = ref<boolean>(false)
 const times = ref<Date[]>([])
 
 const showChartPanel = computed(() => {
