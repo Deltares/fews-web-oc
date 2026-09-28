@@ -147,7 +147,7 @@ export default defineConfig(({ mode }) => {
           vue: {
             singleton: true,
           },
-          '@deltares/fews-web-oc-composables': {},
+          '@deltares/fews-web-oc-composables': { singleton: true },
         },
       }),
       mode === 'production'
