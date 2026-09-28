@@ -14,6 +14,7 @@ import {
   provideHostWebserviceContext,
 } from '@deltares/fews-web-oc-composables'
 import { useSystemTimeStore } from '@/stores/systemTime.js'
+import { initializeModuleFederation } from '../moduleFederation/index.js'
 
 export { loadApplicationConfig } from './config-loader.js'
 export {
@@ -58,7 +59,17 @@ async function bootstrapApp(app: VueApp<Element>): Promise<void> {
 
   const mfManifestUrl = configManager.get('VITE_FEWS_WEBOC_MF_MANIFEST_URL')
   if (mfManifestUrl) {
-    app.use(moduleFederationPlugin, { manifestUrl: mfManifestUrl, baseUrl })
+    const registry = await initializeModuleFederation({
+      manifestUrl: mfManifestUrl,
+      baseUrl,
+    })
+
+    app.use(moduleFederationPlugin, registry)
+  } else {
+    console.info(
+      'Module Federation: No manifest URL configured. ' +
+        'Micro Frontends are disabled.',
+    )
   }
 
   app.use(router)
