@@ -1,13 +1,20 @@
 <template>
-  <v-card>
-    <v-card-subtitle class="d-flex align-center">
-      <v-icon icon="mdi-puzzle-outline" class="mr-2" />
-      Microfrontend Remotes
+  <div>
+    <div class="d-flex align-center px-4 py-3">
+      <v-icon icon="mdi-puzzle-outline" class="mr-3" />
+
+      <span class="text-body-1"> Microfrontend Remotes </span>
+
       <v-spacer />
-      {{ lastChecked ? lastChecked.toLocaleTimeString() : 'Never' }}
+
+      <span class="text-caption text-medium-emphasis mr-2">
+        {{ lastChecked ? lastChecked.toLocaleTimeString() : 'Never' }}
+      </span>
+
       <v-btn
         icon="mdi-refresh"
         variant="text"
+        size="small"
         :loading="isChecking"
         :disabled="isChecking"
         @click="checkAllRemotes"
@@ -17,49 +24,54 @@
           Refresh status
         </v-tooltip>
       </v-btn>
-    </v-card-subtitle>
-    <v-divider />
-    <v-card-text>
-      <v-alert v-if="remotes.length === 0" type="info" variant="tonal">
-        No microfrontend remotes are configured.
-      </v-alert>
-      <v-list density="compact" lines="two">
-        <v-list-item v-for="remote in remotes" :key="remote.name">
-          <template #prepend>
-            <v-icon
-              size="small"
-              :icon="statusIcon(statuses[remote.name])"
+    </div>
+
+    <v-list v-if="isEnabled" slim class="py-0">
+      <div v-for="remote in remotes" :key="remote.name" class="px-4 py-3">
+        <div class="d-flex align-center">
+          <v-icon
+            size="small"
+            :icon="statusIcon(statuses[remote.name])"
+            :color="statusColor(statuses[remote.name])"
+            class="mr-3"
+          />
+
+          <span class="text-body-1">
+            {{ remote.name }}
+          </span>
+
+          <v-spacer />
+
+          <div class="d-flex align-center ga-3">
+            <span
+              v-if="responseTimes[remote.name] !== undefined"
+              class="text-caption text-medium-emphasis"
+            >
+              {{ responseTimes[remote.name] }} ms
+            </span>
+
+            <v-chip
               :color="statusColor(statuses[remote.name])"
-            ></v-icon>
-          </template>
-          <v-list-item-title> Name: {{ remote.name }} </v-list-item-title>
-          <v-list-item-subtitle class="text-wrap">
-            Entry:
-            <a :href="getRemoteEntryUrl(remote.entry)" target="_blank">{{
-              remote.entry
-            }}</a>
-          </v-list-item-subtitle>
-          <template #append>
-            <div class="d-flex align-center ga-3">
-              <span
-                v-if="responseTimes[remote.name] !== undefined"
-                class="text-caption text-medium-emphasis"
-              >
-                {{ responseTimes[remote.name] }} ms
-              </span>
-              <v-chip
-                :color="statusColor(statuses[remote.name])"
-                size="small"
-                variant="tonal"
-              >
-                {{ statusLabel(statuses[remote.name]) }}
-              </v-chip>
-            </div>
-          </template>
-        </v-list-item>
-      </v-list>
-    </v-card-text>
-  </v-card>
+              size="small"
+              variant="tonal"
+            >
+              {{ statusLabel(statuses[remote.name]) }}
+            </v-chip>
+          </div>
+        </div>
+
+        <div class="text-body-1 ml-8 mt-2">
+          <a :href="getRemoteEntryUrl(remote.entry)" target="_blank">
+            {{ remote.entry }}
+          </a>
+        </div>
+      </div>
+    </v-list>
+
+    <v-alert v-else type="info" variant="tonal" class="ma-4">
+      No microfrontend remotes are configured.
+    </v-alert>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -73,7 +85,7 @@ const statuses = ref<Record<string, RemoteStatus>>({})
 const responseTimes = ref<Record<string, number>>({})
 const isChecking = ref(false)
 const lastChecked = ref<Date | null>(null)
-const { getRemotes } = useMicroFrontEnd()
+const { isEnabled, getRemotes } = useMicroFrontEnd()
 
 const remotes = computed(() => {
   return getRemotes()

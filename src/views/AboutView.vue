@@ -1,58 +1,81 @@
 <template>
   <v-card class="home-card">
-    <v-card-title class="justify-center">
+    <v-card-title class="d-flex align-center">
       {{ configStore.general.title ?? 'Delft-FEWS Web OC' }}
     </v-card-title>
-    <v-alert
-      v-if="configStore.activeComponents.length === 0"
-      type="info"
-      variant="tonal"
-    >
-      Unfortunately, you do not have access
-      <v-icon>mdi-emoticon-sad-outline</v-icon>
-    </v-alert>
-    <v-card-text>
-      <v-row>
-        <v-col cols="4">WebOC </v-col>
-        <v-col>
-          <v-chip size="small" prepend-icon="mdi-tag-outline">{{
-            version
-          }}</v-chip>
-          <template v-if="commitHash !== ''">
-            <v-chip size="small" prepend-icon="mdi-source-commit">{{
-              commitHash
-            }}</v-chip>
-            <v-chip size="small" prepend-icon="mdi-package-variant-closed">{{
-              buildDate
-            }}</v-chip>
-          </template>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col cols="4"> Web Service </v-col>
-        <v-col>
-          <v-chip size="small" prepend-icon="mdi-tag-outline">{{
-            webServiceVersion.implementation
-          }}</v-chip>
-          <v-chip size="small" prepend-icon="mdi-package-variant-closed"
-            >#{{ webServiceVersion.buildNumber }}</v-chip
-          >
-          <v-chip
-            v-if="webServiceVersion.buildType === 'development'"
-            size="small"
-            prepend-icon="mdi-source-branch"
-            >development'</v-chip
-          >
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col cols="12">
-          <a :href="webServiceUrl">{{ webServiceUrl }} </a>
-        </v-col>
-      </v-row>
+    <v-card-text class="pa-0">
+      <v-alert
+        v-if="configStore.activeComponents.length === 0"
+        type="error"
+        variant="tonal"
+        class="ma-4"
+      >
+        Unfortunately, you do not have access
+        <v-icon>mdi-emoticon-sad-outline</v-icon>
+      </v-alert>
+
+      <!-- WebOC -->
+      <div class="px-4 py-3">
+        <div class="d-flex align-center">
+          <v-icon icon="mdi-application-outline" class="mr-3" />
+          <span class="text-body-1"> FEWS WebOC </span>
+          <v-spacer />
+          <div class="d-flex flex-wrap justify-end ga-2">
+            <v-chip size="small" prepend-icon="mdi-tag-outline">
+              {{ version }}
+            </v-chip>
+
+            <v-chip
+              v-if="commitHash !== ''"
+              size="small"
+              prepend-icon="mdi-source-commit"
+            >
+              {{ commitHash }}
+            </v-chip>
+
+            <v-chip
+              v-if="commitHash !== ''"
+              size="small"
+              prepend-icon="mdi-package-variant-closed"
+            >
+              {{ buildDate }}
+            </v-chip>
+          </div>
+        </div>
+      </div>
+      <v-divider />
+      <!-- Web Service -->
+      <div class="px-4 py-3">
+        <div class="d-flex align-center">
+          <v-icon icon="mdi-server-outline" class="mr-3" />
+          <span class="text-body-1"> FEWS Web Services </span>
+          <v-spacer />
+          <div class="d-flex flex-wrap justify-end ga-2">
+            <v-chip size="small" prepend-icon="mdi-tag-outline">
+              {{ webServiceVersion.implementation }}
+            </v-chip>
+            <v-chip size="small" prepend-icon="mdi-package-variant-closed">
+              #{{ webServiceVersion.buildNumber }}
+            </v-chip>
+            <v-chip
+              v-if="webServiceVersion.buildType === 'development'"
+              size="small"
+              prepend-icon="mdi-source-branch"
+            >
+              development
+            </v-chip>
+          </div>
+        </div>
+        <div class="text-body-1 ml-8 mt-2">
+          <a :href="webServiceUrl" target="_blank">
+            {{ webServiceUrl }}
+          </a>
+        </div>
+      </div>
+      <v-divider />
+      <ExcludedPermissionsControl />
+      <MicroFrontendOverview />
     </v-card-text>
-    <ExcludedPermissionsControl />
-    <MicroFrontendOverview></MicroFrontendOverview>
   </v-card>
 </template>
 
@@ -95,7 +118,7 @@ onMounted(async () => {
 .home-card {
   margin: auto;
   margin-top: 5%;
-  width: fit-content;
+  width: 800px;
   max-width: 100%;
   height: fit-content !important;
 }

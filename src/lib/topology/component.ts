@@ -43,7 +43,7 @@ export const componentTypeToIconMap = {
   'log-display': 'mdi-file-document',
   'documents-display': 'mdi-file-document-multiple',
   'embed-url': 'mdi-link',
-  'micro-frontend-display': 'mdi-toy-brick',
+  'micro-frontend-display': 'mdi-puzzle',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToTitleMap = {
