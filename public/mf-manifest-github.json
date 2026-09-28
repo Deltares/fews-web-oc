@@ -1,0 +1,9 @@
+{
+  "name": "delft-fews-weboc",
+  "remotes": [
+    {
+      "name": "test-micro-frontend",
+      "entry": "https://deltares.github.io/fews-web-oc-components/micro-frontends/mf-manifest.json"
+    }
+  ]
+}
