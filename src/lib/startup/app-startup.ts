@@ -1,4 +1,4 @@
-import type { App as VueApp } from 'vue'
+import { toRef, type App as VueApp } from 'vue'
 import { configManager } from '../../services/application-config'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
 import router from '../../router/index.js'
@@ -10,8 +10,10 @@ import moduleFederationPlugin from '@/plugins/moduleFederation'
 import { useAlertsStore } from '@/stores/alerts.js'
 import {
   provideHostNotifications,
+  provideHostRefreshContext,
   provideHostWebserviceContext,
 } from '@deltares/fews-web-oc-composables'
+import { useSystemTimeStore } from '@/stores/systemTime.js'
 
 export { loadApplicationConfig } from './config-loader.js'
 export {
@@ -47,6 +49,11 @@ async function bootstrapApp(app: VueApp<Element>): Promise<void> {
   const alerts = useAlertsStore()
   provideHostNotifications({
     addAlert: (alert) => alerts.addAlert(alert),
+  })
+
+  const systemTimeStore = useSystemTimeStore()
+  provideHostRefreshContext({
+    systemTick: toRef(systemTimeStore, 'lastSyncedAt'),
   })
 
   const mfManifestUrl = configManager.get('VITE_FEWS_WEBOC_MF_MANIFEST_URL')
