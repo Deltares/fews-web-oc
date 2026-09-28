@@ -18,16 +18,15 @@
         <component
           v-else-if="loaded"
           :is="PluginComponent"
+          :locationIds="locationIds"
           :selectedDate="selectedDateOfSlider"
           :topologyNode="topologyNode"
-          :hostSettings="hostSettings"
-          :settings="settings"
           @navigate="onNavigate"
         />
       </div>
       <DateTimeSlider
         class="w-100"
-        v-if="dateTimeSliderEnabled && times?.length"
+        v-if="times?.length"
         v-model:selectedDate="selectedDateOfSlider"
         :dates="times"
       />
@@ -68,29 +67,19 @@ import {
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
 import { useMicroFrontEnd } from '@/composables/useMicroFrontEnd'
-import { authenticationManager } from '@/services/authentication/AuthenticationManager'
-import { configManager } from '@/services/application-config'
-
-export interface HostSettings {
-  baseUrl: string
-  webservicesUrl: string
-  getHeaders: () => Promise<Headers>
-}
 
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
 )
 
-const loaded = ref(false)
-const PluginComponent = shallowRef<any>(null)
-const microFrontEndError = ref<string | null>(null)
-
-const { loadWebOCRemote } = useMicroFrontEnd()
-
 interface Props {
   locationIds?: string
   topologyNode?: TopologyNode
   settings?: ComponentSettings
+}
+
+interface Emits {
+  navigate: [to: NavigateRoute]
 }
 
 const {
@@ -99,16 +88,13 @@ const {
   settings = getDefaultSettings(),
 } = defineProps<Props>()
 
-interface Emits {
-  navigate: [to: NavigateRoute]
-}
 const emit = defineEmits<Emits>()
 
-const hostSettings = computed<HostSettings>(() => ({
-  baseUrl: import.meta.env.BASE_URL,
-  webservicesUrl: configManager.get('VITE_FEWS_WEBSERVICES_URL'),
-  getHeaders: () => authenticationManager.getAuthorizationHeaders(),
-}))
+const loaded = ref(false)
+const PluginComponent = shallowRef<any>(null)
+const microFrontEndError = ref<string | null>(null)
+
+const { loadWebOCRemote } = useMicroFrontEnd()
 
 watchEffect(async () => {
   loaded.value = false
@@ -134,7 +120,6 @@ watchEffect(async () => {
   loaded.value = true
 })
 
-const dateTimeSliderEnabled = ref<boolean>(false)
 const times = ref<Date[]>([])
 
 const showChartPanel = computed(() => {
