@@ -7,10 +7,16 @@
     :sourceId="getSourceId(`overlay-${options.name}`)"
     :key="`overlay-${options.name}`"
   />
+  <ExternalOverlayLayer
+    v-else-if="overlay.type === 'externalOverLay'"
+    :overlay="overlay"
+    :key="`external-overlay-${overlay.id}`"
+  />
 </template>
 
 <script setup lang="ts">
 import AnimatedRasterLayer from '@/components/wms/AnimatedRasterLayer.vue'
+import ExternalOverlayLayer from '@/components/wms/ExternalOverlayLayer.vue'
 import { getLayerId, getSourceId } from '@/lib/map'
 import type { Overlay } from '@/services/useOverlays'
 import { computed } from 'vue'
@@ -22,6 +28,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const options = computed(() => {
+  if (props.overlay.type !== 'overLay') return
   if (!props.overlay.id) return
   return {
     name: props.overlay.id,
