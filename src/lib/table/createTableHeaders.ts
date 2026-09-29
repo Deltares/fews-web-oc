@@ -1,5 +1,6 @@
 import type { ChartSeries } from '@/lib/charts/types/ChartSeries'
 import type { TableHeaders } from './types/TableHeaders'
+import { SeriesData } from '../timeseries/types/SeriesData'
 
 export function createTableHeaders(
   chartSeriesArray: ChartSeries[] | undefined,
@@ -22,6 +23,7 @@ export function createTableHeaders(
         title: formatHeader(chartSeries),
         color: chartSeries.style.stroke?.toString(),
         editable: chartSeries.editable ?? false,
+        sort: sortSeriesData,
       })
     }
   })
@@ -31,4 +33,8 @@ function formatHeader(chartSeries: ChartSeries): string {
   const label = chartSeries.name ?? ''
   const header = label
   return header
+}
+
+function sortSeriesData(a: SeriesData, b: SeriesData): number {
+  return (a.y ?? 0) - (b.y ?? 0)
 }
