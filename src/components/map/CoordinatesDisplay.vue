@@ -1,9 +1,7 @@
 <template>
-  <span
-    v-if="enabled && coordinates"
-    class="text-mono mr-2 pa-1 coordinates"
-  >
-    {{ coordinates.lat.toFixed(6) }}, {{ coordinates.lng.toFixed(6) }}
+  <span v-if="enabled && coordinates" class="text-mono mr-2 pa-1 coordinates">
+    {{ formatCoordinate(coordinates.lat, 10) }},
+    {{ formatCoordinate(coordinates.lng, 11) }}
   </span>
 </template>
 
@@ -21,6 +19,9 @@ const enabled = computed(() => {
   const setting = settings.get('ui.map.showCoordinates')
   return setting && typeof setting.value === 'boolean' ? setting.value : false
 })
+
+const formatCoordinate = (value: number, width: number) =>
+  value.toFixed(6).padStart(width, '\u00a0') // pad with non-breaking space to keep width stable
 
 const onMouseMove = (event: any) => {
   if (!map) return
