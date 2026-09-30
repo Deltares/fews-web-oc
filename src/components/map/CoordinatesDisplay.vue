@@ -1,7 +1,7 @@
 <template>
   <ControlChip v-if="enabled && coordinates">
     <v-icon start size="small">mdi-map-marker</v-icon>
-    <span>
+    <span class="text-mono">
       {{ coordinates.lat.toFixed(6) }}, {{ coordinates.lng.toFixed(6) }}
     </span>
   </ControlChip>
