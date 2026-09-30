@@ -30,6 +30,9 @@
       v-if="showGeolocation && showGeolocationSetting"
       position="top-right"
     />
+    <mgl-custom-control class="" position="bottom-right">
+      <CoordinatesDisplay />
+    </mgl-custom-control>
     <mgl-scale-control v-if="showScale" position="bottom-right" />
     <NetCdfDownloadControl
       v-if="layerName"
@@ -50,6 +53,7 @@ import {
   MglMap,
   MglNavigationControl,
   MglScaleControl,
+  MglCustomControl,
 } from '@indoorequal/vue-maplibre-gl'
 import type {
   ResourceType,
@@ -62,6 +66,7 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import { transformStyle } from '@/lib/map'
 import { getRequestHeaders } from '@/lib/requests/transformRequest'
 import { useLayerOrder } from '@/services/useLayerOrder'
+import CoordinatesDisplay from '@/components/map/CoordinatesDisplay.vue'
 
 interface Props {
   bounds?: LngLatBounds
@@ -147,3 +152,9 @@ async function transformRequest(
   }
 }
 </script>
+
+<style>
+.maplibregl-ctrl-bottom-right {
+  display: flex;
+}
+</style>
