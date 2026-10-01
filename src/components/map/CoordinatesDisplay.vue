@@ -1,17 +1,14 @@
 <template>
-  <ControlChip v-if="enabled && coordinates">
-    <v-icon start size="small">mdi-map-marker</v-icon>
-    <span>
-      {{ coordinates.lat.toFixed(6) }}, {{ coordinates.lng.toFixed(6) }}
-    </span>
-  </ControlChip>
+  <span v-if="enabled && coordinates" class="text-mono mr-2 pa-1 coordinates">
+    {{ formatCoordinate(coordinates.lat, 10) }},
+    {{ formatCoordinate(coordinates.lng, 11) }}
+  </span>
 </template>
 
 <script setup lang="ts">
 import { ref, onBeforeUnmount, watch, computed } from 'vue'
 import { useMap } from '@/services/useMap'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import ControlChip from '@/components/wms/ControlChip.vue'
 import type { LngLat } from 'maplibre-gl'
 
 const { map } = useMap()
@@ -22,6 +19,9 @@ const enabled = computed(() => {
   const setting = settings.get('ui.map.showCoordinates')
   return setting && typeof setting.value === 'boolean' ? setting.value : false
 })
+
+const formatCoordinate = (value: number, width: number) =>
+  value.toFixed(6).padStart(width, '\u00a0') // pad with non-breaking space to keep width stable
 
 const onMouseMove = (event: any) => {
   if (!map) return
@@ -46,3 +46,9 @@ onBeforeUnmount(() => {
   }
 })
 </script>
+
+<style scoped>
+.coordinates {
+  background: hsla(0, 0%, 100%, 0.75);
+}
+</style>
