@@ -151,7 +151,7 @@ const { locations, geojson } = useFilterLocations(
   () => (filterId.value ? [filterId.value] : []),
   { showAttributes: true },
 )
-const { timeSeriesHeaders } = useTimeSeriesHeaders(baseUrl, filterId)
+const { timeSeriesHeaders } = useTimeSeriesHeaders(filterId)
 
 const filteredHeaders = computed(() => {
   if (selectedAttributeLocationIds.value.length === 0) {

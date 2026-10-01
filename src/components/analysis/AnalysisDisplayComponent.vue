@@ -93,7 +93,6 @@ import type {
   DataAnalysisDisplayElement,
 } from '@deltares/fews-pi-requests'
 import { computed, ref, watch } from 'vue'
-import { configManager } from '@/services/application-config'
 import { useTimeSeries } from '@/services/useTimeSeries'
 import {
   type ComponentSettings,
@@ -127,8 +126,6 @@ useTaskRunColorsStore()
 useAvailableTimeStepsStore()
 
 const userSettings = useUserSettingsStore()
-
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const selectedCollectionName = ref<string>(props.collections[0].name)
 watch(
@@ -224,12 +221,11 @@ const timeSeriesOptions = computed(() => ({
 }))
 
 const { series } = useTimeSeries(
-  baseUrl,
   requests,
   timeSeriesOptions,
   true,
   undefined,
-  false,
+  { policies: [], immediate: true },
 )
 
 const showBrush = computed(
@@ -249,12 +245,11 @@ const brushOptions = computed(() => ({
   convertDatum: userSettings.convertDatum,
 }))
 const { series: brushSeries } = useTimeSeries(
-  baseUrl,
   requests,
   brushOptions,
   showBrush,
   undefined,
-  false,
+  { policies: [], immediate: true },
 )
 
 const tab = ref()

@@ -76,7 +76,7 @@ export async function createNewChartForFilter(
   const filterId = filter.filterId
   if (!filterId) return
 
-  const headers = await fetchTimeSeriesHeaders(baseUrl, requests, {})
+  const headers = await fetchTimeSeriesHeaders(baseUrl, requests)
   const filterSubplot = subplotToFilterSubplot(
     filterId,
     subplot,

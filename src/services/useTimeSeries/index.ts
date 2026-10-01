@@ -5,48 +5,30 @@ import {
   type TimeSeriesResult,
   type TimeSeriesResponse,
   type Header,
-  type TimeSeriesFilter,
   type DomainAxisValue,
   type DomainAxisEventValuesStringArray,
 } from '@deltares/fews-pi-requests'
+import { computed, toValue } from 'vue'
+import type { ComputedRef, MaybeRefOrGetter } from 'vue'
 import {
-  computed,
-  onUnmounted,
-  ref,
-  shallowRef,
-  toValue,
-  watch,
-  watchEffect,
-} from 'vue'
-import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
+  usePiTimeSeries,
+  type PiTimeSeriesQueryOptions,
+  type UsePiTimeSeriesOptions,
+} from '@deltares/fews-web-oc-composables'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl'
-import { DateTime, Interval } from 'luxon'
 import { Series } from '../../lib/timeseries/timeSeries'
 import { SeriesUrlRequest } from '../../lib/timeseries/timeSeriesResource'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-import { difference } from 'lodash-es'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
-import { type Pausable } from '@vueuse/core'
-import { useRefreshCoordinator } from '@/services/useRefreshCoordinator'
 
 export interface UseTimeSeriesReturn {
-  series: ShallowRef<Record<string, Series>>
-  isLoading: Ref<boolean>
-  loadingSeriesIds: Ref<string[]>
-  interval: Pausable | undefined
-  refresh: () => void
-}
-
-const TIMESERIES_POLLING_INTERVAL = 1000 * 30
-
-export interface UseTimeSeriesOptions {
-  startTime?: Date | null
-  endTime?: Date | null
-  thinning?: boolean
-  showVerticalProfile?: boolean
-  convertDatum?: boolean
-  useDisplayUnits?: boolean
-  onlyHeaders?: boolean
+  series: ComputedRef<Record<string, Series>>
+  loading: ComputedRef<boolean>
+  refreshing: ComputedRef<boolean>
+  loadingKeys: ComputedRef<string[]>
+  requestRefresh: () => void
+  pauseRefresh: () => void
+  resumeRefresh: () => void
 }
 
 function timeZoneOffsetString(offset: number): string {
@@ -59,222 +41,98 @@ function timeZoneOffsetString(offset: number): string {
 }
 
 export function useTimeSeries(
-  baseUrl: string,
   requests: MaybeRefOrGetter<ActionRequest[]>,
-  options: MaybeRefOrGetter<UseTimeSeriesOptions>,
+  options: MaybeRefOrGetter<PiTimeSeriesQueryOptions>,
   fetchingEnabled?: MaybeRefOrGetter<boolean>,
   selectedTime?: MaybeRefOrGetter<Date | undefined>,
-  refresh = true,
+  refresh?: UsePiTimeSeriesOptions['refresh'],
 ): UseTimeSeriesReturn {
-  let controller = new AbortController()
-  const series = shallowRef<Record<string, Series>>({})
-  const MAX_SERIES = 20
-  const loadingSeriesIds = ref<string[]>([])
-  const isLoading = computed(() => loadingSeriesIds.value.length > 0)
+  const enabled = computed(
+    () => fetchingEnabled === undefined || toValue(fetchingEnabled),
+  )
+  const requestEntries = computed(() => {
+    const usedKeys = new Set<string>()
 
-  const watchedParams = [requests, options, fetchingEnabled]
-    .filter((p) => p !== undefined)
-    .map((p) => () => toValue(p))
-  watch(watchedParams, () => {
-    loadTimeSeries()
-  })
+    return toValue(requests).map((request, index) => {
+      const baseKey = request.key ?? `request-${index}`
+      let key = baseKey
+      let suffix = 1
+      while (usedKeys.has(key)) {
+        key = `${baseKey}#${suffix}`
+        suffix += 1
+      }
+      usedKeys.add(key)
 
-  async function loadTimeSeries() {
-    if (fetchingEnabled !== undefined && !toValue(fetchingEnabled)) return
-
-    controller.abort()
-    controller = new AbortController()
-    const piProvider = new PiWebserviceProvider(baseUrl, {
-      transformRequestFn: createTransformRequestFn({ controller }),
+      return { key, request }
     })
-    const _requests = toValue(requests)
-    const _selectedTime = toValue(selectedTime)
-    const _options = toValue(options)
+  })
+  const piRequests = computed(() =>
+    requestEntries.value.map(({ key, request }) => ({
+      key,
+      relativeUrl: request.request,
+    })),
+  )
+  const {
+    responses,
+    loading,
+    refreshing,
+    loadingKeys,
+    requestRefresh,
+    pauseRefresh,
+    resumeRefresh,
+  } = usePiTimeSeries({
+    requests: piRequests,
+    query: options,
+    enabled,
+    refresh,
+  })
+  const series = computed(() => {
+    const result: Record<string, Series> = {}
+    const currentSelectedTime = toValue(selectedTime)
 
-    const currentSeriesIds = Object.keys(series.value)
-    const updatedSeriesIds: string[] = []
-    loadingSeriesIds.value = _requests.flatMap((r) => (r.key ? [r.key] : []))
-
-    const promises = _requests.map(async (request) => {
-      const relativeUrl = getRelativeUrlForRequest(baseUrl, _options, request)
+    requestEntries.value.forEach(({ key, request }) => {
+      const response = responses.value[key]
+      if (!response?.timeSeries) return
 
       const isGridTimeSeries = request.request.includes('/timeseries/grid?')
-      const piSeries =
-        await piProvider.getTimeSeriesWithRelativeUrl(relativeUrl)
-      if (request.key) {
-        loadingSeriesIds.value.splice(
-          loadingSeriesIds.value.indexOf(request.key),
-          1,
-        )
-      }
-      if (piSeries.timeSeries === undefined) return
-
-      piSeries.timeSeries.forEach((timeSeries, index) => {
-        const resourceId = isGridTimeSeries
-          ? `${request.key}[${index}]`
-          : (request.key ?? '')
-        updatedSeriesIds.push(resourceId)
-
-        const _series = convertTimeSeriesResultToSeries(
+      response.timeSeries.forEach((timeSeries, index) => {
+        const resourceId = isGridTimeSeries ? `${key}[${index}]` : key
+        const convertedSeries = convertTimeSeriesResultToSeries(
           timeSeries,
-          piSeries,
+          response,
           resourceId,
-          _selectedTime,
+          currentSelectedTime,
         )
-        if (_series !== undefined) {
-          series.value = {
-            ...series.value,
-            [resourceId]: _series,
-          }
-        }
+        if (convertedSeries !== undefined) result[resourceId] = convertedSeries
       })
     })
-    const results = await Promise.allSettled(promises)
-    results.forEach((result, index) => {
-      if (result.status === 'rejected' && result.reason.name !== 'AbortError') {
-        console.error(
-          `Failed to fetch time series for request URL ${_requests[index].request}: ${result.reason}`,
-        )
-      }
-    })
 
-    const oldSeriesIds = difference(currentSeriesIds, updatedSeriesIds)
-    if (oldSeriesIds.length > MAX_SERIES) {
-      for (const seriesId of oldSeriesIds) {
-        delete series.value[seriesId]
-      }
-    }
-  }
-
-  let interval: Pausable | undefined = undefined
-  if (refresh) {
-    interval = useRefreshCoordinator(loadTimeSeries, {
-      policies: ['onInterval', 'onVisibilityResume'],
-      intervalMs: TIMESERIES_POLLING_INTERVAL,
-      immediateCallback: true,
-    })
-  } else {
-    loadTimeSeries()
-  }
-
-  if (selectedTime !== undefined) {
-    watch(
-      () => toValue(selectedTime),
-      () => {
-        // Re-process all series to fill elevation data for the new selected time.
-        const _selectedTime = toValue(selectedTime)
-        Object.keys(series.value).forEach((seriesId) => {
-          const _series = series.value[seriesId]
-          if (
-            _series.domains !== undefined &&
-            _series.domains.length > 0 &&
-            _selectedTime !== undefined
-          ) {
-            fillSeriesForElevation(_series, _selectedTime)
-            _series.lastUpdated = new Date()
-          }
-        })
-
-        series.value = { ...series.value }
-      },
-    )
-  }
-
-  onUnmounted(() => {
-    controller.abort('useTimeSeries unmounted.')
+    return result
   })
 
   return {
     series,
-    isLoading,
-    loadingSeriesIds,
-    interval,
-    refresh: loadTimeSeries,
+    loading,
+    refreshing,
+    loadingKeys,
+    requestRefresh,
+    pauseRefresh,
+    resumeRefresh,
   }
-}
-
-export function getRelativeUrlForRequest(
-  baseUrl: string,
-  options: UseTimeSeriesOptions,
-  request: ActionRequest,
-): string {
-  // Parse request URL to URL object to be able to append query parameters.
-  const url = absoluteUrl(`${baseUrl}/${request.request}`)
-
-  const convertToDateTime = (date: Date | null | undefined) => {
-    if (!date) return null
-    return DateTime.fromJSDate(date, {
-      zone: 'UTC',
-    })
-  }
-  const startTime = convertToDateTime(options.startTime)
-  const endTime = convertToDateTime(options.endTime)
-
-  const convertToFewsPiDateTimeQueryParameter = (datetime: DateTime | null) => {
-    if (!datetime) return null
-    return datetime.toISO({ suppressMilliseconds: true })
-  }
-  const startTimeQuery = convertToFewsPiDateTimeQueryParameter(startTime)
-  const endTimeQuery = convertToFewsPiDateTimeQueryParameter(endTime)
-
-  // Set start and end time.
-  if (startTimeQuery) url.searchParams.set('startTime', startTimeQuery)
-  if (endTimeQuery) url.searchParams.set('endTime', endTimeQuery)
-
-  if (options.thinning) {
-    const parseDateTimeFromSearchParam = (param: string) => {
-      const dateTimeString = url.searchParams.get(param)
-      if (!dateTimeString) return null
-      return DateTime.fromISO(dateTimeString)
-    }
-
-    // Reuse values from request URL when not provided via options.
-    const requestStartTime =
-      startTime ?? parseDateTimeFromSearchParam('startTime')
-    const requestEndTime = endTime ?? parseDateTimeFromSearchParam('endTime')
-
-    if (requestStartTime && requestEndTime) {
-      const durationMilliseconds = Interval.fromDateTimes(
-        requestStartTime,
-        requestEndTime,
-      ).length('millisecond')
-      const estimatedChartWidth = 0.5 * window.outerWidth
-      const millisecondsPerPixel = Math.round(
-        durationMilliseconds / estimatedChartWidth,
-      )
-      url.searchParams.set('thinning', millisecondsPerPixel.toString())
-    }
-  }
-
-  if (options.convertDatum) {
-    url.searchParams.set('convertDatum', options.convertDatum.toString())
-  }
-
-  if (options.useDisplayUnits) {
-    url.searchParams.set('useDisplayUnits', options.useDisplayUnits.toString())
-  }
-
-  // Convert absolute URL back into relative URL with updated search
-  // parameters.
-  return request.request.split('?')[0] + url.search
 }
 
 export async function fetchTimeSeriesHeaders(
   baseUrl: string,
   requests: ActionRequest[],
-  options: UseTimeSeriesOptions,
 ) {
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
   })
 
-  const _options = {
-    ...options,
-    onlyHeaders: true,
-  }
-
   const promises = requests.map(async (request) => {
-    const relativeUrl = getRelativeUrlForRequest(baseUrl, _options, request)
+    const url = absoluteUrl(`${baseUrl}/${request.request}`)
+    url.searchParams.set('onlyHeaders', 'true')
+    const relativeUrl = request.request.split('?')[0] + url.search
     const timeSeriesResponse =
       await piProvider.getTimeSeriesWithRelativeUrl(relativeUrl)
     return (
@@ -296,45 +154,27 @@ export async function fetchTimeSeriesHeaders(
 }
 
 export function useTimeSeriesHeaders(
-  baseUrl: string,
   filterId: MaybeRefOrGetter<string | undefined>,
 ) {
-  const timeSeriesHeaders = ref<Header[]>([])
-
-  const isLoading = ref(false)
-  const error = shallowRef<string>()
-
-  const piProvider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
+  const requests = computed(() => {
+    const id = toValue(filterId)
+    return id === undefined
+      ? []
+      : [{ key: `headers-${id}`, filter: { filterId: id } }]
   })
-
-  async function fetch() {
-    timeSeriesHeaders.value = []
-
-    const _filterId = toValue(filterId)
-    if (_filterId === undefined) return
-
-    isLoading.value = true
-
-    const filter: TimeSeriesFilter = {
-      onlyHeaders: true,
-      filterId: _filterId,
-    }
-    try {
-      const timeSeriesResponse = await piProvider.getTimeSeries(filter)
-      timeSeriesHeaders.value =
-        timeSeriesResponse.timeSeries
-          ?.flatMap((ts) => ts.header)
-          .filter((header) => header !== undefined) ?? []
-    } catch {
-      error.value = 'Error loading time series headers'
-      timeSeriesHeaders.value = []
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  watchEffect(fetch)
+  const { responses } = usePiTimeSeries({
+    requests,
+    query: { onlyHeaders: true },
+    enabled: computed(() => toValue(filterId) !== undefined),
+  })
+  const timeSeriesHeaders = computed(() =>
+    Object.values(responses.value).flatMap(
+      (response) =>
+        response.timeSeries
+          ?.flatMap((timeSeries) => timeSeries.header)
+          .filter((header): header is Header => header !== undefined) ?? [],
+    ),
+  )
 
   return {
     timeSeriesHeaders,
