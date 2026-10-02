@@ -14,14 +14,34 @@
       <h1>Configuration Error</h1>
 
       <p class="subtitle">
-        The application configuration could not be loaded.<br />
+        Web OC could not start because its runtime configuration is missing,
+        invalid, or unavailable.
       </p>
 
-      <p>If the problem persists, try reloading the application.</p>
-
       <pre id="error-message" class="error-message">
-        Loading error details...
+        No startup error details were provided.
       </pre>
+
+      <section class="troubleshooting" aria-labelledby="troubleshooting-title">
+        <h2 id="troubleshooting-title">Deployment checks</h2>
+        <ol>
+          <li>
+            <a id="app-config-link" target="_blank" rel="noreferrer">
+              Inspect the deployed app-config.json
+            </a>
+            and confirm it returns HTTP 200 with valid JSON.
+          </li>
+          <li>
+            Confirm <code>VITE_FEWS_WEBSERVICES_URL</code> is configured to the
+            target FEWS Web Services endpoint.
+          </li>
+          <li>
+            Verify the endpoint is reachable from the browser and check the
+            browser Network and Console panels for HTTP or CORS failures.
+          </li>
+        </ol>
+        <p>After correcting the configuration, reload Web OC.</p>
+      </section>
 
       <a class="retry-btn" href="/">Retry</a>
     </div>
