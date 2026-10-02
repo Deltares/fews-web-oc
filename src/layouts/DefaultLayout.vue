@@ -13,18 +13,23 @@
         <v-btn :to="{ name: 'Default' }" v-if="!isInstalledPWA && mdAndUp">
           <img height="36px" :src="logoSrc" alt="Application Logo" />
         </v-btn>
-        <v-btn
-          prepend-icon="mdi-magnify"
-          aria-keyshortcuts="Meta+K"
-          variant="tonal"
-          @click="showSearchDialog = !showSearchDialog"
-        >
-          <template v-if="!mobile">
-            <kbd>{{ isMac ? '⌘' : 'Ctrl' }}</kbd
-            >+<kbd>K</kbd>
-            Search
+        <v-tooltip location="bottom">
+          <template #activator="{ props }">
+            <v-btn
+              v-bind="props"
+              prepend-icon="mdi-magnify"
+              :aria-keyshortcuts="isMac ? 'Meta+K' : 'Control+K'"
+              variant="plain"
+              @click="showSearchDialog = !showSearchDialog"
+            >
+              <template v-if="!mobile">Search</template>
+            </v-btn>
           </template>
-        </v-btn>
+          Search
+          <kbd>{{ isMac ? '⌘' : 'Ctrl' }}</kbd
+          >+<kbd>K</kbd>
+        </v-tooltip>
+
         <div id="app-bar-content-start" />
       </template>
       <div class="align-items-center" id="app-bar-content-center"></div>
@@ -325,8 +330,9 @@ kbd {
   height: 20px;
   padding: 0 5px;
   margin-right: 3px;
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border: 1px solid color-mix(in srgb, currentColor 60%, transparent);
   border-radius: 4px;
   font-size: 11px;
+  vertical-align: 0.15em;
 }
 </style>
