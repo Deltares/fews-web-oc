@@ -23,6 +23,10 @@ The schematic gives an often used infrastructure for Web OC hosting. All Web OC 
 
 ![Container overview of Web OC infrastructure with OIDC provider](./infrastructure.drawio.svg)
 
+## Micro Frontends
+
+Web OC can load independently hosted micro frontend components at runtime. See [Deploying Micro Frontends](../micro_frontends/README.md) for an example infrastructure using Nginx, hosting and security requirements, and Web OC configuration.
+
 ## Static hosting setup
 
 When deployed to a server like Nginx or Tomcat it is required to make sure that all requests are mapped to the `index.html` page of the web oc. This means that the server will have to redirect all HTTP 404 errors to the `index.html`. How this can be done is explained per deployment option.
