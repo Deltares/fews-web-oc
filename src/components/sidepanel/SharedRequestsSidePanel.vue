@@ -314,11 +314,16 @@ function drawRequestHistoryChart(): void {
         .tickFormat((value) => `${value}`),
     )
 
+  const formatTime = timeFormat('%H:%M:%S')
   plot
     .append('g')
     .attr('class', 'request-history-x-axis')
     .attr('transform', `translate(0,${innerHeight})`)
-    .call(axisBottom(x).ticks(4).tickFormat(timeFormat('%H:%M:%S')))
+    .call(
+      axisBottom(x)
+        .ticks(4)
+        .tickFormat((d) => formatTime(d as Date)),
+    )
 
   const requestLine = line<RequestChartPoint>()
     .x((point) => x(point.startedAt))
