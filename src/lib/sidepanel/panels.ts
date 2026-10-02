@@ -55,11 +55,6 @@ const sidePanelDefinitions = [
     component: NonCurrentDataSidePanel,
   },
   {
-    type: 'sharedRequests',
-    icon: 'mdi-transit-connection-variant',
-    component: SharedRequestsSidePanel,
-  },
-  {
     type: 'runTask',
     icon: 'mdi-cog-play',
     component: RunTasksSidePanel,
@@ -85,6 +80,11 @@ const sidePanelDefinitions = [
     component: ThresholdsSidePanel,
     button: ThresholdsButton,
     persistent: true,
+  },
+  {
+    type: 'sharedRequests',
+    icon: 'mdi-transit-connection-variant',
+    component: SharedRequestsSidePanel,
   },
 ] as const satisfies readonly SidePanelDefinition[]
 
