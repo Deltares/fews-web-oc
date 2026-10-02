@@ -1,12 +1,14 @@
 import './assets/config-error.css'
 
-const ERROR_PAGE_MARKER = 'error.html'
 const ERROR_MESSAGE_STORAGE_KEY = 'configError'
 const ERROR_MESSAGE_ELEMENT_ID = 'error-message'
 const BASE_URL = import.meta.env.BASE_URL
 
 function isErrorPagePath(pathname: string): boolean {
-  return pathname.includes(ERROR_PAGE_MARKER)
+  return (
+    pathname === `${BASE_URL}error` ||
+    pathname.startsWith(`${BASE_URL}error/`)
+  )
 }
 
 function isPageReload(): boolean {
@@ -18,13 +20,14 @@ function isPageReload(): boolean {
 
 function renderStoredErrorMessage(): void {
   const errorMessage = sessionStorage.getItem(ERROR_MESSAGE_STORAGE_KEY)
-  if (!errorMessage) {
-    return
+  const errorDetailsElement = document.getElementById(ERROR_MESSAGE_ELEMENT_ID)
+  if (errorMessage && errorDetailsElement) {
+    errorDetailsElement.textContent = errorMessage
   }
 
-  const errorDetailsElement = document.getElementById(ERROR_MESSAGE_ELEMENT_ID)
-  if (errorDetailsElement) {
-    errorDetailsElement.textContent = errorMessage
+  const appConfigLink = document.getElementById('app-config-link')
+  if (appConfigLink instanceof HTMLAnchorElement) {
+    appConfigLink.href = `${BASE_URL}app-config.json`
   }
 }
 

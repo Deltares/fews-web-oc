@@ -1,5 +1,5 @@
 import { toRef, type App as VueApp } from 'vue'
-import { configManager } from '../../services/application-config'
+import { configManager } from '../../services/application-config/index.js'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
 import router from '../../router/index.js'
 import { i18n, setI18nLanguage } from '../../plugins/i18n.js'
@@ -27,6 +27,13 @@ export { handleStartupError, logConfigLoadReason } from './startup-error.js'
 async function bootstrapApp(app: VueApp<Element>): Promise<void> {
   const data = await loadApplicationConfig()
   configManager.update(data)
+
+  if (!configManager.get('VITE_FEWS_WEBSERVICES_URL')) {
+    throw new Error(
+      'Missing required configuration: VITE_FEWS_WEBSERVICES_URL. ' +
+        'Set it in app-config.json or the build environment.',
+    )
+  }
 
   appendConfiguredHeadLinks()
 

@@ -55,6 +55,35 @@ h1 {
   color: var(--error-muted);
 }
 
+.troubleshooting {
+  margin: 22px 0 0;
+  text-align: left;
+}
+
+.troubleshooting h2 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.troubleshooting ol {
+  margin: 0;
+  padding-left: 22px;
+  color: var(--error-muted);
+}
+
+.troubleshooting li + li {
+  margin-top: 8px;
+}
+
+.troubleshooting a {
+  color: var(--error-accent-dark);
+  font-weight: 600;
+}
+
+.troubleshooting code {
+  overflow-wrap: anywhere;
+}
+
 p {
   margin: 0;
   color: var(--error-muted);

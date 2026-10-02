@@ -7,7 +7,7 @@ import { defineCustomElements } from '@deltares/fews-ssd-webcomponent/loader'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import './assets/maplibre-override.css'
 
-import { runAppBootstrap } from './lib/startup/app-startup.js'
+import { runAppBootstrap } from './lib/startup/bootstrap.js'
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
