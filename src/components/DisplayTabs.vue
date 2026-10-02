@@ -25,6 +25,7 @@ import {
   type DisplayTab,
 } from '@/lib/topology/displayTabs.js'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
+import { useMicroFrontEnd } from '@/composables/useMicroFrontEnd'
 import { ref, watchEffect } from 'vue'
 
 interface Props {
@@ -35,6 +36,7 @@ const props = defineProps<Props>()
 
 const displayTabs = ref<DisplayTab[]>([])
 const topologyNodesStore = useTopologyNodesStore()
+const { microFrontEndConfig } = useMicroFrontEnd()
 
 // Update the displayTabs if the active node changes (or if the topologyMap changes).
 // Redirect to the corresponding display of the updated active tab.
@@ -61,7 +63,16 @@ watchEffect(async () => {
   }
 
   // Create the displayTabs for the active node.
-  displayTabs.value = await displayTabsForNode(node, parentNodeIdNodeId)
+  const microFrontEndId = node.microFrontEnds?.[0]?.id
+  const microFrontEndIcon = microFrontEndConfig().find(
+    (microFrontEnd) => microFrontEnd.id === microFrontEndId,
+  )?.icon
+  const tabs = await displayTabsForNode(node, parentNodeIdNodeId)
+  displayTabs.value = tabs.map((tab) =>
+    tab.type === 'micro-frontend-display'
+      ? { ...tab, icon: microFrontEndIcon || tab.icon }
+      : tab,
+  )
 })
 </script>
 

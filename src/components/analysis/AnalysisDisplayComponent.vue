@@ -220,13 +220,10 @@ const timeSeriesOptions = computed(() => ({
   convertDatum: userSettings.convertDatum,
 }))
 
-const { series } = useTimeSeries(
-  requests,
-  timeSeriesOptions,
-  true,
-  undefined,
-  { policies: [], immediate: true },
-)
+const { series } = useTimeSeries(requests, timeSeriesOptions, true, undefined, {
+  policies: [],
+  immediate: true,
+})
 
 const showBrush = computed(
   () => userSettings.get('charts.brush')?.value === true,

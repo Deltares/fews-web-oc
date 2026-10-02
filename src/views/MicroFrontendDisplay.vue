@@ -26,9 +26,9 @@
       </div>
       <DateTimeSlider
         class="w-100"
-        v-if="times?.length"
+        v-if="combinedDates.length > 0"
         v-model:selectedDate="selectedDateOfSlider"
-        :dates="times"
+        :dates="combinedDates"
       />
     </div>
     <div v-if="showChartPanel" class="child-container">
@@ -61,6 +61,8 @@ import {
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import type { NavigateRoute } from '@/lib/router'
 import { type TopologyNode } from '@deltares/fews-pi-requests'
+import { createDateRegistry } from '@deltares/fews-web-oc-composables'
+import { provideSelectedDate } from '@/services/useSelectedDate'
 
 import {
   type ComponentSettings,
@@ -120,13 +122,13 @@ watchEffect(async () => {
   loaded.value = true
 })
 
-const times = ref<Date[]>([])
+const selectedDateOfSlider = ref<Date>()
+provideSelectedDate(selectedDateOfSlider)
+const { combinedDates } = createDateRegistry()
 
 const showChartPanel = computed(() => {
   return locationIds
 })
-
-const selectedDateOfSlider = ref<Date>(times.value[0])
 
 function onNavigate(event: any) {
   emit('navigate', event)
