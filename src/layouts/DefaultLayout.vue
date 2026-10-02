@@ -203,6 +203,7 @@ import packageConfig from '@/../package.json'
 import { toCharacterIcon } from '@/lib/icons/index.ts'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { useCustomStyleSheet } from '@/services/useCustomStyleSheet/index.ts'
+import { useSharedRequestHistoryTracker } from '@/services/useSharedRequestHistory'
 
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
@@ -219,6 +220,7 @@ const route = useRoute()
 const isInstalledPWA = globalThis.matchMedia(
   '(display-mode: standalone)',
 ).matches
+if (import.meta.env.DEV) useSharedRequestHistoryTracker()
 
 const showHash = ref(false)
 const appBarStyle = ref<StyleValue>()

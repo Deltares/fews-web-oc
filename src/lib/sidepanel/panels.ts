@@ -9,6 +9,7 @@ import MoreInfoSidePanel from '@/components/sidepanel/MoreInfoSidePanel.vue'
 import NonCurrentDataSidePanel from '@/components/sidepanel/NonCurrentDataSidePanel.vue'
 import RunTasksSidePanel from '@/components/sidepanel/RunTasksSidePanel.vue'
 import ShareSidePanel from '@/components/sidepanel/ShareSidePanel.vue'
+import SharedRequestsSidePanel from '@/components/sidepanel/SharedRequestsSidePanel.vue'
 import TaskOverviewSidePanel from '@/components/sidepanel/TaskOverviewSidePanel.vue'
 import ThresholdsSidePanel from '@/components/sidepanel/ThresholdsSidePanel.vue'
 import type { ComponentProps } from '@/lib/utils/types'
@@ -52,6 +53,11 @@ const sidePanelDefinitions = [
     type: 'nonCurrentData',
     icon: 'mdi-chart-box-multiple',
     component: NonCurrentDataSidePanel,
+  },
+  {
+    type: 'sharedRequests',
+    icon: 'mdi-transit-connection-variant',
+    component: SharedRequestsSidePanel,
   },
   {
     type: 'runTask',
