@@ -19,6 +19,28 @@
       />
     </div>
     <v-divider />
+    <section class="request-history-chart-section">
+      <div class="d-flex align-center justify-space-between px-3 pt-2">
+        <span class="text-caption font-weight-medium">Request history</span>
+        <span class="text-caption text-medium-emphasis">
+          Data size: 1 unit/request (placeholder)
+        </span>
+      </div>
+      <div ref="chartContainer" class="request-history-chart-container">
+        <svg
+          v-if="history.length && chartWidth > 0"
+          ref="chartSvg"
+          class="request-history-chart"
+          :viewBox="`0 0 ${chartWidth} ${chartHeight}`"
+          role="img"
+          aria-label="Request history over time. Each request is shown as one placeholder unit."
+        />
+        <p v-else class="text-caption text-medium-emphasis ma-0 px-3 py-2">
+          No request history to chart.
+        </p>
+      </div>
+    </section>
+    <v-divider />
     <div class="flex-1-1 overflow-y-auto">
       <v-expansion-panels v-if="history.length" multiple variant="accordion">
         <v-expansion-panel v-for="entry in history" :key="entry.id">
@@ -154,7 +176,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import {
+  axisBottom,
+  axisLeft,
+  line,
+  scaleLinear,
+  scaleTime,
+  select,
+  timeFormat,
+} from 'd3'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useResizeObserver } from '@vueuse/core'
 import {
   clearEndedSharedRequestHistory,
   sharedRequestHistory,
@@ -163,12 +195,24 @@ import {
 
 const history = sharedRequestHistory
 const now = ref(Date.now())
+const chartContainer = ref<HTMLElement>()
+const chartSvg = ref<SVGSVGElement>()
+const chartWidth = ref(0)
+const chartHeight = 136
 const activeCount = computed(
   () => history.value.filter((entry) => entry.state === 'in-flight').length,
 )
 const hasEndedRequests = computed(
   () => activeCount.value < history.value.length,
 )
+useResizeObserver(chartContainer, ([entry]) => {
+  chartWidth.value = Math.floor(entry.contentRect.width)
+})
+
+watch([history, chartWidth], drawRequestHistoryChart, {
+  flush: 'post',
+})
+
 let timer: ReturnType<typeof setInterval> | undefined
 
 onMounted(() => {
@@ -218,9 +262,136 @@ function getDuration(entry: SharedRequestHistoryEntry): string {
 function formatTimestamp(timestamp: number): string {
   return new Date(timestamp).toLocaleString()
 }
+
+interface RequestChartPoint {
+  startedAt: Date
+  sizeUnits: number
+  path: string
+}
+
+function drawRequestHistoryChart(): void {
+  const svgElement = chartSvg.value
+  const width = chartWidth.value
+  if (!svgElement || width < 120) return
+
+  const margin = { top: 8, right: 8, bottom: 24, left: 30 }
+  const innerWidth = width - margin.left - margin.right
+  const innerHeight = chartHeight - margin.top - margin.bottom
+  const points: RequestChartPoint[] = [...history.value]
+    .sort((left, right) => left.startedAt - right.startedAt)
+    .map((entry) => ({
+      startedAt: new Date(entry.startedAt),
+      sizeUnits: 1,
+      path: getUrlMetadata(entry.key).path,
+    }))
+
+  const firstTime = points[0].startedAt.getTime()
+  const lastTime = points[points.length - 1].startedAt.getTime()
+  const timePadding = Math.max((lastTime - firstTime) * 0.05, 1000)
+  const x = scaleTime()
+    .domain([
+      new Date(firstTime - timePadding),
+      new Date(lastTime + timePadding),
+    ])
+    .range([0, innerWidth])
+  const y = scaleLinear().domain([0, 1.2]).range([innerHeight, 0])
+  const svg = select(svgElement)
+    .attr('width', width)
+    .attr('height', chartHeight)
+  svg.selectAll('*').remove()
+
+  const plot = svg
+    .append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`)
+
+  plot
+    .append('g')
+    .attr('class', 'request-history-grid')
+    .call(
+      axisLeft(y)
+        .tickValues([0, 1])
+        .tickSize(-innerWidth)
+        .tickFormat((value) => `${value}`),
+    )
+
+  plot
+    .append('g')
+    .attr('class', 'request-history-x-axis')
+    .attr('transform', `translate(0,${innerHeight})`)
+    .call(axisBottom(x).ticks(4).tickFormat(timeFormat('%H:%M:%S')))
+
+  const requestLine = line<RequestChartPoint>()
+    .x((point) => x(point.startedAt))
+    .y((point) => y(point.sizeUnits))
+
+  plot
+    .append('path')
+    .datum(points)
+    .attr('class', 'request-history-line')
+    .attr('d', requestLine)
+
+  plot
+    .selectAll<SVGCircleElement, RequestChartPoint>(
+      'circle.request-history-point',
+    )
+    .data(points)
+    .join('circle')
+    .attr('class', 'request-history-point')
+    .attr('cx', (point) => x(point.startedAt))
+    .attr('cy', (point) => y(point.sizeUnits))
+    .attr('r', 3)
+    .append('title')
+    .text(
+      (point) =>
+        `${point.path}\n${formatTimestamp(point.startedAt.getTime())}\n1 unit (placeholder)`,
+    )
+}
 </script>
 
 <style scoped>
+.request-history-chart-section {
+  flex: 0 0 auto;
+}
+
+.request-history-chart-container {
+  min-height: 112px;
+  padding: 0 8px;
+}
+
+.request-history-chart {
+  display: block;
+  width: 100%;
+  height: 136px;
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.request-history-grid :deep(.domain),
+.request-history-grid :deep(.tick line) {
+  stroke: rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.request-history-x-axis :deep(.domain),
+.request-history-x-axis :deep(.tick line) {
+  stroke: rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.request-history-chart :deep(text) {
+  fill: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+  font-size: 9px;
+}
+
+.request-history-line {
+  fill: none;
+  stroke: rgb(var(--v-theme-primary));
+  stroke-width: 1.5;
+}
+
+.request-history-point {
+  fill: rgb(var(--v-theme-primary));
+  stroke: rgb(var(--v-theme-surface));
+  stroke-width: 1;
+}
+
 .shared-request-title {
   align-items: stretch;
 }
