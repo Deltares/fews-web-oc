@@ -68,7 +68,7 @@ import { DisplayConfig } from '@/lib/display/DisplayConfig.ts'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
 import { computed, ref, watchEffect, watch } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime.ts'
-import { UseTimeSeriesOptions } from '@/services/useTimeSeries'
+import type { PiTimeSeriesQueryOptions } from '@deltares/fews-web-oc-composables'
 import { DateTime } from 'luxon'
 import { DataDownloadFilter } from '@/lib/download/types/DataDownloadFilter.ts'
 import { useAlertsStore } from '@/stores/alerts'
@@ -106,7 +106,7 @@ const showDialog = defineModel<boolean>({
 
 const store = useSystemTimeStore()
 const downloadDisclaimerStore = useDownloadDisclaimerStore()
-const viewPeriodFromStore = computed<UseTimeSeriesOptions>(() => {
+const viewPeriodFromStore = computed<PiTimeSeriesQueryOptions>(() => {
   return {
     startTime: store.startTime,
     endTime: store.endTime,

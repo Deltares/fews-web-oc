@@ -118,7 +118,7 @@ import {
   postTimeSeriesEdit,
   useTimeSeries,
 } from '../../services/useTimeSeries/index.ts'
-import type { UseTimeSeriesOptions } from '../../services/useTimeSeries/index.ts'
+import type { PiTimeSeriesQueryOptions } from '@deltares/fews-web-oc-composables'
 import { configManager } from '../../services/application-config'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import { useUserSettingsStore } from '@/stores/userSettings'
@@ -253,7 +253,7 @@ const showBrush = computed(
     userSettings.get('charts.brush')?.value === true && !props.disableThinning,
 )
 const { debouncedRefetchChartTimeSeries, domain } = useFetchDomain()
-const chartOptions = computed<UseTimeSeriesOptions>(() => {
+const chartOptions = computed<PiTimeSeriesQueryOptions>(() => {
   if (props.disableThinning) {
     return {
       startTime: domain.value.startTime ?? store.startTime,
@@ -268,46 +268,48 @@ const chartOptions = computed<UseTimeSeriesOptions>(() => {
   }
 })
 
-const brushOptions = computed<UseTimeSeriesOptions>(() => ({
+const brushOptions = computed<PiTimeSeriesQueryOptions>(() => ({
   startTime: fullBrushDomain.value[0],
   endTime: fullBrushDomain.value[1],
   thinning: true,
 }))
 
-const tableOptions = computed<UseTimeSeriesOptions>(() => ({
+const tableOptions = computed<PiTimeSeriesQueryOptions>(() => ({
   startTime: store.startTime,
   endTime: store.endTime,
 }))
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { series: chartSeries, interval: useTimeSeriesInterval } = useTimeSeries(
-  baseUrl,
+const { series: chartSeries } = useTimeSeries(
   () => props.config.requests,
   chartOptions,
   () => tab.value === DisplayType.TimeSeriesChart,
 )
 const { series: brushChartSeries } = useTimeSeries(
-  baseUrl,
   () => props.config.requests,
   brushOptions,
   () => tab.value === DisplayType.TimeSeriesChart && showBrush.value,
 )
 const {
   series: tableSeries,
-  isLoading: isLoadingTableSeries,
-  refresh: refreshTableTimeSeries,
+  loading: isTableLoading,
+  refreshing: isTableRefreshing,
+  requestRefresh: refreshTableTimeSeries,
+  pauseRefresh: pauseTableRefresh,
+  resumeRefresh: resumeTableRefresh,
 } = useTimeSeries(
-  baseUrl,
   () => props.config.requests,
   tableOptions,
   () => tab.value === DisplayType.TimeSeriesTable,
 )
 const { series: elevationChartSeries } = useTimeSeries(
-  baseUrl,
   () => props.elevationChartConfig.requests,
   chartOptions,
   () => tab.value === DisplayType.ElevationChart,
   selectedDate,
+)
+const isLoadingTableSeries = computed(
+  () => isTableLoading.value || isTableRefreshing.value,
 )
 
 async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
@@ -385,9 +387,9 @@ watch(
 
 watch(isEditing, () => {
   if (isEditing.value) {
-    useTimeSeriesInterval?.pause()
+    pauseTableRefresh()
   } else {
-    useTimeSeriesInterval?.resume()
+    resumeTableRefresh()
   }
   // Can't set a custom message in modern browsers
   globalThis.onbeforeunload = isEditing.value ? () => true : null

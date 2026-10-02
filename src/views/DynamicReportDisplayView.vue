@@ -66,7 +66,7 @@ import { useDisplay } from 'vuetify'
 import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import { toDateArray } from '@/lib/date'
 import { useSelectedDate } from '@/services/useSelectedDate'
-import { useDateRegistry } from '@/services/useDateRegistry'
+import { useDateRegistry } from '@deltares/fews-web-oc-composables'
 interface Props {
   topologyNode?: TopologyNode
   settings?: ComponentSettings

@@ -169,7 +169,6 @@ function getScaleTitle(
   response: GetLegendGraphicResponse,
   style: Style,
 ): string {
-  // @ts-expect-error: title has not yet been added to response
   const title = response.title ?? style.title
   const unitString = response.unit ? ` [${response.unit}]` : ''
   return `${title}${unitString}`

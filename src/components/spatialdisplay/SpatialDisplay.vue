@@ -66,7 +66,7 @@ import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
-import { useDateRegistry } from '@/services/useDateRegistry'
+import { useDateRegistry } from '@deltares/fews-web-oc-composables'
 import type { NavigateRoute } from '@/lib/router'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 import { useLocationNamesStore } from '@/stores/locationNames'

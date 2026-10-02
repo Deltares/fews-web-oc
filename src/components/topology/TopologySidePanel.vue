@@ -110,6 +110,7 @@ const configStore = useConfigStore()
 const enabledSidePanels = computed<SidePanel[]>(() =>
   getEnabledSidePanels(configStore.general.sidePanel, {
     thresholds: props.showActiveThresholdCrossingsForFilters ?? false,
+    sharedRequests: import.meta.env.DEV,
   }),
 )
 // Persistent panels have their own permanent button in the toolbar, the other
