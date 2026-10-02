@@ -6,8 +6,7 @@ const BASE_URL = import.meta.env.BASE_URL
 
 function isErrorPagePath(pathname: string): boolean {
   return (
-    pathname === `${BASE_URL}error` ||
-    pathname.startsWith(`${BASE_URL}error/`)
+    pathname === `${BASE_URL}error` || pathname.startsWith(`${BASE_URL}error/`)
   )
 }
 
