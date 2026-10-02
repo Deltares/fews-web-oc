@@ -2,6 +2,8 @@
 
 Web OC uses [Module Federation](https://module-federation.io/) to load independently deployed micro frontend components at runtime.
 
+See [FEWS WebOC micro frontend demos](https://deltares.github.io/fews-web-oc-components/micro-frontends/) for examples.
+
 ## Deploy the Micro Frontend
 
 Module Federation supports many build tools and frameworks. See [Integrations - Module Federation](https://module-federation.io/integrations/index.html) to choose the integration for your micro frontend project.
@@ -60,6 +62,8 @@ The `VITE_FEWS_WEBOC_MF_MANIFEST_URL` setting points to a **Web OC remote regist
 
 ## Test with the Demo Micro Frontends
 
+The [demo app](https://deltares.github.io/fews-web-oc-components/micro-frontends/) is publicly hosted on GitHub Pages. It provides a [main panel](https://deltares.github.io/fews-web-oc-components/micro-frontends/main) showing Palmiet locations on an interactive globe and a [critical points overview](https://deltares.github.io/fews-web-oc-components/micro-frontends/critical-points) showing forecast water levels ranked by threshold exceedance. These standalone views use sample data: opening them verifies access to the demo site, not connectivity to your FEWS Web Services or integration with Web OC.
+
 The demo micro frontends are available through the [demo Module Federation manifest](https://deltares.github.io/fews-web-oc-components/micro-frontends/mf-manifest.json).
 
 To connect to them, publish this Web OC registry manifest, for example as `https://weboc.example.org/weboc/micro-frontends.json`:
@@ -82,6 +86,15 @@ Use `test-micro-frontend` as the `remoteId` in the Delft-FEWS configuration, and
 
 > [!INFO]
 > The demo is intended for testing; deploy and manage your own remote for production.
+
+### Demo Deployment Considerations
+
+- **Network access:** Users' browsers need outbound HTTPS access to `https://deltares.github.io`, including the manifest, `remoteEntry.js`, and assets under `/fews-web-oc-components/micro-frontends/`. Access from the Web OC server alone is not sufficient; check corporate proxies and browser network restrictions.
+- **Browser security:** Allow `https://deltares.github.io` in Web OC's applicable CSP directives, including `connect-src` and `script-src`. Check CORS responses from the remote host and allow any additional origins needed by the selected component's assets or data requests.
+- **Integration checks:** Use the registry example above and the matching Delft-FEWS definitions. Test the actual topology display with your FEWS Web Services and authentication settings; the standalone sample-data demo does not validate these settings.
+- **Compatibility:** Review the remote manifest's `shared` dependencies and required versions against the Web OC build. The demo shares Vue as a singleton, so dependency compatibility matters when updating either application.
+- **Self-hosting:** The published demo manifest has a `publicPath` pointing to GitHub Pages. Copying only that manifest does not relocate its assets. Build and publish the complete remote with its public asset URL set to your hosting location.
+- **Release control:** The public demo URL is not a version-pinned release and may change independently of your Web OC deployment. For managed environments, use versioned remote deployments, retain the previous release for rollback, and update the registry only after validating the new manifest and assets. Revalidate manifests and registry files rather than caching them indefinitely; use long-lived caching only for content-hashed assets.
 
 ## Verify the Connection
 
