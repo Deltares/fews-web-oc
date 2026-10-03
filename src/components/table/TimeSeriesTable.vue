@@ -20,7 +20,7 @@
     >
       <template v-slot:headers="{ columns, toggleSort, isSorted, getSortIcon }">
         <tr>
-          <template v-for="column in columns" :key="column.key">
+          <template v-for="(column, index) in columns" :key="index">
             <th
               v-if="column.key === 'date'"
               class="table-header table-date sticky-column"
