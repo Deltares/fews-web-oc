@@ -21,17 +21,17 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
+      '@': resolve(import.meta.dirname, './src'),
       'vuetify/labs/VNumberInput': resolve(
-        __dirname,
+        import.meta.dirname,
         'node_modules/vuetify/lib/components/VNumberInput/index.js',
       ),
       'vuetify/labs/VTimePicker': resolve(
-        __dirname,
+        import.meta.dirname,
         'node_modules/vuetify/lib/components/VTimePicker/index.js',
       ),
       'vuetify/labs/VStepperVertical': resolve(
-        __dirname,
+        import.meta.dirname,
         'node_modules/vuetify/lib/components/VStepperVertical/index.js',
       ),
     },

@@ -11,6 +11,8 @@ import { isLoadedSymbol } from '@indoorequal/vue-maplibre-gl'
 import { useMap } from '@/services/useMap'
 import {
   AddLayerObject,
+  AllLayoutProperties,
+  AllPaintProperties,
   GeoJSONSource,
   GeoJSONSourceSpecification,
   ImageSource,
@@ -72,7 +74,11 @@ export function useLayer(
     if (!newLayout) return
 
     Object.entries(newLayout).forEach(([property, value]) => {
-      map.setLayoutProperty(layerId, property, value)
+      map.setLayoutProperty(
+        layerId,
+        property as keyof AllLayoutProperties,
+        value,
+      )
     })
   })
 
@@ -81,7 +87,7 @@ export function useLayer(
     if (!newPaint) return
 
     Object.entries(newPaint).forEach(([property, value]) => {
-      map.setPaintProperty(layerId, property, value)
+      map.setPaintProperty(layerId, property as keyof AllPaintProperties, value)
     })
   })
 
@@ -154,7 +160,7 @@ export function useSource(
 
     if (isGeojsonSourceSpecification(options)) {
       const geojsonSource = source as GeoJSONSource
-      geojsonSource.setData(options.data)
+      void geojsonSource.setData(options.data)
       return
     }
 
@@ -190,8 +196,8 @@ export function useSource(
 
 function isImageSourceSpecification(
   source: SourceSpecification | undefined,
-): source is ImageSourceSpecification {
-  return source?.type === 'image'
+): source is ImageSourceSpecification & { url: string } {
+  return source?.type === 'image' && typeof source.url === 'string'
 }
 
 function isGeojsonSourceSpecification(

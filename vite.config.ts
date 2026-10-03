@@ -32,9 +32,6 @@ const commitHash = runGit(['rev-parse', '--short', 'HEAD'], 'unknown')
 const commitTag = runGit(['tag', '--points-at', 'HEAD'])
 const buildDate = new Date().toISOString()
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
 const localhostURLs = [
   `ws://localhost:*`,
   `http://localhost:*`,
@@ -117,17 +114,17 @@ export default defineConfig(({ mode }) => {
     },
     resolve: {
       alias: {
-        '@': resolve(__dirname, './src'),
+        '@': resolve(import.meta.dirname, './src'),
         'vuetify/labs/VNumberInput': resolve(
-          __dirname,
+          import.meta.dirname,
           'node_modules/vuetify/lib/components/VNumberInput/index.js',
         ),
         'vuetify/labs/VTimePicker': resolve(
-          __dirname,
+          import.meta.dirname,
           'node_modules/vuetify/lib/components/VTimePicker/index.js',
         ),
         'vuetify/labs/VStepperVertical': resolve(
-          __dirname,
+          import.meta.dirname,
           'node_modules/vuetify/lib/components/VStepperVertical/index.js',
         ),
       },
@@ -153,7 +150,8 @@ export default defineConfig(({ mode }) => {
       mode === 'production'
         ? vuetify({
             styles: {
-              configFile: resolve(__dirname, './src') + '/styles/settings.scss',
+              configFile:
+                resolve(import.meta.dirname, './src') + '/styles/settings.scss',
             },
           })
         : vuetify(),
