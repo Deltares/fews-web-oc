@@ -30,6 +30,8 @@ jobs:
             ~/.cache/ms-playwright
           key: ${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}
       - run: npm ci --ignore-scripts
+      - run: npm run patch-package
+
       - run: npx playwright install --with-deps chromium firefox webkit
         if: steps.playwright-cache.outputs.cache-hit != 'true'
       - name: Install Playwright dependencies

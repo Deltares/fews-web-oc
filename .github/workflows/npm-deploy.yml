@@ -25,6 +25,7 @@ jobs:
         with:
           node-version: 24
       - run: npm ci --ignore-scripts
+      - run: npm run patch-package
       - name: Run unit tests
         run: npm run test:unit
 
