@@ -25,6 +25,8 @@ jobs:
         with:
           node-version: 24
       - run: npm ci --ignore-scripts
+      - run: npm run patch-package
+
       - run: npm run build -- --base=${{ matrix.base }}
       - run: zip -r ${{ matrix.asset_name }} dist
 

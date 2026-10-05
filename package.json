@@ -19,6 +19,7 @@
     "lint": "npm run prettier",
     "prettier": "prettier . --check",
     "format": "prettier .  --write",
+    "patch-package": "patch-package",
     "sonar": "sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$SONAR_KEY -Dsonar.projectName='Delft-FEWS Web OC'"
   },
   "dependencies": {
@@ -28,7 +29,7 @@
     "@deltares/fews-web-oc-charts": "^4.7.2",
     "@deltares/fews-web-oc-composables": "^0.3.0",
     "@deltares/fews-wms-requests": "^4.3.0",
-    "@deltares/webgl-streamline-visualizer": "^5.0.0",
+    "@deltares/webgl-streamline-visualizer": "^5.0.1-alpha.0",
     "@indoorequal/vue-maplibre-gl": "^9.0.1",
     "@jsonforms/core": "^3.8.0",
     "@jsonforms/vue": "^3.8.0",
@@ -76,7 +77,6 @@
     "crypto-js": "^4.2.0",
     "d3": "^7.9.0",
     "dompurify": "^3.4.12",
-    "geotiff": "^3.0.5",
     "html-to-text": "^10.0.0",
     "lodash-es": "^4.18.1",
     "luxon": "^3.7.2",
@@ -112,6 +112,7 @@
     "eslint-plugin-vue": "^10.10.0",
     "geojson": "^0.5.0",
     "jsdom": "30.0.0",
+    "patch-package": "^8.0.1",
     "prettier": "^3.9.6",
     "sass-embedded": "^1.100.0",
     "typescript": "^5.9.3",
