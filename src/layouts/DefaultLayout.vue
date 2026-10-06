@@ -128,23 +128,25 @@
                 />
               </template>
               <v-list density="compact">
-                <v-list-item
-                  v-if="helpMenu"
-                  v-for="item in helpMenu.url"
-                  :key="item.name"
-                  :href="item.url"
-                  target="_blank"
-                  append-icon="mdi-open-in-new"
-                  >{{ item.name }}</v-list-item
-                >
-                <v-list-item
-                  v-if="helpMenu"
-                  v-for="item in helpMenu.path"
-                  :key="item.name"
-                  :to="{ name: 'HtmlDisplay', params: { path: item.path } }"
-                  href="#"
-                  >{{ item.name }}</v-list-item
-                >
+                <template v-if="helpMenu">
+                  <v-list-item
+                    v-for="item in helpMenu.url"
+                    :key="item.name"
+                    :href="item.url"
+                    target="_blank"
+                    append-icon="mdi-open-in-new"
+                    >{{ item.name }}</v-list-item
+                  >
+                </template>
+                <template v-if="helpMenu">
+                  <v-list-item
+                    v-for="item in helpMenu.path"
+                    :key="item.name"
+                    :to="{ name: 'HtmlDisplay', params: { path: item.path } }"
+                    href="#"
+                    >{{ item.name }}</v-list-item
+                  >
+                </template>
                 <v-list-item :to="{ name: 'About' }">{{
                   $t('layout.about')
                 }}</v-list-item>

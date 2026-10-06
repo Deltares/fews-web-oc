@@ -7,22 +7,23 @@
         mandatory
         size="small"
       >
-        <v-btn
-          v-if="displayTypeItems.length > 1"
-          v-for="item in displayTypeItems"
-          :key="item.value"
-          :value="item.value"
-          :aria-label="item.label"
-          :text="item.label"
-          :active="displayType === item.value"
-          :disabled="item.disabled"
-          variant="text"
-          min-width="48"
-          class="pa-0"
-          @click="displayType = item.value"
-        >
-          <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>
-        </v-btn>
+        <template v-if="displayTypeItems.length > 1">
+          <v-btn
+            v-for="item in displayTypeItems"
+            :key="item.value"
+            :value="item.value"
+            :aria-label="item.label"
+            :text="item.label"
+            :active="displayType === item.value"
+            :disabled="item.disabled"
+            variant="text"
+            min-width="48"
+            class="pa-0"
+            @click="displayType = item.value"
+          >
+            <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>
+          </v-btn>
+        </template>
       </v-toolbar-items>
 
       <slot name="toolbar-title">
