@@ -61,7 +61,7 @@ function updateColourBar() {
     position: AxisPosition.Bottom,
     title: props.title,
   }
-  new ColourBar(group as any, props.colourMap, 250, 10, options)
+  new ColourBar(group as any, props.colourMap, 250, 10, options) // NOSONAR(S1848)
   isVisible.value = true
 }
 </script>

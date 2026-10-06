@@ -21,7 +21,11 @@
       <div
         class="vue-slider-dot-tooltip-inner vue-slider-dot-tooltip-inner-left vue-slider-dot-tooltip-text"
       >
+        <label class="d-none" for="elevation-slider-tooltip-input">
+          Elevation
+        </label>
         <input
+          id="elevation-slider-tooltip-input"
           ref="tooltipInput"
           v-if="isEditing"
           v-model.number="editValue"

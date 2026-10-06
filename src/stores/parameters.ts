@@ -51,7 +51,7 @@ export const useParametersStore = defineStore('parameters', () => {
     }
   }
 
-  fetch()
+  void fetch()
 
   return {
     parameters,

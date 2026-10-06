@@ -74,10 +74,9 @@ export async function downloadFileWithXhr(
     }
 
     req.onerror = () => {
-      reject({
-        status: req.status,
-        statusText: req.statusText,
-      })
+      reject(
+        new Error(`Error downloading file: ${req.status} ${req.statusText}`),
+      )
     }
 
     req.send()

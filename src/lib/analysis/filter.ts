@@ -238,7 +238,7 @@ export async function addFilterToChart(
   const position = getAddPositionForFilter(chart, filter)
   if (!position) return
 
-  addFilterToChartPosition(chart, filter, position)
+  await addFilterToChartPosition(chart, filter, position)
 }
 
 async function addFilterToChartPosition(

@@ -44,15 +44,10 @@ onMounted(() => {
         console.warn('Map is not available')
         return
       }
-
       if (enabled) {
-        if (!measureControl) {
-          addControl()
-        }
+        addControl()
       } else {
-        if (measureControl) {
-          removeControl()
-        }
+        removeControl()
       }
     },
     { immediate: true },

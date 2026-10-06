@@ -127,8 +127,8 @@ async function addCustomLocationIconsToMap(
   )
 }
 
-async function addSprites(map: Map): Promise<void> {
-  if (map.getSprite().find((sprite) => sprite.id === 'overlay')) return
+function addSprites(map: Map): void {
+  if (map.getSprite().some((sprite) => sprite.id === 'overlay')) return
   const url = new URL(
     `${import.meta.env.BASE_URL}sprites/mdi-overlay-sdf`,
     window.location.href,
@@ -149,9 +149,9 @@ export async function addLocationIconsToMap(
   map: Map,
   locations: FeatureCollection<Geometry, Location>,
 ): Promise<void> {
+  addSprites(map)
   await Promise.allSettled([
     addDefaultIconsToMap(map),
-    addSprites(map),
     addCustomLocationIconsToMap(map, locations),
   ])
 }

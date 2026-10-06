@@ -8,20 +8,22 @@ export class AuthenticationManager {
   private userReady: Promise<void> | null = null
 
   init(settings: UserManagerSettings): void {
-    this.userReady = new Promise(async (resolve, reject) => {
-      try {
-        this.userManager = new UserManager(settings)
-        this.userManager.events.addUserLoaded((user) => {
-          this.user = user
-          if (this.user) resolve()
-        })
+    this.userReady = this.initializeUser(settings)
+  }
 
-        this.user = await this.userManager.getUser()
+  private async initializeUser(settings: UserManagerSettings): Promise<void> {
+    this.userManager = new UserManager(settings)
+    const userLoaded = new Promise<void>((resolve) => {
+      this.userManager.events.addUserLoaded((user) => {
+        this.user = user
         if (this.user) resolve()
-      } catch (err) {
-        reject(err)
-      }
+      })
     })
+
+    const storedUser = await this.userManager.getUser()
+    this.user = this.user ?? storedUser
+    if (this.user) return
+    await userLoaded
   }
 
   public async getUser(): Promise<User | null> {
@@ -72,17 +74,17 @@ export class AuthenticationManager {
 
   public async getAuthorizationHeaders(): Promise<Headers> {
     if (!configManager.authenticationIsEnabled) return new Headers({})
-    switch (configManager.get('VITE_REQUEST_HEADER_AUTHORIZATION')) {
-      case RequestHeaderAuthorization.BEARER: {
-        const token = await this.getAccessToken()
-        const requestAuthHeaders = new Headers({
-          Authorization: `Bearer ${token}`,
-        })
-        return requestAuthHeaders
-      }
-      default:
-        return new Headers({})
+    if (
+      configManager.get('VITE_REQUEST_HEADER_AUTHORIZATION') ===
+      RequestHeaderAuthorization.BEARER
+    ) {
+      const token = await this.getAccessToken()
+      const requestAuthHeaders = new Headers({
+        Authorization: `Bearer ${token}`,
+      })
+      return requestAuthHeaders
     }
+    return new Headers({})
   }
 }
 

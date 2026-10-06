@@ -32,7 +32,7 @@ export const useAvailableTimeStepsStore = defineStore(
       }
     }
 
-    fetch()
+    void fetch()
 
     return {
       resamplingTimeSteps,

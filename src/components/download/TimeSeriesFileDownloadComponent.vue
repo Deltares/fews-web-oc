@@ -91,11 +91,10 @@ type SingleFilter =
 
 interface Props {
   config?: DisplayConfig | null
-  options?:
-    Pick<FilterActionsFilter, 'useDisplayUnits' | 'convertDatum'> | undefined
+  options?: Pick<FilterActionsFilter, 'useDisplayUnits' | 'convertDatum'>
   filter?: SingleFilter | SingleFilter[]
-  startTime?: Date | undefined
-  endTime?: Date | undefined
+  startTime?: Date
+  endTime?: Date
 }
 
 const props = defineProps<Props>()
