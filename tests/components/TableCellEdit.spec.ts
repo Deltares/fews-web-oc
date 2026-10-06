@@ -193,13 +193,11 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await expect(editedCell).toHaveCSS('padding-right', '0px')
     await expect(component.getByTestId('table-status-row-count')).toHaveCount(0)
     await expect(statusActivity).toContainText('Tab / Shift+Tab: move fields')
-    await expect(statusActivity).toContainText('Enter / Space: select row')
+    await expect(statusActivity).not.toContainText('select row')
     await expect(statusActivity.locator('kbd')).toHaveText([
       'Tab',
       'Shift',
       'Tab',
-      'Enter',
-      'Space',
     ])
     const firstKey = statusActivity.locator('kbd').first()
     await expect(firstKey).toHaveCSS('height', '20px')
@@ -460,6 +458,116 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await expect(
       component.locator('tbody tr[aria-selected="true"]'),
     ).toHaveCount(0)
+  })
+
+  test('Shift+Arrow extends and shrinks row selection while preserving the focused field', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    await component
+      .getByRole('columnheader')
+      .filter({ hasText: 'Editable series 1' })
+      .getByRole('button')
+      .click()
+
+    const rows = component.locator('tbody tr[data-row-date]')
+    const originalFlag = await rows.nth(2).locator('select').inputValue()
+    await rows.nth(2).locator('select').focus()
+    for (const [from, to, key, count] of [
+      [2, 3, 'Shift+ArrowDown', 2],
+      [3, 4, 'Shift+ArrowDown', 3],
+      [4, 3, 'Shift+ArrowUp', 2],
+      [3, 2, 'Shift+ArrowUp', 1],
+      [2, 1, 'Shift+ArrowUp', 2],
+      [1, 0, 'Shift+ArrowUp', 3],
+      [0, 0, 'Shift+ArrowUp', 3],
+    ] as const) {
+      await rows.nth(from).locator('select').press(key)
+      await expect(rows.nth(to).locator('select')).toBeFocused()
+      await expect(rows.nth(to)).toHaveAttribute('aria-selected', 'true')
+      await expect(
+        component.locator('tbody tr[aria-selected="true"]'),
+      ).toHaveCount(count)
+      await expect(rows.nth(2)).toHaveAttribute('aria-selected', 'true')
+      await expect(rows.nth(2).locator('select')).toHaveValue(originalFlag)
+    }
+    await rows.nth(1).getByPlaceholder('value').fill('777')
+    await expect(rows.nth(2).getByPlaceholder('value')).toHaveValue('777')
+    await expect(rows.nth(3).getByPlaceholder('value')).not.toHaveValue('777')
+  })
+
+  test('Shift+Arrow selects rows after a date click without focusing an editor', async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    await component
+      .getByRole('columnheader')
+      .filter({ hasText: 'Editable series 1' })
+      .getByRole('button')
+      .click()
+
+    const rows = component.locator('tbody tr[data-row-date]')
+    await rows.nth(2).getByPlaceholder('value').focus()
+    await rows.nth(2).locator('td.table-date').click()
+    await expect(rows.nth(2)).toBeFocused()
+    for (const [key, rowIndex, count] of [
+      ['Shift+ArrowDown', 3, 2],
+      ['Shift+ArrowDown', 4, 3],
+      ['Shift+ArrowUp', 3, 2],
+      ['Shift+ArrowUp', 2, 1],
+      ['Shift+ArrowUp', 1, 2],
+    ] as const) {
+      await page.keyboard.press(key)
+      await expect(rows.nth(rowIndex)).toBeFocused()
+      await expect(rows.nth(rowIndex)).toHaveAttribute('aria-selected', 'true')
+      await expect(
+        component.locator('tbody tr[aria-selected="true"]'),
+      ).toHaveCount(count)
+      await expect(
+        component.locator('.table-cell-edit--column-focused'),
+      ).toHaveCount(0)
+    }
+    await rows.nth(4).locator('td.table-date').click()
+    await page.keyboard.press('Shift+ArrowUp')
+    await expect(rows.nth(3)).toBeFocused()
+    await expect(rows.nth(3)).toHaveAttribute('aria-selected', 'true')
+    await expect(rows.nth(4)).toHaveAttribute('aria-selected', 'true')
+    await expect(rows.nth(2)).toHaveAttribute('aria-selected', 'false')
+  })
+
+  test('Shift+Arrow selects the next row beyond the rendered virtual rows', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    await component
+      .getByRole('columnheader')
+      .filter({ hasText: 'Editable series 1' })
+      .getByRole('button')
+      .click()
+
+    const renderedRows = component.locator('tbody tr[data-row-date]')
+    const firstRenderedDate = await renderedRows
+      .first()
+      .getAttribute('data-row-date')
+    const lastRenderedDate = await renderedRows
+      .last()
+      .getAttribute('data-row-date')
+    const direction =
+      new Date(lastRenderedDate!) < new Date(firstRenderedDate!) ? -1 : 1
+    const nextDate = new Date(
+      new Date(lastRenderedDate!).getTime() + direction * 60_000,
+    ).toISOString()
+    const nextRow = component.locator(`tr[data-row-date="${nextDate}"]`)
+    await expect(nextRow).toHaveCount(0)
+    const currentField = component
+      .locator(`tr[data-row-date="${lastRenderedDate}"]`)
+      .getByPlaceholder('comment')
+    await currentField.focus()
+    await currentField.press('Shift+ArrowDown')
+    await expect(nextRow.getByPlaceholder('comment')).toBeFocused()
+    await expect(nextRow).toHaveAttribute('aria-selected', 'true')
+    await expect(nextRow).toBeInViewport()
   })
 
   test('renders editors when the second column is edited first', async ({

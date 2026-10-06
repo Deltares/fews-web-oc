@@ -149,7 +149,9 @@
           }"
           :data-row-date="item.date.toISOString()"
           :aria-selected="isRowSelected(item)"
+          :tabindex="isEditing ? -1 : undefined"
           @click="(e) => handleRowClick(e, item)"
+          @keydown="handleEditFieldKeydown($event, item)"
         >
           <td class="table-date sticky-column">
             <v-text-field
@@ -184,7 +186,6 @@
                   ? { seriesId: id, field: $event }
                   : undefined
               "
-              @keydown="handleEditFieldKeydown($event, item)"
             />
             <!-- Table cell when not editing data. Shows additional info about flags. -->
             <TableCell
@@ -295,7 +296,6 @@
             <span>
               <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>: move fields
             </span>
-            <span> <kbd>Enter</kbd> / <kbd>Space</kbd>: select row </span>
           </span>
         </template>
         <template v-else-if="props.isLoadingMore">Loading more data</template>
@@ -820,6 +820,7 @@ function handleRowClick(e: MouseEvent, item: TableData) {
   }
 
   updateActiveSelectedRow()
+  ;(e.currentTarget as HTMLElement).focus({ preventScroll: true })
 }
 
 function updateActiveSelectedRow() {
@@ -861,7 +862,14 @@ function toggleRowSelection(dateTime: number) {
 }
 
 async function handleEditFieldKeydown(event: KeyboardEvent, item: TableData) {
-  if (!isEditing.value || !['Tab', 'Enter'].includes(event.key)) return
+  if (!isEditing.value) return
+
+  if (event.shiftKey && ['ArrowUp', 'ArrowDown'].includes(event.key)) {
+    await selectEditRowWithKeyboard(event, item)
+    return
+  }
+
+  if (!['Tab', 'Enter'].includes(event.key)) return
 
   const isSelectedRow = selectedRowDates.value.has(item.date.getTime())
   if (event.key === 'Tab' && !isSelectedRow) {
@@ -886,6 +894,62 @@ async function handleEditFieldKeydown(event: KeyboardEvent, item: TableData) {
     ]
   await nextTick()
   nextField?.focus({ preventScroll: true })
+}
+
+async function selectEditRowWithKeyboard(
+  event: KeyboardEvent,
+  item: TableData,
+) {
+  event.preventDefault()
+  const currentIndex = tableData.value.findIndex(
+    (row) => row.date.getTime() === item.date.getTime(),
+  )
+  const isDescending =
+    sortBy.value.find((entry) => entry.key === 'date')?.order === 'desc'
+  const direction = event.key === 'ArrowDown' ? 1 : -1
+  const nextIndex = currentIndex + direction * (isDescending ? -1 : 1)
+  const nextRow = tableData.value[nextIndex]
+  if (currentIndex < 0 || !nextRow) return
+
+  if (!selectedRowDates.value.has(item.date.getTime())) {
+    selectionAnchorDate.value = item.date.getTime()
+  }
+  selectionAnchorDate.value ??= item.date.getTime()
+  selectRowRange(nextRow.date.getTime(), false)
+  selected.value = nextRow
+
+  const displayIndex = isDescending
+    ? tableData.value.length - 1 - nextIndex
+    : nextIndex
+  await focusEditRow(event.target as HTMLElement, nextRow, displayIndex)
+}
+
+async function focusEditRow(
+  target: HTMLElement,
+  row: TableData,
+  displayIndex: number,
+) {
+  const seriesId = target.dataset.editSeriesId
+  const field = target.dataset.editField
+  const selector =
+    seriesId && field && canEditItem(row, seriesId)
+      ? [
+          `[data-edit-date="${row.date.toISOString()}"]`,
+          `[data-edit-series-id="${CSS.escape(seriesId)}"]`,
+          `[data-edit-field="${field}"]`,
+        ].join('')
+      : `tr[data-row-date="${row.date.toISOString()}"]`
+  await nextTick()
+  if (!tableContainer.value?.querySelector(selector)) {
+    virtualTable.value?.scrollToIndex(displayIndex, 'start')
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve())
+    })
+    await nextTick()
+  }
+  const nextTarget = tableContainer.value?.querySelector<HTMLElement>(selector)
+  nextTarget?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  nextTarget?.focus({ preventScroll: true })
 }
 
 watch(editedSeriesIds, () => {
