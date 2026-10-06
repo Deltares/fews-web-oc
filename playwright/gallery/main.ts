@@ -1,7 +1,9 @@
 import { createApp, h, shallowRef, type App, type Component } from 'vue'
 import vuetify from '../../src/plugins/vuetify'
 import { i18n } from '../../src/plugins/i18n'
-import { createPinia } from 'pinia'
+import { createPinia, setActivePinia } from 'pinia'
+
+const pinia = createPinia()
 
 // Resolve stories via import.meta.glob
 const stories = import.meta.glob('../../src/**/*.story.{ts,js,vue}', {
@@ -35,6 +37,7 @@ let app: App | undefined
   story: string
   props?: Record<string, any>
 }) => {
+  setActivePinia(pinia)
   const resolved = await resolve(storyId)
   if (!resolved) throw new Error(`Unknown story: ${storyId}`)
   story.value = resolved
@@ -43,7 +46,7 @@ let app: App | undefined
     app = createApp(host)
     app.use(vuetify)
     app.use(i18n)
-    app.use(createPinia())
+    app.use(pinia)
     app.mount('#root')
   }
 }

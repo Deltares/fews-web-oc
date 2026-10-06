@@ -67,4 +67,41 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       '"value":"18.5"',
     )
   })
+
+  for (const rowCount of [200, 1000, 2000]) {
+    test(`benchmark story renders ${rowCount} rows with five editable series`, async ({
+      mount,
+      page,
+    }) => {
+      test.setTimeout(120_000)
+      const component = await mount(
+        `table/TimeSeriesTable/Benchmark${rowCount}Rows`,
+      )
+
+      if (rowCount !== 200) {
+        await component.locator('.v-data-table-footer .v-select').click()
+        await page
+          .getByRole('option', { name: String(rowCount), exact: true })
+          .click()
+      }
+
+      await expect(component.locator('tbody tr')).toHaveCount(rowCount)
+      await expect(component.getByPlaceholder('value')).toHaveCount(0)
+
+      for (let column = 1; column <= 5; column++) {
+        await component
+          .getByRole('columnheader')
+          .filter({ hasText: `Editable series ${column}` })
+          .getByRole('button')
+          .click()
+        await expect(component.getByPlaceholder('value')).toHaveCount(
+          rowCount * column,
+        )
+      }
+
+      await expect(component.getByPlaceholder('comment')).toHaveCount(
+        rowCount * 5,
+      )
+    })
+  }
 })
