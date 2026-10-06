@@ -306,7 +306,10 @@
             <span v-if="selectedRowDates.size > 0">
               <kbd>Esc</kbd>: deselect rows
             </span>
-            <span> <kbd>Ctrl/Cmd</kbd>+<kbd>Enter</kbd>: save column </span>
+            <span>
+              <kbd>{{ isMac ? '⌘' : 'Ctrl' }}</kbd
+              >+<kbd>Enter</kbd>: save column
+            </span>
           </span>
         </template>
         <template v-else-if="props.isLoadingMore">Loading more data</template>
@@ -378,6 +381,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), { isLoadingMore: false })
+const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform)
 
 const emit = defineEmits(['change', 'update:isEditing', 'load-more-data'])
 

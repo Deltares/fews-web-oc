@@ -1,4 +1,10 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Locator } from '@playwright/test'
+
+async function getSaveModifier(component: Locator) {
+  return component.evaluate(() =>
+    /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl',
+  )
+}
 
 test.describe('TableCellEdit', () => {
   test('renders the current value, flag, and comment', async ({ mount }) => {
@@ -195,11 +201,14 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await expect(statusActivity).toContainText('Tab / Enter: move fields')
     await expect(statusActivity).not.toContainText('Shift+Tab')
     await expect(statusActivity).not.toContainText('select row')
-    await expect(statusActivity).toContainText('Ctrl/Cmd+Enter: save column')
+    const saveModifier = await getSaveModifier(component)
+    await expect(statusActivity).toContainText(
+      `${saveModifier}+Enter: save column`,
+    )
     await expect(statusActivity.locator('kbd')).toHaveText([
       'Tab',
       'Enter',
-      'Ctrl/Cmd',
+      saveModifier,
       'Enter',
     ])
     const firstKey = statusActivity.locator('kbd').first()
@@ -242,6 +251,30 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await expect(statusActivity).not.toContainText('Shift+Tab')
   })
 
+  for (const [platform, modifier] of [
+    ['MacIntel', '⌘'],
+    ['Win32', 'Ctrl'],
+    ['iPad', '⌘'],
+  ]) {
+    test(`save hint uses ${modifier} on ${platform}`, async ({
+      mount,
+      page,
+    }) => {
+      await page.addInitScript((value) => {
+        Object.defineProperty(navigator, 'platform', { get: () => value })
+      }, platform)
+      const component = await mount('table/TimeSeriesTable/EditableCell')
+      await component
+        .getByRole('columnheader')
+        .filter({ hasText: 'Editable series' })
+        .getByRole('button')
+        .click()
+      await expect(
+        component.getByTestId('table-status-activity').locator('kbd'),
+      ).toHaveText(['Tab', 'Enter', modifier, 'Enter'])
+    })
+  }
+
   test('keyboard hints follow single-row, multi-row, and cleared selection', async ({
     mount,
   }) => {
@@ -250,14 +283,15 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       .getByRole('columnheader')
       .filter({ hasText: 'Editable series 1' })
     const hints = component.getByTestId('table-status-activity')
+    const saveModifier = await getSaveModifier(component)
     await expect(hints.locator('kbd')).toHaveCount(0)
     await header.getByRole('button').click()
     await expect(hints).toContainText('Tab / Enter: move fields')
-    await expect(hints).toContainText('Ctrl/Cmd+Enter: save column')
+    await expect(hints).toContainText(`${saveModifier}+Enter: save column`)
     await expect(hints.locator('kbd')).toHaveText([
       'Tab',
       'Enter',
-      'Ctrl/Cmd',
+      saveModifier,
       'Enter',
     ])
 
@@ -272,7 +306,7 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       'Up',
       'Down',
       'Esc',
-      'Ctrl/Cmd',
+      saveModifier,
       'Enter',
     ])
 
@@ -290,7 +324,7 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await expect(hints.locator('kbd')).toHaveText([
       'Tab',
       'Enter',
-      'Ctrl/Cmd',
+      saveModifier,
       'Enter',
     ])
     await header.getByRole('button', { name: 'Cancel', exact: true }).click()
@@ -646,8 +680,9 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       const firstValue = firstRow.getByPlaceholder('value').nth(0)
       const secondValue = firstRow.getByPlaceholder('value').nth(1)
       const hints = component.getByTestId('table-status-activity')
+      const saveModifier = await getSaveModifier(component)
       await firstValue.focus()
-      await expect(hints).toContainText('Ctrl/Cmd+Enter: save column')
+      await expect(hints).toContainText(`${saveModifier}+Enter: save column`)
       await firstValue.press(`${modifier}+Enter`)
       await expect(firstValue).toBeFocused()
       await expect(
@@ -657,7 +692,7 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       await firstValue.fill('777')
       await secondValue.fill('888')
       await firstValue.focus()
-      await expect(hints).toContainText('Ctrl/Cmd+Enter: save column')
+      await expect(hints).toContainText(`${saveModifier}+Enter: save column`)
       await firstValue.press(`${modifier}+Enter`)
       await expect(
         firstHeader.getByRole('button', { name: 'Save', exact: true }),
