@@ -184,7 +184,7 @@
                   ? { seriesId: id, field: $event }
                   : undefined
               "
-              @keydown.tab="handleSelectedFieldTab($event, item)"
+              @keydown="handleEditFieldKeydown($event, item)"
             />
             <!-- Table cell when not editing data. Shows additional info about flags. -->
             <TableCell
@@ -860,23 +860,30 @@ function toggleRowSelection(dateTime: number) {
   selectionAnchorDate.value = dateTime
 }
 
-async function handleSelectedFieldTab(event: KeyboardEvent, item: TableData) {
-  if (!isEditing.value || !selectedRowDates.value.has(item.date.getTime())) {
+async function handleEditFieldKeydown(event: KeyboardEvent, item: TableData) {
+  if (!isEditing.value || !['Tab', 'Enter'].includes(event.key)) return
+
+  const isSelectedRow = selectedRowDates.value.has(item.date.getTime())
+  if (event.key === 'Tab' && !isSelectedRow) {
     return
   }
 
+  const selector = isSelectedRow
+    ? `[data-edit-date="${item.date.toISOString()}"][data-edit-field]`
+    : '[data-edit-field]'
   const fields = Array.from(
-    tableContainer.value?.querySelectorAll<HTMLElement>(
-      `[data-edit-date="${item.date.toISOString()}"][data-edit-field]`,
-    ) ?? [],
+    tableContainer.value?.querySelectorAll<HTMLElement>(selector) ?? [],
   )
   const fieldIndex = fields.indexOf(event.target as HTMLElement)
   if (fieldIndex < 0) return
 
   event.preventDefault()
-  const offset = event.shiftKey ? -1 : 1
+  const offset = event.key === 'Tab' && event.shiftKey ? -1 : 1
+  const nextIndex = fieldIndex + offset
   const nextField =
-    fields[(fieldIndex + offset + fields.length) % fields.length]
+    fields[
+      isSelectedRow ? (nextIndex + fields.length) % fields.length : nextIndex
+    ]
   await nextTick()
   nextField?.focus({ preventScroll: true })
 }

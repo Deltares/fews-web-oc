@@ -406,9 +406,9 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     const fields = firstSelectedRow.locator('[data-edit-field]')
     await expect(fields).toHaveCount(6)
     await fields.first().focus()
-    for (const key of ['Tab', 'Shift+Tab']) {
+    for (const key of ['Tab', 'Shift+Tab', 'Enter']) {
       for (let step = 0; step < 6; step++) {
-        const index = key === 'Tab' ? step : (6 - step) % 6
+        const index = key === 'Shift+Tab' ? (6 - step) % 6 : step
         const field = fields.nth(index)
         await expect(field).toBeFocused()
         const seriesId = await field.getAttribute('data-edit-series-id')
@@ -436,6 +436,29 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await fields.first().blur()
     await expect(
       component.locator('.table-cell-edit--column-focused'),
+    ).toHaveCount(0)
+  })
+
+  test('Enter advances through edit fields and into the next unselected row', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    await component
+      .getByRole('columnheader')
+      .filter({ hasText: 'Editable series 1' })
+      .getByRole('button')
+      .click()
+
+    const rows = component.locator('tbody tr[data-row-date]')
+    const fields = rows.first().locator('[data-edit-field]')
+    await fields.first().focus()
+    for (let index = 0; index < 3; index++) {
+      await expect(fields.nth(index)).toBeFocused()
+      await fields.nth(index).press('Enter')
+    }
+    await expect(rows.nth(1).getByPlaceholder('value')).toBeFocused()
+    await expect(
+      component.locator('tbody tr[aria-selected="true"]'),
     ).toHaveCount(0)
   })
 
