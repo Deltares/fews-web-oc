@@ -192,13 +192,10 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await expect(editedCell).toHaveCSS('padding-left', '0px')
     await expect(editedCell).toHaveCSS('padding-right', '0px')
     await expect(component.getByTestId('table-status-row-count')).toHaveCount(0)
-    await expect(statusActivity).toContainText('Tab / Shift+Tab: move fields')
+    await expect(statusActivity).toContainText('Tab / Enter: move fields')
+    await expect(statusActivity).not.toContainText('Shift+Tab')
     await expect(statusActivity).not.toContainText('select row')
-    await expect(statusActivity.locator('kbd')).toHaveText([
-      'Tab',
-      'Shift',
-      'Tab',
-    ])
+    await expect(statusActivity.locator('kbd')).toHaveText(['Tab', 'Enter'])
     const firstKey = statusActivity.locator('kbd').first()
     await expect(firstKey).toHaveCSS('height', '20px')
     await expect(firstKey).toHaveCSS('font-size', '11px')
@@ -237,6 +234,47 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       '1 row loaded',
     )
     await expect(statusActivity).not.toContainText('Shift+Tab')
+  })
+
+  test('keyboard hints follow single-row, multi-row, and cleared selection', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    const header = component
+      .getByRole('columnheader')
+      .filter({ hasText: 'Editable series 1' })
+    const hints = component.getByTestId('table-status-activity')
+    await expect(hints.locator('kbd')).toHaveCount(0)
+    await header.getByRole('button').click()
+    await expect(hints).toContainText('Tab / Enter: move fields')
+    await expect(hints.locator('kbd')).toHaveText(['Tab', 'Enter'])
+
+    const rows = component.locator('tbody tr[data-row-date]')
+    await rows.nth(1).locator('td.table-date').click()
+    await expect(hints).toContainText('Tab / Enter: cycle fields')
+    await expect(hints).toContainText('Shift+Up / Down: extend selection')
+    await expect(hints.locator('kbd')).toHaveText([
+      'Tab',
+      'Enter',
+      'Shift',
+      'Up',
+      'Down',
+    ])
+
+    await rows
+      .nth(3)
+      .locator('td.table-date')
+      .click({ modifiers: ['Shift'] })
+    await expect(hints).toContainText('Shift+Up / Down: adjust selection')
+    await expect(hints).not.toContainText('extend selection')
+
+    await rows.nth(1).locator('td.table-date').click()
+    await expect(hints).toContainText('extend selection')
+    await rows.nth(1).locator('td.table-date').click()
+    await expect(hints).toContainText('Tab / Enter: move fields')
+    await expect(hints.locator('kbd')).toHaveText(['Tab', 'Enter'])
+    await header.getByRole('button', { name: 'Cancel', exact: true }).click()
+    await expect(hints.locator('kbd')).toHaveCount(0)
   })
 
   test('selecting a date row confines Tab cycling to that row and can be undone', async ({
@@ -380,6 +418,87 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       unselectedValue,
     )
   })
+
+  test('clicking an editor outside selected rows clears selection and its anchor', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    await component
+      .getByRole('columnheader')
+      .filter({ hasText: 'Editable series 1' })
+      .getByRole('button')
+      .click()
+
+    const rows = component.locator('tbody tr[data-row-date]')
+    const selectedRows = component.locator('tbody tr[aria-selected="true"]')
+    for (const field of ['y', 'flagEdit', 'comment']) {
+      await rows.nth(1).locator('td.table-date').click()
+      await rows
+        .nth(2)
+        .locator('td.table-date')
+        .click({ modifiers: ['Shift'] })
+      await rows.nth(1).locator(`[data-edit-field="${field}"]`).click()
+      await expect(selectedRows).toHaveCount(2)
+      const outsideField = rows.nth(3).locator(`[data-edit-field="${field}"]`)
+      await outsideField.click()
+      await expect(outsideField).toBeFocused()
+      await expect(selectedRows).toHaveCount(0)
+      await expect(
+        component.locator('.table-cell-edit--column-focused'),
+      ).toHaveCount(0)
+      await rows
+        .nth(4)
+        .locator('td.table-date')
+        .click({ modifiers: ['Shift'] })
+      await expect(selectedRows).toHaveCount(1)
+      await rows.nth(4).locator('td.table-date').click()
+    }
+  })
+
+  for (const action of ['Save', 'Cancel']) {
+    test(`${action} restores selectedDate without scrolling when edit mode ends`, async ({
+      mount,
+    }) => {
+      const component = await mount('table/TimeSeriesTable/SelectedDateRow')
+      const scrollContainer = component.locator('.v-table__wrapper')
+      const initialSelectedRow = component.locator(
+        'tbody tr[aria-selected="true"]',
+      )
+      await expect(initialSelectedRow).toHaveCount(1)
+      const selectedDate =
+        await initialSelectedRow.getAttribute('data-row-date')
+      const originalScrollTop = await scrollContainer.evaluate(
+        (element) => element.scrollTop,
+      )
+      const header = component
+        .getByRole('columnheader')
+        .filter({ hasText: 'Editable series 1' })
+      await header.getByRole('button').click()
+      const otherRow = component
+        .locator(
+          `tbody tr[data-row-date]:not([data-row-date="${selectedDate}"])`,
+        )
+        .first()
+      await otherRow.locator('td.table-date').click()
+      await otherRow.getByPlaceholder('value').fill('777')
+      await scrollContainer.evaluate((element) => {
+        element.scrollTop = 0
+      })
+      await expect(scrollContainer).toHaveJSProperty('scrollTop', 0)
+      await header.getByRole('button', { name: action, exact: true }).click()
+      await expect(component.getByPlaceholder('value')).toHaveCount(0)
+      await expect(scrollContainer).toHaveJSProperty('scrollTop', 0)
+      await scrollContainer.evaluate((element, scrollTop) => {
+        element.scrollTop = scrollTop
+      }, originalScrollTop)
+      await expect(
+        component.locator(`tr[data-row-date="${selectedDate}"]`),
+      ).toHaveAttribute('aria-selected', 'true')
+      await expect(
+        component.locator('tbody tr[aria-selected="true"]'),
+      ).toHaveCount(1)
+    })
+  }
 
   test('cycles selected-row fields across editable columns and highlights only the active column', async ({
     mount,

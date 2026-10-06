@@ -294,7 +294,16 @@
         <template v-if="isEditing">
           <span class="table-status-bar__keyboard-hint">
             <span>
-              <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>: move fields
+              <kbd>Tab</kbd> / <kbd>Enter</kbd>:
+              {{ selectedRowDates.size > 0 ? 'cycle fields' : 'move fields' }}
+            </span>
+            <span v-if="selectedRowDates.size > 0">
+              <kbd>Shift</kbd>+<kbd>Up</kbd> / <kbd>Down</kbd>:
+              {{
+                selectedRowDates.size === 1
+                  ? 'extend selection'
+                  : 'adjust selection'
+              }}
             </span>
           </span>
         </template>
@@ -800,6 +809,10 @@ function isRowSelected(item: TableData) {
 
 function handleRowClick(e: MouseEvent, item: TableData) {
   if (!isEditing.value || !(e.target instanceof Element)) return
+  if (e.target.closest('[data-edit-field]')) {
+    if (!selectedRowDates.value.has(item.date.getTime())) clearSelected()
+    return
+  }
   if (!e.target.closest('td.table-date')) return
   if (e.target.closest('input, select, textarea, button')) return
 
@@ -955,6 +968,7 @@ async function focusEditRow(
 watch(editedSeriesIds, () => {
   if (editedSeriesIds.value.length === 0) {
     clearSelected()
+    selectDateRow()
   }
 })
 
