@@ -19,7 +19,9 @@ describe('usePaginatedTimeSeries', () => {
   it('adds pagination counts to requests and prevents concurrent page loads', async () => {
     const loading = ref(false)
     const refreshing = ref(false)
+    const entries = ref({ 'series-1': { updatedAt: new Date(0) } })
     mocks.usePiTimeSeries.mockReturnValue({
+      entries,
       responses: computed(() => ({})),
       loading,
       refreshing,
@@ -53,12 +55,26 @@ describe('usePaginatedTimeSeries', () => {
 
     loading.value = true
     await nextTick()
+    entries.value = { 'series-1': { updatedAt: new Date() } }
     loading.value = false
     await nextTick()
+    expect(paginated.pageUpdate.value).toEqual({
+      revision: 1,
+      direction: 'before',
+    })
 
     paginated.loadMore('after')
     expect(paginated.afterEndTimeCount.value).toBe(20)
     expect(getRequestUrl().searchParams.get('afterEndTimeCount')).toBe('20')
+
+    loading.value = true
+    await nextTick()
+    loading.value = false
+    await nextTick()
+    expect(paginated.pageUpdate.value).toEqual({
+      revision: 1,
+      direction: 'before',
+    })
 
     scope.stop()
   })

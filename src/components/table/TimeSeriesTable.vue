@@ -206,7 +206,10 @@ import type { TableHeaders } from '@/lib/table/types/TableHeaders'
 import { createTableHeaders } from '@/lib/table/createTableHeaders'
 import { createSeriesDateIndex } from '@/lib/table/createSeriesDateIndex'
 import {
+  createTableDataPage,
   createTableData,
+  getTableSeriesDataLengths,
+  mergeTableData,
   tableDataToTimeSeries,
   type TableData,
   TableSeriesData,
@@ -226,6 +229,7 @@ import {
 } from '@/lib/date'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { findDateIndex } from '@/lib/utils/dates'
+import type { PaginatedTimeSeriesPageUpdate } from '@/services/useTimeSeries'
 import { useI18n } from 'vue-i18n'
 
 interface Props {
@@ -235,6 +239,7 @@ interface Props {
   isLoading: boolean
   isLoadingMore?: boolean
   selectedDate?: Date
+  pageUpdate?: PaginatedTimeSeriesPageUpdate
 }
 
 const props = withDefaults(defineProps<Props>(), { isLoadingMore: false })
@@ -273,6 +278,8 @@ const virtualTable = ref<{
 } | null>(null)
 const virtualItemHeight = 36
 const paginationThreshold = 100
+let seriesDataLengths = new Map<string, number>()
+let lastProcessedPageRevision = 0
 let hasPendingTopLoad = false
 
 const isEditing = ref<boolean>(false)
@@ -327,6 +334,12 @@ onBeforeMount(() => {
         props.series,
         seriesIds.value,
       )
+      seriesDataLengths = getTableSeriesDataLengths(
+        props.config.series,
+        props.series,
+        seriesIds.value,
+      )
+      lastProcessedPageRevision = props.pageUpdate?.revision ?? 0
       selectDateRow(true)
     }
     isWaitingForTableUpdate.value = props.isLoading
@@ -369,11 +382,31 @@ watchDebounced(
   async () => {
     if (props.series === undefined || isEditing.value) return
     const previousRowCount = tableData.value.length
-    const updatedTableData = createTableData(
-      props.config.series,
-      props.series,
-      seriesIds.value,
-    )
+    const pageUpdate = props.pageUpdate
+    const isNewPage =
+      pageUpdate !== undefined &&
+      pageUpdate.revision > lastProcessedPageRevision &&
+      tableData.value.length > 0
+    const pageData = isNewPage
+      ? createTableDataPage(
+          props.config.series,
+          props.series,
+          seriesIds.value,
+          seriesDataLengths,
+          pageUpdate.direction,
+        )
+      : undefined
+    const updatedTableData = pageData
+      ? mergeTableData(tableData.value, pageData.rows)
+      : createTableData(props.config.series, props.series, seriesIds.value)
+    seriesDataLengths = pageData
+      ? pageData.seriesDataLengths
+      : getTableSeriesDataLengths(
+          props.config.series,
+          props.series,
+          seriesIds.value,
+        )
+    if (isNewPage) lastProcessedPageRevision = pageUpdate.revision
     tableData.value = updatedTableData
     if (hasPendingTopLoad) {
       hasPendingTopLoad = false

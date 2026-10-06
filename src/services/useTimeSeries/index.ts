@@ -122,10 +122,16 @@ export function useTimeSeries(
 }
 
 export interface UsePaginatedTimeSeriesReturn extends UseTimeSeriesReturn {
+  pageUpdate: Readonly<Ref<PaginatedTimeSeriesPageUpdate | undefined>>
   beforeStartTimeCount: Readonly<Ref<number>>
   afterEndTimeCount: Readonly<Ref<number>>
   isLoadingMore: Readonly<Ref<boolean>>
   loadMore: (direction: 'before' | 'after') => void
+}
+
+export interface PaginatedTimeSeriesPageUpdate {
+  revision: number
+  direction: 'before' | 'after'
 }
 
 export function usePaginatedTimeSeries(
@@ -158,6 +164,13 @@ export function usePaginatedTimeSeries(
   const beforeStartTimeCount = ref(0)
   const afterEndTimeCount = ref(0)
   const isLoadingMore = ref(false)
+  const pageUpdate = ref<PaginatedTimeSeriesPageUpdate>()
+  let pendingPage:
+    | {
+        direction: 'before' | 'after'
+        updatedAt: Map<string, Date | undefined>
+      }
+    | undefined
   const piRequests = computed(() =>
     requestEntries.value.map(({ key, request }) => ({
       key,
@@ -169,6 +182,7 @@ export function usePaginatedTimeSeries(
     })),
   )
   const {
+    entries,
     responses,
     loading,
     refreshing,
@@ -207,7 +221,21 @@ export function usePaginatedTimeSeries(
   })
 
   watch([loading, refreshing], ([isLoading, isRefreshing]) => {
-    if (!isLoading && !isRefreshing) isLoadingMore.value = false
+    if (isLoading || isRefreshing) return
+
+    isLoadingMore.value = false
+    if (pendingPage === undefined) return
+
+    const hasSuccessfulResponse = Object.entries(entries.value).some(
+      ([key, entry]) => entry.updatedAt !== pendingPage?.updatedAt.get(key),
+    )
+    if (hasSuccessfulResponse) {
+      pageUpdate.value = {
+        revision: (pageUpdate.value?.revision ?? 0) + 1,
+        direction: pendingPage.direction,
+      }
+    }
+    pendingPage = undefined
   })
 
   function loadMore(direction: 'before' | 'after') {
@@ -221,6 +249,15 @@ export function usePaginatedTimeSeries(
       return
     }
 
+    pendingPage = {
+      direction,
+      updatedAt: new Map(
+        Object.entries(entries.value).map(([key, entry]) => [
+          key,
+          entry.updatedAt,
+        ]),
+      ),
+    }
     isLoadingMore.value = true
     if (direction === 'before') {
       beforeStartTimeCount.value += pageSize
@@ -237,6 +274,7 @@ export function usePaginatedTimeSeries(
     requestRefresh,
     pauseRefresh,
     resumeRefresh,
+    pageUpdate,
     beforeStartTimeCount,
     afterEndTimeCount,
     isLoadingMore,

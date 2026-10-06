@@ -74,6 +74,7 @@
         :key="tableConfig.title"
         :settings="settings.timeSeriesTable"
         :selected-date="selectedDate"
+        :page-update="tablePageUpdate"
         :is-loading="isLoadingTableSeries"
         :is-loading-more="isLoadingMoreTableSeries"
         class="single"
@@ -299,6 +300,7 @@ const {
   loading: isTableLoading,
   refreshing: isTableRefreshing,
   isLoadingMore: isLoadingMoreTableSeries,
+  pageUpdate: tablePageUpdate,
   loadMore: loadMoreTableSeries,
   requestRefresh: refreshTableTimeSeries,
   pauseRefresh: pauseTableRefresh,

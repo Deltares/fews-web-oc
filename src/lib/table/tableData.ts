@@ -22,6 +22,11 @@ export interface TableData {
   [key: string]: Partial<TableSeriesData> | Date
 }
 
+export interface TableDataPage {
+  rows: TableData[]
+  seriesDataLengths: Map<string, number>
+}
+
 export const dateFormatter = new Intl.DateTimeFormat(undefined, {
   year: 'numeric',
   month: 'numeric',
@@ -117,6 +122,123 @@ export function createTableData(
   // Finally, create an array from the map and sort by date.
   return Array.from(data.values()).sort(
     (a, b) => a.date.getTime() - b.date.getTime(),
+  )
+}
+
+export function getTableSeriesDataLengths(
+  chartSeries: ChartSeries[],
+  seriesById: Record<string, Series>,
+  seriesIds: string[],
+): Map<string, number> {
+  const chartSeriesById = new Map(
+    chartSeries.map((series) => [series.id, series]),
+  )
+
+  return new Map(
+    seriesIds.map((id) => {
+      const dataResourceId = chartSeriesById.get(id)?.dataResources[0]
+      return [
+        id,
+        dataResourceId ? (seriesById[dataResourceId]?.data?.length ?? 0) : 0,
+      ]
+    }),
+  )
+}
+
+export function createTableDataPage(
+  chartSeries: ChartSeries[],
+  seriesById: Record<string, Series>,
+  seriesIds: string[],
+  previousSeriesDataLengths: ReadonlyMap<string, number>,
+  direction: 'before' | 'after',
+): TableDataPage | undefined {
+  const chartSeriesById = new Map(
+    chartSeries.map((series) => [series.id, series]),
+  )
+  const pageSeries: Record<string, Series> = {}
+  const nextSeriesDataLengths = new Map<string, number>()
+  let hasNewEvents = false
+
+  for (const id of seriesIds) {
+    const configuredSeries = chartSeriesById.get(id)
+    if (!configuredSeries) continue
+
+    const dataResourceId = configuredSeries.dataResources[0]
+    if (!dataResourceId) continue
+
+    const sourceSeries = seriesById[dataResourceId]
+    const events = sourceSeries?.data ?? []
+    const previousLength = previousSeriesDataLengths.get(id)
+    if (previousLength === undefined || events.length < previousLength) {
+      return undefined
+    }
+    if (events.length > previousLength) hasNewEvents = true
+
+    nextSeriesDataLengths.set(id, events.length)
+    if (sourceSeries) {
+      const newEvents =
+        direction === 'before'
+          ? events.slice(0, events.length - previousLength)
+          : events.slice(previousLength)
+      const pageSeriesItem = sourceSeries.clone()
+      pageSeriesItem.data = newEvents
+      pageSeries[dataResourceId] = pageSeriesItem
+    }
+  }
+
+  if (!hasNewEvents) return undefined
+
+  return {
+    rows: createTableData(chartSeries, pageSeries, seriesIds),
+    seriesDataLengths: nextSeriesDataLengths,
+  }
+}
+
+export function mergeTableData(
+  existingRows: TableData[],
+  pageRows: TableData[],
+): TableData[] {
+  if (existingRows.length === 0) return pageRows
+  if (pageRows.length === 0) return existingRows
+
+  const firstExistingTime = existingRows[0].date.getTime()
+  const lastExistingTime = existingRows.at(-1)!.date.getTime()
+  const firstPageTime = pageRows[0].date.getTime()
+  const lastPageTime = pageRows.at(-1)!.date.getTime()
+
+  if (lastPageTime < firstExistingTime) {
+    return [...pageRows, ...existingRows]
+  }
+  if (firstPageTime > lastExistingTime) {
+    return [...existingRows, ...pageRows]
+  }
+
+  const mergedRows: TableData[] = []
+  let existingIndex = 0
+  let pageIndex = 0
+
+  while (existingIndex < existingRows.length && pageIndex < pageRows.length) {
+    const existingRow = existingRows[existingIndex]
+    const pageRow = pageRows[pageIndex]
+    const existingTime = existingRow.date.getTime()
+    const pageTime = pageRow.date.getTime()
+
+    if (existingTime < pageTime) {
+      mergedRows.push(existingRow)
+      existingIndex++
+    } else if (pageTime < existingTime) {
+      mergedRows.push(pageRow)
+      pageIndex++
+    } else {
+      mergedRows.push({ ...existingRow, ...pageRow })
+      existingIndex++
+      pageIndex++
+    }
+  }
+
+  return mergedRows.concat(
+    existingRows.slice(existingIndex),
+    pageRows.slice(pageIndex),
   )
 }
 
