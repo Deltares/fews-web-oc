@@ -33,8 +33,8 @@ export function useCurrentUser() {
     return hasEqualIdentity(userIdToCheck, preferredUsername.value)
   }
 
-  onMounted(() => {
-    fetchCurrentUser()
+  onMounted(async () => {
+    await fetchCurrentUser()
   })
 
   return {

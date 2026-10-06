@@ -32,19 +32,22 @@ export const useTaskRunColorsStore = defineStore('taskRunColors', () => {
     colorMap.value = newMap
   }
 
-  function fetchColors() {
+  async function fetchColors(): Promise<void> {
     const piProvider = new PiWebserviceProvider(baseUrl, {
       transformRequestFn: createTransformRequestFn(),
     })
-    piProvider.getColors().then((response) => {
+    try {
+      const response = await piProvider.getColors()
       if (response.colors) {
         colors.value = [...response.colors.map((color) => color.color)]
         clearColors()
       }
-    })
+    } catch (error) {
+      console.error('Failed to fetch task run colors.', error)
+    }
   }
 
-  fetchColors()
+  void fetchColors()
 
   return {
     colors,

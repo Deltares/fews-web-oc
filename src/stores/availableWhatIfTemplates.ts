@@ -38,7 +38,7 @@ export const useAvailableWhatIfTemplatesStore = defineStore(
       }
     }
 
-    fetch()
+    void fetch()
 
     return {
       whatIfTemplates,
