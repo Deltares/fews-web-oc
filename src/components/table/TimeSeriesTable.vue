@@ -193,6 +193,7 @@ import { Series } from '@/lib/timeseries/timeSeries'
 import { getUniqueSeriesIds } from '@/lib/charts/getUniqueSeriesIds'
 import type { TableHeaders } from '@/lib/table/types/TableHeaders'
 import { createTableHeaders } from '@/lib/table/createTableHeaders'
+import { createSeriesDateIndex } from '@/lib/table/createSeriesDateIndex'
 import {
   createTableData,
   tableDataToTimeSeries,
@@ -401,11 +402,13 @@ function editTimeSeries(seriesId: string) {
   if (seriesId !== null) editedSeriesIds.value.push(seriesId)
 }
 
+const seriesDateIndex = computed(() => createSeriesDateIndex(props.series))
+
 function canEditItem(item: TableData, seriesId: string) {
   if (!editedSeriesIds.value.includes(seriesId)) return false
   if (nonEquidistantSeries.value.includes(seriesId)) return true
 
-  return props.series[seriesId].data?.some((series) => series.x === item.date)
+  return seriesDateIndex.value.get(seriesId)?.has(item.date) ?? false
 }
 
 function indexIsInRange(array: unknown[], index: number) {
