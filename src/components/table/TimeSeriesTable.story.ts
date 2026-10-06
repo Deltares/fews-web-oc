@@ -82,7 +82,7 @@ export const EditableCell = defineComponent({
   },
 })
 
-function createBenchmarkStory(rowCount: number) {
+function createBenchmarkStory(rowCount: number, selectedDateIndex?: number) {
   return defineComponent({
     setup() {
       const { locale, mergeDateTimeFormat } = useI18n({ useScope: 'global' })
@@ -163,6 +163,10 @@ function createBenchmarkStory(rowCount: number) {
               series: benchmarkSeries,
               settings: defaultChartSettings.timeSeriesTable,
               isLoading: false,
+              selectedDate:
+                selectedDateIndex === undefined
+                  ? undefined
+                  : dates[selectedDateIndex],
               onLoadMoreData: (direction: string) => {
                 loadMoreDirection.value = direction
               },
@@ -181,3 +185,4 @@ function createBenchmarkStory(rowCount: number) {
 export const Benchmark200Rows = createBenchmarkStory(200)
 export const Benchmark1000Rows = createBenchmarkStory(1000)
 export const Benchmark2000Rows = createBenchmarkStory(2000)
+export const SelectedDateRow = createBenchmarkStory(200, 150)

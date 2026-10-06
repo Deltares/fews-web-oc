@@ -134,6 +134,17 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     )
   })
 
+  test('selects and scrolls to the row matching selectedDate', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/SelectedDateRow')
+    const selectedRow = component.locator('tbody tr[aria-selected="true"]')
+
+    await expect(selectedRow).toHaveCount(1)
+    await expect(selectedRow.locator('td').first()).toContainText('2:30')
+    await expect(selectedRow).toBeInViewport()
+  })
+
   for (const rowCount of [200, 1000, 2000]) {
     test(`benchmark story renders ${rowCount} rows with five editable series`, async ({
       mount,

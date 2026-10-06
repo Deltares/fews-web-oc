@@ -73,6 +73,7 @@
         :series="tableSeries"
         :key="tableConfig.title"
         :settings="settings.timeSeriesTable"
+        :selected-date="selectedDate"
         :is-loading="isLoadingTableSeries"
         :is-loading-more="isLoadingMoreTableSeries"
         class="single"

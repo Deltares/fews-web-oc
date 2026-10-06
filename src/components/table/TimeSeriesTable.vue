@@ -4,6 +4,7 @@
       <TableTooltip v-bind="tooltipItem">/</TableTooltip>
     </v-tooltip>
     <v-data-table-virtual
+      ref="virtualTable"
       class="data-table"
       :headers="tableHeaders"
       :items="tableData"
@@ -224,6 +225,7 @@ import {
   toISOString,
 } from '@/lib/date'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
+import { findDateIndex } from '@/lib/utils/dates'
 import { useI18n } from 'vue-i18n'
 
 interface Props {
@@ -232,6 +234,7 @@ interface Props {
   settings: ChartsSettings['timeSeriesTable']
   isLoading: boolean
   isLoadingMore?: boolean
+  selectedDate?: Date
 }
 
 const props = withDefaults(defineProps<Props>(), { isLoadingMore: false })
@@ -265,6 +268,9 @@ const newTableData = ref<TableData[]>([])
 const tableHeaders = ref<TableHeaders[]>([])
 const tableContainer = ref<HTMLElement | null>(null)
 const tableScrollElement = ref<HTMLElement | null>(null)
+const virtualTable = ref<{
+  scrollToIndex: (index: number, position?: 'start' | 'center' | 'end') => void
+} | null>(null)
 const virtualItemHeight = 36
 const paginationThreshold = 100
 let hasPendingTopLoad = false
@@ -321,6 +327,7 @@ onBeforeMount(() => {
         props.series,
         seriesIds.value,
       )
+      selectDateRow(true)
     }
     isWaitingForTableUpdate.value = props.isLoading
   })
@@ -382,6 +389,10 @@ watchDebounced(
         }
       }
     }
+    if (props.selectedDate !== undefined) {
+      await nextTick()
+      selectDateRow(previousRowCount === 0)
+    }
     isWaitingForTableUpdate.value = props.isLoading
   },
   { debounce: 500, maxWait: 1000 },
@@ -395,7 +406,17 @@ onMounted(async () => {
   tableScrollElement.value?.addEventListener('scroll', handleTableScroll, {
     passive: true,
   })
+  selectDateRow(true)
 })
+
+watch(
+  () => props.selectedDate,
+  async (selectedDate) => {
+    if (selectedDate === undefined) return
+    await nextTick()
+    selectDateRow(true)
+  },
+)
 
 onUnmounted(() => {
   tableScrollElement.value?.removeEventListener('scroll', handleTableScroll)
@@ -601,6 +622,27 @@ function onUpdateItem(event: TableData) {
     newTableData.value[index] = { ...newTableData.value[index], ...event }
   } else {
     newTableData.value.push(event)
+  }
+}
+
+function selectDateRow(scrollIntoView = false) {
+  const selectedDate = props.selectedDate
+  if (selectedDate === undefined || tableData.value.length === 0) return
+
+  const dates = tableData.value.map((item) => item.date)
+  const dateIndex = findDateIndex(dates, selectedDate)
+  const selectedItem = tableData.value[dateIndex]
+  if (selectedItem === undefined) return
+
+  selected.value = selectedItem
+
+  const dateSortOrder = sortBy.value.find((item) => item.key === 'date')?.order
+  const displayIndex =
+    dateSortOrder === 'desc'
+      ? tableData.value.length - dateIndex - 1
+      : dateIndex
+  if (scrollIntoView) {
+    nextTick(() => virtualTable.value?.scrollToIndex(displayIndex, 'center'))
   }
 }
 
