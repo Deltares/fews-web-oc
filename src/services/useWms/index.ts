@@ -228,7 +228,7 @@ export function useWmsMaxValuesTimeSeries(
         filter.taskRunId = _taskRunId
       }
       const response = await piProvider.getTimeSeriesGridMaxValues(filter)
-      if (response && response.timeSeries && response.timeSeries.length > 0) {
+      if (response?.timeSeries?.length) {
         // We will always have only one series of maximum values for a layer.
         const series = response.timeSeries[0]
         if (series.events) {
@@ -301,7 +301,7 @@ export function useWmsCapabilities(
     }
   }
 
-  loadCapabilities()
+  void loadCapabilities()
 
   return { capabilities }
 }

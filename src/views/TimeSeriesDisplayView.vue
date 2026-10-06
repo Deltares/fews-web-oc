@@ -67,20 +67,18 @@ function recursiveUpdateNode(nodes: TopologyNode[]) {
       }
       if (node.topologyNodes) {
         result.children = recursiveUpdateNode(node.topologyNodes)
+      } else if (
+        node.url !== undefined &&
+        node.mainPanel !== TIME_SERIES_DIALOG_PANEL
+      ) {
+        result.href = node.url
+        result.target = node.url
       } else {
-        if (
-          node.url !== undefined &&
-          node.mainPanel !== TIME_SERIES_DIALOG_PANEL
-        ) {
-          result.href = node.url
-          result.target = node.url
-        } else {
-          result.to = {
-            name: 'TimeSeriesDisplay',
-            params: {
-              nodeId: node.id,
-            },
-          }
+        result.to = {
+          name: 'TimeSeriesDisplay',
+          params: {
+            nodeId: node.id,
+          },
         }
       }
       return result

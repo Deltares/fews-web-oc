@@ -13,7 +13,7 @@ import { ColourScale } from '@/stores/colourScales'
 interface Props {
   values: TimeSeriesData[]
   colourScale: ColourScale | null
-  height: string
+  height?: string
 }
 const props = withDefaults(defineProps<Props>(), { height: '5px' })
 

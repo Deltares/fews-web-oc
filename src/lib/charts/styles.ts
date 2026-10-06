@@ -61,7 +61,7 @@ export function cssStyleFromFewsLine(item: {
   const re =
     /(?<lineStyle>none|solid|dashed|dashdot|dotted)(;(?<lineWidth>thick))?/
   if (item.lineStyle !== undefined) {
-    const matches = item.lineStyle.match(re)
+    const matches = re.exec(item.lineStyle)
     if (matches?.groups?.lineStyle !== undefined) {
       style = {
         ...style,
@@ -104,7 +104,7 @@ export function cssStyleFromFewsArea(item: {
   const re =
     /(?<lineStyle>none|solid|dashed|dashdot|dotted)(;(?<lineWidth>thick))?/
   if (item.lineStyle !== undefined) {
-    const matches = item.lineStyle.match(re)
+    const matches = re.exec(item.lineStyle)
     if (matches?.groups?.lineWidth !== undefined) {
       style = {
         ...style,
@@ -174,14 +174,7 @@ function cssStyleFromFewsLineStyle(lineStyle: string): SvgPropertiesHyphen {
  */
 function cssStyleFromFewsLineWidth(lineWidth: string): SvgPropertiesHyphen {
   const style: SvgPropertiesHyphen = {}
-  switch (lineWidth) {
-    case 'thick':
-      style['stroke-width'] = '2px'
-      break
-    default:
-      style['stroke-width'] = '1px'
-      break
-  }
+  style['stroke-width'] = lineWidth === 'thick' ? '2px' : '1px'
   return style
 }
 

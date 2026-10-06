@@ -484,18 +484,15 @@ export function convertPropertiesToFewsPi(
   const converted: Record<string, string | number> = {}
   for (const [key, property] of Object.entries(properties)) {
     const prop = templateProperties?.find((p) => p.id === key)
-    switch (prop?.type) {
-      case 'dateTime': {
-        const convertedValue = convertJSDateToFewsPiParameter(
-          new Date(properties[key]),
-        )
-        if (convertedValue != null) {
-          converted[key] = convertedValue
-        }
-        break
+    if (prop?.type === 'dateTime') {
+      const convertedValue = convertJSDateToFewsPiParameter(
+        new Date(properties[key]),
+      )
+      if (convertedValue != null) {
+        converted[key] = convertedValue
       }
-      default:
-        converted[key] = property
+    } else {
+      converted[key] = property
     }
   }
   return converted

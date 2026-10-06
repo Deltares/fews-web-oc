@@ -54,7 +54,7 @@ export function useTaskRunStatus(
       immediateCallback: true,
     })
   } else {
-    loadTaskRunStatus()
+    void loadTaskRunStatus()
   }
 
   watch(() => toValue(filter), loadTaskRunStatus)

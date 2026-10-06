@@ -3,7 +3,7 @@ function normalizeBase(str: string): string {
 }
 
 function getTrailingDigitCount(str: string): number {
-  return str.match(/\d*$/)?.[0].length ?? 0
+  return /\d*$/.exec(str)?.[0].length ?? 0
 }
 
 /**

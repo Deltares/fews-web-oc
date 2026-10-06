@@ -39,6 +39,8 @@
           type="button"
           class="body-1 elevation-slider__edit-button"
           @click="activateEdit"
+          @keydown.enter.prevent="activateEdit"
+          @keydown.space.prevent="activateEdit"
         >
           {{ Math.round(currentValue) }}
         </button>
@@ -56,10 +58,10 @@ import { scaleLinear } from 'd3-scale'
 import { clamp, floatPrecision } from '@/lib/utils/math'
 
 interface Props {
-  modelValue: number
-  minValue: number
-  maxValue: number
-  unit: string
+  modelValue?: number
+  minValue?: number
+  maxValue?: number
+  unit?: string
   ticks?: number[]
 }
 

@@ -50,7 +50,7 @@ interface Props {
   layerOptions: AnimatedRasterLayerOptions
   streamlineOptions?: StreamlineLayerOptionsFews
   layerId: string
-  enableDoubleClick: boolean
+  enableDoubleClick?: boolean
 }
 const props = withDefaults(defineProps<Props>(), {
   enableDoubleClick: false,

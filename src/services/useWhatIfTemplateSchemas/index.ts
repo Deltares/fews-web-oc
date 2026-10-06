@@ -6,6 +6,19 @@ import { MaybeRefOrGetter, toValue } from 'vue'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { generateJsonSchema } from '@/lib/whatif'
 
+async function getFile(file: string): Promise<Response> {
+  const url = getResourcesStaticUrl(file)
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${url}`)
+    }
+    return response
+  } catch (error) {
+    throw new Error(`Failed to fetch ${url}`)
+  }
+}
+
 export function useWhatIfTemplateSchemas(
   whatIfTemplate: MaybeRefOrGetter<WhatIfTemplate | undefined>,
 ) {
@@ -39,19 +52,6 @@ export function useWhatIfTemplateSchemas(
       return schema.json()
     } catch (error) {
       return undefined
-    }
-  }
-
-  async function getFile(file: string) {
-    const url = getResourcesStaticUrl(file)
-    try {
-      const response = await fetch(url)
-      if (!response.ok) {
-        throw new Error(`Failed to fetch ${url}`)
-      }
-      return response
-    } catch (error) {
-      throw new Error(`Failed to fetch ${url}`)
     }
   }
 

@@ -2,6 +2,7 @@ import { effectScope, nextTick, ref } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import type { ChartSeries } from '@/lib/charts/types/ChartSeries'
+import { dataFromResources } from '@/lib/charts/dataFromResources'
 import type { Series } from '@/lib/timeseries/timeSeries'
 
 vi.mock('@deltares/fews-web-oc-charts', () => {
@@ -115,6 +116,32 @@ describe('timeSeriesChart helpers', () => {
       x: { autoScale: true },
       y: { autoScale: true },
     })
+  })
+
+  it('aligns multiple resources by date in the requested resource order', () => {
+    const start = new Date('2026-01-01T00:00:00Z')
+    const middle = new Date('2026-01-02T00:00:00Z')
+    const end = new Date('2026-01-03T00:00:00Z')
+    const series = {
+      'resource-a': {
+        data: [
+          { x: start, y: 10, flag: 'A' },
+          { x: end, y: 30, flag: 'C' },
+        ],
+      } as Series,
+      'resource-b': {
+        data: [
+          { x: middle, y: 20, flag: 'B' },
+          { x: end, y: 40, flag: 'D' },
+        ],
+      } as Series,
+    }
+
+    expect(dataFromResources(['resource-b', 'resource-a'], series)).toEqual([
+      { x: start, y: [null, 10], flag: [undefined, 'A'] },
+      { x: middle, y: [20, null], flag: ['B', undefined] },
+      { x: end, y: [40, 30], flag: ['D', 'C'] },
+    ])
   })
 
   it('reconciles a missing chart when its data resource updates', async () => {
