@@ -105,7 +105,7 @@
                       <v-btn
                         prepend-icon="mdi-content-save-outline"
                         @click="save(column.key as string)"
-                        :disabled="newTableData.length === 0"
+                        :disabled="!canSaveTimeSeries(column.key as string)"
                         color="primary"
                         variant="flat"
                         size="small"
@@ -306,7 +306,11 @@
             <span v-if="selectedRowDates.size > 0">
               <kbd>Esc</kbd>: deselect rows
             </span>
-            <span>
+            <span
+              v-if="
+                focusedEditField && canSaveTimeSeries(focusedEditField.seriesId)
+              "
+            >
               <kbd>{{ isMac ? '⌘' : 'Ctrl' }}</kbd
               >+<kbd>Enter</kbd>: save column
             </span>
@@ -422,6 +426,41 @@ const loadedDateRange = computed(() => {
   return { start: firstRow.date, end: lastRow.date }
 })
 const newTableData = ref<TableData[]>([])
+const changedSeriesIds = computed(() => {
+  const changedIds = new Set<string>()
+  const originalRows = new Map(
+    tableData.value.map((row) => [row.date.getTime(), row]),
+  )
+  for (const row of newTableData.value) {
+    const originalRow = originalRows.get(row.date.getTime())
+    for (const seriesId of editedSeriesIds.value) {
+      if (hasEditedSeriesChanges(row, originalRow, seriesId)) {
+        changedIds.add(seriesId)
+      }
+    }
+  }
+  return changedIds
+})
+
+function hasEditedSeriesChanges(
+  row: TableData,
+  originalRow: TableData | undefined,
+  seriesId: string,
+) {
+  const data = row[seriesId]
+  if (!data || data instanceof Date) return false
+  if (row.isNewRow) return data.y !== null && data.y !== undefined
+  const originalData = originalRow?.[seriesId]
+  if (originalData instanceof Date) return false
+  const fields: TableSeriesField[] = ['y', 'flagEdit', 'comment']
+  return fields.some(
+    (field) =>
+      field in data &&
+      (field === 'comment'
+        ? (data.comment ?? '') !== (originalData?.comment ?? '')
+        : data[field] !== originalData?.[field]),
+  )
+}
 const tableHeaders = ref<TableHeaders[]>([])
 const tableContainer = ref<HTMLElement | null>(null)
 const tableScrollElement = ref<HTMLElement | null>(null)
@@ -740,10 +779,18 @@ function deselectEditRows(event: KeyboardEvent) {
   clearSelected()
 }
 
+function canSaveTimeSeries(seriesId: string) {
+  return isEditingTimeSeries(seriesId) && changedSeriesIds.value.has(seriesId)
+}
+
 function save(seriesId: string) {
+  if (!canSaveTimeSeries(seriesId)) return
   const newModifiedData = newTableData.value.filter((item) => {
     const data = item[seriesId] as Partial<TableSeriesData>
-    return !(item.isNewRow && (data.y === null || data.y === undefined))
+    return (
+      data !== undefined &&
+      !(item.isNewRow && (data.y === null || data.y === undefined))
+    )
   })
   const newTimeSeriesData = tableDataToTimeSeries(newModifiedData, [seriesId])
   emit('change', newTimeSeriesData)
@@ -958,13 +1005,7 @@ function saveEditColumnWithKeyboard(event: KeyboardEvent) {
   event.preventDefault()
   event.stopPropagation()
   const seriesId = (event.target as HTMLElement).dataset.editSeriesId
-  if (
-    seriesId &&
-    isEditingTimeSeries(seriesId) &&
-    newTableData.value.length > 0
-  ) {
-    save(seriesId)
-  }
+  if (seriesId) save(seriesId)
 }
 
 async function selectEditRowWithKeyboard(

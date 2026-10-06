@@ -202,15 +202,8 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await expect(statusActivity).not.toContainText('Shift+Tab')
     await expect(statusActivity).not.toContainText('select row')
     const saveModifier = await getSaveModifier(component)
-    await expect(statusActivity).toContainText(
-      `${saveModifier}+Enter: save column`,
-    )
-    await expect(statusActivity.locator('kbd')).toHaveText([
-      'Tab',
-      'Enter',
-      saveModifier,
-      'Enter',
-    ])
+    await expect(statusActivity).not.toContainText('save column')
+    await expect(statusActivity.locator('kbd')).toHaveText(['Tab', 'Enter'])
     const firstKey = statusActivity.locator('kbd').first()
     await expect(firstKey).toHaveCSS('height', '20px')
     await expect(firstKey).toHaveCSS('font-size', '11px')
@@ -240,6 +233,9 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     ).not.toContainText('Save')
 
     await component.getByPlaceholder('value').fill('18.5')
+    await expect(statusActivity).toContainText(
+      `${saveModifier}+Enter: save column`,
+    )
     await component.getByRole('button', { name: 'Save' }).click()
 
     await expect(component.getByTestId('saved-data')).toContainText(
@@ -270,6 +266,10 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
         .getByRole('button')
         .click()
       await expect(
+        component.getByTestId('table-status-activity'),
+      ).not.toContainText('save column')
+      await component.getByPlaceholder('value').fill('18.5')
+      await expect(
         component.getByTestId('table-status-activity').locator('kbd'),
       ).toHaveText(['Tab', 'Enter', modifier, 'Enter'])
     })
@@ -283,17 +283,11 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       .getByRole('columnheader')
       .filter({ hasText: 'Editable series 1' })
     const hints = component.getByTestId('table-status-activity')
-    const saveModifier = await getSaveModifier(component)
     await expect(hints.locator('kbd')).toHaveCount(0)
     await header.getByRole('button').click()
     await expect(hints).toContainText('Tab / Enter: move fields')
-    await expect(hints).toContainText(`${saveModifier}+Enter: save column`)
-    await expect(hints.locator('kbd')).toHaveText([
-      'Tab',
-      'Enter',
-      saveModifier,
-      'Enter',
-    ])
+    await expect(hints).not.toContainText('save column')
+    await expect(hints.locator('kbd')).toHaveText(['Tab', 'Enter'])
 
     const rows = component.locator('tbody tr[data-row-date]')
     await rows.nth(1).locator('td.table-date').click()
@@ -306,8 +300,6 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       'Up',
       'Down',
       'Esc',
-      saveModifier,
-      'Enter',
     ])
 
     await rows
@@ -321,12 +313,7 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await expect(hints).toContainText('extend selection')
     await rows.nth(1).locator('td.table-date').click()
     await expect(hints).toContainText('Tab / Enter: move fields')
-    await expect(hints.locator('kbd')).toHaveText([
-      'Tab',
-      'Enter',
-      saveModifier,
-      'Enter',
-    ])
+    await expect(hints.locator('kbd')).toHaveText(['Tab', 'Enter'])
     await header.getByRole('button', { name: 'Cancel', exact: true }).click()
     await expect(hints.locator('kbd')).toHaveCount(0)
   })
@@ -682,14 +669,35 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       const hints = component.getByTestId('table-status-activity')
       const saveModifier = await getSaveModifier(component)
       await firstValue.focus()
-      await expect(hints).toContainText(`${saveModifier}+Enter: save column`)
+      await expect(hints).not.toContainText('save column')
       await firstValue.press(`${modifier}+Enter`)
       await expect(firstValue).toBeFocused()
       await expect(
         firstHeader.getByRole('button', { name: 'Save', exact: true }),
       ).toBeDisabled()
 
+      const originalValue = await firstValue.inputValue()
       await firstValue.fill('777')
+      await expect(
+        firstHeader.getByRole('button', { name: 'Save', exact: true }),
+      ).toBeEnabled()
+      await expect(
+        secondHeader.getByRole('button', { name: 'Save', exact: true }),
+      ).toBeDisabled()
+      await expect(hints).toContainText(`${saveModifier}+Enter: save column`)
+      await firstValue.fill(originalValue)
+      await expect(
+        firstHeader.getByRole('button', { name: 'Save', exact: true }),
+      ).toBeDisabled()
+      await expect(hints).not.toContainText('save column')
+      await firstValue.fill('777')
+      await secondValue.focus()
+      await expect(hints).not.toContainText('save column')
+      await secondValue.press(`${modifier}+Enter`)
+      await expect(firstRow.getByPlaceholder('value')).toHaveCount(2)
+      await expect(
+        secondHeader.getByRole('button', { name: 'Save', exact: true }),
+      ).toBeDisabled()
       await secondValue.fill('888')
       await firstValue.focus()
       await expect(hints).toContainText(`${saveModifier}+Enter: save column`)
@@ -708,6 +716,57 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       await expect(hints).not.toContainText('save column')
     })
   }
+
+  test('Save and its hint follow actual value, comment, and flag changes', async ({
+    mount,
+  }) => {
+    for (const [fieldName, changedValue] of [
+      ['y', '777'],
+      ['comment', 'Edited comment'],
+      ['flagEdit', 'Unreliable'],
+    ]) {
+      const component = await mount(
+        fieldName === 'flagEdit'
+          ? 'table/TimeSeriesTable/Benchmark200Rows'
+          : 'table/TimeSeriesTable/EditableCell',
+      )
+      const title =
+        fieldName === 'flagEdit' ? 'Editable series 1' : 'Editable series'
+      const header = component
+        .getByRole('columnheader')
+        .filter({ hasText: title })
+      await header.getByRole('button').click()
+      const saveButton = header.getByRole('button', {
+        name: 'Save',
+        exact: true,
+      })
+      const hints = component.getByTestId('table-status-activity')
+      const field = component
+        .locator(`[data-edit-field="${fieldName}"]`)
+        .first()
+      const originalValue = await field.inputValue()
+      await field.focus()
+      await expect(saveButton).toBeDisabled()
+      if (fieldName === 'flagEdit') {
+        await field.selectOption(changedValue)
+      } else {
+        await field.fill(changedValue)
+      }
+      await expect(saveButton).toBeEnabled()
+      await expect(hints).toContainText('save column')
+      await field.blur()
+      await expect(hints).not.toContainText('save column')
+      await field.focus()
+      await expect(hints).toContainText('save column')
+      if (fieldName === 'flagEdit') {
+        await field.selectOption(originalValue)
+      } else {
+        await field.fill(originalValue)
+      }
+      await expect(saveButton).toBeDisabled()
+      await expect(hints).not.toContainText('save column')
+    }
+  })
 
   test('saving shortcut emits the focused column data', async ({ mount }) => {
     const component = await mount('table/TimeSeriesTable/EditableCell')
