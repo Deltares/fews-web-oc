@@ -232,7 +232,7 @@ export function toDateAbsDifferenceString(
     .slice(0, 2)
     .join(' ')
 
-  const result = differenceString ? differenceString : '0s'
+  const result = differenceString || '0s'
 
   if (options?.relativeFormat) {
     return endDateObj.getTime() - startDateObj.getTime() < 0
