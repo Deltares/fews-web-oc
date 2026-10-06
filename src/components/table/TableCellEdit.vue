@@ -8,7 +8,7 @@
       type="text"
       inputmode="decimal"
       placeholder="value"
-      @change="editItem"
+      @input="editItem"
     />
     <select
       :ref="`${props.item.date}-${props.id}-flagquality`"
@@ -30,7 +30,7 @@
       class="table-cell-edit"
       type="text"
       placeholder="comment"
-      @change="editItem"
+      @input="editItem"
     />
   </div>
 </template>

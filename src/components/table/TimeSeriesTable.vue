@@ -1,18 +1,17 @@
 <template>
-  <div class="table-container">
+  <div ref="tableContainer" class="table-container">
     <v-tooltip v-model="tooltip" :activator="activator" :key="activator">
       <TableTooltip v-bind="tooltipItem">/</TableTooltip>
     </v-tooltip>
-    <v-data-table
+    <v-data-table-virtual
       class="data-table"
       :headers="tableHeaders"
       :items="tableData"
       :expanded="editedSeriesIds"
-      :items-per-page-options="itemsPerPageOptions"
-      :loading="isWaitingForTableUpdate"
+      :loading="isWaitingForTableUpdate || isLoadingMore"
       v-model:sortBy="sortBy"
-      items-per-page="200"
       item-value="date"
+      :item-height="virtualItemHeight"
       density="compact"
       no-filter
       fixed-header
@@ -180,12 +179,22 @@
           </td>
         </tr>
       </template>
-    </v-data-table>
+    </v-data-table-virtual>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeMount, provide, ref, shallowRef, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onBeforeMount,
+  onMounted,
+  onUnmounted,
+  provide,
+  ref,
+  shallowRef,
+  watch,
+} from 'vue'
 import { useTheme } from 'vuetify'
 import { watchDebounced } from '@vueuse/core'
 import TableTooltip from './TableTooltip.vue'
@@ -205,7 +214,10 @@ import { useFewsPropertiesStore } from '@/stores/fewsProperties'
 import { useConfigStore } from '@/stores/config'
 import TableCellEdit from '@/components/table/TableCellEdit.vue'
 import TableCell from '@/components/table/TableCell.vue'
-import { createFlagColorResolver, flagColorResolverKey } from './flagColorResolver'
+import {
+  createFlagColorResolver,
+  flagColorResolverKey,
+} from './flagColorResolver'
 import {
   getDateWithMinutesOffset,
   getMidpointOfDates,
@@ -219,19 +231,12 @@ interface Props {
   series: Record<string, Series>
   settings: ChartsSettings['timeSeriesTable']
   isLoading: boolean
+  isLoadingMore?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { isLoadingMore: false })
 
-const itemsPerPageOptions = [
-  { value: 200, title: '200' },
-  { value: 500, title: '500' },
-  { value: 1000, title: '1000' },
-  { value: 2000, title: '2000' },
-  { value: -1, title: '$vuetify.dataFooter.itemsPerPageAll' },
-]
-
-const emit = defineEmits(['change', 'update:isEditing'])
+const emit = defineEmits(['change', 'update:isEditing', 'load-more-data'])
 
 const store = useFewsPropertiesStore()
 const configStore = useConfigStore()
@@ -258,6 +263,11 @@ const selected = ref<TableData>()
 const tableData = ref<TableData[]>([])
 const newTableData = ref<TableData[]>([])
 const tableHeaders = ref<TableHeaders[]>([])
+const tableContainer = ref<HTMLElement | null>(null)
+const tableScrollElement = ref<HTMLElement | null>(null)
+const virtualItemHeight = 36
+const paginationThreshold = 100
+let hasPendingTopLoad = false
 
 const isEditing = ref<boolean>(false)
 const editedSeriesIds = ref<string[]>([])
@@ -312,6 +322,7 @@ onBeforeMount(() => {
         seriesIds.value,
       )
     }
+    isWaitingForTableUpdate.value = props.isLoading
   })
   store.loadFlagSources()
 })
@@ -348,17 +359,47 @@ watchDebounced(
   // series for changes, which is rather inefficient. Instead, we watch an array
   // of last updated dates.
   () => Object.values(props.series).map((series) => series.lastUpdated),
-  () => {
+  async () => {
     if (props.series === undefined || isEditing.value) return
-    tableData.value = createTableData(
+    const previousRowCount = tableData.value.length
+    const updatedTableData = createTableData(
       props.config.series,
       props.series,
       seriesIds.value,
     )
+    tableData.value = updatedTableData
+    if (hasPendingTopLoad) {
+      hasPendingTopLoad = false
+      const addedRowCount = Math.max(
+        updatedTableData.length - previousRowCount,
+        0,
+      )
+      if (addedRowCount > 0) {
+        await nextTick()
+        if (tableScrollElement.value) {
+          tableScrollElement.value.scrollTop +=
+            addedRowCount * virtualItemHeight
+        }
+      }
+    }
     isWaitingForTableUpdate.value = props.isLoading
   },
   { debounce: 500, maxWait: 1000 },
 )
+
+onMounted(async () => {
+  await nextTick()
+  tableScrollElement.value =
+    tableContainer.value?.querySelector<HTMLElement>('.v-table__wrapper') ??
+    null
+  tableScrollElement.value?.addEventListener('scroll', handleTableScroll, {
+    passive: true,
+  })
+})
+
+onUnmounted(() => {
+  tableScrollElement.value?.removeEventListener('scroll', handleTableScroll)
+})
 
 const showTooltip = (event: MouseEvent, item: any) => {
   if (!item.tooltip) return
@@ -415,7 +456,15 @@ function editTimeSeries(seriesId: string) {
   if (seriesId !== null) editedSeriesIds.value.push(seriesId)
 }
 
-const seriesDateIndex = computed(() => createSeriesDateIndex(props.series))
+const seriesDateIndex = computed(() => {
+  const seriesById = Object.fromEntries(
+    props.config.series.map((chartSeries) => [
+      chartSeries.id,
+      props.series[chartSeries.dataResources[0]] ?? { data: [] },
+    ]),
+  )
+  return createSeriesDateIndex(seriesById)
+})
 
 function canEditItem(item: TableData, seriesId: string) {
   if (!editedSeriesIds.value.includes(seriesId)) return false
@@ -553,6 +602,35 @@ function onUpdateItem(event: TableData) {
   } else {
     newTableData.value.push(event)
   }
+}
+
+function handleTableScroll() {
+  const element = tableScrollElement.value
+  if (
+    !element ||
+    isEditing.value ||
+    props.isLoading ||
+    props.isLoadingMore ||
+    isWaitingForTableUpdate.value
+  ) {
+    return
+  }
+
+  const maxScrollTop = element.scrollHeight - element.clientHeight
+  if (maxScrollTop <= 0) return
+
+  const nearTop = element.scrollTop < paginationThreshold
+  const nearBottom = maxScrollTop - element.scrollTop < paginationThreshold
+  if (!nearTop && !nearBottom) return
+
+  const isAtTop =
+    nearTop && (!nearBottom || element.scrollTop <= maxScrollTop / 2)
+  const dateSortOrder = sortBy.value.find((item) => item.key === 'date')?.order
+  const direction: 'before' | 'after' =
+    isAtTop === (dateSortOrder === 'asc') ? 'before' : 'after'
+
+  if (isAtTop) hasPendingTopLoad = true
+  emit('load-more-data', direction)
 }
 </script>
 

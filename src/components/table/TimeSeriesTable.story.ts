@@ -106,6 +106,7 @@ function createBenchmarkStory(rowCount: number) {
         },
       ]
       fewsPropertiesStore.flagSources = [{ id: 'CORRECTED', name: 'Corrected' }]
+      const loadMoreDirection = ref('')
 
       const dates = Array.from(
         { length: rowCount },
@@ -162,7 +163,15 @@ function createBenchmarkStory(rowCount: number) {
               series: benchmarkSeries,
               settings: defaultChartSettings.timeSeriesTable,
               isLoading: false,
+              onLoadMoreData: (direction: string) => {
+                loadMoreDirection.value = direction
+              },
             }),
+            h(
+              'output',
+              { 'data-testid': 'load-more-direction' },
+              loadMoreDirection.value,
+            ),
           ],
         )
     },

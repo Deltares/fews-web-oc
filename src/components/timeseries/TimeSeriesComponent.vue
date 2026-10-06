@@ -74,9 +74,11 @@
         :key="tableConfig.title"
         :settings="settings.timeSeriesTable"
         :is-loading="isLoadingTableSeries"
+        :is-loading-more="isLoadingMoreTableSeries"
         class="single"
         @change="(event) => onDataChange(event)"
         @update:isEditing="isEditing = $event"
+        @load-more-data="loadMoreTableSeries"
       >
       </TimeSeriesTable>
     </v-window-item>
@@ -116,6 +118,7 @@ import {
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import {
   postTimeSeriesEdit,
+  usePaginatedTimeSeries,
   useTimeSeries,
 } from '../../services/useTimeSeries/index.ts'
 import type { PiTimeSeriesQueryOptions } from '@deltares/fews-web-oc-composables'
@@ -294,10 +297,12 @@ const {
   series: tableSeries,
   loading: isTableLoading,
   refreshing: isTableRefreshing,
+  isLoadingMore: isLoadingMoreTableSeries,
+  loadMore: loadMoreTableSeries,
   requestRefresh: refreshTableTimeSeries,
   pauseRefresh: pauseTableRefresh,
   resumeRefresh: resumeTableRefresh,
-} = useTimeSeries(
+} = usePaginatedTimeSeries(
   () => props.config.requests,
   tableOptions,
   () => tab.value === DisplayType.TimeSeriesTable,

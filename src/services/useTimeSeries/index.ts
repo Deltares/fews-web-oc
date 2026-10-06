@@ -8,8 +8,8 @@ import {
   type DomainAxisValue,
   type DomainAxisEventValuesStringArray,
 } from '@deltares/fews-pi-requests'
-import { computed, toValue } from 'vue'
-import type { ComputedRef, MaybeRefOrGetter } from 'vue'
+import { computed, ref, toValue, watch } from 'vue'
+import type { ComputedRef, MaybeRefOrGetter, Ref } from 'vue'
 import {
   usePiTimeSeries,
   type PiTimeSeriesQueryOptions,
@@ -119,6 +119,162 @@ export function useTimeSeries(
     pauseRefresh,
     resumeRefresh,
   }
+}
+
+export interface UsePaginatedTimeSeriesReturn extends UseTimeSeriesReturn {
+  beforeStartTimeCount: Readonly<Ref<number>>
+  afterEndTimeCount: Readonly<Ref<number>>
+  isLoadingMore: Readonly<Ref<boolean>>
+  loadMore: (direction: 'before' | 'after') => void
+}
+
+export function usePaginatedTimeSeries(
+  requests: MaybeRefOrGetter<ActionRequest[]>,
+  options: MaybeRefOrGetter<PiTimeSeriesQueryOptions>,
+  fetchingEnabled?: MaybeRefOrGetter<boolean>,
+  selectedTime?: MaybeRefOrGetter<Date | undefined>,
+  refresh?: UsePiTimeSeriesOptions['refresh'],
+  pageSize = 20,
+): UsePaginatedTimeSeriesReturn {
+  const enabled = computed(
+    () => fetchingEnabled === undefined || toValue(fetchingEnabled),
+  )
+  const requestEntries = computed(() => {
+    const usedKeys = new Set<string>()
+
+    return toValue(requests).map((request, index) => {
+      const baseKey = request.key ?? `request-${index}`
+      let key = baseKey
+      let suffix = 1
+      while (usedKeys.has(key)) {
+        key = `${baseKey}#${suffix}`
+        suffix += 1
+      }
+      usedKeys.add(key)
+
+      return { key, request }
+    })
+  })
+  const beforeStartTimeCount = ref(0)
+  const afterEndTimeCount = ref(0)
+  const isLoadingMore = ref(false)
+  const piRequests = computed(() =>
+    requestEntries.value.map(({ key, request }) => ({
+      key,
+      relativeUrl: withPaginationCounts(
+        request.request,
+        beforeStartTimeCount.value,
+        afterEndTimeCount.value,
+      ),
+    })),
+  )
+  const {
+    responses,
+    loading,
+    refreshing,
+    loadingKeys,
+    requestRefresh,
+    pauseRefresh,
+    resumeRefresh,
+  } = usePiTimeSeries({
+    requests: piRequests,
+    query: options,
+    enabled,
+    refresh,
+  })
+  const series = computed(() => {
+    const result: Record<string, Series> = {}
+    const currentSelectedTime = toValue(selectedTime)
+
+    requestEntries.value.forEach(({ key, request }) => {
+      const response = responses.value[key]
+      if (!response?.timeSeries) return
+
+      const isGridTimeSeries = request.request.includes('/timeseries/grid?')
+      response.timeSeries.forEach((timeSeries, index) => {
+        const resourceId = isGridTimeSeries ? `${key}[${index}]` : key
+        const convertedSeries = convertTimeSeriesResultToSeries(
+          timeSeries,
+          response,
+          resourceId,
+          currentSelectedTime,
+        )
+        if (convertedSeries !== undefined) result[resourceId] = convertedSeries
+      })
+    })
+
+    return result
+  })
+
+  watch([loading, refreshing], ([isLoading, isRefreshing]) => {
+    if (!isLoading && !isRefreshing) isLoadingMore.value = false
+  })
+
+  function loadMore(direction: 'before' | 'after') {
+    if (
+      !enabled.value ||
+      requestEntries.value.length === 0 ||
+      loading.value ||
+      refreshing.value ||
+      isLoadingMore.value
+    ) {
+      return
+    }
+
+    isLoadingMore.value = true
+    if (direction === 'before') {
+      beforeStartTimeCount.value += pageSize
+    } else {
+      afterEndTimeCount.value += pageSize
+    }
+  }
+
+  return {
+    series,
+    loading,
+    refreshing,
+    loadingKeys,
+    requestRefresh,
+    pauseRefresh,
+    resumeRefresh,
+    beforeStartTimeCount,
+    afterEndTimeCount,
+    isLoadingMore,
+    loadMore,
+  }
+}
+
+function withPaginationCounts(
+  request: string,
+  beforeStartTimeCount: number,
+  afterEndTimeCount: number,
+): string {
+  const hashIndex = request.indexOf('#')
+  const hash = hashIndex === -1 ? '' : request.slice(hashIndex)
+  const requestWithoutHash =
+    hashIndex === -1 ? request : request.slice(0, hashIndex)
+  const queryIndex = requestWithoutHash.indexOf('?')
+  const path =
+    queryIndex === -1
+      ? requestWithoutHash
+      : requestWithoutHash.slice(0, queryIndex)
+  const query = new URLSearchParams(
+    queryIndex === -1 ? '' : requestWithoutHash.slice(queryIndex + 1),
+  )
+
+  if (beforeStartTimeCount > 0) {
+    query.set('beforeStartTimeCount', String(beforeStartTimeCount))
+  } else {
+    query.delete('beforeStartTimeCount')
+  }
+  if (afterEndTimeCount > 0) {
+    query.set('afterEndTimeCount', String(afterEndTimeCount))
+  } else {
+    query.delete('afterEndTimeCount')
+  }
+
+  const search = query.toString()
+  return path + (search ? `?${search}` : '') + hash
 }
 
 export async function fetchTimeSeriesHeaders(

@@ -72,6 +72,7 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     mount,
   }) => {
     const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    const visibleRows = component.locator('tbody tr:has(td:not([colspan]))')
     const readOnlyCell = component.locator('.table-cell-with-flag').first()
     const originalCell = await readOnlyCell.elementHandle()
     const originalValue = await readOnlyCell.locator('.value').textContent()
@@ -80,9 +81,14 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       .filter({ hasText: 'Editable series 1' })
 
     await header.getByRole('button').click()
-    await expect(component.getByPlaceholder('value')).toHaveCount(200)
+    await expect(component.getByPlaceholder('value')).toHaveCount(
+      await visibleRows.count(),
+    )
+    expect(await visibleRows.count()).toBeLessThan(200)
     await expect(readOnlyCell).toBeHidden()
-    expect(await originalCell!.evaluate((element) => element.isConnected)).toBe(true)
+    expect(await originalCell!.evaluate((element) => element.isConnected)).toBe(
+      true,
+    )
 
     await component.getByPlaceholder('value').first().fill('999.5')
     await component.getByPlaceholder('value').first().blur()
@@ -91,11 +97,40 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await expect(component.getByPlaceholder('value')).toHaveCount(0)
     await expect(readOnlyCell).toBeVisible()
     await expect(readOnlyCell.locator('.value')).toHaveText(originalValue!)
-    expect(await originalCell!.evaluate((element) => element.isConnected)).toBe(true)
+    expect(await originalCell!.evaluate((element) => element.isConnected)).toBe(
+      true,
+    )
 
     await header.getByRole('button').click()
     await expect(component.getByPlaceholder('value').first()).toHaveValue(
       originalValue!.trim(),
+    )
+  })
+
+  test('requests more rows at each virtual table boundary', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    const scrollContainer = component.locator('.v-table__wrapper')
+
+    await expect
+      .poll(() => component.locator('tbody tr:has(td:not([colspan]))').count())
+      .toBeGreaterThan(0)
+
+    await scrollContainer.evaluate((element: HTMLElement) => {
+      element.scrollTop = element.scrollHeight
+      element.dispatchEvent(new Event('scroll'))
+    })
+    await expect(component.getByTestId('load-more-direction')).toHaveText(
+      'before',
+    )
+
+    await scrollContainer.evaluate((element: HTMLElement) => {
+      element.scrollTop = 0
+      element.dispatchEvent(new Event('scroll'))
+    })
+    await expect(component.getByTestId('load-more-direction')).toHaveText(
+      'after',
     )
   })
 
@@ -109,14 +144,9 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
         `table/TimeSeriesTable/Benchmark${rowCount}Rows`,
       )
 
-      if (rowCount !== 200) {
-        await component.locator('.v-data-table-footer .v-select').click()
-        await page
-          .getByRole('option', { name: String(rowCount), exact: true })
-          .click()
-      }
-
-      await expect(component.locator('tbody tr')).toHaveCount(rowCount)
+      const visibleRows = component.locator('tbody tr:has(td:not([colspan]))')
+      await expect.poll(() => visibleRows.count()).toBeGreaterThan(0)
+      expect(await visibleRows.count()).toBeLessThan(rowCount)
       await expect(component.getByPlaceholder('value')).toHaveCount(0)
 
       for (let column = 1; column <= 5; column++) {
@@ -125,12 +155,15 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
           .filter({ hasText: `Editable series ${column}` })
           .getByRole('button')
           .click()
-        await expect(component.getByPlaceholder('value')).toHaveCount(
+        await expect
+          .poll(() => component.getByPlaceholder('value').count())
+          .toBeGreaterThan(0)
+        expect(await component.getByPlaceholder('value').count()).toBeLessThan(
           rowCount * column,
         )
       }
 
-      await expect(component.getByPlaceholder('comment')).toHaveCount(
+      expect(await component.getByPlaceholder('comment').count()).toBeLessThan(
         rowCount * 5,
       )
     })
