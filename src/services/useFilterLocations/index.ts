@@ -56,8 +56,8 @@ export function useFilterLocations(
         toValue(filterOptions),
       )
       locations.value = convertGeoJsonToFewsPiLocation(geojson.value)
-    } catch (error) {
-      error = 'error-loading'
+    } catch {
+      error.value = 'error-loading'
     } finally {
       isLoading.value = false
       isReady.value = true

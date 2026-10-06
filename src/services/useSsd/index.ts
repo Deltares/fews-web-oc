@@ -57,8 +57,8 @@ export function useSsdCapabilities(
 
     try {
       capabilities.value = await ssdProvider.getCapabilities()
-    } catch (error) {
-      error = 'error-loading'
+    } catch {
+      error.value = 'error-loading'
     } finally {
       isLoading.value = false
       isReady.value = true
