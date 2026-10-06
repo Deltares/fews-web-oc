@@ -6,21 +6,37 @@
     </label>
     <input
       :id="valueInputId"
+      :data-edit-date="props.item.date.toISOString()"
+      :data-edit-series-id="props.id"
+      data-edit-field="y"
       v-model.number="currentItem.y"
       class="table-cell-edit table-cell-edit--value"
+      :class="{
+        'table-cell-edit--column-focused': props.focusedField === 'y',
+      }"
       type="text"
       inputmode="decimal"
       placeholder="value"
-      @input="editItem"
+      @input="editItem('y')"
+      @focus="emit('focus-field', 'y')"
+      @blur="emit('focus-field', undefined)"
     />
     <label class="table-cell-editable__label" :for="flagInputId">
       Flag quality for {{ props.id }} at {{ props.item.date.toISOString() }}
     </label>
     <select
       :id="flagInputId"
+      :data-edit-date="props.item.date.toISOString()"
+      :data-edit-series-id="props.id"
+      data-edit-field="flagEdit"
       class="table-cell-edit"
+      :class="{
+        'table-cell-edit--column-focused': props.focusedField === 'flagEdit',
+      }"
       v-model="currentItem.flagEdit"
-      @change="editItem"
+      @change="editItem('flagEdit')"
+      @focus="emit('focus-field', 'flagEdit')"
+      @blur="emit('focus-field', undefined)"
     >
       <option
         v-for="flagEdit in possibleFlagEdits"
@@ -35,18 +51,30 @@
     </label>
     <input
       :id="commentInputId"
+      :data-edit-date="props.item.date.toISOString()"
+      :data-edit-series-id="props.id"
+      data-edit-field="comment"
       v-model="currentItem.comment"
       class="table-cell-edit table-cell-edit--comment"
+      :class="{
+        'table-cell-edit--column-focused': props.focusedField === 'comment',
+      }"
       type="text"
       placeholder="comment"
-      @input="editItem"
+      @input="editItem('comment')"
+      @focus="emit('focus-field', 'comment')"
+      @blur="emit('focus-field', undefined)"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { TableData, TableSeriesData } from '@/lib/table/tableData'
-import { ref } from 'vue'
+import type {
+  TableData,
+  TableSeriesData,
+  TableSeriesField,
+} from '@/lib/table/tableData'
+import { ref, watch } from 'vue'
 
 // Required for TS to enforce the exact values of the flagEdit field
 const tempPossibleFlagEdits: Record<
@@ -64,11 +92,15 @@ const possibleFlagEdits = Object.keys(tempPossibleFlagEdits)
 interface Props {
   id: string
   item: TableData
+  focusedField?: TableSeriesField
 }
 
 const props = defineProps<Props>()
 
-const emit = defineEmits(['update:item'])
+const emit = defineEmits<{
+  'update:item': [item: TableData, field: TableSeriesField]
+  'focus-field': [field: TableSeriesField | undefined]
+}>()
 const safeSeriesId = props.id.replace(/[^a-zA-Z0-9_-]/g, '-')
 const inputIdPrefix = `table-cell-${props.item.date.getTime()}-${safeSeriesId}`
 const valueInputId = `${inputIdPrefix}-value`
@@ -79,12 +111,20 @@ const currentItem = ref<Partial<TableSeriesData>>({
   ...(props.item[props.id] as Partial<TableSeriesData>),
 })
 
-function editItem() {
+watch(
+  () => props.item[props.id],
+  (value) => {
+    currentItem.value =
+      value instanceof Date ? {} : { ...(value as Partial<TableSeriesData>) }
+  },
+)
+
+function editItem(field: TableSeriesField) {
   const updatedItem = {
     date: props.item.date,
     [props.id]: currentItem.value,
   }
-  emit('update:item', updatedItem)
+  emit('update:item', updatedItem, field)
 }
 </script>
 
@@ -148,6 +188,11 @@ function editItem() {
   border-color: rgb(var(--v-theme-primary));
   outline: 2px solid rgb(var(--v-theme-primary)) !important;
   outline-offset: 1px !important;
+}
+
+.table-cell-edit--column-focused {
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
 }
 
 input.table-cell-edit--value {

@@ -139,13 +139,17 @@
       </template>
       <template #item="{ item }">
         <tr
-          :class="{ highlighted: selected?.date === item.date }"
+          :class="{
+            highlighted:
+              isEditing && selectedRowDates.size > 0
+                ? selectedRowDates.has(item.date.getTime())
+                : selected?.date === item.date,
+            'row-selected': selectedRowDates.has(item.date.getTime()),
+            'row-selectable': isEditing,
+          }"
           :data-row-date="item.date.toISOString()"
-          :tabindex="isEditing ? 0 : undefined"
-          :aria-selected="selected?.date === item.date"
+          :aria-selected="isRowSelected(item)"
           @click="(e) => handleRowClick(e, item)"
-          @keydown.enter.prevent="handleRowClick($event, item)"
-          @keydown.space.prevent="handleRowClick($event, item)"
         >
           <td class="table-date sticky-column">
             <v-text-field
@@ -167,8 +171,15 @@
             <TableCellEdit
               v-if="isEditing && canEditItem(item, id)"
               :id="id"
-              :item="item"
-              @update:item="(event) => onUpdateItem(event)"
+              :item="getEditableItem(item)"
+              :focused-field="
+                selectedRowDates.has(item.date.getTime())
+                  ? focusedEditField
+                  : undefined
+              "
+              @update:item="(event, field) => onUpdateItem(event, field)"
+              @focus-field="focusedEditField = $event"
+              @keydown.tab="handleSelectedFieldTab($event, item, id)"
             />
             <!-- Table cell when not editing data. Shows additional info about flags. -->
             <TableCell
@@ -319,6 +330,7 @@ import {
   mergeTableData,
   tableDataToTimeSeries,
   type TableData,
+  type TableSeriesField,
   TableSeriesData,
 } from '@/lib/table/tableData'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
@@ -375,6 +387,9 @@ const tooltip = ref<boolean>(false)
 const tooltipItem = ref<any>({})
 const activator = ref<string>('')
 const selected = ref<TableData>()
+const selectedRowDates = ref<Set<number>>(new Set())
+const selectionAnchorDate = ref<number>()
+const focusedEditField = ref<TableSeriesField>()
 const tableData = ref<TableData[]>([])
 const loadedDateRange = computed(() => {
   const firstRow = tableData.value[0]
@@ -655,6 +670,16 @@ function stopEdit() {
   isEditing.value = false
   editedSeriesIds.value = []
   newTableData.value = []
+  selectedRowDates.value = new Set()
+  selectionAnchorDate.value = undefined
+  focusedEditField.value = undefined
+}
+
+function clearSelected() {
+  selected.value = undefined
+  selectedRowDates.value = new Set()
+  selectionAnchorDate.value = undefined
+  focusedEditField.value = undefined
 }
 
 function save(seriesId: string) {
@@ -756,22 +781,105 @@ function getNewRow(date: Date) {
 }
 
 const rowAdditionDisabled = computed(() => {
-  return selected.value === undefined && tableData.value.length > 0
+  return selectedRowDates.value.size === 0 && tableData.value.length > 0
 })
 
-function handleRowClick(e: any, item: any) {
-  const formElements = ['INPUT', 'SELECT', 'OPTION']
-  if (formElements.includes(e.target.tagName) || !isEditing.value) return
-
-  if (selected.value?.date === item.date) {
-    clearSelected()
-  } else {
-    selected.value = item
-  }
+function isRowSelected(item: TableData) {
+  return isEditing.value
+    ? selectedRowDates.value.has(item.date.getTime())
+    : selected.value?.date === item.date
 }
 
-function clearSelected() {
-  selected.value = undefined
+function handleRowClick(e: MouseEvent, item: TableData) {
+  if (!isEditing.value || !(e.target instanceof Element)) return
+  if (!e.target.closest('td.table-date')) return
+  if (e.target.closest('input, select, textarea, button')) return
+
+  const dateTime = item.date.getTime()
+  if (e.shiftKey && selectionAnchorDate.value !== undefined) {
+    selectRowRange(dateTime, e.ctrlKey || e.metaKey)
+  } else if (e.ctrlKey || e.metaKey) {
+    toggleRowSelection(dateTime)
+  } else if (
+    selectedRowDates.value.size === 1 &&
+    selectedRowDates.value.has(dateTime)
+  ) {
+    selectedRowDates.value = new Set()
+    selectionAnchorDate.value = undefined
+  } else {
+    selectedRowDates.value = new Set([dateTime])
+    selectionAnchorDate.value = dateTime
+  }
+
+  updateActiveSelectedRow()
+}
+
+function updateActiveSelectedRow() {
+  const activeDate = [...selectedRowDates.value].at(-1)
+  selected.value = tableData.value.find(
+    (row) => row.date.getTime() === activeDate,
+  )
+}
+
+function selectRowRange(dateTime: number, addToSelection: boolean) {
+  const anchorIndex = tableData.value.findIndex(
+    (row) => row.date.getTime() === selectionAnchorDate.value,
+  )
+  const targetIndex = tableData.value.findIndex(
+    (row) => row.date.getTime() === dateTime,
+  )
+  if (anchorIndex < 0 || targetIndex < 0) return
+
+  const nextSelection = addToSelection
+    ? new Set(selectedRowDates.value)
+    : new Set<number>()
+  const startIndex = Math.min(anchorIndex, targetIndex)
+  const endIndex = Math.max(anchorIndex, targetIndex)
+  for (const row of tableData.value.slice(startIndex, endIndex + 1)) {
+    nextSelection.add(row.date.getTime())
+  }
+  selectedRowDates.value = nextSelection
+}
+
+function toggleRowSelection(dateTime: number) {
+  const nextSelection = new Set(selectedRowDates.value)
+  if (nextSelection.has(dateTime)) {
+    nextSelection.delete(dateTime)
+  } else {
+    nextSelection.add(dateTime)
+  }
+  selectedRowDates.value = nextSelection
+  selectionAnchorDate.value = dateTime
+}
+
+async function handleSelectedFieldTab(
+  event: KeyboardEvent,
+  item: TableData,
+  seriesId: string,
+) {
+  if (!isEditing.value || !selectedRowDates.value.has(item.date.getTime())) {
+    return
+  }
+
+  const currentField = (event.target as HTMLElement).dataset.editField as
+    TableSeriesField | undefined
+  const fields: TableSeriesField[] = ['y', 'flagEdit', 'comment']
+  const fieldIndex = fields.indexOf(currentField as TableSeriesField)
+  if (fieldIndex < 0 || !canEditItem(item, seriesId)) return
+
+  event.preventDefault()
+  const offset = event.shiftKey ? -1 : 1
+  const nextField =
+    fields[(fieldIndex + offset + fields.length) % fields.length]
+  const selector = [
+    `[data-edit-date="${item.date.toISOString()}"]`,
+    `[data-edit-series-id="${CSS.escape(seriesId)}"]`,
+    `[data-edit-field="${nextField}"]`,
+  ].join('')
+  await nextTick()
+  tableContainer.value
+    ?.querySelector<HTMLElement>(selector)
+    ?.focus({ preventScroll: true })
 }
 
 watch(editedSeriesIds, () => {
@@ -819,13 +927,61 @@ function isEditingTimeSeries(seriesId: string) {
   return editedSeriesIds.value.includes(seriesId)
 }
 
-function onUpdateItem(event: TableData) {
-  const index = newTableData.value.findIndex((item) => item.date === event.date)
-  if (index > -1) {
-    newTableData.value[index] = { ...newTableData.value[index], ...event }
-  } else {
-    newTableData.value.push(event)
+function onUpdateItem(event: TableData, field: TableSeriesField) {
+  const seriesId = Object.keys(event).find((key) => key !== 'date')
+  if (seriesId === undefined) return
+
+  const editedData = event[seriesId] as Partial<TableSeriesData>
+  const sourceDate = event.date.getTime()
+  const targetDates = selectedRowDates.value.has(sourceDate)
+    ? selectedRowDates.value
+    : new Set([sourceDate])
+  const rowsByDate = new Map(
+    tableData.value.map((row) => [row.date.getTime(), row]),
+  )
+  const modifiedRowsByDate = new Map(
+    newTableData.value.map((row, index) => [row.date.getTime(), index]),
+  )
+
+  for (const dateTime of targetDates) {
+    const row = rowsByDate.get(dateTime)
+    if (!row || !canEditItem(row, seriesId)) continue
+
+    const modifiedIndex = modifiedRowsByDate.get(dateTime)
+    const existingData =
+      modifiedIndex === undefined
+        ? row[seriesId]
+        : newTableData.value[modifiedIndex][seriesId]
+    const previousData =
+      existingData === undefined || existingData instanceof Date
+        ? {}
+        : (existingData as Partial<TableSeriesData>)
+    const updatedSeriesData = {
+      ...previousData,
+      [field]: editedData[field],
+    }
+
+    const modifiedRow: TableData = {
+      date: row.date,
+      [seriesId]: updatedSeriesData,
+    }
+    if (modifiedIndex === undefined) {
+      modifiedRowsByDate.set(dateTime, newTableData.value.length)
+      newTableData.value.push(modifiedRow)
+    } else {
+      newTableData.value[modifiedIndex] = {
+        ...newTableData.value[modifiedIndex],
+        [seriesId]: updatedSeriesData,
+      }
+    }
   }
+}
+
+function getEditableItem(item: TableData): TableData {
+  const modifiedRow = newTableData.value.find(
+    (row) => row.date.getTime() === item.date.getTime(),
+  )
+  return modifiedRow === undefined ? item : { ...item, ...modifiedRow }
 }
 
 function selectDateRow(scrollIntoView = false) {
@@ -1223,6 +1379,30 @@ td.sticky-column {
     rgba(15, 15, 15) 12.73px,
     rgba(15, 15, 15) 25.46px
   );
+}
+
+:deep(tr.row-selectable) {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+:deep(tr.row-selectable input, tr.row-selectable select) {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+:deep(tr.row-selected > td:has(.table-cell-editable)) {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(var(--v-theme-primary), 0.1) 0px,
+    rgba(var(--v-theme-primary), 0.1) 12.73px,
+    rgba(var(--v-theme-primary), 0.2) 12.73px,
+    rgba(var(--v-theme-primary), 0.2) 25.46px
+  );
+}
+
+:deep(tr.row-selected > td) {
+  background-color: rgba(var(--v-theme-primary), 0.12);
 }
 
 .table-header {

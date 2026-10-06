@@ -17,6 +17,8 @@ export interface TableSeriesData extends SeriesData {
   flagColor?: string
 }
 
+export type TableSeriesField = 'y' | 'flagEdit' | 'comment'
+
 export interface TableData {
   date: Date
   [key: string]: Partial<TableSeriesData> | Date

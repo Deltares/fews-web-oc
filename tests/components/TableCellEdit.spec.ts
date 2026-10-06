@@ -175,6 +175,10 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await editableHeader.locator('button').click()
 
     await expect(component.getByPlaceholder('value')).toHaveCount(1)
+    await expect(component.locator('tbody tr[data-row-date]')).toHaveAttribute(
+      'aria-selected',
+      'false',
+    )
     await expect(component.locator('.table-cell-editable').first()).toHaveCSS(
       'z-index',
       'auto',
@@ -214,6 +218,11 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     expect(Math.abs(keyCenter - hintCenter)).toBeLessThan(1)
     await expect(component.getByPlaceholder('value')).toHaveValue('12')
     await expect(component.getByPlaceholder('comment')).toHaveCount(1)
+    await component.getByPlaceholder('value').focus()
+    await component.getByPlaceholder('value').press('Tab')
+    await expect(component.locator('select')).toBeFocused()
+    await component.locator('select').press('Tab')
+    await expect(component.getByPlaceholder('comment')).toBeFocused()
     await expect(
       component.getByRole('columnheader').filter({
         hasText: 'Read-only series',
@@ -230,6 +239,148 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       '1 row loaded',
     )
     await expect(statusActivity).not.toContainText('Shift+Tab')
+  })
+
+  test('selecting a date row confines Tab cycling to that row and can be undone', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    const header = component
+      .getByRole('columnheader')
+      .filter({ hasText: 'Editable series 1' })
+    await header.getByRole('button').click()
+
+    const rows = component.locator('tbody tr[data-row-date]')
+    const selectedRow = rows.nth(2)
+    const nextRow = rows.nth(3)
+    await selectedRow.locator('td.table-date').click()
+    await expect(selectedRow).toHaveAttribute('aria-selected', 'true')
+    await expect(nextRow).toHaveAttribute('aria-selected', 'false')
+
+    await selectedRow.getByPlaceholder('value').focus()
+    await selectedRow.getByPlaceholder('value').press('Tab')
+    await expect(selectedRow.locator('select')).toBeFocused()
+    await selectedRow.locator('select').press('Tab')
+    await expect(selectedRow.getByPlaceholder('comment')).toBeFocused()
+    await selectedRow.getByPlaceholder('comment').press('Tab')
+    await expect(selectedRow.getByPlaceholder('value')).toBeFocused()
+    await expect(nextRow.getByPlaceholder('value')).not.toBeFocused()
+    await expect(nextRow).toHaveAttribute('aria-selected', 'false')
+
+    await selectedRow.locator('td.table-date').click()
+    await expect(selectedRow).toHaveAttribute('aria-selected', 'false')
+    await expect(nextRow).toHaveAttribute('aria-selected', 'false')
+  })
+
+  test('applies a changed field to shift-selected rows in the same series', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    const scrollContainer = component.locator('.v-table__wrapper')
+    const header = component
+      .getByRole('columnheader')
+      .filter({ hasText: 'Editable series 1' })
+    await header.getByRole('button').click()
+
+    const rows = component.locator('tbody tr[data-row-date]')
+    await expect.poll(() => rows.count()).toBeGreaterThan(5)
+    const firstSelectedRow = rows.nth(1)
+    const middleSelectedRow = rows.nth(2)
+    const lastSelectedRow = rows.nth(3)
+    const unselectedRow = rows.nth(4)
+    const middleOriginalValue = await middleSelectedRow
+      .getByPlaceholder('value')
+      .inputValue()
+    const middleOriginalFlag = await middleSelectedRow
+      .locator('select')
+      .inputValue()
+    const middleOriginalComment = await middleSelectedRow
+      .getByPlaceholder('comment')
+      .inputValue()
+    const unselectedValue = await unselectedRow
+      .getByPlaceholder('value')
+      .inputValue()
+
+    await firstSelectedRow.locator('td').first().click()
+    await lastSelectedRow
+      .locator('td')
+      .first()
+      .click({ modifiers: ['Shift'] })
+    expect(
+      await component.evaluate(() => window.getSelection()?.toString() ?? ''),
+    ).toBe('')
+
+    await expect(firstSelectedRow).toHaveAttribute('aria-selected', 'true')
+    await expect(middleSelectedRow).toHaveAttribute('aria-selected', 'true')
+    await expect(lastSelectedRow).toHaveAttribute('aria-selected', 'true')
+    await expect(unselectedRow).toHaveAttribute('aria-selected', 'false')
+
+    const selectedStripe = await firstSelectedRow
+      .locator('td:has(.table-cell-editable)')
+      .first()
+      .evaluate((element) => getComputedStyle(element).backgroundImage)
+    const unselectedStripe = await unselectedRow
+      .locator('td:has(.table-cell-editable)')
+      .first()
+      .evaluate((element) => getComputedStyle(element).backgroundImage)
+    expect(selectedStripe).not.toBe(unselectedStripe)
+
+    await firstSelectedRow.getByPlaceholder('value').focus()
+    await expect(
+      firstSelectedRow.locator('.table-cell-edit--column-focused'),
+    ).toHaveCount(1)
+    await expect(
+      lastSelectedRow.locator('.table-cell-edit--column-focused'),
+    ).toHaveCount(1)
+    await expect(
+      unselectedRow.locator('.table-cell-edit--column-focused'),
+    ).toHaveCount(0)
+
+    const initialScrollTop = await scrollContainer.evaluate(
+      (element) => element.scrollTop,
+    )
+    await firstSelectedRow.getByPlaceholder('value').press('Tab')
+    await expect(firstSelectedRow.locator('select')).toBeFocused()
+    await firstSelectedRow.locator('select').press('Tab')
+    await expect(firstSelectedRow.getByPlaceholder('comment')).toBeFocused()
+    await firstSelectedRow.getByPlaceholder('comment').press('Tab')
+    await expect(firstSelectedRow.getByPlaceholder('value')).toBeFocused()
+    await firstSelectedRow.getByPlaceholder('value').press('Shift+Tab')
+    await expect(firstSelectedRow.getByPlaceholder('comment')).toBeFocused()
+    await expect(firstSelectedRow).toHaveAttribute('aria-selected', 'true')
+    await expect(middleSelectedRow).toHaveAttribute('aria-selected', 'true')
+    await expect(lastSelectedRow).toHaveAttribute('aria-selected', 'true')
+    await expect(scrollContainer).toHaveJSProperty(
+      'scrollTop',
+      initialScrollTop,
+    )
+    await expect(
+      firstSelectedRow.locator('.table-cell-edit--column-focused'),
+    ).toHaveCount(1)
+    await expect(unselectedRow).toHaveAttribute('aria-selected', 'false')
+
+    await middleSelectedRow
+      .locator('td')
+      .first()
+      .click({ modifiers: ['ControlOrMeta'] })
+    await expect(middleSelectedRow).toHaveAttribute('aria-selected', 'false')
+
+    await firstSelectedRow.getByPlaceholder('value').fill('777')
+
+    await expect(firstSelectedRow.getByPlaceholder('value')).toHaveValue('777')
+    await expect(lastSelectedRow.getByPlaceholder('value')).toHaveValue('777')
+    await expect(middleSelectedRow.getByPlaceholder('value')).toHaveValue(
+      middleOriginalValue,
+    )
+    await expect(middleSelectedRow.locator('select')).toHaveValue(
+      middleOriginalFlag,
+    )
+    await expect(middleSelectedRow.getByPlaceholder('comment')).toHaveValue(
+      middleOriginalComment,
+    )
+    await expect(unselectedRow.getByPlaceholder('value')).toHaveValue(
+      unselectedValue,
+    )
   })
 
   test('cancel reuses read-only cells and discards the edited value', async ({
