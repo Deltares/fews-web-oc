@@ -18,6 +18,8 @@ export interface WebOcSchematicStatusDisplayConfig extends WebOcSchematicStatusD
 
 export interface WebOcTopologyDisplayConfig extends WebOcTopologyDisplayConfigUnTyped {
   type: 'TopologyDisplay'
+  topologyDisplayNodes?: string[]
+  componentSettingsId?: string
 }
 
 export interface WebOcSystemMonitorConfig extends WebOcSystemMonitorConfigUnTyped {

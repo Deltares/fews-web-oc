@@ -63,7 +63,7 @@ import TopologySidePanel from '@/components/topology/TopologySidePanel.vue'
 
 import { useConfigStore } from '@/stores/config'
 
-import type { WebOcTopologyDisplayConfig } from '@deltares/fews-pi-requests'
+import type { WebOcTopologyDisplayConfig } from '@/lib/fews-config/types'
 
 import { computed, onUnmounted, watch, watchEffect } from 'vue'
 import {
@@ -149,8 +149,6 @@ const topologyComponentConfig = computed(() =>
 )
 
 const topologyDisplayNodes = computed<string[] | undefined>(() => {
-  // FIXME: Update when the types are updated
-  // @ts-expect-error
   return topologyComponentConfig.value?.topologyDisplayNodes
 })
 
@@ -192,7 +190,6 @@ function getComponentConfig(topologyId?: string) {
 }
 
 const { componentSettings } = useComponentSettings(baseUrl, () => [
-  // @ts-expect-error FIXME: Update when the types are updated
   topologyComponentConfig.value?.componentSettingsId,
   topologyNode.value?.componentSettingsId,
 ])
