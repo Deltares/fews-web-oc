@@ -4,6 +4,17 @@ test.describe('TableCellEdit', () => {
   test('renders the current value, flag, and comment', async ({ mount }) => {
     const component = await mount('table/TableCellEdit/Default')
 
+    await expect(
+      component.getByLabel('Value for series-1 at 2025-01-01T00:00:00.000Z'),
+    ).toHaveValue('12')
+    await expect(
+      component.getByLabel(
+        'Flag quality for series-1 at 2025-01-01T00:00:00.000Z',
+      ),
+    ).toHaveValue('Reliable')
+    await expect(
+      component.getByLabel('Comment for series-1 at 2025-01-01T00:00:00.000Z'),
+    ).toHaveValue('Initial comment')
     await expect(component.getByPlaceholder('value')).toHaveValue('12')
     await expect(component.locator('select')).toHaveValue('Reliable')
     await expect(component.getByPlaceholder('comment')).toHaveValue(
@@ -35,6 +46,27 @@ test.describe('TableCellEdit', () => {
     await expect(component.getByTestId('updated-value')).toContainText(
       '"flagEdit":"Doubtful"',
     )
+  })
+
+  test('shows a visible keyboard focus ring on native fields', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TableCellEdit/Default')
+    const valueInput = component.getByLabel(
+      'Value for series-1 at 2025-01-01T00:00:00.000Z',
+    )
+    const flagSelect = component.getByLabel(
+      'Flag quality for series-1 at 2025-01-01T00:00:00.000Z',
+    )
+
+    await valueInput.focus()
+    await expect(valueInput).toHaveCSS('outline-style', 'solid')
+    await expect(valueInput).toHaveCSS('outline-width', '2px')
+    await expect(valueInput).toHaveCSS('border-radius', '4px')
+
+    await flagSelect.focus()
+    await expect(flagSelect).toHaveCSS('outline-style', 'solid')
+    await expect(flagSelect).toHaveCSS('outline-width', '2px')
   })
 })
 
@@ -137,16 +169,49 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     const statusActivity = component.getByTestId('table-status-activity')
 
     await expect(component.getByPlaceholder('value')).toHaveCount(0)
-
     const editableHeader = component
       .getByRole('columnheader')
       .filter({ hasText: 'Editable series' })
     await editableHeader.locator('button').click()
 
     await expect(component.getByPlaceholder('value')).toHaveCount(1)
-    await expect(statusActivity).toHaveText(
-      'Tab / Shift+Tab: move fields | Enter / Space: select row',
+    await expect(component.locator('.table-cell-editable').first()).toHaveCSS(
+      'z-index',
+      'auto',
     )
+    await expect(
+      component.getByLabel(
+        'Value for editable-series at 2025-01-01T00:00:00.000Z',
+      ),
+    ).toHaveValue('12')
+    const editedCell = component.locator('td:has(.table-cell-editable)').first()
+    await expect(editedCell).toHaveCSS('padding-left', '0px')
+    await expect(editedCell).toHaveCSS('padding-right', '0px')
+    await expect(component.getByTestId('table-status-row-count')).toHaveCount(0)
+    await expect(statusActivity).toContainText('Tab / Shift+Tab: move fields')
+    await expect(statusActivity).toContainText('Enter / Space: select row')
+    await expect(statusActivity.locator('kbd')).toHaveText([
+      'Tab',
+      'Shift',
+      'Tab',
+      'Enter',
+      'Space',
+    ])
+    const firstKey = statusActivity.locator('kbd').first()
+    await expect(firstKey).toHaveCSS('height', '20px')
+    await expect(firstKey).toHaveCSS('font-size', '11px')
+    const keyCenter = await firstKey.evaluate((element) => {
+      const bounds = element.getBoundingClientRect()
+      return bounds.top + bounds.height / 2
+    })
+    const hintCenter = await statusActivity
+      .locator('.table-status-bar__keyboard-hint > span')
+      .first()
+      .evaluate((element) => {
+        const bounds = element.getBoundingClientRect()
+        return bounds.top + bounds.height / 2
+      })
+    expect(Math.abs(keyCenter - hintCenter)).toBeLessThan(1)
     await expect(component.getByPlaceholder('value')).toHaveValue('12')
     await expect(component.getByPlaceholder('comment')).toHaveCount(1)
     await expect(
@@ -160,6 +225,9 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
 
     await expect(component.getByTestId('saved-data')).toContainText(
       '"value":"18.5"',
+    )
+    await expect(component.getByTestId('table-status-row-count')).toHaveText(
+      '1 row loaded',
     )
     await expect(statusActivity).not.toContainText('Shift+Tab')
   })

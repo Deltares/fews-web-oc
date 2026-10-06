@@ -184,7 +184,7 @@
     </v-data-table-virtual>
     <div class="table-status-bar" data-testid="table-status">
       <div class="table-status-bar__summary">
-        <span data-testid="table-status-row-count">
+        <span v-if="!isEditing" data-testid="table-status-row-count">
           {{ tableData.length }} {{ tableData.length === 1 ? 'row' : 'rows' }}
           loaded
         </span>
@@ -275,7 +275,12 @@
         aria-atomic="true"
       >
         <template v-if="isEditing">
-          Tab / Shift+Tab: move fields | Enter / Space: select row
+          <span class="table-status-bar__keyboard-hint">
+            <span>
+              <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>: move fields
+            </span>
+            <span> <kbd>Enter</kbd> / <kbd>Space</kbd>: select row </span>
+          </span>
         </template>
         <template v-else-if="props.isLoadingMore">Loading more data</template>
         <template v-else-if="isWaitingForTableUpdate || props.isLoading">
@@ -971,6 +976,10 @@ function handleTableScroll() {
   letter-spacing: initial;
 }
 
+:deep(td:has(.table-cell-editable)) {
+  padding: 0 !important;
+}
+
 .data-table {
   display: flex;
   position: relative;
@@ -1099,7 +1108,37 @@ function handleTableScroll() {
 }
 
 .table-status-bar__activity {
+  display: inline-flex;
+  align-items: center;
   flex: 0 0 auto;
+}
+
+.table-status-bar__keyboard-hint,
+.table-status-bar__keyboard-hint > span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.table-status-bar__keyboard-hint {
+  gap: 10px;
+}
+
+.table-status-bar__keyboard-hint > span {
+  line-height: 20px;
+}
+
+.table-status-bar__keyboard-hint kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 5px;
+  margin-right: 3px;
+  border: 1px solid color-mix(in srgb, currentColor 60%, transparent);
+  border-radius: 4px;
+  font-size: 11px;
+  vertical-align: 0.15em;
 }
 
 @media (max-width: 600px) {
