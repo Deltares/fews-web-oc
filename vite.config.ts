@@ -91,7 +91,7 @@ export default defineConfig(({ mode }) => {
             `${env.DEV_CSP_STYLE_SRC}`,
             `'unsafe-inline'`, // vuetify
           ].join(' '),
-          `worker-src blob: ${env.DEV_CSP_WORKER_SRC}`, // maplibre-gl
+          `worker-src 'self' blob: ${env.DEV_CSP_WORKER_SRC}`, // maplibre-gl
           [
             `connect-src`,
             `'self'`,
