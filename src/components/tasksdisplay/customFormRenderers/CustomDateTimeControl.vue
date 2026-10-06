@@ -125,8 +125,14 @@ function alignToTimeStep(
 ): Date {
   const timestamp = date.getTime()
   const timeStepMilliseconds = timeStepHours * 60 * 60 * 1000
-  const roundFunc =
-    mode === 'round' ? Math.round : mode === 'floor' ? Math.floor : Math.ceil
+  let roundFunc: typeof Math.round
+  if (mode === 'round') {
+    roundFunc = Math.round
+  } else if (mode === 'floor') {
+    roundFunc = Math.floor
+  } else {
+    roundFunc = Math.ceil
+  }
   const roundedTimestamp =
     roundFunc(timestamp / timeStepMilliseconds) * timeStepMilliseconds
   const rounded = new Date(roundedTimestamp)
