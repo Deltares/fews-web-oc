@@ -142,7 +142,7 @@ async function onSave() {
           file.value,
         )
         break
-      case 'new':
+      case 'new': {
         const compose = selectedCompose.value
         await createNewProduct(
           compose?.archiveProduct.name ?? '',
@@ -152,6 +152,7 @@ async function onSave() {
           props.viewPeriod,
         )
         break
+      }
     }
   } catch (error) {
     console.error('Error saving product:', error)
