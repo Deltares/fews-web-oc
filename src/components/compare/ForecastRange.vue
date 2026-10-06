@@ -43,7 +43,7 @@ const hindcastStyle = computed(() => ({
 
 const nowStyle = computed(() => ({
   backgroundColor: 'currentColor',
-  left: `${(((new Date().getTime() ?? endTime.getTime()) - startTime.getTime()) / (endTime.getTime() - startTime.getTime())) * 100}%`,
+  left: `${((Date.now() - startTime.getTime()) / (endTime.getTime() - startTime.getTime())) * 100}%`,
   width: '2px',
 }))
 </script>

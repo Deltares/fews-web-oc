@@ -226,7 +226,7 @@ export function toDateAbsDifferenceString(
     minutes % 60 ? `${minutes % 60}m` : '',
     !options?.excludeSeconds && seconds % 60 ? `${seconds % 60}s` : '',
   ]
-    .filter((part) => part)
+    .filter(Boolean)
     .slice(0, 2)
     .join(' ')
 

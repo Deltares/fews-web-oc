@@ -19,7 +19,7 @@ export function useOverlays(
       const gridLayer: FewsPiOverlay = { type: 'gridLayer' }
 
       // Ensure that the grid layer is always included in the overlays
-      const newOverlaysWithGrid = newOverlays.find(isFewsPiGridLayer)
+      const newOverlaysWithGrid = newOverlays.some(isFewsPiGridLayer)
         ? newOverlays
         : [gridLayer, ...newOverlays]
       hasOverlays.value = newOverlays.some(

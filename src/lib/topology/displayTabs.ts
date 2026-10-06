@@ -50,10 +50,9 @@ export async function getLayerNameForNode(node: TopologyNode) {
   const groupId = node.gridDisplaySelection?.groupId
   if (groupId) {
     const capabilities = await fetchWmsCapabilitiesHeaders()
-    const layers = capabilities.layers.filter(
+    const firstLayer = capabilities.layers.find(
       (layer) => layer.groupName === groupId,
     )
-    const firstLayer = layers[0]
     return firstLayer?.name ?? ''
   }
 

@@ -114,8 +114,7 @@ const maxValuesTimeSeries = ref<TimeSeriesData[]>([])
 
 watch(locations, (newLocations) => {
   if (
-    newLocations.findIndex((loc) => loc.id === selectedLocation.value?.id) ===
-    -1
+    !newLocations.some((loc) => loc.id === selectedLocation.value?.id)
   ) {
     selectedLocation.value = newLocations[0]
   }

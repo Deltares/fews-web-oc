@@ -76,7 +76,7 @@ watch(
   (newRuns) => {
     if (
       taskRunId.value &&
-      !newRuns.find((taskRun) => taskRun.taskRunId === taskRunId.value)
+      !newRuns.some((taskRun) => taskRun.taskRunId === taskRunId.value)
     ) {
       taskRunId.value = newRuns[0]?.taskRunId
     }
@@ -90,7 +90,7 @@ function toggleTaskRunId() {
   if (taskRunId.value === undefined) {
     if (
       lastSelectedTaskRunId &&
-      taskRuns.value.find((t) => t.taskRunId === lastSelectedTaskRunId)
+      taskRuns.value.some((t) => t.taskRunId === lastSelectedTaskRunId)
     ) {
       taskRunId.value = lastSelectedTaskRunId
     } else {
