@@ -538,7 +538,6 @@ function onSnapshotPointerDown(event: PointerEvent): void {
   snapshotDragStartClientX = event.clientX
   snapshotDragStartScrollLeft = viewport.scrollLeft
   snapshotDragDistance = 0
-  viewport.setPointerCapture(event.pointerId)
 }
 
 function onSnapshotPointerMove(event: PointerEvent): void {
@@ -548,6 +547,12 @@ function onSnapshotPointerMove(event: PointerEvent): void {
 
   const delta = snapshotDragStartClientX - event.clientX
   snapshotDragDistance = Math.abs(delta)
+  if (
+    snapshotDragDistance > SNAPSHOT_DRAG_CLICK_THRESHOLD_PX &&
+    !viewport.hasPointerCapture(event.pointerId)
+  ) {
+    viewport.setPointerCapture(event.pointerId)
+  }
   viewport.scrollLeft = clamp(
     snapshotDragStartScrollLeft + delta,
     0,
@@ -558,7 +563,10 @@ function onSnapshotPointerMove(event: PointerEvent): void {
 function onSnapshotPointerUp(event: PointerEvent): void {
   if (!snapshotIsDragging.value) return
   snapshotIsDragging.value = false
-  snapshotViewport.value?.releasePointerCapture(event.pointerId)
+  const capturedViewport = snapshotViewport.value
+  if (capturedViewport?.hasPointerCapture(event.pointerId)) {
+    capturedViewport.releasePointerCapture(event.pointerId)
+  }
 
   if (snapshotDragDistance <= SNAPSHOT_DRAG_CLICK_THRESHOLD_PX) return
 
