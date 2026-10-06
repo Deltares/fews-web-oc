@@ -368,6 +368,7 @@ watch(
 // finished, updating the table items may not. Keep the loading indicator until
 // the table items have been updated.
 const isWaitingForTableUpdate = ref(true)
+let lastPageSeriesUpdate = new Map<string, Date | undefined>()
 watch(
   () => props.isLoading,
   () => (isWaitingForTableUpdate.value = true),
@@ -380,56 +381,105 @@ watchDebounced(
   // of last updated dates.
   () => Object.values(props.series).map((series) => series.lastUpdated),
   async () => {
-    if (props.series === undefined || isEditing.value) return
-    const previousRowCount = tableData.value.length
-    const pageUpdate = props.pageUpdate
-    const isNewPage =
-      pageUpdate !== undefined &&
-      pageUpdate.revision > lastProcessedPageRevision &&
-      tableData.value.length > 0
-    const pageData = isNewPage
-      ? createTableDataPage(
-          props.config.series,
-          props.series,
-          seriesIds.value,
-          seriesDataLengths,
-          pageUpdate.direction,
-        )
-      : undefined
-    const updatedTableData = pageData
-      ? mergeTableData(tableData.value, pageData.rows)
-      : createTableData(props.config.series, props.series, seriesIds.value)
-    seriesDataLengths = pageData
-      ? pageData.seriesDataLengths
-      : getTableSeriesDataLengths(
-          props.config.series,
-          props.series,
-          seriesIds.value,
-        )
-    if (isNewPage) lastProcessedPageRevision = pageUpdate.revision
-    tableData.value = updatedTableData
-    if (hasPendingTopLoad) {
-      hasPendingTopLoad = false
-      const addedRowCount = Math.max(
-        updatedTableData.length - previousRowCount,
-        0,
-      )
-      if (addedRowCount > 0) {
-        await nextTick()
-        if (tableScrollElement.value) {
-          tableScrollElement.value.scrollTop +=
-            addedRowCount * virtualItemHeight
-        }
-      }
+    if (samePageSeriesUpdate()) {
+      lastPageSeriesUpdate.clear()
+      return
     }
-    if (props.selectedDate !== undefined) {
-      await nextTick()
-      selectDateRow(previousRowCount === 0)
-    }
-    isWaitingForTableUpdate.value = props.isLoading
+    await updateTableData()
   },
   { debounce: 500, maxWait: 1000 },
 )
+
+watch(
+  () => props.pageUpdate?.revision,
+  async (revision) => {
+    const pageUpdate = props.pageUpdate
+    if (
+      revision === undefined ||
+      pageUpdate === undefined ||
+      revision <= lastProcessedPageRevision
+    ) {
+      return
+    }
+
+    await nextTick()
+    await updateTableData(pageUpdate)
+    lastPageSeriesUpdate = getSeriesLastUpdated()
+  },
+  { flush: 'post' },
+)
+
+function getSeriesLastUpdated() {
+  return new Map(
+    Object.entries(props.series).map(([id, series]) => [
+      id,
+      series.lastUpdated,
+    ]),
+  )
+}
+
+function samePageSeriesUpdate() {
+  if (lastPageSeriesUpdate.size !== Object.keys(props.series).length) {
+    return false
+  }
+
+  return [...lastPageSeriesUpdate].every(
+    ([id, lastUpdated]) => props.series[id]?.lastUpdated === lastUpdated,
+  )
+}
+
+async function updateTableData(pageUpdate?: PaginatedTimeSeriesPageUpdate) {
+  if (props.series === undefined || isEditing.value) return
+
+  const previousRowCount = tableData.value.length
+  const isNewPage =
+    pageUpdate !== undefined &&
+    pageUpdate.revision > lastProcessedPageRevision &&
+    tableData.value.length > 0
+  const pageData = isNewPage
+    ? createTableDataPage(
+        props.config.series,
+        props.series,
+        seriesIds.value,
+        seriesDataLengths,
+        pageUpdate.direction,
+      )
+    : undefined
+  const updatedTableData = pageData
+    ? mergeTableData(tableData.value, pageData.rows)
+    : createTableData(props.config.series, props.series, seriesIds.value)
+
+  seriesDataLengths = pageData
+    ? pageData.seriesDataLengths
+    : getTableSeriesDataLengths(
+        props.config.series,
+        props.series,
+        seriesIds.value,
+      )
+  if (isNewPage) lastProcessedPageRevision = pageUpdate.revision
+  tableData.value = updatedTableData
+
+  if (hasPendingTopLoad) {
+    hasPendingTopLoad = false
+    const addedRowCount = Math.max(
+      updatedTableData.length - previousRowCount,
+      0,
+    )
+    if (addedRowCount > 0) {
+      await nextTick()
+      if (tableScrollElement.value) {
+        tableScrollElement.value.scrollTop += addedRowCount * virtualItemHeight
+      }
+    }
+  }
+
+  if (props.selectedDate !== undefined) {
+    await nextTick()
+    selectDateRow(previousRowCount === 0)
+  }
+
+  isWaitingForTableUpdate.value = props.isLoading
+}
 
 onMounted(async () => {
   await nextTick()

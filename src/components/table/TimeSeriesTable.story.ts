@@ -174,25 +174,27 @@ function createBenchmarkStory(
 
         isLoadingMore.value = true
         loadMoreCount.value++
-        const nextRowCount = Math.min(
-          loadedRowCount.value + pageSize,
-          totalRowCount,
-        )
-        const lastUpdated = new Date(date.getTime() + nextRowCount * 60_000)
-        for (const [id, timeSeries] of Object.entries(benchmarkSeries.value)) {
-          timeSeries.data = allSeriesEvents[id].slice(0, nextRowCount)
-          timeSeries.lastUpdated = lastUpdated
-        }
-        loadedRowCount.value = nextRowCount
-        if (useIncrementalPages) {
-          pageUpdate.value = {
-            revision: (pageUpdate.value?.revision ?? 0) + 1,
-            direction: direction as 'before' | 'after',
-          }
-        }
         setTimeout(() => {
+          const nextRowCount = Math.min(
+            loadedRowCount.value + pageSize,
+            totalRowCount,
+          )
+          const lastUpdated = new Date(date.getTime() + nextRowCount * 60_000)
+          for (const [id, timeSeries] of Object.entries(
+            benchmarkSeries.value,
+          )) {
+            timeSeries.data = allSeriesEvents[id].slice(0, nextRowCount)
+            timeSeries.lastUpdated = lastUpdated
+          }
+          loadedRowCount.value = nextRowCount
+          if (useIncrementalPages) {
+            pageUpdate.value = {
+              revision: (pageUpdate.value?.revision ?? 0) + 1,
+              direction: direction as 'before' | 'after',
+            }
+          }
           isLoadingMore.value = false
-        }, 600)
+        }, 20)
       }
 
       return () =>
@@ -209,7 +211,7 @@ function createBenchmarkStory(
               config: benchmarkConfig,
               series: benchmarkSeries.value,
               settings: defaultChartSettings.timeSeriesTable,
-              isLoading: false,
+              isLoading: isLoadingMore.value,
               isLoadingMore: isLoadingMore.value,
               pageUpdate: pageUpdate.value,
               selectedDate:
