@@ -1,14 +1,14 @@
+function mouseWheelHandler(event: WheelEvent): void {
+  if (!event.currentTarget) return
+  const element = event.currentTarget as HTMLElement
+
+  element.scrollLeft += event.deltaY
+}
+
 export function useHorizontalScroll() {
   let lastPos = { x: 0, y: 0 }
   let moveHandler: (event: MouseEvent) => void
   let upHandler: (event: MouseEvent) => void
-
-  function mouseWheelHandler(event: WheelEvent): void {
-    if (!event.currentTarget) return
-    const element = event.currentTarget as HTMLElement
-
-    element.scrollLeft += event.deltaY
-  }
 
   function mouseDownHandler(event: MouseEvent): void {
     if (!event.currentTarget) return
