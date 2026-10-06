@@ -97,7 +97,7 @@ p {
   background: #fff4f1;
   color: #8f2916;
   white-space: pre-wrap;
-  word-break: break-word;
+  overflow-wrap: anywhere;
   text-align: left;
   font-size: 0.92rem;
   font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
