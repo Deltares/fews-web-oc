@@ -36,8 +36,11 @@
         />
         <button
           v-else
+          type="button"
           class="body-1 elevation-slider__edit-button"
           @click="activateEdit"
+          @keydown.enter.prevent="activateEdit"
+          @keydown.space.prevent="activateEdit"
         >
           {{ Math.round(currentValue) }}
         </button>
