@@ -110,7 +110,7 @@ async function addCustomLocationIconsToMap(
 
   const locationIcons = getUniqueIconNames(locations)
   await Promise.allSettled(
-    locationIcons.flatMap(async (iconName) => {
+    locationIcons.flatMap((iconName) => {
       const url = getResourcesIconsUrl(iconName)
       return [
         addIconToMap(map, iconName, url),
