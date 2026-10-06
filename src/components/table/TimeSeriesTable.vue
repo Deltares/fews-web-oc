@@ -1,5 +1,9 @@
 <template>
-  <div ref="tableContainer" class="table-container">
+  <div
+    ref="tableContainer"
+    class="table-container"
+    @keydown.esc="deselectEditRows"
+  >
     <v-tooltip v-model="tooltip" :activator="activator" :key="activator">
       <TableTooltip v-bind="tooltipItem">/</TableTooltip>
     </v-tooltip>
@@ -305,6 +309,10 @@
                   : 'adjust selection'
               }}
             </span>
+            <span v-if="selectedRowDates.size > 0">
+              <kbd>Esc</kbd>: deselect rows
+            </span>
+            <span> <kbd>Ctrl/Cmd</kbd>+<kbd>Enter</kbd>: save column </span>
           </span>
         </template>
         <template v-else-if="props.isLoadingMore">Loading more data</template>
@@ -709,6 +717,13 @@ function clearSelected() {
   focusedEditField.value = undefined
 }
 
+function deselectEditRows(event: KeyboardEvent) {
+  if (!isEditing.value || selectedRowDates.value.size === 0) return
+  event.preventDefault()
+  event.stopPropagation()
+  clearSelected()
+}
+
 function save(seriesId: string) {
   const newModifiedData = newTableData.value.filter((item) => {
     const data = item[seriesId] as Partial<TableSeriesData>
@@ -887,6 +902,11 @@ function toggleRowSelection(dateTime: number) {
 async function handleEditFieldKeydown(event: KeyboardEvent, item: TableData) {
   if (!isEditing.value) return
 
+  if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+    saveEditColumnWithKeyboard(event)
+    return
+  }
+
   if (event.shiftKey && ['ArrowUp', 'ArrowDown'].includes(event.key)) {
     await selectEditRowWithKeyboard(event, item)
     return
@@ -916,6 +936,19 @@ async function handleEditFieldKeydown(event: KeyboardEvent, item: TableData) {
       isSelectedRow ? (nextIndex + fields.length) % fields.length : nextIndex
     ]
   nextField?.focus({ preventScroll: true })
+}
+
+function saveEditColumnWithKeyboard(event: KeyboardEvent) {
+  event.preventDefault()
+  event.stopPropagation()
+  const seriesId = (event.target as HTMLElement).dataset.editSeriesId
+  if (
+    seriesId &&
+    isEditingTimeSeries(seriesId) &&
+    newTableData.value.length > 0
+  ) {
+    save(seriesId)
+  }
 }
 
 async function selectEditRowWithKeyboard(
