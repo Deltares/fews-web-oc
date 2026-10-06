@@ -34,9 +34,14 @@
           type="number"
           class="tooltip-input body-1"
         />
-        <span v-else class="body-1" @click="activateEdit">{{
-          Math.round(currentValue)
-        }}</span>
+        <button
+          v-else
+          type="button"
+          class="body-1 elevation-slider__edit-button"
+          @click="activateEdit"
+        >
+          {{ Math.round(currentValue) }}
+        </button>
         {{ props.unit }}
       </div>
     </template>
@@ -174,5 +179,14 @@ watchEffect(() => {
   height: 30px;
   margin: 0;
   padding: 0;
+}
+
+.elevation-slider__edit-button {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
 }
 </style>

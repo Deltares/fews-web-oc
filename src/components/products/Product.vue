@@ -3,7 +3,11 @@
     <v-progress-circular indeterminate color="primary" />
   </div>
   <template v-else>
-    <img v-if="viewMode === 'img'" :src="src" />
+    <img
+      v-if="viewMode === 'img'"
+      :src="src"
+      :alt="props.product?.attributes.name ?? 'Product'"
+    />
     <template v-if="['html', 'pdf', 'iframe'].includes(viewMode)">
       <iframe :src="src" title="Document Viewer" />
     </template>

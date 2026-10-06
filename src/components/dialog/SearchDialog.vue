@@ -104,7 +104,6 @@
                 :style="{ '--tree-depth': row.depth }"
                 :data-search-item-id="row.item.id"
                 :data-search-row-index="index"
-                @click.stop="selectTreeItem(row.item)"
               >
                 <div class="search-dialog__row-content">
                   <!-- indentation -->
@@ -131,121 +130,130 @@
 
                   <span v-else class="search-dialog__expand-placeholder" />
 
-                  <!-- icon -->
-                  <div class="search-dialog__icon">
-                    <v-icon v-if="row.item.type === 'topology'" size="16">
-                      {{ row.item.iconName }}
-                    </v-icon>
+                  <button
+                    type="button"
+                    class="search-dialog__select-button"
+                    @click.stop="selectTreeItem(row.item)"
+                    @keydown.enter.stop
+                  >
+                    <!-- icon -->
+                    <span class="search-dialog__icon">
+                      <v-icon v-if="row.item.type === 'topology'" size="16">
+                        {{ row.item.iconName }}
+                      </v-icon>
 
-                    <img
-                      v-else-if="
-                        row.item.type === 'location' && row.item.iconName
-                      "
-                      :src="getResourcesIconsUrl(row.item.iconName)"
-                      width="16"
-                      height="16"
-                      alt=""
-                    />
-
-                    <svg
-                      v-else-if="row.item.type === 'location'"
-                      class="search-dialog__location-marker"
-                      viewBox="0 0 16 16"
-                      width="10"
-                      height="10"
-                      aria-hidden="true"
-                    >
-                      <circle
-                        cx="8"
-                        cy="8"
-                        r="7"
-                        fill="#dfdfdf"
-                        stroke="black"
-                        stroke-width="2"
-                      />
-                    </svg>
-                  </div>
-
-                  <!-- title/details -->
-                  <div class="search-dialog__content">
-                    <div
-                      class="search-dialog__title"
-                      :class="{
-                        'search-dialog__title--selected': isSelected(row.item),
-                      }"
-                    >
-                      <HighlightMatch
-                        :value="row.item.label"
-                        :query="searchQuery"
-                      />
-                      <span
-                        v-if="
-                          row.item.type === 'location' &&
-                          showLocationId(row.item)
+                      <img
+                        v-else-if="
+                          row.item.type === 'location' && row.item.iconName
                         "
-                        class="search-dialog__id-match"
+                        :src="getResourcesIconsUrl(row.item.iconName)"
+                        width="16"
+                        height="16"
+                        alt=""
+                      />
+
+                      <svg
+                        v-else-if="row.item.type === 'location'"
+                        class="search-dialog__location-marker"
+                        viewBox="0 0 16 16"
+                        width="10"
+                        height="10"
+                        aria-hidden="true"
                       >
-                        ID:
+                        <circle
+                          cx="8"
+                          cy="8"
+                          r="7"
+                          fill="#dfdfdf"
+                          stroke="black"
+                          stroke-width="2"
+                        />
+                      </svg>
+                    </span>
+
+                    <!-- title/details -->
+                    <span class="search-dialog__content">
+                      <span
+                        class="search-dialog__title"
+                        :class="{
+                          'search-dialog__title--selected': isSelected(
+                            row.item,
+                          ),
+                        }"
+                      >
                         <HighlightMatch
-                          :value="row.item.id"
+                          :value="row.item.label"
                           :query="searchQuery"
                         />
-                      </span>
-                    </div>
-                    <!-- route path -->
-                    <div
-                      v-if="
-                        row.item.type === 'topology' &&
-                        !row.item.children?.length
-                      "
-                      class="search-dialog__route-path"
-                    >
-                      <span v-if="isSelected(row.item)">
-                        <kbd>Enter</kbd>
-                        Open
-                      </span>
-
-                      {{ routeForItem(row.item).fullPath }}
-                    </div>
-
-                    <!-- selected item hint -->
-                    <div
-                      v-if="isSelected(row.item)"
-                      class="search-dialog__item-hint"
-                    >
-                      <template v-if="row.item.children?.length">
-                        <span v-if="isTreeItemExpanded(row.item)">
-                          <kbd>←</kbd> Collapse
+                        <span
+                          v-if="
+                            row.item.type === 'location' &&
+                            showLocationId(row.item)
+                          "
+                          class="search-dialog__id-match"
+                        >
+                          ID:
+                          <HighlightMatch
+                            :value="row.item.id"
+                            :query="searchQuery"
+                          />
                         </span>
-                        <span v-if="!isTreeItemExpanded(row.item)">
-                          <kbd>→</kbd> Expand
-                        </span>
-                      </template>
-                      <template v-if="row.item.type === 'location'">
-                        <span>
+                      </span>
+                      <!-- route path -->
+                      <span
+                        v-if="
+                          row.item.type === 'topology' &&
+                          !row.item.children?.length
+                        "
+                        class="search-dialog__route-path"
+                      >
+                        <span v-if="isSelected(row.item)">
                           <kbd>Enter</kbd>
-                          {{
-                            isExclusivelySelected(row.item)
-                              ? row.item.children?.length
-                                ? 'Deselect subtree'
-                                : 'Deselect location'
-                              : row.item.children?.length
-                                ? 'Select subtree'
-                                : 'Select location'
-                          }}
+                          Open
                         </span>
 
-                        <span v-if="canUseAddLocationShortcut(row.item)">
-                          <kbd>Shift</kbd>+<kbd>Enter</kbd>
-                          {{
-                            isLocationSelected(row.item)
-                              ? 'Remove location'
-                              : 'Add location'
-                          }}
-                        </span>
-                      </template>
-                    </div>
-                  </div>
+                        {{ routeForItem(row.item).fullPath }}
+                      </span>
+
+                      <!-- selected item hint -->
+                      <span
+                        v-if="isSelected(row.item)"
+                        class="search-dialog__item-hint"
+                      >
+                        <template v-if="row.item.children?.length">
+                          <span v-if="isTreeItemExpanded(row.item)">
+                            <kbd>←</kbd> Collapse
+                          </span>
+                          <span v-if="!isTreeItemExpanded(row.item)">
+                            <kbd>→</kbd> Expand
+                          </span>
+                        </template>
+                        <template v-if="row.item.type === 'location'">
+                          <span>
+                            <kbd>Enter</kbd>
+                            {{
+                              isExclusivelySelected(row.item)
+                                ? row.item.children?.length
+                                  ? 'Deselect subtree'
+                                  : 'Deselect location'
+                                : row.item.children?.length
+                                  ? 'Select subtree'
+                                  : 'Select location'
+                            }}
+                          </span>
+
+                          <span v-if="canUseAddLocationShortcut(row.item)">
+                            <kbd>Shift</kbd>+<kbd>Enter</kbd>
+                            {{
+                              isLocationSelected(row.item)
+                                ? 'Remove location'
+                                : 'Add location'
+                            }}
+                          </span>
+                        </template>
+                      </span>
+                    </span>
+                  </button>
                 </div>
               </div>
             </template>
@@ -1159,6 +1167,21 @@ watch(modelValue, async (value) => {
   width: 24px;
 }
 
+.search-dialog__select-button {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  min-width: 0;
+  flex: 1;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
 .search-dialog__icon {
   display: flex;
   align-items: center;
@@ -1169,11 +1192,13 @@ watch(modelValue, async (value) => {
 }
 
 .search-dialog__content {
+  display: block;
   min-width: 0;
   flex: 1;
 }
 
 .search-dialog__title {
+  display: block;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1192,6 +1217,7 @@ watch(modelValue, async (value) => {
 }
 
 .search-dialog__route-path {
+  display: block;
   overflow: hidden;
   color: rgb(var(--v-theme-on-surface), 0.6);
   font-size: 0.8em;

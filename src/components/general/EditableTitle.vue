@@ -1,9 +1,10 @@
 <template>
   <div ref="container" class="title d-inline-block">
     <!-- View Mode -->
-    <div
+    <button
       v-if="!editing"
-      class="pa-1 rounded cursor-pointer border border-opacity-0"
+      type="button"
+      class="title-trigger pa-1 rounded cursor-pointer border border-opacity-0"
       :class="{ 'border-opacity-100': isHovering }"
       @click="startEditing"
     >
@@ -13,19 +14,21 @@
         size="18"
         class="edit-icon pb-1 opacity-0"
         :class="{ 'opacity-100': isHovering }"
+        aria-hidden="true"
       />
-    </div>
+    </button>
 
     <!-- Edit Mode -->
     <div v-else ref="editBox" class="pa-1 border rounded">
-      <div
-        ref="editableDiv"
-        contenteditable="true"
+      <input
+        ref="editableInput"
+        v-model="editableText"
+        type="text"
+        aria-label="Title"
         class="editable-content"
         @keydown.enter.prevent="saveEdit"
         @keydown.esc.prevent="cancelEdit"
         @blur="onBlur"
-        tabindex="0"
       />
     </div>
   </div>
@@ -43,7 +46,7 @@ const editing = ref(false)
 const editableText = ref(model.value)
 
 const container = useTemplateRef('container')
-const editableDiv = useTemplateRef('editableDiv')
+const editableInput = useTemplateRef('editableInput')
 
 const isHovering = useElementHover(container)
 
@@ -58,34 +61,22 @@ async function startEditing() {
   editing.value = true
   await nextTick()
 
-  if (!editableDiv.value) return
+  if (!editableInput.value) return
 
-  editableDiv.value.innerText = model.value
-  editableDiv.value.focus()
-
-  // Select all text in the editable div
-  const range = document.createRange()
-  range.selectNodeContents(editableDiv.value)
-  const selection = globalThis.getSelection()
-  if (selection) {
-    selection.removeAllRanges()
-    selection.addRange(range)
-  }
+  editableText.value = model.value
+  editableInput.value.focus()
+  editableInput.value.select()
 }
 
 function saveEdit() {
-  if (editableDiv.value) {
-    const text = editableDiv.value.innerText.trim()
-    model.value = text
-    editableText.value = text
-  }
+  const text = editableText.value.trim()
+  model.value = text
+  editableText.value = text
   editing.value = false
 }
 
 function cancelEdit() {
-  if (editableDiv.value) {
-    editableDiv.value.innerText = model.value
-  }
+  editableText.value = model.value
   editing.value = false
 }
 
@@ -99,6 +90,15 @@ function onBlur() {
 </script>
 
 <style scoped>
+.title-trigger {
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  background: transparent;
+  border-style: solid;
+  border-width: 1px;
+}
+
 .edit-icon {
   opacity: 0.6;
   transition: opacity 0.2s;
@@ -113,7 +113,11 @@ function onBlur() {
 }
 
 .editable-content {
+  min-width: 8ch;
   outline: none;
-  min-height: 24px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
 }
 </style>

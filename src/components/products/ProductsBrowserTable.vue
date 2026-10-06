@@ -146,11 +146,12 @@
               </th>
               <th v-else scope="col">
                 <div class="d-flex align-center">
-                  <span
-                    class="me-2 cursor-pointer"
+                  <button
+                    type="button"
+                    class="products-browser-sort-button me-2"
                     @click="toggleSort(column)"
                     v-text="column.title"
-                  ></span>
+                  ></button>
 
                   <v-icon
                     v-if="isSorted(column)"
@@ -446,6 +447,16 @@ async function onNewProduct(item: ProductMetaDataType) {
 <style scoped>
 .refresh-container {
   height: 28px;
+}
+
+.products-browser-sort-button {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 :deep(.selected-row) {

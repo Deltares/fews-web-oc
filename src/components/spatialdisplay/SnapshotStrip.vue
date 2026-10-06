@@ -8,7 +8,6 @@
         :class="{ 'is-dragging': snapshotIsDragging }"
         @scroll="onSnapshotScroll"
         @wheel="onSnapshotWheel"
-        @click="onSnapshotStripClick"
         @pointerdown="onSnapshotPointerDown"
         @pointermove="onSnapshotPointerMove"
         @pointerup="onSnapshotPointerUp"
@@ -28,7 +27,14 @@
             'datetime-slider__snapshot-frame--empty': !frame.hasImage,
           }"
         >
-          <template v-if="frame.hasImage">
+          <button
+            v-if="frame.hasImage"
+            type="button"
+            class="datetime-slider__snapshot-select-button"
+            :aria-label="`Select snapshot at ${formatSnapshotTime(frame.time)}`"
+            :aria-pressed="frame.index === selectedSnapshotIndex"
+            @click.stop="selectSnapshotFrame(frame.time)"
+          >
             <img
               v-if="getResolvedSnapshotImageUrl(frame.url)"
               class="datetime-slider__snapshot-image"
@@ -37,39 +43,55 @@
               loading="lazy"
               draggable="false"
             />
-            <div
+            <span
               v-else
               class="datetime-slider__snapshot-image datetime-slider__snapshot-image--empty"
               aria-hidden="true"
-            ></div>
-            <div
+            ></span>
+            <span
               v-if="
                 frame.hasTimeMismatch && getResolvedSnapshotImageUrl(frame.url)
               "
               class="datetime-slider__snapshot-image-mismatch-overlay"
               aria-hidden="true"
-            ></div>
-          </template>
-          <div
-            v-if="!frame.hasImage"
-            class="datetime-slider__snapshot-image datetime-slider__snapshot-image--empty"
-            aria-hidden="true"
-          ></div>
-          <span
-            class="datetime-slider__snapshot-label"
-            :class="{
-              'datetime-slider__snapshot-label--day-transition':
-                frame.isDayTransition && frame.time.getHours() !== 0,
-            }"
-            :datetime="frame.time.toISOString()"
-          >
+            ></span>
             <span
-              v-if="frame.isDayTransition && frame.time.getHours() !== 0"
-              class="datetime-slider__snapshot-label-date"
-              >{{ formatSnapshotDay(frame.time) }}</span
+              class="datetime-slider__snapshot-label"
+              :class="{
+                'datetime-slider__snapshot-label--day-transition':
+                  frame.isDayTransition && frame.time.getHours() !== 0,
+              }"
+              :datetime="frame.time.toISOString()"
             >
-            <span>{{ formatSnapshotChip(frame.time) }}</span>
-          </span>
+              <span
+                v-if="frame.isDayTransition && frame.time.getHours() !== 0"
+                class="datetime-slider__snapshot-label-date"
+                >{{ formatSnapshotDay(frame.time) }}</span
+              >
+              <span>{{ formatSnapshotChip(frame.time) }}</span>
+            </span>
+          </button>
+          <template v-else>
+            <div
+              class="datetime-slider__snapshot-image datetime-slider__snapshot-image--empty"
+              aria-hidden="true"
+            ></div>
+            <span
+              class="datetime-slider__snapshot-label"
+              :class="{
+                'datetime-slider__snapshot-label--day-transition':
+                  frame.isDayTransition && frame.time.getHours() !== 0,
+              }"
+              :datetime="frame.time.toISOString()"
+            >
+              <span
+                v-if="frame.isDayTransition && frame.time.getHours() !== 0"
+                class="datetime-slider__snapshot-label-date"
+                >{{ formatSnapshotDay(frame.time) }}</span
+              >
+              <span>{{ formatSnapshotChip(frame.time) }}</span>
+            </span>
+          </template>
         </div>
         <div
           class="datetime-slider__snapshot-spacer"
@@ -501,28 +523,10 @@ watch(
   { immediate: true },
 )
 
-function onSnapshotStripClick(event: MouseEvent): void {
+function selectSnapshotFrame(time: Date): void {
   if (snapshotDragDistance > SNAPSHOT_DRAG_CLICK_THRESHOLD_PX) return
-  const viewport = snapshotViewport.value
-  const frames = snapshotFrames.value
-  if (!viewport || !frames.length) return
-
-  const viewportRect = viewport.getBoundingClientRect()
-  const clickOffsetPx =
-    event.clientX -
-    viewportRect.left +
-    viewport.scrollLeft -
-    snapshotEdgePadding.value
-  const frameIndex = clamp(
-    Math.floor(clickOffsetPx / SNAPSHOT_FRAME_STRIDE),
-    0,
-    frames.length - 1,
-  )
-  const clickedFrame = frames[frameIndex]
-  if (!clickedFrame?.hasImage) return
-
   animateNextSnapshotCentering.value = true
-  emit('update:selectedDate', clickedFrame.time)
+  emit('update:selectedDate', time)
 }
 
 function onSnapshotPointerDown(event: PointerEvent): void {
@@ -534,7 +538,6 @@ function onSnapshotPointerDown(event: PointerEvent): void {
   snapshotDragStartClientX = event.clientX
   snapshotDragStartScrollLeft = viewport.scrollLeft
   snapshotDragDistance = 0
-  viewport.setPointerCapture(event.pointerId)
 }
 
 function onSnapshotPointerMove(event: PointerEvent): void {
@@ -544,6 +547,12 @@ function onSnapshotPointerMove(event: PointerEvent): void {
 
   const delta = snapshotDragStartClientX - event.clientX
   snapshotDragDistance = Math.abs(delta)
+  if (
+    snapshotDragDistance > SNAPSHOT_DRAG_CLICK_THRESHOLD_PX &&
+    !viewport.hasPointerCapture(event.pointerId)
+  ) {
+    viewport.setPointerCapture(event.pointerId)
+  }
   viewport.scrollLeft = clamp(
     snapshotDragStartScrollLeft + delta,
     0,
@@ -554,7 +563,10 @@ function onSnapshotPointerMove(event: PointerEvent): void {
 function onSnapshotPointerUp(event: PointerEvent): void {
   if (!snapshotIsDragging.value) return
   snapshotIsDragging.value = false
-  snapshotViewport.value?.releasePointerCapture(event.pointerId)
+  const capturedViewport = snapshotViewport.value
+  if (capturedViewport?.hasPointerCapture(event.pointerId)) {
+    capturedViewport.releasePointerCapture(event.pointerId)
+  }
 
   if (snapshotDragDistance <= SNAPSHOT_DRAG_CLICK_THRESHOLD_PX) return
 
@@ -865,6 +877,25 @@ onUnmounted(() => {
 
 .datetime-slider__snapshot-frame--selected {
   border-color: rgba(var(--v-theme-secondary), 0.9);
+}
+
+.datetime-slider__snapshot-select-button {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.datetime-slider__snapshot-select-button:focus-visible {
+  z-index: 1;
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: -3px;
 }
 
 .datetime-slider__snapshot-image {
