@@ -915,105 +915,241 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     )
   })
 
-  test('selects and scrolls to the row matching selectedDate', async ({
+  for (const width of [1280, 390]) {
+    test(`selected date floats at the correct date-column edge at ${width}px`, async ({
+      mount,
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 844 })
+      const component = await mount('table/TimeSeriesTable/SelectedDateRow')
+      const selectedRow = component.locator('tbody tr[aria-selected="true"]')
+      const returnButton = component.getByTestId('return-to-selected-date')
+      const scrollContainer = component.locator('.v-table__wrapper')
+      await expect(selectedRow.locator('td').first()).toContainText('2:30')
+      await expect(selectedRow).toBeInViewport()
+      await expect(returnButton).toHaveCount(0)
+      await expect(component.getByTestId('table-status')).not.toContainText(
+        'Selected:',
+      )
+      await expect(
+        component.getByTestId('table-status-selected-date'),
+      ).toHaveCount(0)
+
+      for (const direction of ['up', 'down']) {
+        await scrollContainer.evaluate((element, edge) => {
+          element.scrollTop = edge === 'up' ? element.scrollHeight : 0
+          element.dispatchEvent(new Event('scroll'))
+        }, direction)
+        await expect(returnButton).toBeVisible()
+        await expect(returnButton).toContainText('2:30')
+        await expect(returnButton.locator('time')).toHaveAttribute(
+          'datetime',
+          '2025-01-01T02:30:00.000Z',
+        )
+        await expect(
+          returnButton.locator(`.mdi-arrow-${direction}`),
+        ).toHaveCount(1)
+        await expect
+          .poll(() =>
+            returnButton.evaluate((element, edge) => {
+              const container = element.closest('.table-container')!
+              const column = container
+                .querySelector('th.table-date')!
+                .getBoundingClientRect()
+              const header = container
+                .querySelector('thead')!
+                .getBoundingClientRect()
+              const scroll = container
+                .querySelector('.v-table__wrapper')!
+                .getBoundingClientRect()
+              const button = element.getBoundingClientRect()
+              const dateCell = container.querySelector('tbody td.table-date')!
+              const dateCellStyle = getComputedStyle(dateCell)
+              const dateText = element.querySelector('time')!
+              const arrow = element.querySelector('.v-icon')!
+              return (
+                button.left >= column.left &&
+                button.right <= column.right &&
+                getComputedStyle(dateText).fontSize ===
+                  dateCellStyle.fontSize &&
+                Math.abs(
+                  dateText.getBoundingClientRect().left -
+                    dateCell.getBoundingClientRect().left -
+                    parseFloat(dateCellStyle.paddingLeft),
+                ) < 1 &&
+                arrow.getBoundingClientRect().left >=
+                  dateText.getBoundingClientRect().right &&
+                Math.abs(
+                  edge === 'up'
+                    ? button.top - header.bottom
+                    : scroll.bottom - button.bottom,
+                ) < 1
+              )
+            }, direction),
+          )
+          .toBe(true)
+        await returnButton.hover()
+        await expect(
+          page.getByRole('tooltip', { name: 'Back to selected date' }),
+        ).toBeVisible()
+        await returnButton.click()
+        await expect(selectedRow).toBeInViewport()
+        await expect(returnButton).toHaveCount(0)
+      }
+    })
+  }
+
+  for (const direction of ['up', 'down']) {
+    test(`floating date appears when its row starts crossing the ${direction} edge and lifts gradually`, async ({
+      mount,
+    }) => {
+      const component = await mount('table/TimeSeriesTable/SelectedDateRow')
+      const scrollContainer = component.locator('.v-table__wrapper')
+      await scrollContainer.evaluate((element, edge) => {
+        const row = element.querySelector(
+          'tr[data-row-date="2025-01-01T02:30:00.000Z"]',
+        )!
+        const header = element.querySelector('thead')!
+        const rowBounds = row.getBoundingClientRect()
+        element.scrollTop +=
+          edge === 'up'
+            ? rowBounds.top - header.getBoundingClientRect().bottom - 2
+            : rowBounds.bottom - element.getBoundingClientRect().bottom + 2
+      }, direction)
+      const returnButton = component.getByTestId('return-to-selected-date')
+      await expect(returnButton).toHaveCount(0)
+      await scrollContainer.evaluate((element, edge) => {
+        element.scrollTop += edge === 'up' ? 4 : -4
+      }, direction)
+      await expect(returnButton).toBeVisible()
+      await expect(returnButton.locator(`.mdi-arrow-${direction}`)).toHaveCount(
+        1,
+      )
+      expect(
+        await scrollContainer.evaluate((element, edge) => {
+          const rowBounds = element
+            .querySelector('tr[data-row-date="2025-01-01T02:30:00.000Z"]')!
+            .getBoundingClientRect()
+          const headerBottom = element
+            .querySelector('thead')!
+            .getBoundingClientRect().bottom
+          return edge === 'up'
+            ? rowBounds.bottom > headerBottom
+            : rowBounds.top < element.getBoundingClientRect().bottom
+        }, direction),
+      ).toBe(true)
+      const initialElevation = await returnButton.evaluate((element) =>
+        Number(
+          getComputedStyle(element).getPropertyValue(
+            '--selected-date-elevation',
+          ),
+        ),
+      )
+      expect(initialElevation).toBeGreaterThan(0)
+      expect(initialElevation).toBeLessThan(0.2)
+      await scrollContainer.evaluate((element, edge) => {
+        element.scrollTop += edge === 'up' ? 20 : -20
+      }, direction)
+      await expect
+        .poll(() =>
+          returnButton.evaluate((element) =>
+            Number(
+              getComputedStyle(element).getPropertyValue(
+                '--selected-date-elevation',
+              ),
+            ),
+          ),
+        )
+        .toBeGreaterThan(initialElevation)
+      const intermediateElevation = await returnButton.evaluate((element) =>
+        Number(
+          getComputedStyle(element).getPropertyValue(
+            '--selected-date-elevation',
+          ),
+        ),
+      )
+      expect(intermediateElevation).toBeLessThan(1)
+      await scrollContainer.evaluate((element, edge) => {
+        element.scrollTop += edge === 'up' ? 100 : -100
+      }, direction)
+      await expect
+        .poll(() =>
+          returnButton.evaluate((element) =>
+            Number(
+              getComputedStyle(element).getPropertyValue(
+                '--selected-date-elevation',
+              ),
+            ),
+          ),
+        )
+        .toBe(1)
+    })
+  }
+
+  test('floating selected date follows header height changes without scrolling', async ({
     mount,
-    page,
   }) => {
     const component = await mount('table/TimeSeriesTable/SelectedDateRow')
-    const selectedRow = component.locator('tbody tr[aria-selected="true"]')
-    const returnToSelectedDate = component.getByTestId(
-      'return-to-selected-date',
-    )
-
-    await expect(selectedRow).toHaveCount(1)
-    await expect(selectedRow.locator('td').first()).toContainText('2:30')
-    await expect(selectedRow).toBeInViewport()
-    await expect(
-      component.getByTestId('table-status-selected-date'),
-    ).toContainText('2:30')
-    await expect(returnToSelectedDate).toBeHidden()
-    const selectedDateJump = component.getByTestId('selected-date-jump')
-    await expect(selectedDateJump).toHaveAttribute(
-      'aria-label',
-      'Back to selected date',
-    )
-
-    const statusLabels = [
-      component.getByTestId('table-status-row-count'),
-      component.getByTestId('table-status-date-range'),
-      component.getByTestId('table-status-selected-date'),
-    ]
-    const initialLabelCenters = await Promise.all(
-      statusLabels.map((label) =>
-        label.evaluate((element) => {
-          const bounds = element.getBoundingClientRect()
-          return bounds.top + bounds.height / 2
-        }),
-      ),
-    )
-
     await component.locator('.v-table__wrapper').evaluate((element) => {
       element.scrollTop = element.scrollHeight
-      element.dispatchEvent(new Event('scroll'))
     })
-    await selectedDateJump.click()
-    await expect(selectedRow).toBeInViewport()
-
-    await component.locator('.v-table__wrapper').evaluate((element) => {
-      element.scrollTop = element.scrollHeight
-      element.dispatchEvent(new Event('scroll'))
+    const returnButton = component.getByTestId('return-to-selected-date')
+    await expect(returnButton.locator('.mdi-arrow-up')).toHaveCount(1)
+    const originalTop = await returnButton.evaluate(
+      (element) => element.getBoundingClientRect().top,
+    )
+    await component.locator('thead').evaluate((element) => {
+      element.style.height = `${element.getBoundingClientRect().height + 40}px`
     })
-    await expect(returnToSelectedDate).toBeVisible()
-    const returnIconSize = await returnToSelectedDate
-      .locator('.mdi-arrow-up-right')
-      .evaluate((element) => getComputedStyle(element).fontSize)
-    await expect(
-      component
-        .getByTestId('jump-to-first-loaded-row')
-        .locator('.mdi-page-first'),
-    ).toHaveCSS('font-size', returnIconSize)
-    await expect(
-      component
-        .getByTestId('jump-to-last-loaded-row')
-        .locator('.mdi-page-last'),
-    ).toHaveCSS('font-size', returnIconSize)
-    const visibleButtonLabelCenters = await Promise.all(
-      statusLabels.map((label) =>
-        label.evaluate((element) => {
-          const bounds = element.getBoundingClientRect()
-          return bounds.top + bounds.height / 2
+    await expect
+      .poll(() =>
+        returnButton.evaluate((element) => {
+          const header = element
+            .closest('.table-container')!
+            .querySelector('thead')!
+          return Math.abs(
+            element.getBoundingClientRect().top -
+              header.getBoundingClientRect().bottom,
+          )
         }),
+      )
+      .toBeLessThan(1)
+    expect(
+      await returnButton.evaluate(
+        (element) => element.getBoundingClientRect().top,
       ),
-    )
-    visibleButtonLabelCenters.forEach((center, index) => {
-      expect(Math.abs(center - initialLabelCenters[index])).toBeLessThan(1)
-    })
-    await expect(returnToSelectedDate).toHaveAttribute(
-      'aria-label',
-      'Back to selected date',
-    )
-    await expect(
-      returnToSelectedDate.locator('.mdi-arrow-up-right'),
-    ).toHaveCount(1)
-    await returnToSelectedDate.hover()
-    await expect(
-      page.getByRole('tooltip', { name: 'Back to selected date' }),
-    ).toHaveText('Back to selected date')
-    await returnToSelectedDate.click()
+    ).toBeGreaterThan(originalTop + 30)
+  })
 
-    await expect(selectedRow).toBeInViewport()
-    await expect(returnToSelectedDate).toBeHidden()
-
-    await component.locator('.v-table__wrapper').evaluate((element) => {
+  test('floating date tracks selectedDate rather than highlighted edit rows', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/SelectedDateRow')
+    await component
+      .getByRole('columnheader')
+      .filter({ hasText: 'Editable series 1' })
+      .getByRole('button')
+      .click()
+    const scrollContainer = component.locator('.v-table__wrapper')
+    await scrollContainer.evaluate((element) => {
       element.scrollTop = 0
-      element.dispatchEvent(new Event('scroll'))
     })
-    await expect(returnToSelectedDate).toBeVisible()
+    await component
+      .locator('tbody tr[data-row-date]')
+      .first()
+      .locator('td.table-date')
+      .click()
+    await scrollContainer.evaluate((element) =>
+      element.dispatchEvent(new Event('scroll')),
+    )
+    const returnButton = component.getByTestId('return-to-selected-date')
+    await expect(returnButton).toBeVisible()
+    await expect(returnButton.locator('.mdi-arrow-down')).toHaveCount(1)
+    await returnButton.click()
     await expect(
-      returnToSelectedDate.locator('.mdi-arrow-down-right'),
-    ).toHaveCount(1)
-    await returnToSelectedDate.click()
-    await expect(selectedRow).toBeInViewport()
+      component.locator('tr[data-row-date="2025-01-01T02:30:00.000Z"]'),
+    ).toBeInViewport()
+    await expect(returnButton).toHaveCount(0)
   })
 
   for (const benchmark of [
