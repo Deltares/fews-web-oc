@@ -134,6 +134,7 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     mount,
   }) => {
     const component = await mount('table/TimeSeriesTable/EditableCell')
+    const statusActivity = component.getByTestId('table-status-activity')
 
     await expect(component.getByPlaceholder('value')).toHaveCount(0)
 
@@ -143,6 +144,9 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await editableHeader.locator('button').click()
 
     await expect(component.getByPlaceholder('value')).toHaveCount(1)
+    await expect(statusActivity).toHaveText(
+      'Tab / Shift+Tab: move fields | Enter / Space: select row',
+    )
     await expect(component.getByPlaceholder('value')).toHaveValue('12')
     await expect(component.getByPlaceholder('comment')).toHaveCount(1)
     await expect(
@@ -157,6 +161,7 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await expect(component.getByTestId('saved-data')).toContainText(
       '"value":"18.5"',
     )
+    await expect(statusActivity).not.toContainText('Shift+Tab')
   })
 
   test('cancel reuses read-only cells and discards the edited value', async ({
@@ -251,7 +256,6 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     const statusLabels = [
       component.getByTestId('table-status-row-count'),
       component.getByTestId('table-status-date-range'),
-      component.getByTestId('table-status-series-count'),
       component.getByTestId('table-status-selected-date'),
     ]
     const initialLabelCenters = await Promise.all(

@@ -270,10 +270,14 @@
       </div>
       <output
         class="table-status-bar__activity"
+        data-testid="table-status-activity"
         aria-live="polite"
         aria-atomic="true"
       >
-        <template v-if="props.isLoadingMore">Loading more data</template>
+        <template v-if="isEditing">
+          Tab / Shift+Tab: move fields | Enter / Space: select row
+        </template>
+        <template v-else-if="props.isLoadingMore">Loading more data</template>
         <template v-else-if="isWaitingForTableUpdate || props.isLoading">
           Updating table
         </template>
