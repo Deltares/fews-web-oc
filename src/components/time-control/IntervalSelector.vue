@@ -36,8 +36,8 @@ import { isEqual } from 'lodash-es'
 import { onBeforeMount, ref, watch } from 'vue'
 
 interface Props {
-  items: LabeledIntervalItem[]
-  now: Date
+  items?: LabeledIntervalItem[]
+  now?: Date
 }
 
 const props = withDefaults(defineProps<Props>(), {

@@ -56,10 +56,10 @@ import { scaleLinear } from 'd3-scale'
 import { clamp, floatPrecision } from '@/lib/utils/math'
 
 interface Props {
-  modelValue: number
-  minValue: number
-  maxValue: number
-  unit: string
+  modelValue?: number
+  minValue?: number
+  maxValue?: number
+  unit?: string
   ticks?: number[]
 }
 
