@@ -39,9 +39,6 @@ watch(
 )
 
 const topologyNodes = ref<TopologyNode[]>()
-getTopologyNodes().then((response) => {
-  topologyNodes.value = response
-})
 
 function anyChildNodeIsVisible(nodes: TopologyNode[] | undefined): boolean {
   if (nodes === undefined) return false
@@ -100,9 +97,15 @@ function updateItems(): void {
   if (topologyNodes.value) {
     const _items = recursiveUpdateNode(topologyNodes.value)
     items.value = _items
-    open.value = [_items[0].id]
+    const firstItem = _items[0]
+    open.value = firstItem ? [firstItem.id] : []
   }
 }
 
 watch(topologyNodes, updateItems)
+try {
+  topologyNodes.value = await getTopologyNodes()
+} catch (error) {
+  console.error('Failed to fetch topology nodes.', error)
+}
 </script>

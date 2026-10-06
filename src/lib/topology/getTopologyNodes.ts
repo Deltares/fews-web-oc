@@ -16,13 +16,6 @@ export async function getTopologyNodes(): Promise<TopologyNode[]> {
     transformRequestFn: createTransformRequestFn(),
   })
 
-  let nodes: TopologyNode[] = []
-  try {
-    const response = await piProvider.getTopologyNodes()
-    nodes = response.topologyNodes
-  } catch (error) {
-    error = 'error-loading'
-  }
-
-  return nodes
+  const response = await piProvider.getTopologyNodes()
+  return response.topologyNodes
 }
