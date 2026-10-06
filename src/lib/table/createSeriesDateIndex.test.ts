@@ -4,24 +4,25 @@ import type { Series } from '@/lib/timeseries/timeSeries'
 import { createSeriesDateIndex } from './createSeriesDateIndex'
 
 describe('createSeriesDateIndex', () => {
-  it('indexes dates by series and preserves Date identity', () => {
+  it('indexes dates by series using timestamps instead of Date identity', () => {
     const date = new Date('2025-01-01T00:00:00Z')
+    const sameTimestamp = new Date(date.getTime())
     const otherDate = new Date('2025-01-02T00:00:00Z')
     const index = createSeriesDateIndex({
       first: {
         data: [
           { x: date, y: 12, flag: '0' },
-          { x: date, y: 24, flag: '0' },
+          { x: sameTimestamp, y: 24, flag: '0' },
         ],
       },
       second: { data: [{ x: otherDate, y: 36, flag: '0' }] },
     })
 
     expect(index.get('first')?.size).toBe(1)
-    expect(index.get('first')?.has(date)).toBe(true)
-    expect(index.get('first')?.has(new Date(date.getTime()))).toBe(false)
-    expect(index.get('first')?.has(otherDate)).toBe(false)
-    expect(index.get('second')?.has(otherDate)).toBe(true)
+    expect(index.get('first')?.has(date.getTime())).toBe(true)
+    expect(index.get('first')?.has(sameTimestamp.getTime())).toBe(true)
+    expect(index.get('first')?.has(otherDate.getTime())).toBe(false)
+    expect(index.get('second')?.has(otherDate.getTime())).toBe(true)
   })
 
   it('handles empty, unloaded, and missing series', () => {
@@ -50,17 +51,17 @@ describe('createSeriesDateIndex', () => {
 
     series.first.data!.push({ x: otherDate, y: 24, flag: '0' })
     expect(index.value).not.toBe(initialIndex)
-    expect(index.value.get('first')?.has(otherDate)).toBe(true)
+    expect(index.value.get('first')?.has(otherDate.getTime())).toBe(true)
 
     series.first.data![0].x = otherDate
-    expect(index.value.get('first')?.has(date)).toBe(false)
+    expect(index.value.get('first')?.has(date.getTime())).toBe(false)
 
     series.first.data = [{ x: date, y: 36, flag: '0' }]
-    expect(index.value.get('first')?.has(date)).toBe(true)
-    expect(index.value.get('first')?.has(otherDate)).toBe(false)
+    expect(index.value.get('first')?.has(date.getTime())).toBe(true)
+    expect(index.value.get('first')?.has(otherDate.getTime())).toBe(false)
 
     series.first = { data: [{ x: otherDate, y: 48, flag: '0' }] }
-    expect(index.value.get('first')?.has(otherDate)).toBe(true)
+    expect(index.value.get('first')?.has(otherDate.getTime())).toBe(true)
 
     delete series.first
     expect(index.value.has('first')).toBe(false)

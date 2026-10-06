@@ -383,6 +383,88 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     )
   })
 
+  test('cycles selected-row fields across editable columns and highlights only the active column', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    for (const title of ['Editable series 2', 'Editable series 1']) {
+      await component
+        .getByRole('columnheader')
+        .filter({ hasText: title })
+        .getByRole('button')
+        .click()
+    }
+
+    const rows = component.locator('tbody tr[data-row-date]')
+    const firstSelectedRow = rows.nth(1)
+    const lastSelectedRow = rows.nth(3)
+    await firstSelectedRow.locator('td.table-date').click()
+    await lastSelectedRow
+      .locator('td.table-date')
+      .click({ modifiers: ['Shift'] })
+
+    const fields = firstSelectedRow.locator('[data-edit-field]')
+    await expect(fields).toHaveCount(6)
+    await fields.first().focus()
+    for (const key of ['Tab', 'Shift+Tab']) {
+      for (let step = 0; step < 6; step++) {
+        const index = key === 'Tab' ? step : (6 - step) % 6
+        const field = fields.nth(index)
+        await expect(field).toBeFocused()
+        const seriesId = await field.getAttribute('data-edit-series-id')
+        const fieldName = await field.getAttribute('data-edit-field')
+        const highlighted = component.locator(
+          '.table-cell-edit--column-focused',
+        )
+        await expect(highlighted).toHaveCount(3)
+        for (const highlightedField of await highlighted.all()) {
+          await expect(highlightedField).toHaveAttribute(
+            'data-edit-series-id',
+            seriesId!,
+          )
+          await expect(highlightedField).toHaveAttribute(
+            'data-edit-field',
+            fieldName!,
+          )
+        }
+        await field.press(key)
+      }
+      await expect(fields.first()).toBeFocused()
+    }
+    await expect(firstSelectedRow).toHaveAttribute('aria-selected', 'true')
+    await expect(lastSelectedRow).toHaveAttribute('aria-selected', 'true')
+    await fields.first().blur()
+    await expect(
+      component.locator('.table-cell-edit--column-focused'),
+    ).toHaveCount(0)
+  })
+
+  test('renders editors when the second column is edited first', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    const rows = component.locator('tbody tr[data-row-date]')
+    const secondColumnEditors = component.locator(
+      'tbody tr[data-row-date] td:nth-child(3) .table-cell-edit--value',
+    )
+    const secondHeader = component
+      .getByRole('columnheader')
+      .filter({ hasText: 'Editable series 2' })
+
+    await expect.poll(() => rows.count()).toBeGreaterThan(0)
+    await expect(secondColumnEditors).toHaveCount(0)
+    await secondHeader.getByRole('button').click()
+
+    await expect
+      .poll(() => secondColumnEditors.count())
+      .toBe(await rows.count())
+    await expect(
+      component.locator(
+        'tbody tr[data-row-date] td:nth-child(2) .table-cell-edit--value',
+      ),
+    ).toHaveCount(0)
+  })
+
   test('cancel reuses read-only cells and discards the edited value', async ({
     mount,
   }) => {

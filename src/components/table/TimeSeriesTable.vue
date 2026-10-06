@@ -173,13 +173,18 @@
               :id="id"
               :item="getEditableItem(item)"
               :focused-field="
-                selectedRowDates.has(item.date.getTime())
-                  ? focusedEditField
+                selectedRowDates.has(item.date.getTime()) &&
+                focusedEditField?.seriesId === id
+                  ? focusedEditField.field
                   : undefined
               "
               @update:item="(event, field) => onUpdateItem(event, field)"
-              @focus-field="focusedEditField = $event"
-              @keydown.tab="handleSelectedFieldTab($event, item, id)"
+              @focus-field="
+                focusedEditField = $event
+                  ? { seriesId: id, field: $event }
+                  : undefined
+              "
+              @keydown.tab="handleSelectedFieldTab($event, item)"
             />
             <!-- Table cell when not editing data. Shows additional info about flags. -->
             <TableCell
@@ -389,7 +394,10 @@ const activator = ref<string>('')
 const selected = ref<TableData>()
 const selectedRowDates = ref<Set<number>>(new Set())
 const selectionAnchorDate = ref<number>()
-const focusedEditField = ref<TableSeriesField>()
+const focusedEditField = ref<{
+  seriesId: string
+  field: TableSeriesField
+}>()
 const tableData = ref<TableData[]>([])
 const loadedDateRange = computed(() => {
   const firstRow = tableData.value[0]
@@ -719,7 +727,7 @@ function canEditItem(item: TableData, seriesId: string) {
   if (!editedSeriesIds.value.includes(seriesId)) return false
   if (nonEquidistantSeries.value.includes(seriesId)) return true
 
-  return seriesDateIndex.value.get(seriesId)?.has(item.date) ?? false
+  return seriesDateIndex.value.get(seriesId)?.has(item.date.getTime()) ?? false
 }
 
 function indexIsInRange(array: unknown[], index: number) {
@@ -852,34 +860,25 @@ function toggleRowSelection(dateTime: number) {
   selectionAnchorDate.value = dateTime
 }
 
-async function handleSelectedFieldTab(
-  event: KeyboardEvent,
-  item: TableData,
-  seriesId: string,
-) {
+async function handleSelectedFieldTab(event: KeyboardEvent, item: TableData) {
   if (!isEditing.value || !selectedRowDates.value.has(item.date.getTime())) {
     return
   }
 
-  const currentField = (event.target as HTMLElement).dataset.editField as
-    TableSeriesField | undefined
-  const fields: TableSeriesField[] = ['y', 'flagEdit', 'comment']
-  const fieldIndex = fields.indexOf(currentField as TableSeriesField)
-  if (fieldIndex < 0 || !canEditItem(item, seriesId)) return
+  const fields = Array.from(
+    tableContainer.value?.querySelectorAll<HTMLElement>(
+      `[data-edit-date="${item.date.toISOString()}"][data-edit-field]`,
+    ) ?? [],
+  )
+  const fieldIndex = fields.indexOf(event.target as HTMLElement)
+  if (fieldIndex < 0) return
 
   event.preventDefault()
   const offset = event.shiftKey ? -1 : 1
   const nextField =
     fields[(fieldIndex + offset + fields.length) % fields.length]
-  const selector = [
-    `[data-edit-date="${item.date.toISOString()}"]`,
-    `[data-edit-series-id="${CSS.escape(seriesId)}"]`,
-    `[data-edit-field="${nextField}"]`,
-  ].join('')
   await nextTick()
-  tableContainer.value
-    ?.querySelector<HTMLElement>(selector)
-    ?.focus({ preventScroll: true })
+  nextField?.focus({ preventScroll: true })
 }
 
 watch(editedSeriesIds, () => {

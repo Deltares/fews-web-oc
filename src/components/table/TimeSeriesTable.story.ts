@@ -152,7 +152,7 @@ function createBenchmarkStory(
         })
         const timeSeries = new Series(new SeriesUrlRequest('benchmark', id))
         allSeriesEvents[id] = dates.map((x, row) => ({
-          x,
+          x: new Date(x),
           y: ((row * 17 + column * 31) % 1000) / 10,
           flag: '9',
           comment: `Row ${row + 1}, series ${column + 1}`,
