@@ -23,7 +23,8 @@ export function useOverlays(
         ? newOverlays
         : [gridLayer, ...newOverlays]
       hasOverlays.value = newOverlays.some(
-        (overlay) => overlay.type === 'overLay',
+        (overlay) =>
+          overlay.type === 'overLay' || overlay.type === 'externalOverLay',
       )
       overlays.value = newOverlaysWithGrid.map(convertFewsPiOverlayToOverlay)
     },
