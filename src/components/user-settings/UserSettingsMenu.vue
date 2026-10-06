@@ -23,13 +23,9 @@
       <v-divider />
       <UserSettingsDialog>
         <template #activator="{ props }">
-          <v-list-item
-            v-bind="props"
-            aria-label="All User Settings"
-            role="button"
-          >
+          <v-btn v-bind="props" variant="text" class="w-100 justify-start">
             {{ t('userSettings.allSettings') }} ...
-          </v-list-item>
+          </v-btn>
         </template>
       </UserSettingsDialog>
     </v-list>

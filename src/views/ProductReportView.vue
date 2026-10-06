@@ -75,7 +75,11 @@
         class="pdf-iframe"
       ></iframe>
       <div v-else class="products-browser-view__canvas overflow-y-auto w-100">
-        <img v-if="viewMode === 'img'" :src="src" />
+        <img
+          v-if="viewMode === 'img'"
+          :src="src"
+          :alt="selectedProduct?.attributes.name ?? 'Report'"
+        />
         <ReactiveIframe
           v-else-if="viewMode === 'html'"
           :src="src"

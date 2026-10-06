@@ -29,17 +29,22 @@
                 'v-data-table__th--sorted': isSorted(column),
                 'v-data-table__th--sortable': column.sortable && !isEditing,
               }"
-              @click="
-                column.sortable && !isEditing ? toggleSort(column) : undefined
-              "
             >
               <div class="table-header-indicator-text">
-                <span>{{ column.title }}</span>
-                <v-icon
+                <button
                   v-if="column.sortable && !isEditing"
-                  class="v-data-table-header__sort-icon"
-                  :icon="getSortIcon(column)"
-                />
+                  type="button"
+                  class="table-sort-button"
+                  @click="toggleSort(column)"
+                >
+                  {{ column.title }}
+                  <v-icon
+                    class="v-data-table-header__sort-icon"
+                    :icon="getSortIcon(column)"
+                    aria-hidden="true"
+                  />
+                </button>
+                <span v-else>{{ column.title }}</span>
                 <div
                   v-if="isEditing && nonEquidistantSeries.length > 0"
                   class="table-header__actions"
@@ -135,7 +140,11 @@
       <template #item="{ item }">
         <tr
           :class="{ highlighted: selected?.date === item.date }"
+          :tabindex="isEditing ? 0 : undefined"
+          :aria-selected="selected?.date === item.date"
           @click="(e) => handleRowClick(e, item)"
+          @keydown.enter.prevent="handleRowClick($event, item)"
+          @keydown.space.prevent="handleRowClick($event, item)"
         >
           <td class="table-date sticky-column">
             <v-text-field
@@ -642,6 +651,18 @@ td.sticky-column {
 
 .table-header-indicator-text {
   flex-grow: 1;
+}
+
+.table-sort-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .table-header-indicator-color {
