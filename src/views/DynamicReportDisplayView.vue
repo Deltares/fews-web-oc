@@ -113,9 +113,7 @@ useDateRegistry(() => times.value ?? [])
 const maxValuesTimeSeries = ref<TimeSeriesData[]>([])
 
 watch(locations, (newLocations) => {
-  if (
-    !newLocations.some((loc) => loc.id === selectedLocation.value?.id)
-  ) {
+  if (!newLocations.some((loc) => loc.id === selectedLocation.value?.id)) {
     selectedLocation.value = newLocations[0]
   }
 })

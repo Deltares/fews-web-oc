@@ -104,9 +104,7 @@ export function convertDateToDateTimeString(date: Date): string {
   return date.toISOString().slice(0, 16)
 }
 
-export function toHumanReadableDate(
-  date: DateInput,
-): string {
+export function toHumanReadableDate(date: DateInput): string {
   if (date === undefined || date === null) {
     return '—'
   }
@@ -121,9 +119,7 @@ export function toHumanReadableDate(
   })
 }
 
-export function toHumanReadableDateTime(
-  date: DateInput,
-): string {
+export function toHumanReadableDateTime(date: DateInput): string {
   if (date === undefined || date === null) {
     return '—'
   }
@@ -142,9 +138,7 @@ export function toHumanReadableDateTime(
   })
 }
 
-export function toHumanReadableTime(
-  date: DateInput,
-): string {
+export function toHumanReadableTime(date: DateInput): string {
   if (date === undefined || date === null) {
     return '—'
   }
@@ -159,9 +153,7 @@ export function toHumanReadableTime(
   })
 }
 
-export function toShortHumanReadableDate(
-  date: DateInput,
-): string {
+export function toShortHumanReadableDate(date: DateInput): string {
   if (date === undefined || date === null) {
     return '—'
   }
@@ -242,10 +234,7 @@ export function toDateAbsDifferenceString(
   return result
 }
 
-export function toDateSpanString(
-  startDate: DateInput,
-  endDate: DateInput,
-) {
+export function toDateSpanString(startDate: DateInput, endDate: DateInput) {
   return `${toDateRangeString(startDate, endDate)} (${toDateAbsDifferenceString(startDate, endDate)})`
 }
 
