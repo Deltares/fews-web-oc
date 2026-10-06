@@ -178,7 +178,7 @@ The Web OC requires the following policies:
 | media-src | 'self' |
 | script-src | 'self'  blob: |
 | style-src | 'self' 'unsafe-inline' `FEWS_WEBSERVICES_DOMAIN`[^2] |
-| worker-src | 'self' |
+| worker-src | 'self' blob: |
 
 Replace `FEWS_WEBSERVICES_DOMAIN` with the domain of the FEWS web services are available. Leave empty when this is the same domain as where the Web OC is hosted.
 Replace `AUTHORITY_DOMAIN` with the domain of the configured OIDC authority provider (e.g. https://login.microsoftonline.com for Microsoft identity platform). Leave empty when no authority provider is used.
