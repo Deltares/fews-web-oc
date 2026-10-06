@@ -39,6 +39,97 @@ test.describe('TableCellEdit', () => {
 })
 
 test.describe('TableCellEdit in TimeSeriesTable', () => {
+  test('shows loaded rows and date range in the status bar', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/EditableCell')
+    const status = component.getByTestId('table-status')
+
+    await expect(status).toHaveCSS('height', '40px')
+    await expect(status.getByTestId('table-status-row-count')).toHaveText(
+      '1 row loaded',
+    )
+    await expect(status.getByTestId('table-status-row-count')).toHaveCSS(
+      'font-size',
+      '14px',
+    )
+    await expect(status.getByTestId('table-status-series-count')).toHaveCount(0)
+    const range = status.getByTestId('table-status-date-range').locator('time')
+    await expect(range).toHaveCount(2)
+    const dateChip = status
+      .getByTestId('table-status-date-range')
+      .locator('.table-status-bar__date-chip')
+    await expect(dateChip).toHaveCount(1)
+    await expect
+      .poll(async () =>
+        dateChip.evaluate((element) => getComputedStyle(element).fontSize),
+      )
+      .toBe(
+        await status
+          .getByTestId('table-status-row-count')
+          .evaluate((element) => getComputedStyle(element).fontSize),
+      )
+    await expect(
+      status
+        .getByTestId('table-status-date-range')
+        .locator('.table-status-bar__date-divider'),
+    ).toHaveCount(1)
+    await expect(
+      status
+        .getByTestId('table-status-date-range')
+        .locator('.table-status-bar__date-divider'),
+    ).toHaveCSS('margin-left', '8px')
+    await expect(
+      status.getByTestId('table-status-date-range'),
+    ).not.toContainText('to')
+    await expect(range.first()).toHaveAttribute(
+      'datetime',
+      '2025-01-01T00:00:00.000Z',
+    )
+    await expect(status.getByTestId('jump-to-first-loaded-row')).toBeVisible()
+    await expect(status.getByTestId('jump-to-last-loaded-row')).toBeVisible()
+    await expect(
+      status.getByTestId('jump-to-first-loaded-row').locator('.mdi-page-first'),
+    ).toHaveCount(1)
+    await expect(
+      status.getByTestId('jump-to-last-loaded-row').locator('.mdi-page-last'),
+    ).toHaveCount(1)
+    await expect(
+      status.getByTestId('jump-to-first-loaded-row').locator('.mdi-page-first'),
+    ).toHaveCSS('font-size', '15px')
+    await expect(
+      status.getByTestId('jump-to-last-loaded-row').locator('.mdi-page-last'),
+    ).toHaveCSS('font-size', '15px')
+    await expect(dateChip).toHaveCSS('height', '24px')
+    await expect(
+      status
+        .getByTestId('jump-to-last-loaded-row')
+        .locator('time + .mdi-page-last'),
+    ).toHaveCount(1)
+  })
+
+  test('date chips jump to the first and last loaded rows', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    const scrollContainer = component.locator('.v-table__wrapper')
+    const firstDate = '2025-01-01T00:00:00.000Z'
+    const lastDate = '2025-01-01T03:19:00.000Z'
+
+    await scrollContainer.evaluate((element) => {
+      element.scrollTop = 0
+    })
+    await component.getByTestId('jump-to-first-loaded-row').click()
+    await expect(
+      component.locator(`tr[data-row-date="${firstDate}"]`),
+    ).toBeInViewport()
+
+    await component.getByTestId('jump-to-last-loaded-row').click()
+    await expect(
+      component.locator(`tr[data-row-date="${lastDate}"]`),
+    ).toBeInViewport()
+  })
+
   test('renders editors only for the selected editable series and saves edits', async ({
     mount,
   }) => {
@@ -136,12 +227,103 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
 
   test('selects and scrolls to the row matching selectedDate', async ({
     mount,
+    page,
   }) => {
     const component = await mount('table/TimeSeriesTable/SelectedDateRow')
     const selectedRow = component.locator('tbody tr[aria-selected="true"]')
+    const returnToSelectedDate = component.getByTestId(
+      'return-to-selected-date',
+    )
 
     await expect(selectedRow).toHaveCount(1)
     await expect(selectedRow.locator('td').first()).toContainText('2:30')
+    await expect(selectedRow).toBeInViewport()
+    await expect(
+      component.getByTestId('table-status-selected-date'),
+    ).toContainText('2:30')
+    await expect(returnToSelectedDate).toBeHidden()
+    const selectedDateJump = component.getByTestId('selected-date-jump')
+    await expect(selectedDateJump).toHaveAttribute(
+      'aria-label',
+      'Back to selected date',
+    )
+
+    const statusLabels = [
+      component.getByTestId('table-status-row-count'),
+      component.getByTestId('table-status-date-range'),
+      component.getByTestId('table-status-series-count'),
+      component.getByTestId('table-status-selected-date'),
+    ]
+    const initialLabelCenters = await Promise.all(
+      statusLabels.map((label) =>
+        label.evaluate((element) => {
+          const bounds = element.getBoundingClientRect()
+          return bounds.top + bounds.height / 2
+        }),
+      ),
+    )
+
+    await component.locator('.v-table__wrapper').evaluate((element) => {
+      element.scrollTop = element.scrollHeight
+      element.dispatchEvent(new Event('scroll'))
+    })
+    await selectedDateJump.click()
+    await expect(selectedRow).toBeInViewport()
+
+    await component.locator('.v-table__wrapper').evaluate((element) => {
+      element.scrollTop = element.scrollHeight
+      element.dispatchEvent(new Event('scroll'))
+    })
+    await expect(returnToSelectedDate).toBeVisible()
+    const returnIconSize = await returnToSelectedDate
+      .locator('.mdi-arrow-up-right')
+      .evaluate((element) => getComputedStyle(element).fontSize)
+    await expect(
+      component
+        .getByTestId('jump-to-first-loaded-row')
+        .locator('.mdi-page-first'),
+    ).toHaveCSS('font-size', returnIconSize)
+    await expect(
+      component
+        .getByTestId('jump-to-last-loaded-row')
+        .locator('.mdi-page-last'),
+    ).toHaveCSS('font-size', returnIconSize)
+    const visibleButtonLabelCenters = await Promise.all(
+      statusLabels.map((label) =>
+        label.evaluate((element) => {
+          const bounds = element.getBoundingClientRect()
+          return bounds.top + bounds.height / 2
+        }),
+      ),
+    )
+    visibleButtonLabelCenters.forEach((center, index) => {
+      expect(Math.abs(center - initialLabelCenters[index])).toBeLessThan(1)
+    })
+    await expect(returnToSelectedDate).toHaveAttribute(
+      'aria-label',
+      'Back to selected date',
+    )
+    await expect(
+      returnToSelectedDate.locator('.mdi-arrow-up-right'),
+    ).toHaveCount(1)
+    await returnToSelectedDate.hover()
+    await expect(
+      page.getByRole('tooltip', { name: 'Back to selected date' }),
+    ).toHaveText('Back to selected date')
+    await returnToSelectedDate.click()
+
+    await expect(selectedRow).toBeInViewport()
+    await expect(returnToSelectedDate).toBeHidden()
+
+    await component.locator('.v-table__wrapper').evaluate((element) => {
+      element.scrollTop = 0
+      element.dispatchEvent(new Event('scroll'))
+    })
+    await expect(returnToSelectedDate).toBeVisible()
+    await expect(
+      returnToSelectedDate.locator('.mdi-arrow-down-right'),
+    ).toHaveCount(1)
+    await returnToSelectedDate.click()
     await expect(selectedRow).toBeInViewport()
   })
 

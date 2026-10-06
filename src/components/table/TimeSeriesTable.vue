@@ -140,6 +140,7 @@
       <template #item="{ item }">
         <tr
           :class="{ highlighted: selected?.date === item.date }"
+          :data-row-date="item.date.toISOString()"
           :tabindex="isEditing ? 0 : undefined"
           :aria-selected="selected?.date === item.date"
           @click="(e) => handleRowClick(e, item)"
@@ -181,6 +182,103 @@
         </tr>
       </template>
     </v-data-table-virtual>
+    <div class="table-status-bar" data-testid="table-status">
+      <div class="table-status-bar__summary">
+        <span data-testid="table-status-row-count">
+          {{ tableData.length }} {{ tableData.length === 1 ? 'row' : 'rows' }}
+          loaded
+        </span>
+        <span
+          v-if="loadedDateRange"
+          class="table-status-bar__date-range"
+          data-testid="table-status-date-range"
+          aria-label="Loaded date range"
+        >
+          <v-chip
+            class="table-status-bar__date-chip"
+            height="24"
+            variant="tonal"
+          >
+            <button
+              type="button"
+              class="table-status-bar__date-chip-action"
+              data-testid="jump-to-first-loaded-row"
+              aria-label="Jump to first loaded row"
+              @click="scrollToLoadedBoundary('first')"
+            >
+              <v-icon icon="mdi-page-first" size="15px" aria-hidden="true" />
+              <time :datetime="loadedDateRange.start.toISOString()">
+                {{ d(loadedDateRange.start, 'timeSeriesTable__date') }}
+              </time>
+            </button>
+            <span
+              class="table-status-bar__date-divider"
+              aria-hidden="true"
+            ></span>
+            <button
+              type="button"
+              class="table-status-bar__date-chip-action"
+              data-testid="jump-to-last-loaded-row"
+              aria-label="Jump to last loaded row"
+              @click="scrollToLoadedBoundary('last')"
+            >
+              <time :datetime="loadedDateRange.end.toISOString()">
+                {{ d(loadedDateRange.end, 'timeSeriesTable__date') }}
+              </time>
+              <v-icon icon="mdi-page-last" size="15px" aria-hidden="true" />
+            </button>
+          </v-chip>
+        </span>
+        <span
+          v-if="props.selectedDate"
+          class="table-status-bar__selection text-primary"
+          data-testid="table-status-selected-date"
+        >
+          <button
+            type="button"
+            class="table-status-bar__selected-date"
+            data-testid="selected-date-jump"
+            aria-label="Back to selected date"
+            @click="selectDateRow(true)"
+          >
+            <span>Selected:</span>
+            <time :datetime="props.selectedDate.toISOString()">
+              {{ d(props.selectedDate, 'timeSeriesTable__date') }}
+            </time>
+          </button>
+          <v-tooltip text="Back to selected date" location="top">
+            <template #activator="{ props: tooltipProps }">
+              <v-btn
+                v-if="!isSelectedDateVisible"
+                v-bind="tooltipProps"
+                class="table-status-bar__return"
+                data-testid="return-to-selected-date"
+                :icon="
+                  selectedDateDirection === 'up'
+                    ? 'mdi-arrow-up-right'
+                    : 'mdi-arrow-down-right'
+                "
+                aria-label="Back to selected date"
+                color="primary"
+                size="x-small"
+                variant="text"
+                @click="selectDateRow(true)"
+              />
+            </template>
+          </v-tooltip>
+        </span>
+      </div>
+      <output
+        class="table-status-bar__activity"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <template v-if="props.isLoadingMore">Loading more data</template>
+        <template v-else-if="isWaitingForTableUpdate || props.isLoading">
+          Updating table
+        </template>
+      </output>
+    </div>
   </div>
 </template>
 
@@ -269,10 +367,19 @@ const tooltipItem = ref<any>({})
 const activator = ref<string>('')
 const selected = ref<TableData>()
 const tableData = ref<TableData[]>([])
+const loadedDateRange = computed(() => {
+  const firstRow = tableData.value[0]
+  const lastRow = tableData.value.at(-1)
+  if (!firstRow || !lastRow) return undefined
+
+  return { start: firstRow.date, end: lastRow.date }
+})
 const newTableData = ref<TableData[]>([])
 const tableHeaders = ref<TableHeaders[]>([])
 const tableContainer = ref<HTMLElement | null>(null)
 const tableScrollElement = ref<HTMLElement | null>(null)
+const isSelectedDateVisible = ref(true)
+const selectedDateDirection = ref<'up' | 'down'>('down')
 const virtualTable = ref<{
   scrollToIndex: (index: number, position?: 'start' | 'center' | 'end') => void
 } | null>(null)
@@ -281,6 +388,7 @@ const paginationThreshold = 100
 let seriesDataLengths = new Map<string, number>()
 let lastProcessedPageRevision = 0
 let hasPendingTopLoad = false
+let selectedDateVisibilityFrame: number | undefined
 
 const isEditing = ref<boolean>(false)
 const editedSeriesIds = ref<string[]>([])
@@ -503,6 +611,9 @@ watch(
 
 onUnmounted(() => {
   tableScrollElement.value?.removeEventListener('scroll', handleTableScroll)
+  if (selectedDateVisibilityFrame !== undefined) {
+    cancelAnimationFrame(selectedDateVisibilityFrame)
+  }
 })
 
 const showTooltip = (event: MouseEvent, item: any) => {
@@ -709,27 +820,108 @@ function onUpdateItem(event: TableData) {
 }
 
 function selectDateRow(scrollIntoView = false) {
+  const selectedRow = getSelectedDateRow()
+  if (selectedRow === undefined) return
+
+  selected.value = selectedRow.item
+  if (scrollIntoView) {
+    isSelectedDateVisible.value = true
+    nextTick(() => {
+      virtualTable.value?.scrollToIndex(selectedRow.displayIndex, 'center')
+      updateSelectedDateVisibility()
+    })
+  }
+}
+
+function scrollToLoadedBoundary(boundary: 'first' | 'last') {
+  if (tableData.value.length === 0) return
+
+  const dateSortOrder = sortBy.value.find((item) => item.key === 'date')?.order
+  const isDescending = dateSortOrder === 'desc'
+  const firstIndex = isDescending ? tableData.value.length - 1 : 0
+  const index =
+    boundary === 'first' ? firstIndex : tableData.value.length - 1 - firstIndex
+
+  virtualTable.value?.scrollToIndex(index, 'start')
+  updateSelectedDateVisibility()
+}
+
+function getSelectedDateRow() {
   const selectedDate = props.selectedDate
   if (selectedDate === undefined || tableData.value.length === 0) return
 
   const dates = tableData.value.map((item) => item.date)
   const dateIndex = findDateIndex(dates, selectedDate)
-  const selectedItem = tableData.value[dateIndex]
-  if (selectedItem === undefined) return
+  const item = tableData.value[dateIndex]
+  if (item === undefined) return
 
-  selected.value = selectedItem
-
-  const dateSortOrder = sortBy.value.find((item) => item.key === 'date')?.order
+  const dateSortOrder = sortBy.value.find(
+    (entry) => entry.key === 'date',
+  )?.order
   const displayIndex =
     dateSortOrder === 'desc'
       ? tableData.value.length - dateIndex - 1
       : dateIndex
-  if (scrollIntoView) {
-    nextTick(() => virtualTable.value?.scrollToIndex(displayIndex, 'center'))
+
+  return { item, displayIndex }
+}
+
+function updateSelectedDateVisibility() {
+  if (!props.selectedDate || !tableScrollElement.value) {
+    isSelectedDateVisible.value = true
+    return
   }
+
+  if (selectedDateVisibilityFrame !== undefined) {
+    cancelAnimationFrame(selectedDateVisibilityFrame)
+  }
+  selectedDateVisibilityFrame = requestAnimationFrame(() => {
+    selectedDateVisibilityFrame = undefined
+    const scrollElement = tableScrollElement.value
+    if (!scrollElement) return
+
+    const selectedRow = scrollElement.querySelector<HTMLElement>(
+      'tbody tr.highlighted',
+    )
+    const selectedDateRow = getSelectedDateRow()
+    if (selectedDateRow === undefined) {
+      isSelectedDateVisible.value = true
+      return
+    }
+
+    const scrollBounds = scrollElement.getBoundingClientRect()
+    const headerBottom =
+      scrollElement.querySelector('thead')?.getBoundingClientRect().bottom ??
+      scrollBounds.top
+    if (!selectedRow) {
+      const headerHeight = headerBottom - scrollBounds.top
+      const firstVisibleIndex = Math.max(
+        0,
+        Math.floor(
+          (scrollElement.scrollTop - headerHeight) / virtualItemHeight,
+        ),
+      )
+      selectedDateDirection.value =
+        selectedDateRow.displayIndex < firstVisibleIndex ? 'up' : 'down'
+      isSelectedDateVisible.value = false
+      return
+    }
+
+    const rowBounds = selectedRow.getBoundingClientRect()
+    if (rowBounds.bottom <= headerBottom) {
+      selectedDateDirection.value = 'up'
+      isSelectedDateVisible.value = false
+    } else if (rowBounds.top >= scrollBounds.bottom) {
+      selectedDateDirection.value = 'down'
+      isSelectedDateVisible.value = false
+    } else {
+      isSelectedDateVisible.value = true
+    }
+  })
 }
 
 function handleTableScroll() {
+  updateSelectedDateVisibility()
   const element = tableScrollElement.value
   if (
     !element ||
@@ -762,6 +954,7 @@ function handleTableScroll() {
 <style scoped>
 .table-container {
   display: flex;
+  flex-direction: column;
   flex: 1 1 100%;
   width: 100%;
   height: 100%;
@@ -777,12 +970,143 @@ function handleTableScroll() {
 .data-table {
   display: flex;
   position: relative;
-  flex: 1 1 100px;
+  flex: 1 1 0;
   flex-direction: column;
   width: 100%;
-  height: 100%;
+  min-height: 0;
+  height: auto;
   margin: auto;
   overflow-y: hidden;
+}
+
+.table-status-bar {
+  display: flex;
+  flex: 0 0 40px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 40px;
+  min-height: 40px;
+  max-height: 40px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  overflow: hidden;
+  border-top: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 14px;
+}
+
+.table-status-bar__summary {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 4px 16px;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.table-status-bar__summary > * {
+  flex: 0 0 auto;
+}
+
+.table-status-bar__summary::-webkit-scrollbar {
+  display: none;
+}
+
+.table-status-bar__date-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.table-status-bar__date-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  height: 24px;
+  min-height: 24px;
+  padding-inline: 8px;
+  font: inherit;
+}
+
+.table-status-bar__date-chip-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.table-status-bar__date-chip-action:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.table-status-bar__date-divider {
+  align-self: stretch;
+  width: 1px;
+  margin-inline: 8px;
+  background-color: currentColor;
+  opacity: 0.4;
+}
+
+.table-status-bar__selection {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  min-height: 36px;
+  white-space: nowrap;
+}
+
+.table-status-bar__selected-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 0 4px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.table-status-bar__selected-date:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.table-status-bar__return {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0;
+}
+
+.table-status-bar__activity {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 600px) {
+  .table-status-bar {
+    gap: 4px;
+    padding-inline: 8px;
+  }
+
+  .table-status-bar__summary {
+    gap: 4px 8px;
+  }
 }
 
 .data-table.hidden > svg {
