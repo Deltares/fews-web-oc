@@ -175,16 +175,21 @@ async function getChartsForTaskRun(
 
   const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-  const waitForProducts = async () => {
-    let matchingProducts: ProductMetaDataType[] = []
-    while (matchingProducts.length !== archiveProducts.length) {
-      const newProducts = await fetchProducts()
-      matchingProducts = findArchiveProducts(newProducts)
-      if (matchingProducts.length !== archiveProducts.length) {
-        await wait(PRODUCT_META_DATA_REFRESH_INTERVAL)
-      }
+  const waitForProducts = async (
+    matchingProducts: ProductMetaDataType[] = [],
+  ): Promise<ProductMetaDataType[]> => {
+    if (matchingProducts.length === archiveProducts.length) {
+      return matchingProducts
     }
-    return matchingProducts
+
+    const newProducts = await fetchProducts()
+    const nextMatchingProducts = findArchiveProducts(newProducts)
+    if (nextMatchingProducts.length === archiveProducts.length) {
+      return nextMatchingProducts
+    }
+
+    await wait(PRODUCT_META_DATA_REFRESH_INTERVAL)
+    return waitForProducts(nextMatchingProducts)
   }
 
   const products = await waitForProducts()

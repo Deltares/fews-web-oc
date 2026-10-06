@@ -66,6 +66,7 @@ export async function displayTabsForNode(
   topologyId?: string,
   from?: RouteLocationNormalized,
 ) {
+  const layerName = await getLayerNameForNode(node)
   for (const tab of displayTabs) {
     const params = {
       nodeId: parentNodeId ? [parentNodeId, node.id] : [node.id],
@@ -76,7 +77,7 @@ export async function displayTabsForNode(
         tab.active = nodeHasMap(node)
         tab.to.params = {
           ...params,
-          layerName: await getLayerNameForNode(node),
+          layerName,
         }
 
         if (from?.params.locationIds) {

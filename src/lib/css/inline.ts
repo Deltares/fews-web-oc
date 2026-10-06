@@ -18,26 +18,33 @@ async function fetchCssRecursively(url: string): Promise<CssChunk[]> {
 
   const importRegex =
     /@import\s+(?:url\(\s*['"]?([^'")]+)['"]?\s*\)|['"]([^'"]+)['"])\s*;/g // NOSONAR(S5852)
-  let chunks: CssChunk[] = []
-
-  let lastIndex = 0
+  const imports: { startIndex: number; endIndex: number; url: string }[] = []
   let match
   while ((match = importRegex.exec(cssText)) !== null) {
     const importPath = match[1] ?? match[2]
     if (!importPath) continue
+    imports.push({
+      startIndex: match.index,
+      endIndex: importRegex.lastIndex,
+      url: new URL(importPath, absoluteUrl(url)).href,
+    })
+  }
 
+  const importedChunks = await Promise.all(
+    imports.map((cssImport) => fetchCssRecursively(cssImport.url)),
+  )
+
+  const chunks: CssChunk[] = []
+  let lastIndex = 0
+  for (const [index, cssImport] of imports.entries()) {
     // CSS before this import statement is a chunk for current CSS file
-    const beforeImportCss = cssText.substring(lastIndex, match.index)
+    const beforeImportCss = cssText.substring(lastIndex, cssImport.startIndex)
     if (beforeImportCss.trim()) {
       chunks.push({ css: beforeImportCss, baseUrl: url })
     }
 
-    // Recursively get imported chunks
-    const importUrl = new URL(importPath, absoluteUrl(url)).href
-    const importedChunks = await fetchCssRecursively(importUrl)
-    chunks = chunks.concat(importedChunks)
-
-    lastIndex = importRegex.lastIndex
+    chunks.push(...importedChunks[index])
+    lastIndex = cssImport.endIndex
   }
 
   // Add remaining CSS after last import as a chunk
