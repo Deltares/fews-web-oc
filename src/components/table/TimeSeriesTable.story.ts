@@ -87,6 +87,7 @@ function createBenchmarkStory(
   selectedDateIndex?: number,
   pageSize = 0,
   useIncrementalPages = false,
+  allowLoadMore = pageSize > 0,
 ) {
   return defineComponent({
     setup() {
@@ -213,6 +214,7 @@ function createBenchmarkStory(
               settings: defaultChartSettings.timeSeriesTable,
               isLoading: isLoadingMore.value,
               isLoadingMore: isLoadingMore.value,
+              ...(allowLoadMore ? { allowLoadMore: true } : {}),
               pageUpdate: pageUpdate.value,
               selectedDate:
                 selectedDateIndex === undefined
@@ -247,6 +249,13 @@ function createBenchmarkStory(
 }
 
 export const Benchmark200Rows = createBenchmarkStory(200)
+export const LoadMore200Rows = createBenchmarkStory(
+  200,
+  undefined,
+  0,
+  false,
+  true,
+)
 export const Benchmark1000Rows = createBenchmarkStory(1000)
 export const Benchmark2000Rows = createBenchmarkStory(2000)
 export const SelectedDateRow = createBenchmarkStory(200, 150)

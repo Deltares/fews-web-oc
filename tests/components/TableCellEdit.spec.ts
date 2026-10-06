@@ -982,10 +982,25 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     )
   })
 
-  test('requests more rows at each virtual table boundary', async ({
+  test('does not request more rows at table boundaries by default', async ({
     mount,
   }) => {
     const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    const scrollContainer = component.locator('.v-table__wrapper')
+    for (const boundary of ['bottom', 'top']) {
+      await scrollContainer.evaluate((element, edge) => {
+        element.scrollTop = edge === 'bottom' ? element.scrollHeight : 0
+        element.dispatchEvent(new Event('scroll'))
+      }, boundary)
+      await expect(component.getByTestId('load-more-direction')).toBeEmpty()
+      await expect(component.getByTestId('load-more-count')).toHaveText('0')
+    }
+  })
+
+  test('requests more rows at each virtual table boundary', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/LoadMore200Rows')
     const scrollContainer = component.locator('.v-table__wrapper')
 
     await expect

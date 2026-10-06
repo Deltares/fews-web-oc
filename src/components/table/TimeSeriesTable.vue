@@ -380,11 +380,15 @@ interface Props {
   settings: ChartsSettings['timeSeriesTable']
   isLoading: boolean
   isLoadingMore?: boolean
+  allowLoadMore?: boolean
   selectedDate?: Date
   pageUpdate?: PaginatedTimeSeriesPageUpdate
 }
 
-const props = withDefaults(defineProps<Props>(), { isLoadingMore: false })
+const props = withDefaults(defineProps<Props>(), {
+  isLoadingMore: false,
+  allowLoadMore: false,
+})
 const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform)
 
 const emit = defineEmits(['change', 'update:isEditing', 'load-more-data'])
@@ -1284,6 +1288,7 @@ function handleTableScroll() {
   updateSelectedDateVisibility()
   const element = tableScrollElement.value
   if (
+    !props.allowLoadMore ||
     !element ||
     isEditing.value ||
     props.isLoading ||
