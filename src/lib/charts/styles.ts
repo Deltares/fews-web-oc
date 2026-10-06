@@ -174,14 +174,7 @@ function cssStyleFromFewsLineStyle(lineStyle: string): SvgPropertiesHyphen {
  */
 function cssStyleFromFewsLineWidth(lineWidth: string): SvgPropertiesHyphen {
   const style: SvgPropertiesHyphen = {}
-  switch (lineWidth) {
-    case 'thick':
-      style['stroke-width'] = '2px'
-      break
-    default:
-      style['stroke-width'] = '1px'
-      break
-  }
+  style['stroke-width'] = lineWidth === 'thick' ? '2px' : '1px'
   return style
 }
 
