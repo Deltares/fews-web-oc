@@ -85,7 +85,7 @@ function hasRequiredParameters(
 ): boolean {
   if (!capabilities) return false
   const validTimeParameter =
-    !(capabilities.dimension?.name === 'time') || filter?.time !== undefined
+    capabilities.dimension?.name !== 'time' || filter?.time !== undefined
   const validLocationParameter =
     !capabilities.selectableLocations ||
     capabilities.selectableLocations.some(
