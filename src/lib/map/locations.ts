@@ -72,12 +72,12 @@ function getSortKey({ properties }: Feature<Geometry, Location>): number {
   const severityOffset = properties.thresholdSeverity
     ? properties.thresholdSeverity * 10
     : 0
-  const offset =
-    properties.hasDataInViewPeriod === true
-      ? 2
-      : properties.hasDataOutsideViewPeriod === true
-        ? 1
-        : 0
+  let offset = 0
+  if (properties.hasDataInViewPeriod === true) {
+    offset = 2
+  } else if (properties.hasDataOutsideViewPeriod === true) {
+    offset = 1
+  }
   return severityOffset + offset
 }
 

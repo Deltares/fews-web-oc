@@ -146,13 +146,12 @@ function convertPropertyToJsonSchemaProperty(
         title: property.name,
       }
     case 'dateTime':
-      const dateValidation = convertPropertyToDateValidationOptions(property)
       return {
         type: 'string',
         format: 'date-time',
         default: property.defaultValue,
         title: property.name,
-        dateValidation,
+        dateValidation: convertPropertyToDateValidationOptions(property),
       }
     case 'whatIfTemplateId':
       return {

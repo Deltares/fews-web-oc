@@ -99,7 +99,7 @@ async function fetchLocationsAsGeoJsonForSingleFilterId(
 }
 
 function isFeatureCollection(
-  geojson: FeatureCollection<Geometry, Location> | unknown,
+  geojson: unknown,
 ): geojson is FeatureCollection<Geometry, Location> {
   return (
     (geojson as FeatureCollection<Geometry, Location>).type ===

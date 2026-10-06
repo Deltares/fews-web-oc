@@ -33,12 +33,8 @@
 </template>
 
 <script setup lang="ts">
-import { ControlElement } from '@jsonforms/core'
-import {
-  ControlProps,
-  rendererProps,
-  useJsonFormsControl,
-} from '@jsonforms/vue'
+import type { ControlProps } from '@jsonforms/vue'
+import { useJsonFormsControl } from '@jsonforms/vue'
 import { computed, inject, type Ref, ref, watch } from 'vue'
 
 import { toHumanReadableDateTime } from '@/lib/date'
@@ -52,13 +48,8 @@ import {
 
 import DateTimeTextField from '@/components/general/DateTimeTextField.vue'
 
-// FIXME: some type hackery here, because the json-forms types are a little
-//        weird. This seems to be how the API is expected to work, and it gives
-//        no issues at runtime.
-const props = withDefaults(defineProps<ControlProps>(), {
-  ...rendererProps<ControlElement>(),
-} as any)
-const control = useJsonFormsControl(props as ControlProps)
+const props = defineProps<ControlProps>()
+const control = useJsonFormsControl(props)
 
 const label = computed<string>(() => control.control.value.label)
 const errorMessages = computed<string[] | undefined>(() => {
@@ -134,8 +125,14 @@ function alignToTimeStep(
 ): Date {
   const timestamp = date.getTime()
   const timeStepMilliseconds = timeStepHours * 60 * 60 * 1000
-  const roundFunc =
-    mode === 'round' ? Math.round : mode === 'floor' ? Math.floor : Math.ceil
+  let roundFunc: typeof Math.round
+  if (mode === 'round') {
+    roundFunc = Math.round
+  } else if (mode === 'floor') {
+    roundFunc = Math.floor
+  } else {
+    roundFunc = Math.ceil
+  }
   const roundedTimestamp =
     roundFunc(timestamp / timeStepMilliseconds) * timeStepMilliseconds
   const rounded = new Date(roundedTimestamp)
