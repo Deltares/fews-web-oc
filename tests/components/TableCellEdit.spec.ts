@@ -145,6 +145,71 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await expect(selectedRow).toBeInViewport()
   })
 
+  for (const benchmark of [
+    {
+      name: 'incremental',
+      story: 'IncrementalPageLoadBenchmark',
+    },
+    {
+      name: 'full rebuild',
+      story: 'FullRebuildPageLoadBenchmark',
+    },
+  ]) {
+    test(`benchmarks repeated page loads with ${benchmark.name}`, async ({
+      mount,
+      page,
+    }) => {
+      test.setTimeout(120_000)
+      const component = await mount(`table/TimeSeriesTable/${benchmark.story}`)
+      const scrollContainer = component.locator('.v-table__wrapper')
+      const pageSize = 5_000
+      const loadCount = 4
+      const latencies: number[] = []
+
+      await expect
+        .poll(() =>
+          component.locator('tbody tr:has(td:not([colspan]))').count(),
+        )
+        .toBeGreaterThan(0)
+
+      for (let pageIndex = 1; pageIndex <= loadCount; pageIndex++) {
+        const startedAt = await page.evaluate(() => performance.now())
+        await scrollContainer.evaluate((element: HTMLElement) => {
+          element.scrollTop = 0
+          element.dispatchEvent(new Event('scroll'))
+        })
+
+        await expect(component.getByTestId('load-more-direction')).toHaveText(
+          'after',
+        )
+        await expect(component.getByTestId('loaded-row-count')).toHaveText(
+          String(10_000 + pageIndex * pageSize),
+        )
+        await expect(component.getByTestId('load-more-count')).toHaveText(
+          String(pageIndex),
+        )
+        await expect
+          .poll(() => scrollContainer.evaluate((element) => element.scrollTop))
+          .toBeGreaterThanOrEqual(pageSize * 36)
+        await expect(component.getByTestId('is-loading-more')).toHaveText(
+          'false',
+        )
+
+        latencies.push(
+          await page.evaluate((start) => performance.now() - start, startedAt),
+        )
+      }
+
+      const totalLatency = latencies.reduce(
+        (total, latency) => total + latency,
+        0,
+      )
+      console.info(
+        `[table page-load benchmark] ${benchmark.name}: ${loadCount} pages to ${10 + loadCount * (pageSize / 1_000)}k rows, total ${totalLatency.toFixed(1)}ms, mean ${(totalLatency / loadCount).toFixed(1)}ms, max ${Math.max(...latencies).toFixed(1)}ms`,
+      )
+    })
+  }
+
   for (const rowCount of [200, 1000, 2000]) {
     test(`benchmark story renders ${rowCount} rows with five editable series`, async ({
       mount,

@@ -82,7 +82,12 @@ export const EditableCell = defineComponent({
   },
 })
 
-function createBenchmarkStory(rowCount: number, selectedDateIndex?: number) {
+function createBenchmarkStory(
+  rowCount: number,
+  selectedDateIndex?: number,
+  pageSize = 0,
+  useIncrementalPages = false,
+) {
   return defineComponent({
     setup() {
       const { locale, mergeDateTimeFormat } = useI18n({ useScope: 'global' })
@@ -107,9 +112,16 @@ function createBenchmarkStory(rowCount: number, selectedDateIndex?: number) {
       ]
       fewsPropertiesStore.flagSources = [{ id: 'CORRECTED', name: 'Corrected' }]
       const loadMoreDirection = ref('')
+      const loadMoreCount = ref(0)
+      const loadedRowCount = ref(rowCount)
+      const isLoadingMore = ref(false)
+      const pageUpdate = ref<
+        { revision: number; direction: 'before' | 'after' } | undefined
+      >()
 
+      const totalRowCount = pageSize > 0 ? 50_000 : rowCount
       const dates = Array.from(
-        { length: rowCount },
+        { length: totalRowCount },
         (_, index) => new Date(date.getTime() + index * 60_000),
       )
       const benchmarkConfig: ChartConfig = {
@@ -117,7 +129,8 @@ function createBenchmarkStory(rowCount: number, selectedDateIndex?: number) {
         title: `Table benchmark ${rowCount}`,
         series: [],
       }
-      const benchmarkSeries: Record<string, Series> = {}
+      const benchmarkSeries = ref<Record<string, Series>>({})
+      const allSeriesEvents: Record<string, NonNullable<Series['data']>> = {}
 
       for (let column = 0; column < 5; column++) {
         const id = `benchmark-series-${column}`
@@ -138,14 +151,48 @@ function createBenchmarkStory(rowCount: number, selectedDateIndex?: number) {
           editable: true,
         })
         const timeSeries = new Series(new SeriesUrlRequest('benchmark', id))
-        timeSeries.data = dates.map((x, row) => ({
+        allSeriesEvents[id] = dates.map((x, row) => ({
           x,
           y: ((row * 17 + column * 31) % 1000) / 10,
           flag: '9',
           comment: `Row ${row + 1}, series ${column + 1}`,
         }))
+        timeSeries.data = allSeriesEvents[id].slice(0, rowCount)
         timeSeries.lastUpdated = date
-        benchmarkSeries[id] = timeSeries
+        benchmarkSeries.value[id] = timeSeries
+      }
+
+      function loadMore(direction: string) {
+        loadMoreDirection.value = direction
+        if (
+          pageSize === 0 ||
+          loadedRowCount.value >= totalRowCount ||
+          isLoadingMore.value
+        ) {
+          return
+        }
+
+        isLoadingMore.value = true
+        loadMoreCount.value++
+        const nextRowCount = Math.min(
+          loadedRowCount.value + pageSize,
+          totalRowCount,
+        )
+        const lastUpdated = new Date(date.getTime() + nextRowCount * 60_000)
+        for (const [id, timeSeries] of Object.entries(benchmarkSeries.value)) {
+          timeSeries.data = allSeriesEvents[id].slice(0, nextRowCount)
+          timeSeries.lastUpdated = lastUpdated
+        }
+        loadedRowCount.value = nextRowCount
+        if (useIncrementalPages) {
+          pageUpdate.value = {
+            revision: (pageUpdate.value?.revision ?? 0) + 1,
+            direction: direction as 'before' | 'after',
+          }
+        }
+        setTimeout(() => {
+          isLoadingMore.value = false
+        }, 600)
       }
 
       return () =>
@@ -153,28 +200,43 @@ function createBenchmarkStory(rowCount: number, selectedDateIndex?: number) {
           'div',
           {
             'data-testid': 'table-benchmark',
-            'data-row-count': rowCount,
+            'data-row-count': loadedRowCount.value,
             'data-series-count': 5,
             style: { height: '640px', width: '100%' },
           },
           [
             h(TimeSeriesTable, {
               config: benchmarkConfig,
-              series: benchmarkSeries,
+              series: benchmarkSeries.value,
               settings: defaultChartSettings.timeSeriesTable,
               isLoading: false,
+              isLoadingMore: isLoadingMore.value,
+              pageUpdate: pageUpdate.value,
               selectedDate:
                 selectedDateIndex === undefined
                   ? undefined
                   : dates[selectedDateIndex],
-              onLoadMoreData: (direction: string) => {
-                loadMoreDirection.value = direction
-              },
+              onLoadMoreData: loadMore,
             }),
             h(
               'output',
               { 'data-testid': 'load-more-direction' },
               loadMoreDirection.value,
+            ),
+            h(
+              'output',
+              { 'data-testid': 'loaded-row-count' },
+              loadedRowCount.value,
+            ),
+            h(
+              'output',
+              { 'data-testid': 'load-more-count' },
+              loadMoreCount.value,
+            ),
+            h(
+              'output',
+              { 'data-testid': 'is-loading-more' },
+              String(isLoadingMore.value),
             ),
           ],
         )
@@ -186,3 +248,14 @@ export const Benchmark200Rows = createBenchmarkStory(200)
 export const Benchmark1000Rows = createBenchmarkStory(1000)
 export const Benchmark2000Rows = createBenchmarkStory(2000)
 export const SelectedDateRow = createBenchmarkStory(200, 150)
+export const IncrementalPageLoadBenchmark = createBenchmarkStory(
+  10_000,
+  undefined,
+  5_000,
+  true,
+)
+export const FullRebuildPageLoadBenchmark = createBenchmarkStory(
+  10_000,
+  undefined,
+  5_000,
+)
