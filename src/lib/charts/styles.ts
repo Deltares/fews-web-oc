@@ -71,7 +71,7 @@ export function cssStyleFromFewsLine(item: {
     if (item.lineWidth) {
       style = {
         ...style,
-        ...{ 'stroke-width': `${item.lineWidth}` },
+        'stroke-width': `${item.lineWidth}`,
       }
     } else if (matches?.groups?.lineWidth !== undefined) {
       style = {
