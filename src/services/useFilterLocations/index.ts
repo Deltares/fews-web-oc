@@ -8,7 +8,7 @@ import {
 } from '@/lib/topology/locations'
 
 export interface UseFilterLocationsReturn {
-  error: Ref<any>
+  error: Ref<string | undefined>
   locations: ShallowRef<Location[]>
   geojson: ShallowRef<FeatureCollection<Geometry, Location>>
   isReady: Ref<boolean>
@@ -33,7 +33,7 @@ export function useFilterLocations(
 
   const isReady = ref(false)
   const isLoading = ref(false)
-  const error = shallowRef<unknown | undefined>(undefined)
+  const error = shallowRef<string | undefined>(undefined)
 
   watchEffect(async () => {
     const _filterdIds = toValue(filterIds)

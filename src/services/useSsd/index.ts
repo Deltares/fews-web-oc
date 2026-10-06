@@ -10,7 +10,7 @@ import type { MaybeRefOrGetter, Ref } from 'vue'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { useRefreshCoordinator } from '@/services/useRefreshCoordinator'
 export interface UseSsdCapabilitiesReturn {
-  error: Ref<any>
+  error: Ref<string | undefined>
   capabilities: Ref<SsdGetCapabilitiesResponse | undefined>
   isReady: Ref<boolean>
   isLoading: Ref<boolean>
@@ -42,7 +42,7 @@ export function useSsdCapabilities(
   const isReady = ref(false)
   const isLoading = ref(false)
   const capabilities = ref<SsdGetCapabilitiesResponse>()
-  const error = shallowRef<unknown | undefined>(undefined)
+  const error = shallowRef<string | undefined>(undefined)
   const panel = ref<SsdDisplayPanel>()
   const dates = ref<Date[]>([])
 

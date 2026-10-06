@@ -21,7 +21,7 @@ export interface UseSsdPiReturn {
   displays: Ref<DisplayConfig[] | undefined>
   isReady: Ref<boolean>
   isLoading: Ref<boolean>
-  error: Ref<any>
+  error: Ref<string | undefined>
 }
 
 export interface UseSsdPiOptions {
@@ -43,7 +43,7 @@ export function useSsdPi(
   const isLoading = ref(false)
   const displayConfig = ref<DisplayConfig>()
   const displays = ref<DisplayConfig[]>()
-  const error = shallowRef<unknown | undefined>(undefined)
+  const error = shallowRef<string | undefined>(undefined)
 
   watchEffect(async () => {
     const _displays: DisplayConfig[] = []
