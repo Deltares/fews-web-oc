@@ -301,7 +301,7 @@ export function useWmsCapabilities(
     }
   }
 
-  loadCapabilities()
+  void loadCapabilities()
 
   return { capabilities }
 }
