@@ -109,7 +109,7 @@ function onBlur() {
 
 .title {
   white-space: pre-wrap;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .editable-content {

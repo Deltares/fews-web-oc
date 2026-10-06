@@ -1,5 +1,7 @@
 import { DateTime, Duration, DurationLikeObject } from 'luxon'
 
+type DateInput = Date | string | number | undefined | null
+
 /**
  * Converts a date to a string in the format 'YYYY-MM-DDTHH:MM'.
  * @param date - The date to convert.
@@ -102,9 +104,7 @@ export function convertDateToDateTimeString(date: Date): string {
   return date.toISOString().slice(0, 16)
 }
 
-export function toHumanReadableDate(
-  date: Date | string | number | undefined | null,
-): string {
+export function toHumanReadableDate(date: DateInput): string {
   if (date === undefined || date === null) {
     return '—'
   }
@@ -119,9 +119,7 @@ export function toHumanReadableDate(
   })
 }
 
-export function toHumanReadableDateTime(
-  date: Date | string | number | undefined | null,
-): string {
+export function toHumanReadableDateTime(date: DateInput): string {
   if (date === undefined || date === null) {
     return '—'
   }
@@ -140,9 +138,7 @@ export function toHumanReadableDateTime(
   })
 }
 
-export function toHumanReadableTime(
-  date: Date | string | number | undefined | null,
-): string {
+export function toHumanReadableTime(date: DateInput): string {
   if (date === undefined || date === null) {
     return '—'
   }
@@ -157,9 +153,7 @@ export function toHumanReadableTime(
   })
 }
 
-export function toShortHumanReadableDate(
-  date: Date | string | number | undefined | null,
-): string {
+export function toShortHumanReadableDate(date: DateInput): string {
   if (date === undefined || date === null) {
     return '—'
   }
@@ -176,8 +170,8 @@ export function toShortHumanReadableDate(
 }
 
 export function toDateRangeString(
-  startDate: Date | string | number | undefined | null,
-  endDate: Date | string | number | undefined | null,
+  startDate: DateInput,
+  endDate: DateInput,
 ): string {
   return `${toHumanReadableDateTime(startDate)} → ${toHumanReadableDateTime(endDate)}`
 }
@@ -197,8 +191,8 @@ export function toDateRangeString(
  *          or "—" if either date is invalid or missing
  */
 export function toDateAbsDifferenceString(
-  startDate: Date | string | number | undefined | null,
-  endDate: Date | string | number | undefined | null,
+  startDate: DateInput,
+  endDate: DateInput,
   options?: { excludeSeconds?: boolean; relativeFormat?: boolean },
 ): string {
   if (
@@ -226,11 +220,11 @@ export function toDateAbsDifferenceString(
     minutes % 60 ? `${minutes % 60}m` : '',
     !options?.excludeSeconds && seconds % 60 ? `${seconds % 60}s` : '',
   ]
-    .filter((part) => part)
+    .filter(Boolean)
     .slice(0, 2)
     .join(' ')
 
-  const result = differenceString ? differenceString : '0s'
+  const result = differenceString || '0s'
 
   if (options?.relativeFormat) {
     return endDateObj.getTime() - startDateObj.getTime() < 0
@@ -240,10 +234,7 @@ export function toDateAbsDifferenceString(
   return result
 }
 
-export function toDateSpanString(
-  startDate: Date | string | number | undefined | null,
-  endDate: Date | string | number | undefined | null,
-) {
+export function toDateSpanString(startDate: DateInput, endDate: DateInput) {
   return `${toDateRangeString(startDate, endDate)} (${toDateAbsDifferenceString(startDate, endDate)})`
 }
 

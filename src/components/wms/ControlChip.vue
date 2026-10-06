@@ -28,7 +28,6 @@ defineOptions({ inheritAttrs: false })
   backdrop-filter: blur(5px);
   background-color: rgba(var(--v-theme-surface), 0.8);
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-  /* border: 1px solid rgba(var(--v-border-color), 0.3); */
 }
 
 .control-chip__extension-slot {

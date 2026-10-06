@@ -136,7 +136,7 @@ export const useUserSettingsStore = defineStore(
       current.items = newItems
       if (
         current.initialStorageValue &&
-        current.items.find((item) => item.value === current.initialStorageValue)
+        current.items.some((item) => item.value === current.initialStorageValue)
       ) {
         current.value = current.initialStorageValue
       }

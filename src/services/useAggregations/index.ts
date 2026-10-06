@@ -63,7 +63,7 @@ export function useAggregations(
     (items) => {
       if (
         selectedAggregationLabel.value === null ||
-        !items.find((item) => item.id === selectedAggregationLabel.value)
+        !items.some((item) => item.id === selectedAggregationLabel.value)
       ) {
         selectedAggregationLabel.value = items[0]?.id ?? null
       }

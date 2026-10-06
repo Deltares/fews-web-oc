@@ -85,11 +85,11 @@ function hasRequiredParameters(
 ): boolean {
   if (!capabilities) return false
   const validTimeParameter =
-    !(capabilities.dimension?.name === 'time') || filter?.time !== undefined
+    capabilities.dimension?.name !== 'time' || filter?.time !== undefined
   const validLocationParameter =
     !capabilities.selectableLocations ||
-    capabilities.selectableLocations.findIndex(
+    capabilities.selectableLocations.some(
       (loc) => loc.id === filter?.locationId,
-    ) !== -1
+    )
   return validTimeParameter && validLocationParameter
 }

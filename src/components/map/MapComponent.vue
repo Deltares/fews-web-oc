@@ -140,7 +140,7 @@ async function transformRequest(
   url: string,
   resourceType?: ResourceType,
 ): Promise<RequestParameters> {
-  if (resourceType === 'Image' && url.indexOf('GetMap') > -1) {
+  if (resourceType === 'Image' && url.includes('GetMap')) {
     const requestAuthHeaders = await getRequestHeaders()
     return {
       url,

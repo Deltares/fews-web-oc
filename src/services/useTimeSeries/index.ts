@@ -192,18 +192,27 @@ export async function postTimeSeriesEdit(
     transformRequestFn: createTransformRequestFn(),
   })
 
-  for (const timeSeriesId in data) {
-    const events = data[timeSeriesId]
+  const edits = Object.entries(data).flatMap(([timeSeriesId, events]) => {
     const request = requests.find((r) => r.key === timeSeriesId)
-    if (request === undefined) continue
+    if (request === undefined) return []
     const url = absoluteUrl(`${baseUrl}${request.editRequest}`)
-    const timeSeriesEdit = {
-      version,
-      timeZone,
-      timeSeries: [{ events }],
-    }
-    await piProvider.postTimeSeriesEdit(url.toString(), timeSeriesEdit)
-  }
+    return [
+      {
+        url: url.toString(),
+        payload: {
+          version,
+          timeZone,
+          timeSeries: [{ events }],
+        },
+      },
+    ]
+  })
+
+  await Promise.all(
+    edits.map(({ url, payload }) =>
+      piProvider.postTimeSeriesEdit(url, payload),
+    ),
+  )
 }
 
 function convertTimeSeriesResultToSeries(
