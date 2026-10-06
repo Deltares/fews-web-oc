@@ -171,7 +171,7 @@
             />
             <!-- Table cell when not editing data. Shows additional info about flags. -->
             <TableCell
-              v-else
+              v-show="!(isEditing && canEditItem(item, id))"
               :id="id"
               :item="item"
               @mouseenter="(event: MouseEvent) => showTooltip(event, item[id])"
@@ -185,7 +185,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeMount, ref, watch } from 'vue'
+import { computed, onBeforeMount, provide, ref, shallowRef, watch } from 'vue'
+import { useTheme } from 'vuetify'
 import { watchDebounced } from '@vueuse/core'
 import TableTooltip from './TableTooltip.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -204,6 +205,7 @@ import { useFewsPropertiesStore } from '@/stores/fewsProperties'
 import { useConfigStore } from '@/stores/config'
 import TableCellEdit from '@/components/table/TableCellEdit.vue'
 import TableCell from '@/components/table/TableCell.vue'
+import { createFlagColorResolver, flagColorResolverKey } from './flagColorResolver'
 import {
   getDateWithMinutesOffset,
   getMidpointOfDates,
@@ -234,6 +236,17 @@ const emit = defineEmits(['change', 'update:isEditing'])
 const store = useFewsPropertiesStore()
 const configStore = useConfigStore()
 const { d } = useI18n()
+const theme = useTheme()
+const flagColorResolver = shallowRef(createFlagColorResolver())
+
+provide(flagColorResolverKey, (color) => flagColorResolver.value(color))
+watch(
+  () => theme.global.current.value,
+  () => {
+    flagColorResolver.value = createFlagColorResolver()
+  },
+  { flush: 'post' },
+)
 
 const readOnlyMode = ref<boolean>(configStore.general.readonlyMode ?? false)
 
@@ -506,7 +519,9 @@ function removeSeriesFromNewTableData(seriesId: string) {
 }
 
 function cleanupNewRows() {
-  tableData.value = tableData.value.filter((item) => !item.isNewRow)
+  if (tableData.value.some((item) => item.isNewRow)) {
+    tableData.value = tableData.value.filter((item) => !item.isNewRow)
+  }
   if (selected.value?.isNewRow) clearSelected()
 }
 

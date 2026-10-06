@@ -68,6 +68,37 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     )
   })
 
+  test('cancel reuses read-only cells and discards the edited value', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    const readOnlyCell = component.locator('.table-cell-with-flag').first()
+    const originalCell = await readOnlyCell.elementHandle()
+    const originalValue = await readOnlyCell.locator('.value').textContent()
+    const header = component
+      .getByRole('columnheader')
+      .filter({ hasText: 'Editable series 1' })
+
+    await header.getByRole('button').click()
+    await expect(component.getByPlaceholder('value')).toHaveCount(200)
+    await expect(readOnlyCell).toBeHidden()
+    expect(await originalCell!.evaluate((element) => element.isConnected)).toBe(true)
+
+    await component.getByPlaceholder('value').first().fill('999.5')
+    await component.getByPlaceholder('value').first().blur()
+    await header.getByRole('button', { name: 'Cancel', exact: true }).click()
+
+    await expect(component.getByPlaceholder('value')).toHaveCount(0)
+    await expect(readOnlyCell).toBeVisible()
+    await expect(readOnlyCell.locator('.value')).toHaveText(originalValue!)
+    expect(await originalCell!.evaluate((element) => element.isConnected)).toBe(true)
+
+    await header.getByRole('button').click()
+    await expect(component.getByPlaceholder('value').first()).toHaveValue(
+      originalValue!.trim(),
+    )
+  })
+
   for (const rowCount of [200, 1000, 2000]) {
     test(`benchmark story renders ${rowCount} rows with five editable series`, async ({
       mount,
