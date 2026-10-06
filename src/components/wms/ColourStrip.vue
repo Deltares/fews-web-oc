@@ -45,7 +45,7 @@ function updateColourStrip() {
     position: AxisPosition.Bottom,
     ticks: 0,
   }
-  new ColourBar(group.value as any, props.colourMap, 200, 10, options)
+  new ColourBar(group.value as any, props.colourMap, 200, 10, options) // NOSONAR(S1848)
 }
 </script>
 
