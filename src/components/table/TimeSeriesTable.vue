@@ -454,6 +454,16 @@ const sortBy = ref<SortItem[]>([
     order: dateOrder.value,
   },
 ])
+const isDateDescending = computed(
+  () => sortBy.value.find((item) => item.key === 'date')?.order === 'desc',
+)
+
+function getDisplayIndex(dateIndex: number) {
+  return isDateDescending.value
+    ? tableData.value.length - 1 - dateIndex
+    : dateIndex
+}
+
 watch(
   dateOrder,
   (order) => {
@@ -687,9 +697,9 @@ function stopEdit() {
   isEditing.value = false
   editedSeriesIds.value = []
   newTableData.value = []
-  selectedRowDates.value = new Set()
-  selectionAnchorDate.value = undefined
-  focusedEditField.value = undefined
+  cleanupNewRows()
+  clearSelected()
+  selectDateRow()
 }
 
 function clearSelected() {
@@ -905,7 +915,6 @@ async function handleEditFieldKeydown(event: KeyboardEvent, item: TableData) {
     fields[
       isSelectedRow ? (nextIndex + fields.length) % fields.length : nextIndex
     ]
-  await nextTick()
   nextField?.focus({ preventScroll: true })
 }
 
@@ -917,10 +926,8 @@ async function selectEditRowWithKeyboard(
   const currentIndex = tableData.value.findIndex(
     (row) => row.date.getTime() === item.date.getTime(),
   )
-  const isDescending =
-    sortBy.value.find((entry) => entry.key === 'date')?.order === 'desc'
   const direction = event.key === 'ArrowDown' ? 1 : -1
-  const nextIndex = currentIndex + direction * (isDescending ? -1 : 1)
+  const nextIndex = currentIndex + direction * (isDateDescending.value ? -1 : 1)
   const nextRow = tableData.value[nextIndex]
   if (currentIndex < 0 || !nextRow) return
 
@@ -931,10 +938,11 @@ async function selectEditRowWithKeyboard(
   selectRowRange(nextRow.date.getTime(), false)
   selected.value = nextRow
 
-  const displayIndex = isDescending
-    ? tableData.value.length - 1 - nextIndex
-    : nextIndex
-  await focusEditRow(event.target as HTMLElement, nextRow, displayIndex)
+  await focusEditRow(
+    event.target as HTMLElement,
+    nextRow,
+    getDisplayIndex(nextIndex),
+  )
 }
 
 async function focusEditRow(
@@ -965,13 +973,6 @@ async function focusEditRow(
   nextTarget?.focus({ preventScroll: true })
 }
 
-watch(editedSeriesIds, () => {
-  if (editedSeriesIds.value.length === 0) {
-    clearSelected()
-    selectDateRow()
-  }
-})
-
 function removeSeriesFromNewTableData(seriesId: string) {
   for (let i = newTableData.value.length - 1; i >= 0; i--) {
     if (newTableData.value[i][seriesId] !== undefined) {
@@ -987,7 +988,6 @@ function cleanupNewRows() {
   if (tableData.value.some((item) => item.isNewRow)) {
     tableData.value = tableData.value.filter((item) => !item.isNewRow)
   }
-  if (selected.value?.isNewRow) clearSelected()
 }
 
 function stopEditTimeSeries(seriesId: string) {
@@ -999,10 +999,6 @@ function stopEditTimeSeries(seriesId: string) {
     } else {
       removeSeriesFromNewTableData(seriesId)
     }
-  }
-
-  if (!isEditing.value) {
-    cleanupNewRows()
   }
 }
 
@@ -1085,13 +1081,9 @@ function selectDateRow(scrollIntoView = false) {
 function scrollToLoadedBoundary(boundary: 'first' | 'last') {
   if (tableData.value.length === 0) return
 
-  const dateSortOrder = sortBy.value.find((item) => item.key === 'date')?.order
-  const isDescending = dateSortOrder === 'desc'
-  const firstIndex = isDescending ? tableData.value.length - 1 : 0
-  const index =
-    boundary === 'first' ? firstIndex : tableData.value.length - 1 - firstIndex
+  const dateIndex = boundary === 'first' ? 0 : tableData.value.length - 1
 
-  virtualTable.value?.scrollToIndex(index, 'start')
+  virtualTable.value?.scrollToIndex(getDisplayIndex(dateIndex), 'start')
   updateSelectedDateVisibility()
 }
 
@@ -1104,15 +1096,7 @@ function getSelectedDateRow() {
   const item = tableData.value[dateIndex]
   if (item === undefined) return
 
-  const dateSortOrder = sortBy.value.find(
-    (entry) => entry.key === 'date',
-  )?.order
-  const displayIndex =
-    dateSortOrder === 'desc'
-      ? tableData.value.length - dateIndex - 1
-      : dateIndex
-
-  return { item, displayIndex }
+  return { item, displayIndex: getDisplayIndex(dateIndex) }
 }
 
 function updateSelectedDateVisibility() {
