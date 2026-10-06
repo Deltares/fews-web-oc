@@ -27,7 +27,7 @@ interface Props {
 }
 defineProps<Props>()
 
-const showDialog = defineModel({ default: false })
+const showDialog = defineModel<boolean>({ default: false })
 
 const router = useRouter()
 

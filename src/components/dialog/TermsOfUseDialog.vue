@@ -39,7 +39,7 @@ import { computed, ref } from 'vue'
 import HtmlDisplay from '@/components/general/HtmlDisplay.vue'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 
-const showTermsDialog = defineModel({ default: false })
+const showTermsDialog = defineModel<boolean>({ default: false })
 const isInAgreement = ref(false)
 
 const termsPath = 'terms-and-conditions'
