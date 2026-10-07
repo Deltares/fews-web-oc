@@ -126,6 +126,78 @@ describe('usePaginatedTimeSeries', () => {
     vi.clearAllMocks()
   })
 
+  it.each(['request', 'startTime', 'endTime'] as const)(
+    'resets pagination and discards pending updates when %s changes',
+    async (input) => {
+      const loading = ref(false)
+      const entries = ref({ series: { updatedAt: new Date(0) } })
+      mocks.usePiTimeSeries.mockReturnValue({
+        entries,
+        responses: ref({}),
+        loading,
+        refreshing: ref(false),
+        loadingKeys: computed(() => []),
+        requestRefresh: vi.fn(),
+        pauseRefresh: vi.fn(),
+        resumeRefresh: vi.fn(),
+      })
+      const requests = ref([
+        { key: 'series', request: 'timeseries?existing=value' },
+      ])
+      const options = ref({
+        startTime: new Date('2025-01-01'),
+        endTime: new Date('2025-01-02'),
+      })
+      const scope = effectScope()
+      const paginated = scope.run(() =>
+        usePaginatedTimeSeries(
+          () => requests.value,
+          () => options.value,
+        ),
+      )!
+      const piRequests = mocks.usePiTimeSeries.mock.calls[0][0].requests
+
+      paginated.loadMore('before')
+      loading.value = true
+      await nextTick()
+      entries.value = { series: { updatedAt: new Date(1) } }
+      loading.value = false
+      await nextTick()
+      const previousPageUpdate = paginated.pageUpdate.value
+
+      paginated.loadMore('after')
+      loading.value = true
+      await nextTick()
+      expect(paginated.beforeStartTimeCount.value).toBe(20)
+      expect(paginated.afterEndTimeCount.value).toBe(20)
+
+      if (input === 'request') {
+        requests.value[0].request = 'timeseries?existing=changed'
+      } else {
+        options.value[input] = new Date('2025-02-01')
+      }
+
+      expect(paginated.beforeStartTimeCount.value).toBe(0)
+      expect(paginated.afterEndTimeCount.value).toBe(0)
+      expect(paginated.isLoadingMore.value).toBe(false)
+      const url = new URL(
+        toValue(piRequests)[0].relativeUrl,
+        'http://localhost',
+      )
+      expect(url.searchParams.has('beforeStartTimeCount')).toBe(false)
+      expect(url.searchParams.has('afterEndTimeCount')).toBe(false)
+
+      entries.value = { series: { updatedAt: new Date(2) } }
+      loading.value = false
+      await nextTick()
+      expect(paginated.pageUpdate.value).toBe(previousPageUpdate)
+      paginated.loadMore('before')
+      expect(paginated.beforeStartTimeCount.value).toBe(20)
+      expect(paginated.isLoadingMore.value).toBe(true)
+      scope.stop()
+    },
+  )
+
   it.each(['before', 'after'] as const)(
     'stops exhausted %s loads independently and resets for changed inputs',
     async (direction) => {
