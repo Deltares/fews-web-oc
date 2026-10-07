@@ -13,6 +13,7 @@
         z-index="10000"
         max-height="400"
         :close-on-content-click="false"
+        @after-enter="focusSelectedDisplay"
       >
         <template #activator="{ props }">
           <v-btn
@@ -172,20 +173,18 @@ watch(displays, () => {
   }
 })
 
-watch(
-  [selectedPlotId, isDisplayMenuOpen],
-  () => {
-    if (!isDisplayMenuOpen.value) return
+const focusSelectedDisplay = () => {
+  if (!isDisplayMenuOpen.value) return
 
-    const list = displayList.value?.$el as HTMLElement | undefined
-    const selectedItem = list?.querySelector<HTMLElement>(
-      '.v-list-item--active',
-    )
-    selectedItem?.focus({ preventScroll: true })
-    selectedItem?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
-  },
-  { flush: 'post' },
-)
+  const list = displayList.value?.$el as HTMLElement | undefined
+  const selectedItem = list?.querySelector<HTMLElement>('.v-list-item--active')
+  selectedItem?.focus({ preventScroll: true })
+  selectedItem?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+}
+
+watch([selectedPlotId, isDisplayMenuOpen, displayList], focusSelectedDisplay, {
+  flush: 'post',
+})
 
 const findDisplayBySearch = (query: string) => {
   const normalizedQuery = query.trim().toLowerCase()

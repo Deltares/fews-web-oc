@@ -111,6 +111,13 @@ test.describe('TimeSeriesDisplay selection menu', () => {
       .click()
     const input = menu(page).getByLabel('Plot selection input')
     await expect(menu(page)).toBeVisible()
+    await menu(page).evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations({ subtree: true })
+          .map((animation) => animation.finished),
+      )
+    })
     await expect(input).toHaveCount(0)
     const list = menu(page).locator('.v-list')
     const listBounds = await list.boundingBox()
@@ -402,10 +409,21 @@ test.describe('TimeSeriesDisplay selection menu', () => {
       'timeseries/TimeSeriesDisplay/SelectionMenu',
       { routePlotId: 'plot-25' },
     )
+    await expect(component.getByTestId('route-full-path')).toHaveValue(
+      '/series/plot-25?keep=value#selection',
+    )
     await component
       .getByRole('button', { name: 'Display 25', exact: true })
       .click()
     await expect(activeItem(page)).toContainText('Display 25')
+    await menu(page).evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations({ subtree: true })
+          .map((animation) => animation.finished),
+      )
+    })
+    await expect(displayItem(page, 25)).toBeFocused()
     await component.update({ routePlotId: 'plot-8' })
     await expect(activeItem(page)).toContainText('Display 8')
     await expect(displayItem(page, 8)).toBeFocused()
