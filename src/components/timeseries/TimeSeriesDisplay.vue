@@ -173,9 +173,7 @@ watch(displays, () => {
   }
 })
 
-watch(
-  selectedPlotId,
-  () => {
+  [selectedPlotId, isDisplayMenuOpen],
     if (!isDisplayMenuOpen.value) return
 
     const list = displayList.value?.$el as HTMLElement | undefined
