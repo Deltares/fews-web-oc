@@ -40,13 +40,14 @@ function timeZoneOffsetString(offset: number): string {
     .padStart(2, '0')}`
 }
 
-export function useTimeSeries(
+function useTimeSeriesData(
   requests: MaybeRefOrGetter<ActionRequest[]>,
   options: MaybeRefOrGetter<PiTimeSeriesQueryOptions>,
   fetchingEnabled?: MaybeRefOrGetter<boolean>,
   selectedTime?: MaybeRefOrGetter<Date | undefined>,
   refresh?: UsePiTimeSeriesOptions['refresh'],
-): UseTimeSeriesReturn {
+  transformRequestUrl?: (request: string) => string,
+) {
   const enabled = computed(
     () => fetchingEnabled === undefined || toValue(fetchingEnabled),
   )
@@ -69,116 +70,9 @@ export function useTimeSeries(
   const piRequests = computed(() =>
     requestEntries.value.map(({ key, request }) => ({
       key,
-      relativeUrl: request.request,
-    })),
-  )
-  const {
-    responses,
-    loading,
-    refreshing,
-    loadingKeys,
-    requestRefresh,
-    pauseRefresh,
-    resumeRefresh,
-  } = usePiTimeSeries({
-    requests: piRequests,
-    query: options,
-    enabled,
-    refresh,
-  })
-  const series = computed(() => {
-    const result: Record<string, Series> = {}
-    const currentSelectedTime = toValue(selectedTime)
-
-    requestEntries.value.forEach(({ key, request }) => {
-      const response = responses.value[key]
-      if (!response?.timeSeries) return
-
-      const isGridTimeSeries = request.request.includes('/timeseries/grid?')
-      response.timeSeries.forEach((timeSeries, index) => {
-        const resourceId = isGridTimeSeries ? `${key}[${index}]` : key
-        const convertedSeries = convertTimeSeriesResultToSeries(
-          timeSeries,
-          response,
-          resourceId,
-          currentSelectedTime,
-        )
-        if (convertedSeries !== undefined) result[resourceId] = convertedSeries
-      })
-    })
-
-    return result
-  })
-
-  return {
-    series,
-    loading,
-    refreshing,
-    loadingKeys,
-    requestRefresh,
-    pauseRefresh,
-    resumeRefresh,
-  }
-}
-
-export interface UsePaginatedTimeSeriesReturn extends UseTimeSeriesReturn {
-  pageUpdate: Readonly<Ref<PaginatedTimeSeriesPageUpdate | undefined>>
-  beforeStartTimeCount: Readonly<Ref<number>>
-  afterEndTimeCount: Readonly<Ref<number>>
-  isLoadingMore: Readonly<Ref<boolean>>
-  loadMore: (direction: 'before' | 'after') => void
-}
-
-export interface PaginatedTimeSeriesPageUpdate {
-  revision: number
-  direction: 'before' | 'after'
-}
-
-export function usePaginatedTimeSeries(
-  requests: MaybeRefOrGetter<ActionRequest[]>,
-  options: MaybeRefOrGetter<PiTimeSeriesQueryOptions>,
-  fetchingEnabled?: MaybeRefOrGetter<boolean>,
-  selectedTime?: MaybeRefOrGetter<Date | undefined>,
-  refresh?: UsePiTimeSeriesOptions['refresh'],
-  pageSize = 20,
-): UsePaginatedTimeSeriesReturn {
-  const enabled = computed(
-    () => fetchingEnabled === undefined || toValue(fetchingEnabled),
-  )
-  const requestEntries = computed(() => {
-    const usedKeys = new Set<string>()
-
-    return toValue(requests).map((request, index) => {
-      const baseKey = request.key ?? `request-${index}`
-      let key = baseKey
-      let suffix = 1
-      while (usedKeys.has(key)) {
-        key = `${baseKey}#${suffix}`
-        suffix += 1
-      }
-      usedKeys.add(key)
-
-      return { key, request }
-    })
-  })
-  const beforeStartTimeCount = ref(0)
-  const afterEndTimeCount = ref(0)
-  const isLoadingMore = ref(false)
-  const pageUpdate = ref<PaginatedTimeSeriesPageUpdate>()
-  let pendingPage:
-    | {
-        direction: 'before' | 'after'
-        updatedAt: Map<string, Date | undefined>
-      }
-    | undefined
-  const piRequests = computed(() =>
-    requestEntries.value.map(({ key, request }) => ({
-      key,
-      relativeUrl: withPaginationCounts(
-        request.request,
-        beforeStartTimeCount.value,
-        afterEndTimeCount.value,
-      ),
+      relativeUrl: transformRequestUrl
+        ? transformRequestUrl(request.request)
+        : request.request,
     })),
   )
   const {
@@ -219,6 +113,84 @@ export function usePaginatedTimeSeries(
 
     return result
   })
+
+  return {
+    timeSeries: {
+      series,
+      loading,
+      refreshing,
+      loadingKeys,
+      requestRefresh,
+      pauseRefresh,
+      resumeRefresh,
+    },
+    entries,
+    enabled,
+    requestEntries,
+  }
+}
+
+export function useTimeSeries(
+  requests: MaybeRefOrGetter<ActionRequest[]>,
+  options: MaybeRefOrGetter<PiTimeSeriesQueryOptions>,
+  fetchingEnabled?: MaybeRefOrGetter<boolean>,
+  selectedTime?: MaybeRefOrGetter<Date | undefined>,
+  refresh?: UsePiTimeSeriesOptions['refresh'],
+): UseTimeSeriesReturn {
+  return useTimeSeriesData(
+    requests,
+    options,
+    fetchingEnabled,
+    selectedTime,
+    refresh,
+  ).timeSeries
+}
+
+export interface UsePaginatedTimeSeriesReturn extends UseTimeSeriesReturn {
+  pageUpdate: Readonly<Ref<PaginatedTimeSeriesPageUpdate | undefined>>
+  beforeStartTimeCount: Readonly<Ref<number>>
+  afterEndTimeCount: Readonly<Ref<number>>
+  isLoadingMore: Readonly<Ref<boolean>>
+  loadMore: (direction: 'before' | 'after') => void
+}
+
+export interface PaginatedTimeSeriesPageUpdate {
+  revision: number
+  direction: 'before' | 'after'
+}
+
+export function usePaginatedTimeSeries(
+  requests: MaybeRefOrGetter<ActionRequest[]>,
+  options: MaybeRefOrGetter<PiTimeSeriesQueryOptions>,
+  fetchingEnabled?: MaybeRefOrGetter<boolean>,
+  selectedTime?: MaybeRefOrGetter<Date | undefined>,
+  refresh?: UsePiTimeSeriesOptions['refresh'],
+  pageSize = 20,
+): UsePaginatedTimeSeriesReturn {
+  const beforeStartTimeCount = ref(0)
+  const afterEndTimeCount = ref(0)
+  const isLoadingMore = ref(false)
+  const pageUpdate = ref<PaginatedTimeSeriesPageUpdate>()
+  let pendingPage:
+    | {
+        direction: 'before' | 'after'
+        updatedAt: Map<string, Date | undefined>
+      }
+    | undefined
+  const { timeSeries, entries, enabled, requestEntries } = useTimeSeriesData(
+    requests,
+    options,
+    fetchingEnabled,
+    selectedTime,
+    refresh,
+    (request) =>
+      withPaginationCounts(
+        request,
+        beforeStartTimeCount.value,
+        afterEndTimeCount.value,
+      ),
+  )
+  const { loading, refreshing } = timeSeries
 
   watch([loading, refreshing], ([isLoading, isRefreshing]) => {
     if (isLoading || isRefreshing) return
@@ -267,13 +239,7 @@ export function usePaginatedTimeSeries(
   }
 
   return {
-    series,
-    loading,
-    refreshing,
-    loadingKeys,
-    requestRefresh,
-    pauseRefresh,
-    resumeRefresh,
+    ...timeSeries,
     pageUpdate,
     beforeStartTimeCount,
     afterEndTimeCount,
