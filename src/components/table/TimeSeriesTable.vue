@@ -1,18 +1,22 @@
 <template>
-  <div class="table-container">
+  <div
+    ref="tableContainer"
+    class="table-container"
+    @keydown.esc="deselectEditRows"
+  >
     <v-tooltip v-model="tooltip" :activator="activator" :key="activator">
       <TableTooltip v-bind="tooltipItem">/</TableTooltip>
     </v-tooltip>
-    <v-data-table
+    <v-data-table-virtual
+      ref="virtualTable"
       class="data-table"
       :headers="tableHeaders"
       :items="tableData"
       :expanded="editedSeriesIds"
-      :items-per-page-options="itemsPerPageOptions"
-      :loading="isWaitingForTableUpdate"
+      :loading="isWaitingForTableUpdate || isLoadingMore"
       v-model:sortBy="sortBy"
-      items-per-page="200"
       item-value="date"
+      :item-height="virtualItemHeight"
       density="compact"
       no-filter
       fixed-header
@@ -49,28 +53,48 @@
                   v-if="isEditing && nonEquidistantSeries.length > 0"
                   class="table-header__actions"
                 >
-                  <v-btn
-                    icon="mdi-table-row-plus-before"
-                    @click="addRowToTimeSeries(selected, 'before')"
-                    color="primary"
-                    variant="text"
-                    density="compact"
-                    :disabled="rowAdditionDisabled"
-                  />
-                  <v-btn
-                    icon="mdi-table-row-plus-after"
-                    @click="addRowToTimeSeries(selected, 'after')"
-                    color="primary"
-                    variant="text"
-                    density="compact"
-                    :disabled="rowAdditionDisabled"
-                  />
                   <v-tooltip
-                    v-if="rowAdditionDisabled"
-                    activator="parent"
-                    text="First select a row"
+                    :text="
+                      rowAdditionDisabledReason ||
+                      'Insert row before selected row'
+                    "
                     location="bottom"
-                  />
+                  >
+                    <template #activator="{ props: tooltipProps }">
+                      <span v-bind="tooltipProps">
+                        <v-btn
+                          icon="mdi-table-row-plus-before"
+                          aria-label="Insert row before selected row"
+                          @click="addRowToTimeSeries(selected, 'before')"
+                          color="primary"
+                          variant="text"
+                          density="compact"
+                          :disabled="rowAdditionDisabled"
+                        />
+                      </span>
+                    </template>
+                  </v-tooltip>
+                  <v-tooltip
+                    :text="
+                      rowAdditionDisabledReason ||
+                      'Insert row after selected row'
+                    "
+                    location="bottom"
+                  >
+                    <template #activator="{ props: tooltipProps }">
+                      <span v-bind="tooltipProps">
+                        <v-btn
+                          icon="mdi-table-row-plus-after"
+                          aria-label="Insert row after selected row"
+                          @click="addRowToTimeSeries(selected, 'after')"
+                          color="primary"
+                          variant="text"
+                          density="compact"
+                          :disabled="rowAdditionDisabled"
+                        />
+                      </span>
+                    </template>
+                  </v-tooltip>
                 </div>
               </div>
               <div class="table-header-indicator-color"></div>
@@ -101,7 +125,7 @@
                       <v-btn
                         prepend-icon="mdi-content-save-outline"
                         @click="save(column.key as string)"
-                        :disabled="newTableData.length === 0"
+                        :disabled="!canSaveTimeSeries(column.key as string)"
                         color="primary"
                         variant="flat"
                         size="small"
@@ -139,12 +163,19 @@
       </template>
       <template #item="{ item }">
         <tr
-          :class="{ highlighted: selected?.date === item.date }"
-          :tabindex="isEditing ? 0 : undefined"
-          :aria-selected="selected?.date === item.date"
+          :class="{
+            highlighted:
+              isEditing && selectedRowDates.size > 0
+                ? selectedRowDates.has(item.date.getTime())
+                : selected?.date === item.date,
+            'row-selected': selectedRowDates.has(item.date.getTime()),
+            'row-selectable': isEditing,
+          }"
+          :data-row-date="item.date.toISOString()"
+          :aria-selected="isRowSelected(item)"
+          :tabindex="isEditing ? -1 : undefined"
           @click="(e) => handleRowClick(e, item)"
-          @keydown.enter.prevent="handleRowClick($event, item)"
-          @keydown.space.prevent="handleRowClick($event, item)"
+          @keydown="handleEditFieldKeydown($event, item)"
         >
           <td class="table-date sticky-column">
             <v-text-field
@@ -166,12 +197,23 @@
             <TableCellEdit
               v-if="isEditing && canEditItem(item, id)"
               :id="id"
-              :item="item"
-              @update:item="(event) => onUpdateItem(event)"
+              :item="getEditableItem(item)"
+              :focused-field="
+                selectedRowDates.has(item.date.getTime()) &&
+                focusedEditField?.seriesId === id
+                  ? focusedEditField.field
+                  : undefined
+              "
+              @update:item="(event, field) => onUpdateItem(event, field)"
+              @focus-field="
+                focusedEditField = $event
+                  ? { seriesId: id, field: $event }
+                  : undefined
+              "
             />
             <!-- Table cell when not editing data. Shows additional info about flags. -->
             <TableCell
-              v-else
+              v-show="!(isEditing && canEditItem(item, id))"
               :id="id"
               :item="item"
               @mouseenter="(event: MouseEvent) => showTooltip(event, item[id])"
@@ -180,12 +222,142 @@
           </td>
         </tr>
       </template>
-    </v-data-table>
+    </v-data-table-virtual>
+    <v-tooltip
+      v-if="props.selectedDate && !isSelectedDateVisible"
+      text="Back to selected date"
+      :location="selectedDateDirection === 'up' ? 'bottom' : 'top'"
+    >
+      <template #activator="{ props: tooltipProps }">
+        <button
+          v-bind="tooltipProps"
+          type="button"
+          class="table-date-return"
+          :class="`table-date-return--${selectedDateDirection}`"
+          :style="[
+            selectedDateButtonStyle,
+            { '--selected-date-elevation': selectedDateElevation },
+          ]"
+          data-testid="return-to-selected-date"
+          aria-label="Back to selected date"
+          @click="selectDateRow(true)"
+        >
+          <time :datetime="props.selectedDate.toISOString()">
+            {{ d(props.selectedDate, 'timeSeriesTable__date') }}
+          </time>
+          <v-icon
+            :icon="
+              selectedDateDirection === 'up' ? 'mdi-arrow-up' : 'mdi-arrow-down'
+            "
+            size="15px"
+            aria-hidden="true"
+          />
+        </button>
+      </template>
+    </v-tooltip>
+    <div class="table-status-bar" data-testid="table-status">
+      <div class="table-status-bar__summary">
+        <span v-if="!isEditing" data-testid="table-status-row-count">
+          {{ tableData.length }} {{ tableData.length === 1 ? 'row' : 'rows' }}
+          loaded
+        </span>
+        <span
+          v-if="loadedDateRange"
+          class="table-status-bar__date-range"
+          data-testid="table-status-date-range"
+          aria-label="Loaded date range"
+        >
+          <v-chip
+            class="table-status-bar__date-chip"
+            height="24"
+            variant="tonal"
+          >
+            <button
+              type="button"
+              class="table-status-bar__date-chip-action"
+              data-testid="jump-to-first-loaded-row"
+              aria-label="Jump to first loaded row"
+              @click="scrollToLoadedBoundary('first')"
+            >
+              <v-icon icon="mdi-page-first" size="15px" aria-hidden="true" />
+              <time :datetime="loadedDateRange.start.toISOString()">
+                {{ d(loadedDateRange.start, 'timeSeriesTable__date') }}
+              </time>
+            </button>
+            <span
+              class="table-status-bar__date-divider"
+              aria-hidden="true"
+            ></span>
+            <button
+              type="button"
+              class="table-status-bar__date-chip-action"
+              data-testid="jump-to-last-loaded-row"
+              aria-label="Jump to last loaded row"
+              @click="scrollToLoadedBoundary('last')"
+            >
+              <time :datetime="loadedDateRange.end.toISOString()">
+                {{ d(loadedDateRange.end, 'timeSeriesTable__date') }}
+              </time>
+              <v-icon icon="mdi-page-last" size="15px" aria-hidden="true" />
+            </button>
+          </v-chip>
+        </span>
+      </div>
+      <output
+        class="table-status-bar__activity"
+        data-testid="table-status-activity"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <template v-if="isEditing">
+          <span class="table-status-bar__keyboard-hint">
+            <span>
+              <kbd>Tab</kbd> / <kbd>Enter</kbd>:
+              {{ selectedRowDates.size > 0 ? 'cycle fields' : 'move fields' }}
+            </span>
+            <span v-if="selectedRowDates.size > 0">
+              <kbd>Shift</kbd>+<kbd>Up</kbd> / <kbd>Down</kbd>:
+              {{
+                selectedRowDates.size === 1
+                  ? 'extend selection'
+                  : 'adjust selection'
+              }}
+            </span>
+            <span v-if="selectedRowDates.size > 0">
+              <kbd>Esc</kbd>: deselect rows
+            </span>
+            <span
+              v-if="
+                focusedEditField && canSaveTimeSeries(focusedEditField.seriesId)
+              "
+            >
+              <kbd>{{ isMac ? '⌘' : 'Ctrl' }}</kbd
+              >+<kbd>Enter</kbd>: save column
+            </span>
+          </span>
+        </template>
+        <template v-else-if="props.isLoadingMore">Loading more data</template>
+        <template v-else-if="isWaitingForTableUpdate || props.isLoading">
+          Updating table
+        </template>
+      </output>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeMount, ref, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onBeforeMount,
+  onMounted,
+  onUnmounted,
+  provide,
+  ref,
+  shallowRef,
+  watch,
+} from 'vue'
+import { useTheme } from 'vuetify'
 import { watchDebounced } from '@vueuse/core'
 import TableTooltip from './TableTooltip.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -193,10 +365,15 @@ import { Series } from '@/lib/timeseries/timeSeries'
 import { getUniqueSeriesIds } from '@/lib/charts/getUniqueSeriesIds'
 import type { TableHeaders } from '@/lib/table/types/TableHeaders'
 import { createTableHeaders } from '@/lib/table/createTableHeaders'
+import { createSeriesDateIndex } from '@/lib/table/createSeriesDateIndex'
 import {
+  createTableDataPage,
   createTableData,
+  getTableSeriesDataLengths,
+  mergeTableData,
   tableDataToTimeSeries,
   type TableData,
+  type TableSeriesField,
   TableSeriesData,
 } from '@/lib/table/tableData'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
@@ -204,11 +381,17 @@ import { useConfigStore } from '@/stores/config'
 import TableCellEdit from '@/components/table/TableCellEdit.vue'
 import TableCell from '@/components/table/TableCell.vue'
 import {
+  createFlagColorResolver,
+  flagColorResolverKey,
+} from './flagColorResolver'
+import {
   getDateWithMinutesOffset,
   getMidpointOfDates,
   toISOString,
 } from '@/lib/date'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
+import { findDateIndex } from '@/lib/utils/dates'
+import type { PaginatedTimeSeriesPageUpdate } from '@/services/useTimeSeries'
 import { useI18n } from 'vue-i18n'
 
 interface Props {
@@ -216,23 +399,34 @@ interface Props {
   series: Record<string, Series>
   settings: ChartsSettings['timeSeriesTable']
   isLoading: boolean
+  isLoadingMore?: boolean
+  allowLoadMore?: boolean
+  selectedDate?: Date
+  pageUpdate?: PaginatedTimeSeriesPageUpdate
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  isLoadingMore: false,
+  allowLoadMore: false,
+})
+const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform)
 
-const itemsPerPageOptions = [
-  { value: 200, title: '200' },
-  { value: 500, title: '500' },
-  { value: 1000, title: '1000' },
-  { value: 2000, title: '2000' },
-  { value: -1, title: '$vuetify.dataFooter.itemsPerPageAll' },
-]
-
-const emit = defineEmits(['change', 'update:isEditing'])
+const emit = defineEmits(['change', 'update:isEditing', 'load-more-data'])
 
 const store = useFewsPropertiesStore()
 const configStore = useConfigStore()
 const { d } = useI18n()
+const theme = useTheme()
+const flagColorResolver = shallowRef(createFlagColorResolver())
+
+provide(flagColorResolverKey, (color) => flagColorResolver.value(color))
+watch(
+  () => theme.global.current.value,
+  () => {
+    flagColorResolver.value = createFlagColorResolver()
+  },
+  { flush: 'post' },
+)
 
 const readOnlyMode = ref<boolean>(configStore.general.readonlyMode ?? false)
 
@@ -241,9 +435,73 @@ const tooltip = ref<boolean>(false)
 const tooltipItem = ref<any>({})
 const activator = ref<string>('')
 const selected = ref<TableData>()
+const selectedRowDates = ref<Set<number>>(new Set())
+const selectionAnchorDate = ref<number>()
+const focusedEditField = ref<{
+  seriesId: string
+  field: TableSeriesField
+}>()
 const tableData = ref<TableData[]>([])
+const loadedDateRange = computed(() => {
+  const firstRow = tableData.value[0]
+  const lastRow = tableData.value.at(-1)
+  if (!firstRow || !lastRow) return undefined
+
+  return { start: firstRow.date, end: lastRow.date }
+})
 const newTableData = ref<TableData[]>([])
+const changedSeriesIds = computed(() => {
+  const changedIds = new Set<string>()
+  const originalRows = new Map(
+    tableData.value.map((row) => [row.date.getTime(), row]),
+  )
+  for (const row of newTableData.value) {
+    const originalRow = originalRows.get(row.date.getTime())
+    for (const seriesId of editedSeriesIds.value) {
+      if (hasEditedSeriesChanges(row, originalRow, seriesId)) {
+        changedIds.add(seriesId)
+      }
+    }
+  }
+  return changedIds
+})
+
+function hasEditedSeriesChanges(
+  row: TableData,
+  originalRow: TableData | undefined,
+  seriesId: string,
+) {
+  const data = row[seriesId]
+  if (!data || data instanceof Date) return false
+  if (row.isNewRow) return data.y !== null && data.y !== undefined
+  const originalData = originalRow?.[seriesId]
+  if (originalData instanceof Date) return false
+  const fields: TableSeriesField[] = ['y', 'flagEdit', 'comment']
+  return fields.some(
+    (field) =>
+      field in data &&
+      (field === 'comment'
+        ? (data.comment ?? '') !== (originalData?.comment ?? '')
+        : data[field] !== originalData?.[field]),
+  )
+}
 const tableHeaders = ref<TableHeaders[]>([])
+const tableContainer = ref<HTMLElement | null>(null)
+const tableScrollElement = ref<HTMLElement | null>(null)
+const isSelectedDateVisible = ref(true)
+const selectedDateDirection = ref<'up' | 'down'>('down')
+const selectedDateElevation = ref(0)
+const selectedDateButtonStyle = ref<Record<string, string>>({})
+const virtualTable = ref<{
+  scrollToIndex: (index: number, position?: 'start' | 'center' | 'end') => void
+} | null>(null)
+const virtualItemHeight = 36
+const paginationThreshold = 100
+let seriesDataLengths = new Map<string, number>()
+let lastProcessedPageRevision = 0
+let hasPendingTopLoad = false
+let selectedDateVisibilityFrame: number | undefined
+let selectedDateResizeObserver: ResizeObserver | undefined
 
 const isEditing = ref<boolean>(false)
 const editedSeriesIds = ref<string[]>([])
@@ -268,6 +526,16 @@ const sortBy = ref<SortItem[]>([
     order: dateOrder.value,
   },
 ])
+const isDateDescending = computed(
+  () => sortBy.value.find((item) => item.key === 'date')?.order === 'desc',
+)
+
+function getDisplayIndex(dateIndex: number) {
+  return isDateDescending.value
+    ? tableData.value.length - 1 - dateIndex
+    : dateIndex
+}
+
 watch(
   dateOrder,
   (order) => {
@@ -297,7 +565,15 @@ onBeforeMount(() => {
         props.series,
         seriesIds.value,
       )
+      seriesDataLengths = getTableSeriesDataLengths(
+        props.config.series,
+        props.series,
+        seriesIds.value,
+      )
+      lastProcessedPageRevision = props.pageUpdate?.revision ?? 0
+      selectDateRow(true)
     }
+    isWaitingForTableUpdate.value = props.isLoading
   })
   store.loadFlagSources()
 })
@@ -323,6 +599,7 @@ watch(
 // finished, updating the table items may not. Keep the loading indicator until
 // the table items have been updated.
 const isWaitingForTableUpdate = ref(true)
+let lastPageSeriesUpdate = new Map<string, Date | undefined>()
 watch(
   () => props.isLoading,
   () => (isWaitingForTableUpdate.value = true),
@@ -334,17 +611,148 @@ watchDebounced(
   // series for changes, which is rather inefficient. Instead, we watch an array
   // of last updated dates.
   () => Object.values(props.series).map((series) => series.lastUpdated),
-  () => {
-    if (props.series === undefined || isEditing.value) return
-    tableData.value = createTableData(
-      props.config.series,
-      props.series,
-      seriesIds.value,
-    )
-    isWaitingForTableUpdate.value = props.isLoading
+  async () => {
+    if (samePageSeriesUpdate()) {
+      lastPageSeriesUpdate.clear()
+      return
+    }
+    await updateTableData()
   },
   { debounce: 500, maxWait: 1000 },
 )
+
+watch(
+  () => props.pageUpdate?.revision,
+  async (revision) => {
+    const pageUpdate = props.pageUpdate
+    if (
+      revision === undefined ||
+      pageUpdate === undefined ||
+      revision <= lastProcessedPageRevision
+    ) {
+      return
+    }
+
+    await nextTick()
+    await updateTableData(pageUpdate)
+    lastPageSeriesUpdate = getSeriesLastUpdated()
+  },
+  { flush: 'post' },
+)
+
+function getSeriesLastUpdated() {
+  return new Map(
+    Object.entries(props.series).map(([id, series]) => [
+      id,
+      series.lastUpdated,
+    ]),
+  )
+}
+
+function samePageSeriesUpdate() {
+  if (lastPageSeriesUpdate.size !== Object.keys(props.series).length) {
+    return false
+  }
+
+  return [...lastPageSeriesUpdate].every(
+    ([id, lastUpdated]) => props.series[id]?.lastUpdated === lastUpdated,
+  )
+}
+
+async function updateTableData(pageUpdate?: PaginatedTimeSeriesPageUpdate) {
+  if (props.series === undefined || isEditing.value) return
+
+  const previousRowCount = tableData.value.length
+  const isNewPage =
+    pageUpdate !== undefined &&
+    pageUpdate.revision > lastProcessedPageRevision &&
+    tableData.value.length > 0
+  const pageData = isNewPage
+    ? createTableDataPage(
+        props.config.series,
+        props.series,
+        seriesIds.value,
+        seriesDataLengths,
+        pageUpdate.direction,
+      )
+    : undefined
+  const updatedTableData = pageData
+    ? mergeTableData(tableData.value, pageData.rows)
+    : createTableData(props.config.series, props.series, seriesIds.value)
+
+  seriesDataLengths = pageData
+    ? pageData.seriesDataLengths
+    : getTableSeriesDataLengths(
+        props.config.series,
+        props.series,
+        seriesIds.value,
+      )
+  if (isNewPage) lastProcessedPageRevision = pageUpdate.revision
+  tableData.value = updatedTableData
+
+  if (hasPendingTopLoad) {
+    hasPendingTopLoad = false
+    const addedRowCount = Math.max(
+      updatedTableData.length - previousRowCount,
+      0,
+    )
+    if (addedRowCount > 0) {
+      await nextTick()
+      if (tableScrollElement.value) {
+        tableScrollElement.value.scrollTop += addedRowCount * virtualItemHeight
+      }
+    }
+  }
+
+  if (props.selectedDate !== undefined) {
+    await nextTick()
+    selectDateRow(previousRowCount === 0)
+  }
+
+  isWaitingForTableUpdate.value = props.isLoading
+}
+
+onMounted(async () => {
+  await nextTick()
+  tableScrollElement.value =
+    tableContainer.value?.querySelector<HTMLElement>('.v-table__wrapper') ??
+    null
+  tableScrollElement.value?.addEventListener('scroll', handleTableScroll, {
+    passive: true,
+  })
+  if (tableContainer.value) {
+    selectedDateResizeObserver = new ResizeObserver(
+      updateSelectedDateVisibility,
+    )
+    const resizeTargets = [
+      tableContainer.value,
+      tableScrollElement.value,
+      tableScrollElement.value?.querySelector('thead'),
+      tableScrollElement.value?.querySelector('th.table-date'),
+    ]
+    for (const target of resizeTargets) {
+      if (target) selectedDateResizeObserver.observe(target)
+    }
+  }
+  selectDateRow(true)
+})
+
+watch(
+  () => props.selectedDate,
+  async (selectedDate) => {
+    if (selectedDate === undefined) return
+    await nextTick()
+    selectDateRow(true)
+  },
+)
+
+onUnmounted(() => {
+  tableScrollElement.value?.removeEventListener('scroll', handleTableScroll)
+  selectedDateResizeObserver?.disconnect()
+  if (selectedDateVisibilityFrame !== undefined) {
+    cancelAnimationFrame(selectedDateVisibilityFrame)
+  }
+})
 
 const showTooltip = (event: MouseEvent, item: any) => {
   if (!item.tooltip) return
@@ -376,12 +784,37 @@ function stopEdit() {
   isEditing.value = false
   editedSeriesIds.value = []
   newTableData.value = []
+  cleanupNewRows()
+  clearSelected()
+  selectDateRow()
+}
+
+function clearSelected() {
+  selected.value = undefined
+  selectedRowDates.value = new Set()
+  selectionAnchorDate.value = undefined
+  focusedEditField.value = undefined
+}
+
+function deselectEditRows(event: KeyboardEvent) {
+  if (!isEditing.value || selectedRowDates.value.size === 0) return
+  event.preventDefault()
+  event.stopPropagation()
+  clearSelected()
+}
+
+function canSaveTimeSeries(seriesId: string) {
+  return isEditingTimeSeries(seriesId) && changedSeriesIds.value.has(seriesId)
 }
 
 function save(seriesId: string) {
+  if (!canSaveTimeSeries(seriesId)) return
   const newModifiedData = newTableData.value.filter((item) => {
     const data = item[seriesId] as Partial<TableSeriesData>
-    return !(item.isNewRow && (data.y === null || data.y === undefined))
+    return (
+      data !== undefined &&
+      !(item.isNewRow && (data.y === null || data.y === undefined))
+    )
   })
   const newTimeSeriesData = tableDataToTimeSeries(newModifiedData, [seriesId])
   emit('change', newTimeSeriesData)
@@ -401,11 +834,21 @@ function editTimeSeries(seriesId: string) {
   if (seriesId !== null) editedSeriesIds.value.push(seriesId)
 }
 
+const seriesDateIndex = computed(() => {
+  const seriesById = Object.fromEntries(
+    props.config.series.map((chartSeries) => [
+      chartSeries.id,
+      props.series[chartSeries.dataResources[0]] ?? { data: [] },
+    ]),
+  )
+  return createSeriesDateIndex(seriesById)
+})
+
 function canEditItem(item: TableData, seriesId: string) {
   if (!editedSeriesIds.value.includes(seriesId)) return false
   if (nonEquidistantSeries.value.includes(seriesId)) return true
 
-  return props.series[seriesId].data?.some((series) => series.x === item.date)
+  return seriesDateIndex.value.get(seriesId)?.has(item.date.getTime()) ?? false
 }
 
 function indexIsInRange(array: unknown[], index: number) {
@@ -416,6 +859,8 @@ function addRowToTimeSeries(
   row: TableData | undefined,
   position: 'before' | 'after',
 ) {
+  if (rowAdditionDisabled.value) return
+
   if (row === undefined && tableData.value.length === 0) {
     const newRow = getNewRow(new Date())
     tableData.value.push(newRow)
@@ -466,30 +911,190 @@ function getNewRow(date: Date) {
   return newRow
 }
 
-const rowAdditionDisabled = computed(() => {
-  return selected.value === undefined && tableData.value.length > 0
+const rowAdditionDisabledReason = computed(() => {
+  if (selectedRowDates.value.size > 1) {
+    return 'Select only one row to insert a row'
+  }
+  if (selectedRowDates.value.size === 0 && tableData.value.length > 0) {
+    return 'First select a row'
+  }
+  return ''
 })
+const rowAdditionDisabled = computed(() => !!rowAdditionDisabledReason.value)
 
-function handleRowClick(e: any, item: any) {
-  const formElements = ['INPUT', 'SELECT', 'OPTION']
-  if (formElements.includes(e.target.tagName) || !isEditing.value) return
+function isRowSelected(item: TableData) {
+  return isEditing.value
+    ? selectedRowDates.value.has(item.date.getTime())
+    : selected.value?.date === item.date
+}
 
-  if (selected.value?.date === item.date) {
-    clearSelected()
+function handleRowClick(e: MouseEvent, item: TableData) {
+  if (!isEditing.value || !(e.target instanceof Element)) return
+  if (e.target.closest('[data-edit-field]')) {
+    if (!selectedRowDates.value.has(item.date.getTime())) clearSelected()
+    return
+  }
+  if (!e.target.closest('td.table-date')) return
+  if (e.target.closest('input, select, textarea, button')) return
+
+  const dateTime = item.date.getTime()
+  if (e.shiftKey && selectionAnchorDate.value !== undefined) {
+    selectRowRange(dateTime, e.ctrlKey || e.metaKey)
+  } else if (e.ctrlKey || e.metaKey) {
+    toggleRowSelection(dateTime)
+  } else if (
+    selectedRowDates.value.size === 1 &&
+    selectedRowDates.value.has(dateTime)
+  ) {
+    selectedRowDates.value = new Set()
+    selectionAnchorDate.value = undefined
   } else {
-    selected.value = item
+    selectedRowDates.value = new Set([dateTime])
+    selectionAnchorDate.value = dateTime
   }
+
+  updateActiveSelectedRow()
+  ;(e.currentTarget as HTMLElement).focus({ preventScroll: true })
 }
 
-function clearSelected() {
-  selected.value = undefined
+function updateActiveSelectedRow() {
+  const activeDate = [...selectedRowDates.value].at(-1)
+  selected.value = tableData.value.find(
+    (row) => row.date.getTime() === activeDate,
+  )
 }
 
-watch(editedSeriesIds, () => {
-  if (editedSeriesIds.value.length === 0) {
-    clearSelected()
+function selectRowRange(dateTime: number, addToSelection: boolean) {
+  const anchorIndex = tableData.value.findIndex(
+    (row) => row.date.getTime() === selectionAnchorDate.value,
+  )
+  const targetIndex = tableData.value.findIndex(
+    (row) => row.date.getTime() === dateTime,
+  )
+  if (anchorIndex < 0 || targetIndex < 0) return
+
+  const nextSelection = addToSelection
+    ? new Set(selectedRowDates.value)
+    : new Set<number>()
+  const startIndex = Math.min(anchorIndex, targetIndex)
+  const endIndex = Math.max(anchorIndex, targetIndex)
+  for (const row of tableData.value.slice(startIndex, endIndex + 1)) {
+    nextSelection.add(row.date.getTime())
   }
-})
+  selectedRowDates.value = nextSelection
+}
+
+function toggleRowSelection(dateTime: number) {
+  const nextSelection = new Set(selectedRowDates.value)
+  if (nextSelection.has(dateTime)) {
+    nextSelection.delete(dateTime)
+  } else {
+    nextSelection.add(dateTime)
+  }
+  selectedRowDates.value = nextSelection
+  selectionAnchorDate.value = dateTime
+}
+
+async function handleEditFieldKeydown(event: KeyboardEvent, item: TableData) {
+  if (!isEditing.value) return
+
+  if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+    saveEditColumnWithKeyboard(event)
+    return
+  }
+
+  if (event.shiftKey && ['ArrowUp', 'ArrowDown'].includes(event.key)) {
+    await selectEditRowWithKeyboard(event, item)
+    return
+  }
+
+  if (!['Tab', 'Enter'].includes(event.key)) return
+
+  const isSelectedRow = selectedRowDates.value.has(item.date.getTime())
+  if (event.key === 'Tab' && !isSelectedRow) {
+    return
+  }
+
+  const selector = isSelectedRow
+    ? `[data-edit-date="${item.date.toISOString()}"][data-edit-field]`
+    : '[data-edit-field]'
+  const fields = Array.from(
+    tableContainer.value?.querySelectorAll<HTMLElement>(selector) ?? [],
+  )
+  const fieldIndex = fields.indexOf(event.target as HTMLElement)
+  if (fieldIndex < 0) return
+
+  event.preventDefault()
+  const offset = event.key === 'Tab' && event.shiftKey ? -1 : 1
+  const nextIndex = fieldIndex + offset
+  const nextField =
+    fields[
+      isSelectedRow ? (nextIndex + fields.length) % fields.length : nextIndex
+    ]
+  nextField?.focus({ preventScroll: true })
+}
+
+function saveEditColumnWithKeyboard(event: KeyboardEvent) {
+  event.preventDefault()
+  event.stopPropagation()
+  const seriesId = (event.target as HTMLElement).dataset.editSeriesId
+  if (seriesId) save(seriesId)
+}
+
+async function selectEditRowWithKeyboard(
+  event: KeyboardEvent,
+  item: TableData,
+) {
+  event.preventDefault()
+  const currentIndex = tableData.value.findIndex(
+    (row) => row.date.getTime() === item.date.getTime(),
+  )
+  const direction = event.key === 'ArrowDown' ? 1 : -1
+  const nextIndex = currentIndex + direction * (isDateDescending.value ? -1 : 1)
+  const nextRow = tableData.value[nextIndex]
+  if (currentIndex < 0 || !nextRow) return
+
+  if (!selectedRowDates.value.has(item.date.getTime())) {
+    selectionAnchorDate.value = item.date.getTime()
+  }
+  selectionAnchorDate.value ??= item.date.getTime()
+  selectRowRange(nextRow.date.getTime(), false)
+  selected.value = nextRow
+
+  await focusEditRow(
+    event.target as HTMLElement,
+    nextRow,
+    getDisplayIndex(nextIndex),
+  )
+}
+
+async function focusEditRow(
+  target: HTMLElement,
+  row: TableData,
+  displayIndex: number,
+) {
+  const seriesId = target.dataset.editSeriesId
+  const field = target.dataset.editField
+  const selector =
+    seriesId && field && canEditItem(row, seriesId)
+      ? [
+          `[data-edit-date="${row.date.toISOString()}"]`,
+          `[data-edit-series-id="${CSS.escape(seriesId)}"]`,
+          `[data-edit-field="${field}"]`,
+        ].join('')
+      : `tr[data-row-date="${row.date.toISOString()}"]`
+  await nextTick()
+  if (!tableContainer.value?.querySelector(selector)) {
+    virtualTable.value?.scrollToIndex(displayIndex, 'start')
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve())
+    })
+    await nextTick()
+  }
+  const nextTarget = tableContainer.value?.querySelector<HTMLElement>(selector)
+  nextTarget?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  nextTarget?.focus({ preventScroll: true })
+}
 
 function removeSeriesFromNewTableData(seriesId: string) {
   for (let i = newTableData.value.length - 1; i >= 0; i--) {
@@ -503,8 +1108,9 @@ function removeSeriesFromNewTableData(seriesId: string) {
 }
 
 function cleanupNewRows() {
-  tableData.value = tableData.value.filter((item) => !item.isNewRow)
-  if (selected.value?.isNewRow) clearSelected()
+  if (tableData.value.some((item) => item.isNewRow)) {
+    tableData.value = tableData.value.filter((item) => !item.isNewRow)
+  }
 }
 
 function stopEditTimeSeries(seriesId: string) {
@@ -517,10 +1123,6 @@ function stopEditTimeSeries(seriesId: string) {
       removeSeriesFromNewTableData(seriesId)
     }
   }
-
-  if (!isEditing.value) {
-    cleanupNewRows()
-  }
 }
 
 function isEditingTimeSeries(seriesId: string) {
@@ -528,19 +1130,226 @@ function isEditingTimeSeries(seriesId: string) {
   return editedSeriesIds.value.includes(seriesId)
 }
 
-function onUpdateItem(event: TableData) {
-  const index = newTableData.value.findIndex((item) => item.date === event.date)
-  if (index > -1) {
-    newTableData.value[index] = { ...newTableData.value[index], ...event }
-  } else {
-    newTableData.value.push(event)
+function onUpdateItem(event: TableData, field: TableSeriesField) {
+  const seriesId = Object.keys(event).find((key) => key !== 'date')
+  if (seriesId === undefined) return
+
+  const editedData = event[seriesId] as Partial<TableSeriesData>
+  const sourceDate = event.date.getTime()
+  const targetDates = selectedRowDates.value.has(sourceDate)
+    ? selectedRowDates.value
+    : new Set([sourceDate])
+  const rowsByDate = new Map(
+    tableData.value.map((row) => [row.date.getTime(), row]),
+  )
+  const modifiedRowsByDate = new Map(
+    newTableData.value.map((row, index) => [row.date.getTime(), index]),
+  )
+
+  for (const dateTime of targetDates) {
+    const row = rowsByDate.get(dateTime)
+    if (!row || !canEditItem(row, seriesId)) continue
+
+    const modifiedIndex = modifiedRowsByDate.get(dateTime)
+    const existingData =
+      modifiedIndex === undefined
+        ? row[seriesId]
+        : newTableData.value[modifiedIndex][seriesId]
+    const previousData =
+      existingData === undefined || existingData instanceof Date
+        ? {}
+        : (existingData as Partial<TableSeriesData>)
+    const updatedSeriesData = {
+      ...previousData,
+      [field]: editedData[field],
+    }
+
+    const modifiedRow: TableData = {
+      date: row.date,
+      [seriesId]: updatedSeriesData,
+    }
+    if (modifiedIndex === undefined) {
+      modifiedRowsByDate.set(dateTime, newTableData.value.length)
+      newTableData.value.push(modifiedRow)
+    } else {
+      newTableData.value[modifiedIndex] = {
+        ...newTableData.value[modifiedIndex],
+        [seriesId]: updatedSeriesData,
+      }
+    }
   }
+}
+
+function getEditableItem(item: TableData): TableData {
+  const modifiedRow = newTableData.value.find(
+    (row) => row.date.getTime() === item.date.getTime(),
+  )
+  return modifiedRow === undefined ? item : { ...item, ...modifiedRow }
+}
+
+function selectDateRow(scrollIntoView = false) {
+  const selectedRow = getSelectedDateRow()
+  if (selectedRow === undefined) return
+
+  selected.value = selectedRow.item
+  if (scrollIntoView) {
+    isSelectedDateVisible.value = true
+    nextTick(() => {
+      virtualTable.value?.scrollToIndex(selectedRow.displayIndex, 'center')
+      updateSelectedDateVisibility()
+    })
+  }
+}
+
+function scrollToLoadedBoundary(boundary: 'first' | 'last') {
+  if (tableData.value.length === 0) return
+
+  const dateIndex = boundary === 'first' ? 0 : tableData.value.length - 1
+
+  virtualTable.value?.scrollToIndex(getDisplayIndex(dateIndex), 'start')
+  updateSelectedDateVisibility()
+}
+
+function getSelectedDateRow() {
+  const selectedDate = props.selectedDate
+  if (selectedDate === undefined || tableData.value.length === 0) return
+
+  const dates = tableData.value.map((item) => item.date)
+  const dateIndex = findDateIndex(dates, selectedDate)
+  const item = tableData.value[dateIndex]
+  if (item === undefined) return
+
+  return { item, displayIndex: getDisplayIndex(dateIndex) }
+}
+
+function updateSelectedDateVisibility() {
+  if (!props.selectedDate || !tableScrollElement.value) {
+    isSelectedDateVisible.value = true
+    return
+  }
+
+  if (selectedDateVisibilityFrame !== undefined) {
+    cancelAnimationFrame(selectedDateVisibilityFrame)
+  }
+  selectedDateVisibilityFrame = requestAnimationFrame(() => {
+    selectedDateVisibilityFrame = undefined
+    const scrollElement = tableScrollElement.value
+    if (!scrollElement) return
+
+    const selectedDateRow = getSelectedDateRow()
+    if (selectedDateRow === undefined) {
+      isSelectedDateVisible.value = true
+      return
+    }
+
+    const selectedRow = scrollElement.querySelector<HTMLElement>(
+      `tbody tr[data-row-date="${selectedDateRow.item.date.toISOString()}"]`,
+    )
+    const scrollBounds = scrollElement.getBoundingClientRect()
+    const headerBottom =
+      scrollElement.querySelector('thead')?.getBoundingClientRect().bottom ??
+      scrollBounds.top
+    updateSelectedDateButtonPosition(scrollBounds, headerBottom)
+    if (!selectedRow) {
+      const headerHeight = headerBottom - scrollBounds.top
+      const firstVisibleIndex = Math.max(
+        0,
+        Math.floor(
+          (scrollElement.scrollTop - headerHeight) / virtualItemHeight,
+        ),
+      )
+      selectedDateDirection.value =
+        selectedDateRow.displayIndex < firstVisibleIndex ? 'up' : 'down'
+      selectedDateElevation.value = 1
+      isSelectedDateVisible.value = false
+      return
+    }
+
+    const rowBounds = selectedRow.getBoundingClientRect()
+    if (rowBounds.top <= headerBottom) {
+      selectedDateDirection.value = 'up'
+      selectedDateElevation.value = Math.min(
+        (headerBottom - rowBounds.top) / virtualItemHeight,
+        1,
+      )
+      isSelectedDateVisible.value = false
+    } else if (rowBounds.bottom >= scrollBounds.bottom) {
+      selectedDateDirection.value = 'down'
+      selectedDateElevation.value = Math.min(
+        (rowBounds.bottom - scrollBounds.bottom) / virtualItemHeight,
+        1,
+      )
+      isSelectedDateVisible.value = false
+    } else {
+      selectedDateElevation.value = 0
+      isSelectedDateVisible.value = true
+    }
+  })
+}
+
+function updateSelectedDateButtonPosition(
+  scrollBounds: DOMRect,
+  headerBottom: number,
+) {
+  const containerBounds = tableContainer.value?.getBoundingClientRect()
+  const dateColumnBounds = tableScrollElement.value
+    ?.querySelector('th.table-date')
+    ?.getBoundingClientRect()
+  if (!containerBounds || !dateColumnBounds) return
+
+  const dateCell = tableScrollElement.value?.querySelector(
+    'tbody td.table-date',
+  )
+  const dateCellStyle = dateCell ? getComputedStyle(dateCell) : undefined
+  selectedDateButtonStyle.value = {
+    left: `${dateColumnBounds.left - containerBounds.left + 4}px`,
+    width: `${Math.max(0, dateColumnBounds.width - 8)}px`,
+    font: dateCellStyle?.font ?? 'inherit',
+    textAlign: dateCellStyle?.textAlign ?? 'start',
+    paddingLeft: `${Math.max(0, Number.parseFloat(dateCellStyle?.paddingLeft ?? '0') - 5)}px`,
+    paddingRight: `${Math.max(0, Number.parseFloat(dateCellStyle?.paddingRight ?? '0') - 5)}px`,
+    '--selected-date-top': `${headerBottom - containerBounds.top}px`,
+    '--selected-date-bottom': `${containerBounds.bottom - scrollBounds.bottom}px`,
+  }
+}
+
+function handleTableScroll() {
+  updateSelectedDateVisibility()
+  const element = tableScrollElement.value
+  if (
+    !props.allowLoadMore ||
+    !element ||
+    isEditing.value ||
+    props.isLoading ||
+    props.isLoadingMore ||
+    isWaitingForTableUpdate.value
+  ) {
+    return
+  }
+
+  const maxScrollTop = element.scrollHeight - element.clientHeight
+  if (maxScrollTop <= 0) return
+
+  const nearTop = element.scrollTop < paginationThreshold
+  const nearBottom = maxScrollTop - element.scrollTop < paginationThreshold
+  if (!nearTop && !nearBottom) return
+
+  const isAtTop =
+    nearTop && (!nearBottom || element.scrollTop <= maxScrollTop / 2)
+  const dateSortOrder = sortBy.value.find((item) => item.key === 'date')?.order
+  const direction: 'before' | 'after' =
+    isAtTop === (dateSortOrder === 'asc') ? 'before' : 'after'
+
+  if (isAtTop) hasPendingTopLoad = true
+  emit('load-more-data', direction)
 }
 </script>
 
 <style scoped>
 .table-container {
+  position: relative;
   display: flex;
+  flex-direction: column;
   flex: 1 1 100%;
   width: 100%;
   height: 100%;
@@ -553,15 +1362,193 @@ function onUpdateItem(event: TableData) {
   letter-spacing: initial;
 }
 
+:deep(td:has(.table-cell-editable)) {
+  padding: 0 !important;
+}
+
 .data-table {
   display: flex;
   position: relative;
-  flex: 1 1 100px;
+  flex: 1 1 0;
   flex-direction: column;
   width: 100%;
-  height: 100%;
+  min-height: 0;
+  height: auto;
   margin: auto;
   overflow-y: hidden;
+}
+
+.table-status-bar {
+  display: flex;
+  flex: 0 0 40px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 40px;
+  min-height: 40px;
+  max-height: 40px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  overflow: hidden;
+  border-top: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 14px;
+}
+
+.table-status-bar__summary {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 4px 16px;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.table-status-bar__summary > * {
+  flex: 0 0 auto;
+}
+
+.table-status-bar__summary::-webkit-scrollbar {
+  display: none;
+}
+
+.table-status-bar__date-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.table-status-bar__date-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  height: 24px;
+  min-height: 24px;
+  padding-inline: 8px;
+  font: inherit;
+}
+
+.table-status-bar__date-chip-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.table-status-bar__date-chip-action:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.table-status-bar__date-divider {
+  align-self: stretch;
+  width: 1px;
+  margin-inline: 8px;
+  background-color: currentColor;
+  opacity: 0.4;
+}
+
+.table-date-return {
+  position: absolute;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 4px;
+  border: 1px solid rgb(var(--v-theme-primary));
+  border-radius: 4px;
+  color: rgb(var(--v-theme-primary));
+  background: rgb(var(--v-theme-surface));
+  box-shadow: 0 calc(3px * var(--selected-date-elevation))
+    calc(8px * var(--selected-date-elevation))
+    rgba(0, 0, 0, calc(0.24 * var(--selected-date-elevation)));
+  font: inherit;
+  cursor: pointer;
+  transition: box-shadow 160ms ease;
+}
+
+.table-date-return time {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-date-return--up {
+  top: var(--selected-date-top);
+}
+
+.table-date-return--down {
+  bottom: var(--selected-date-bottom);
+}
+
+.table-date-return:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .table-date-return {
+    transition: none;
+  }
+}
+
+.table-status-bar__activity {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.table-status-bar__keyboard-hint,
+.table-status-bar__keyboard-hint > span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.table-status-bar__keyboard-hint {
+  gap: 10px;
+}
+
+.table-status-bar__keyboard-hint > span {
+  line-height: 20px;
+}
+
+.table-status-bar__keyboard-hint kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 5px;
+  margin-right: 3px;
+  border: 1px solid color-mix(in srgb, currentColor 60%, transparent);
+  border-radius: 4px;
+  font-size: 11px;
+  vertical-align: 0.15em;
+}
+
+@media (max-width: 600px) {
+  .table-status-bar {
+    gap: 4px;
+    padding-inline: 8px;
+  }
+
+  .table-status-bar__summary {
+    gap: 4px 8px;
+  }
 }
 
 .data-table.hidden > svg {
@@ -637,10 +1624,38 @@ td.sticky-column {
   );
 }
 
+:deep(tr.row-selectable) {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+:deep(tr.row-selectable input, tr.row-selectable select) {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+:deep(tr.row-selected > td:has(.table-cell-editable)) {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(var(--v-theme-primary), 0.1) 0px,
+    rgba(var(--v-theme-primary), 0.1) 12.73px,
+    rgba(var(--v-theme-primary), 0.2) 12.73px,
+    rgba(var(--v-theme-primary), 0.2) 25.46px
+  );
+}
+
+:deep(tr.row-selected > td) {
+  background-color: rgba(var(--v-theme-primary), 0.12);
+}
+
 .table-header {
   vertical-align: bottom;
   height: inherit !important;
   max-width: 150px;
+}
+
+.table-header--editing {
+  width: 1px;
 }
 
 .table-header-indicator {

@@ -8,8 +8,8 @@ import {
   type DomainAxisValue,
   type DomainAxisEventValuesStringArray,
 } from '@deltares/fews-pi-requests'
-import { computed, toValue } from 'vue'
-import type { ComputedRef, MaybeRefOrGetter } from 'vue'
+import { computed, ref, toValue, watch } from 'vue'
+import type { ComputedRef, MaybeRefOrGetter, Ref } from 'vue'
 import {
   usePiTimeSeries,
   type PiTimeSeriesQueryOptions,
@@ -40,13 +40,14 @@ function timeZoneOffsetString(offset: number): string {
     .padStart(2, '0')}`
 }
 
-export function useTimeSeries(
+function useTimeSeriesData(
   requests: MaybeRefOrGetter<ActionRequest[]>,
   options: MaybeRefOrGetter<PiTimeSeriesQueryOptions>,
   fetchingEnabled?: MaybeRefOrGetter<boolean>,
   selectedTime?: MaybeRefOrGetter<Date | undefined>,
   refresh?: UsePiTimeSeriesOptions['refresh'],
-): UseTimeSeriesReturn {
+  transformRequestUrl?: (request: string) => string,
+) {
   const enabled = computed(
     () => fetchingEnabled === undefined || toValue(fetchingEnabled),
   )
@@ -69,10 +70,13 @@ export function useTimeSeries(
   const piRequests = computed(() =>
     requestEntries.value.map(({ key, request }) => ({
       key,
-      relativeUrl: request.request,
+      relativeUrl: transformRequestUrl
+        ? transformRequestUrl(request.request)
+        : request.request,
     })),
   )
   const {
+    entries,
     responses,
     loading,
     refreshing,
@@ -111,14 +115,224 @@ export function useTimeSeries(
   })
 
   return {
-    series,
-    loading,
-    refreshing,
-    loadingKeys,
-    requestRefresh,
-    pauseRefresh,
-    resumeRefresh,
+    timeSeries: {
+      series,
+      loading,
+      refreshing,
+      loadingKeys,
+      requestRefresh,
+      pauseRefresh,
+      resumeRefresh,
+    },
+    entries,
+    enabled,
+    requestEntries,
   }
+}
+
+export function useTimeSeries(
+  requests: MaybeRefOrGetter<ActionRequest[]>,
+  options: MaybeRefOrGetter<PiTimeSeriesQueryOptions>,
+  fetchingEnabled?: MaybeRefOrGetter<boolean>,
+  selectedTime?: MaybeRefOrGetter<Date | undefined>,
+  refresh?: UsePiTimeSeriesOptions['refresh'],
+): UseTimeSeriesReturn {
+  return useTimeSeriesData(
+    requests,
+    options,
+    fetchingEnabled,
+    selectedTime,
+    refresh,
+  ).timeSeries
+}
+
+export interface UsePaginatedTimeSeriesReturn extends UseTimeSeriesReturn {
+  pageUpdate: Readonly<Ref<PaginatedTimeSeriesPageUpdate | undefined>>
+  beforeStartTimeCount: Readonly<Ref<number>>
+  afterEndTimeCount: Readonly<Ref<number>>
+  isLoadingMore: Readonly<Ref<boolean>>
+  loadMore: (direction: 'before' | 'after') => void
+}
+
+export interface PaginatedTimeSeriesPageUpdate {
+  revision: number
+  direction: 'before' | 'after'
+}
+
+export function usePaginatedTimeSeries(
+  requests: MaybeRefOrGetter<ActionRequest[]>,
+  options: MaybeRefOrGetter<PiTimeSeriesQueryOptions>,
+  fetchingEnabled?: MaybeRefOrGetter<boolean>,
+  selectedTime?: MaybeRefOrGetter<Date | undefined>,
+  refresh?: UsePiTimeSeriesOptions['refresh'],
+  pageSize = 20,
+): UsePaginatedTimeSeriesReturn {
+  const beforeStartTimeCount = ref(0)
+  const afterEndTimeCount = ref(0)
+  const isLoadingMore = ref(false)
+  const pageUpdate = ref<PaginatedTimeSeriesPageUpdate>()
+  const exhausted = { before: false, after: false }
+  let pendingPage:
+    | {
+        direction: 'before' | 'after'
+        updatedAt: Map<string, Date | undefined>
+        boundaries: Map<string, number>
+      }
+    | undefined
+  const { timeSeries, entries, enabled, requestEntries } = useTimeSeriesData(
+    requests,
+    options,
+    fetchingEnabled,
+    selectedTime,
+    refresh,
+    (request) =>
+      withPaginationCounts(
+        request,
+        beforeStartTimeCount.value,
+        afterEndTimeCount.value,
+      ),
+  )
+  const { loading, refreshing } = timeSeries
+
+  function getBoundaries(direction: 'before' | 'after') {
+    const boundaries = new Map<string, number>()
+    for (const [key, series] of Object.entries(timeSeries.series.value)) {
+      for (const event of series.data ?? []) {
+        const timestamp = event.x instanceof Date ? event.x.getTime() : event.x
+        if (timestamp === null || !Number.isFinite(timestamp)) continue
+        const boundary = boundaries.get(key)
+        if (
+          boundary === undefined ||
+          (direction === 'before' ? timestamp < boundary : timestamp > boundary)
+        ) {
+          boundaries.set(key, timestamp)
+        }
+      }
+    }
+    return boundaries
+  }
+
+  watch(
+    [() => toValue(requests), () => toValue(options)],
+    () => {
+      exhausted.before = false
+      exhausted.after = false
+      pendingPage = undefined
+      isLoadingMore.value = false
+      beforeStartTimeCount.value = 0
+      afterEndTimeCount.value = 0
+    },
+    { deep: true, flush: 'sync' },
+  )
+
+  watch([loading, refreshing], ([isLoading, isRefreshing]) => {
+    if (isLoading || isRefreshing) return
+
+    isLoadingMore.value = false
+    if (pendingPage === undefined) return
+
+    const hasSuccessfulResponse = Object.entries(entries.value).some(
+      ([key, entry]) => entry.updatedAt !== pendingPage?.updatedAt.get(key),
+    )
+    const allRequestsSucceeded = requestEntries.value.every(({ key }) => {
+      const updatedAt = entries.value[key]?.updatedAt
+      return (
+        updatedAt !== undefined && updatedAt !== pendingPage?.updatedAt.get(key)
+      )
+    })
+    if (allRequestsSucceeded) {
+      const { direction, boundaries } = pendingPage
+      const hasAdditionalEvents = [...getBoundaries(direction)].some(
+        ([key, boundary]) => {
+          const previous = boundaries.get(key)
+          return (
+            previous === undefined ||
+            (direction === 'before' ? boundary < previous : boundary > previous)
+          )
+        },
+      )
+      exhausted[direction] = !hasAdditionalEvents
+    }
+    if (hasSuccessfulResponse) {
+      pageUpdate.value = {
+        revision: (pageUpdate.value?.revision ?? 0) + 1,
+        direction: pendingPage.direction,
+      }
+    }
+    pendingPage = undefined
+  })
+
+  function loadMore(direction: 'before' | 'after') {
+    if (
+      !enabled.value ||
+      requestEntries.value.length === 0 ||
+      loading.value ||
+      refreshing.value ||
+      isLoadingMore.value ||
+      exhausted[direction]
+    ) {
+      return
+    }
+
+    pendingPage = {
+      direction,
+      boundaries: getBoundaries(direction),
+      updatedAt: new Map(
+        Object.entries(entries.value).map(([key, entry]) => [
+          key,
+          entry.updatedAt,
+        ]),
+      ),
+    }
+    isLoadingMore.value = true
+    if (direction === 'before') {
+      beforeStartTimeCount.value += pageSize
+    } else {
+      afterEndTimeCount.value += pageSize
+    }
+  }
+
+  return {
+    ...timeSeries,
+    pageUpdate,
+    beforeStartTimeCount,
+    afterEndTimeCount,
+    isLoadingMore,
+    loadMore,
+  }
+}
+
+function withPaginationCounts(
+  request: string,
+  beforeStartTimeCount: number,
+  afterEndTimeCount: number,
+): string {
+  const hashIndex = request.indexOf('#')
+  const hash = hashIndex === -1 ? '' : request.slice(hashIndex)
+  const requestWithoutHash =
+    hashIndex === -1 ? request : request.slice(0, hashIndex)
+  const queryIndex = requestWithoutHash.indexOf('?')
+  const path =
+    queryIndex === -1
+      ? requestWithoutHash
+      : requestWithoutHash.slice(0, queryIndex)
+  const query = new URLSearchParams(
+    queryIndex === -1 ? '' : requestWithoutHash.slice(queryIndex + 1),
+  )
+
+  if (beforeStartTimeCount > 0) {
+    query.set('beforeStartTimeCount', String(beforeStartTimeCount))
+  } else {
+    query.delete('beforeStartTimeCount')
+  }
+  if (afterEndTimeCount > 0) {
+    query.set('afterEndTimeCount', String(afterEndTimeCount))
+  } else {
+    query.delete('afterEndTimeCount')
+  }
+
+  const search = query.toString()
+  return path + (search ? `?${search}` : '') + hash
 }
 
 export async function fetchTimeSeriesHeaders(

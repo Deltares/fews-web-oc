@@ -3,7 +3,7 @@
 }
 
 .v-theme--light *::-webkit-scrollbar-track,
-*::-webkit-scrollbar-corner {
+.v-theme--light *::-webkit-scrollbar-corner {
   background: #e6e6e6;
 }
 
@@ -22,7 +22,7 @@
 }
 
 .v-theme--dark *::-webkit-scrollbar-track,
-*::-webkit-scrollbar-corner {
+.v-theme--dark *::-webkit-scrollbar-corner {
   background: #202020;
 }
 

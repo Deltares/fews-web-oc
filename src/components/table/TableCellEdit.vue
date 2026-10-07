@@ -1,20 +1,38 @@
 <template>
   <div class="table-cell-editable">
-    <!-- Edge does not respect lang="en-US" as such to not have ',' as decimal separator we need type="text" -->
+    <!-- Use a text input because Edge ignores the English locale and may use a comma as the decimal separator. -->
     <input
-      :ref="`${props.item.date}-${props.id}-value`"
+      :id="valueInputId"
+      :aria-label="`Value for ${props.id} at ${props.item.date.toISOString()}`"
+      :data-edit-date="props.item.date.toISOString()"
+      :data-edit-series-id="props.id"
+      data-edit-field="y"
       v-model.number="currentItem.y"
-      class="table-cell-edit"
+      class="table-cell-edit table-cell-edit--value"
+      :class="{
+        'table-cell-edit--column-focused': props.focusedField === 'y',
+      }"
       type="text"
       inputmode="decimal"
       placeholder="value"
-      @change="editItem"
+      @input="editItem('y')"
+      @focus="emit('focus-field', 'y')"
+      @blur="emit('focus-field', undefined)"
     />
     <select
-      :ref="`${props.item.date}-${props.id}-flagquality`"
+      :id="flagInputId"
+      :aria-label="`Flag quality for ${props.id} at ${props.item.date.toISOString()}`"
+      :data-edit-date="props.item.date.toISOString()"
+      :data-edit-series-id="props.id"
+      data-edit-field="flagEdit"
       class="table-cell-edit"
+      :class="{
+        'table-cell-edit--column-focused': props.focusedField === 'flagEdit',
+      }"
       v-model="currentItem.flagEdit"
-      @change="editItem"
+      @change="editItem('flagEdit')"
+      @focus="emit('focus-field', 'flagEdit')"
+      @blur="emit('focus-field', undefined)"
     >
       <option
         v-for="flagEdit in possibleFlagEdits"
@@ -25,19 +43,32 @@
       </option>
     </select>
     <input
-      :ref="`${props.item.date}-${props.id}-comment`"
+      :id="commentInputId"
+      :aria-label="`Comment for ${props.id} at ${props.item.date.toISOString()}`"
+      :data-edit-date="props.item.date.toISOString()"
+      :data-edit-series-id="props.id"
+      data-edit-field="comment"
       v-model="currentItem.comment"
-      class="table-cell-edit"
+      class="table-cell-edit table-cell-edit--comment"
+      :class="{
+        'table-cell-edit--column-focused': props.focusedField === 'comment',
+      }"
       type="text"
       placeholder="comment"
-      @change="editItem"
+      @input="editItem('comment')"
+      @focus="emit('focus-field', 'comment')"
+      @blur="emit('focus-field', undefined)"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { TableData, TableSeriesData } from '@/lib/table/tableData'
-import { ref } from 'vue'
+import type {
+  TableData,
+  TableSeriesData,
+  TableSeriesField,
+} from '@/lib/table/tableData'
+import { ref, watch } from 'vue'
 
 // Required for TS to enforce the exact values of the flagEdit field
 const tempPossibleFlagEdits: Record<
@@ -55,32 +86,51 @@ const possibleFlagEdits = Object.keys(tempPossibleFlagEdits)
 interface Props {
   id: string
   item: TableData
+  focusedField?: TableSeriesField
 }
 
 const props = defineProps<Props>()
 
-const emit = defineEmits(['update:item'])
+const emit = defineEmits<{
+  'update:item': [item: TableData, field: TableSeriesField]
+  'focus-field': [field: TableSeriesField | undefined]
+}>()
+const safeSeriesId = props.id.replace(/[^a-zA-Z0-9_-]/g, '-')
+const inputIdPrefix = `table-cell-${props.item.date.getTime()}-${safeSeriesId}`
+const valueInputId = `${inputIdPrefix}-value`
+const flagInputId = `${inputIdPrefix}-flag-quality`
+const commentInputId = `${inputIdPrefix}-comment`
 
 const currentItem = ref<Partial<TableSeriesData>>({
   ...(props.item[props.id] as Partial<TableSeriesData>),
 })
 
-function editItem() {
+watch(
+  () => props.item[props.id],
+  (value) => {
+    currentItem.value =
+      value instanceof Date ? {} : { ...(value as Partial<TableSeriesData>) }
+  },
+)
+
+function editItem(field: TableSeriesField) {
   const updatedItem = {
     date: props.item.date,
     [props.id]: currentItem.value,
   }
-  emit('update:item', updatedItem)
+  emit('update:item', updatedItem, field)
 }
 </script>
 
 <style scoped>
 .table-cell-editable {
-  z-index: -1;
-  width: 100%;
   display: flex;
-  flex-direction: row;
-  min-width: 240px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 2px;
+  width: max-content;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .table-cell-editable input[type='checkbox'] {
@@ -94,19 +144,50 @@ function editItem() {
   cursor: pointer;
 }
 
-input.table-cell-edit {
-  display: flex;
-  line-height: 100%;
-  padding: 4px;
-  min-width: 5ch;
+.table-cell-edit {
+  box-sizing: border-box;
+  display: block;
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 28px;
+  padding: 3px 6px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 4px;
+  background-color: rgb(var(--v-theme-surface));
   color: currentColor;
+  font: inherit;
+  line-height: 20px;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
 }
+
+.table-cell-edit:hover:not(:focus-visible) {
+  border-color: rgba(var(--v-theme-on-surface), 0.6);
+}
+
+.table-cell-edit:focus-visible {
+  border-color: rgb(var(--v-theme-primary));
+  outline: 2px solid rgb(var(--v-theme-primary)) !important;
+  outline-offset: 1px !important;
+}
+
+.table-cell-edit--column-focused {
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
+}
+
+input.table-cell-edit--value {
+  width: 8ch;
+}
+
+input.table-cell-edit--comment {
+  width: 12ch;
+}
+
 select.table-cell-edit {
-  display: flex;
-  line-height: 100%;
-  padding: 4px;
-  min-width: 16ch;
-  color: currentColor;
+  width: 22ch;
+  max-width: 22ch;
 }
 
 .table-cell-edit::placeholder {
