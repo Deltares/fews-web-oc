@@ -325,6 +325,8 @@ const onMenuKeydown = (event: KeyboardEvent) => {
 
   if (event.key.length !== 1) return
 
+  clearSearchTimers()
+  displayIndexBuffer.value = ''
   displaySearchBuffer.value += event.key
   scheduleSearch()
 }

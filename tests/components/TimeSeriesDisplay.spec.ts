@@ -254,6 +254,37 @@ test.describe('TimeSeriesDisplay selection menu', () => {
     await expect(activeItem(page)).toContainText('Display 9')
   })
 
+  test('switching to text cancels pending numeric selection and clears its buffer', async ({
+    mount,
+    page,
+  }) => {
+    await mockDisplays(page, 30, { 30: 'Zulu river' })
+    const component = await mount(
+      'timeseries/TimeSeriesDisplay/SelectionMenu',
+      { plotId: 'plot-5' },
+    )
+    await component
+      .getByRole('button', { name: 'Display 5', exact: true })
+      .click()
+    await expect(menu(page)).toBeVisible()
+    await freezeClock(page)
+    const input = menu(page).getByLabel('Plot selection input')
+    await page.keyboard.type('1')
+    await expect(input).toHaveText('1')
+    await page.keyboard.type('Zulu')
+    await expect(input).toHaveText('Zulu')
+    await page.clock.runFor(220)
+    await expect(activeItem(page)).toContainText('Zulu river')
+    await page.clock.runFor(230)
+    await expect(activeItem(page)).toContainText('Zulu river')
+    await page.keyboard.press('Backspace')
+    await expect(input).toHaveText('Zul')
+    await page.clock.runFor(220)
+    await expect(activeItem(page)).toContainText('Zulu river')
+    await page.clock.runFor(980)
+    await expect(input).toHaveCount(0)
+  })
+
   test('text search prefers prefixes, falls back to substrings, and moves focus', async ({
     mount,
     page,
