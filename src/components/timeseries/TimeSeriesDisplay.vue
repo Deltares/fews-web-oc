@@ -22,7 +22,7 @@
             :text="displayConfig?.title"
           />
         </template>
-        <v-list v-model="selectedPlotId" density="compact">
+        <v-list ref="displayList" v-model="selectedPlotId" density="compact">
           <v-list-item
             v-for="(display, index) in displays"
             :key="display.plotId"
@@ -48,7 +48,9 @@
 <script setup lang="ts">
 import TimeSeriesWindowComponent from './TimeSeriesWindowComponent.vue'
 import HighlightMatch from '@/components/general/HighlightMatch.vue'
-import { ref, watch, computed, watchEffect } from 'vue'
+import { ref, watch, computed, watchEffect, useTemplateRef } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import type { VList } from 'vuetify/components'
 import { configManager } from '@/services/application-config'
 import { useDisplayConfig } from '@/services/useDisplayConfig/index.ts'
 import { useUserSettingsStore } from '@/stores/userSettings'
@@ -70,13 +72,22 @@ const props = withDefaults(defineProps<Props>(), {
 
 const userSettings = useUserSettingsStore()
 const taskRunsStore = useTaskRunsStore()
+const route = useRoute()
+const router = useRouter()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const selectedPlotId = ref<string>()
+const selectedPlotId = ref<string | undefined>(
+  typeof route.query.plotId === 'string' ? route.query.plotId : undefined,
+)
+const displayList = useTemplateRef<InstanceType<typeof VList>>('displayList')
 const isDisplayMenuOpen = ref(false)
 const displaySearchBuffer = ref('')
 const displayIndexBuffer = ref('')
+
+const DISPLAY_SEARCH_DELAY_MS = 220
+const DISPLAY_INDEX_DELAY_MS = 450
+const DISPLAY_BUFFER_RESET_MS = 1200
 
 let searchApplyTimer: ReturnType<typeof setTimeout> | undefined
 let searchResetTimer: ReturnType<typeof setTimeout> | undefined
@@ -128,6 +139,23 @@ watchEffect(() => {
   if (props.plotId) selectedPlotId.value = props.plotId
 })
 
+watch(
+  () => route.query.plotId,
+  (plotId) => {
+    selectedPlotId.value =
+      typeof plotId === 'string' ? plotId : displays.value?.[0]?.plotId
+  },
+)
+
+watch(selectedPlotId, (plotId) => {
+  if (plotId === undefined || route.query.plotId === plotId) return
+
+  void router.replace({
+    query: { ...route.query, plotId },
+    hash: route.hash,
+  })
+})
+
 watch(displays, () => {
   const plotIds = displays.value?.map((d) => d.plotId) ?? []
   if (
@@ -137,6 +165,21 @@ watch(displays, () => {
     selectedPlotId.value = plotIds[0]
   }
 })
+
+watch(
+  selectedPlotId,
+  () => {
+    if (!isDisplayMenuOpen.value) return
+
+    const list = displayList.value?.$el as HTMLElement | undefined
+    const selectedItem = list?.querySelector<HTMLElement>(
+      '.v-list-item--active',
+    )
+    selectedItem?.focus({ preventScroll: true })
+    selectedItem?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  },
+  { flush: 'post' },
+)
 
 const findDisplayBySearch = (query: string) => {
   const normalizedQuery = query.trim().toLowerCase()
@@ -195,24 +238,37 @@ const scheduleSearch = () => {
 
   searchApplyTimer = setTimeout(() => {
     applyDisplaySearch()
-  }, 220)
+  }, DISPLAY_SEARCH_DELAY_MS)
 
   searchResetTimer = setTimeout(() => {
     displaySearchBuffer.value = ''
-  }, 1200)
+  }, DISPLAY_BUFFER_RESET_MS)
 }
 
 const scheduleIndexSelection = () => {
   if (indexApplyTimer) clearTimeout(indexApplyTimer)
   if (indexResetTimer) clearTimeout(indexResetTimer)
 
-  indexApplyTimer = setTimeout(() => {
+  const prefix = displayIndexBuffer.value
+  const hasLongerIndex = displays.value?.some((_, index) => {
+    const displayIndex = String(index + 1)
+    return (
+      displayIndex.length > prefix.length && displayIndex.startsWith(prefix)
+    )
+  })
+
+  if (hasLongerIndex) {
+    indexApplyTimer = setTimeout(() => {
+      applyDisplayIndexSelection()
+    }, DISPLAY_INDEX_DELAY_MS)
+  } else {
+    indexApplyTimer = undefined
     applyDisplayIndexSelection()
-  }, 220)
+  }
 
   indexResetTimer = setTimeout(() => {
     displayIndexBuffer.value = ''
-  }, 1200)
+  }, DISPLAY_BUFFER_RESET_MS)
 }
 
 const onMenuKeydown = (event: KeyboardEvent) => {
