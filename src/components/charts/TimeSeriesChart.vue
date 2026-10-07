@@ -345,6 +345,12 @@ const resize = () => {
   })
 }
 
+function isAllDataLoaded() {
+  return props.config.series.every((s) =>
+    s.dataResources.every((id) => props.series[id] !== undefined),
+  )
+}
+
 const onValueChange = () => {
   clearChart(axis)
 
@@ -353,6 +359,8 @@ const onValueChange = () => {
   if (zoomOptions) {
     axis.setOptions(zoomOptions)
   }
+  // Delay automatic margin calculation until thresholds and all series data are present
+  axis.options.automargin = isAllDataLoaded()
   redraw(axis, props.config)
   resetAxes(false)
   setTags()
@@ -395,7 +403,8 @@ watch(
         s.dataResources.every((id) => props.series[id] !== undefined) &&
         !axis.charts.some((c: any) => c.id === s.id),
     )
-    if (hasUncreatedChart) onValueChange()
+    if (hasUncreatedChart || (!axis.options.automargin && isAllDataLoaded()))
+      onValueChange()
   },
 )
 
