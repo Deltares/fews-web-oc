@@ -118,6 +118,25 @@ describe('timeSeriesChart helpers', () => {
     })
   })
 
+  it('rescales empty line and marker charts sharing a series ID when data arrives', () => {
+    const axis = createAxis()
+    const line = createChartSeries('observation', ['resource-a'])
+    const marker: ChartSeries = { ...line, type: 'marker' }
+    const config = { ...createConfig(line), series: [line, marker] }
+    refreshChart(axis, config, {})
+    expect(axis.charts).toHaveLength(2)
+
+    const needsAxisRescale = updateChartData(axis, config.series, {
+      'resource-a': createSeries(275.21),
+    })
+
+    expect(needsAxisRescale).toBe(true)
+    expect(axis.redraw).toHaveBeenCalledWith({
+      x: { autoScale: true },
+      y: { autoScale: true },
+    })
+  })
+
   it('aligns multiple resources by date in the requested resource order', () => {
     const start = new Date('2026-01-01T00:00:00Z')
     const middle = new Date('2026-01-02T00:00:00Z')
@@ -174,6 +193,29 @@ describe('timeSeriesChart helpers', () => {
       x: { autoScale: true },
       y: { autoScale: true },
     })
+  })
+
+  it('updates an empty chart when a resource is replaced with the same timestamp', async () => {
+    const scope = effectScope()
+    const axis = createAxis()
+    const chartSeries = createChartSeries('series', ['resource-a'])
+    const config = ref(createConfig(chartSeries))
+    const lastUpdated = new Date('2026-01-01T00:00:00Z')
+    const series = ref<Record<string, Series>>({
+      'resource-a': { ...createSeries(1, lastUpdated), data: [] },
+    })
+    refreshChart(axis, config.value, series.value)
+
+    scope.run(() => {
+      useSeriesUpdateChartData(series, config, () => axis)
+    })
+    series.value = { 'resource-a': createSeries(2, lastUpdated) }
+    await nextTick()
+    scope.stop()
+
+    expect(axis.charts[0].data).toEqual([
+      { x: new Date('2026-01-01T00:00:00Z'), y: 2, flag: '' },
+    ])
   })
 
   it('does not redraw the x-axis after non-initial data updates', async () => {
