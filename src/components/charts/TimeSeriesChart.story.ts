@@ -1,7 +1,8 @@
 import { computed, defineComponent, h } from 'vue'
 import TimeSeriesChart from './TimeSeriesChart.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
-import type { Series } from '@/lib/timeseries/timeSeries'
+import { Series } from '@/lib/timeseries/timeSeries'
+import { SeriesUrlRequest } from '@/lib/timeseries/timeSeriesResource'
 import { getDefaultSettings } from '@/lib/topology/componentSettings'
 
 export const ThresholdSwitching = defineComponent({
@@ -14,17 +15,19 @@ export const ThresholdSwitching = defineComponent({
   setup(props) {
     const start = new Date('2026-01-01T00:00:00Z')
     const end = new Date('2026-01-02T00:00:00Z')
-    const series = computed<Record<string, Series>>(() => ({
-      observation: {
-        data: props.dataReady
-          ? [
-              { x: start, y: 1, flag: '' },
-              { x: end, y: 2, flag: '' },
-            ]
-          : [],
-        lastUpdated: start,
-      } as Series,
-    }))
+    const series = computed<Record<string, Series>>(() => {
+      const observation = new Series(
+        new SeriesUrlRequest('story', '/observation'),
+      )
+      observation.data = props.dataReady
+        ? [
+            { x: start, y: 1, flag: '0' },
+            { x: end, y: 2, flag: '0' },
+          ]
+        : []
+      observation.lastUpdated = start
+      return { observation }
+    })
     const config = computed<ChartConfig>(() => {
       const result: ChartConfig = {
         id: 'threshold-switching',
@@ -39,7 +42,10 @@ export const ThresholdSwitching = defineComponent({
             dataResources: ['observation'],
             name: 'Observation',
             type: 'line',
-            options: { x: { axisIndex: 0 }, y: { axisIndex: 0 } },
+            options: {
+              x: { key: 'x', axisIndex: 0 },
+              y: { key: 'y', axisIndex: 0 },
+            },
             unit: 'm',
             style: { stroke: 'black' },
             visibleInLegend: true,
