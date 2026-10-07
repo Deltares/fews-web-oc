@@ -13,6 +13,7 @@
         z-index="10000"
         max-height="400"
         :close-on-content-click="false"
+        @after-enter="focusSelectedDisplay"
       >
         <template #activator="{ props }">
           <v-btn
@@ -22,7 +23,14 @@
             :text="displayConfig?.title"
           />
         </template>
-        <v-list v-model="selectedPlotId" density="compact">
+        <output
+          v-if="displayIndexBuffer || displaySearchBuffer"
+          class="plot-selection-input"
+          aria-label="Plot selection input"
+        >
+          {{ displayIndexBuffer || displaySearchBuffer }}
+        </output>
+        <v-list ref="displayList" v-model="selectedPlotId" density="compact">
           <v-list-item
             v-for="(display, index) in displays"
             :key="display.plotId"
@@ -48,7 +56,9 @@
 <script setup lang="ts">
 import TimeSeriesWindowComponent from './TimeSeriesWindowComponent.vue'
 import HighlightMatch from '@/components/general/HighlightMatch.vue'
-import { ref, watch, computed, watchEffect } from 'vue'
+import { ref, watch, computed, useTemplateRef } from 'vue'
+import type { NavigateRoute } from '@/lib/router'
+import type { VList } from 'vuetify/components'
 import { configManager } from '@/services/application-config'
 import { useDisplayConfig } from '@/services/useDisplayConfig/index.ts'
 import { useUserSettingsStore } from '@/stores/userSettings'
@@ -68,15 +78,24 @@ const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
 })
 
+const emit = defineEmits<{
+  navigate: [to: NavigateRoute]
+}>()
+
 const userSettings = useUserSettingsStore()
 const taskRunsStore = useTaskRunsStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const selectedPlotId = ref<string>()
+const selectedPlotId = ref(props.plotId)
+const displayList = useTemplateRef<VList>('displayList')
 const isDisplayMenuOpen = ref(false)
 const displaySearchBuffer = ref('')
 const displayIndexBuffer = ref('')
+
+const DISPLAY_SEARCH_DELAY_MS = 220
+const DISPLAY_INDEX_DELAY_MS = 450
+const DISPLAY_BUFFER_RESET_MS = 1200
 
 let searchApplyTimer: ReturnType<typeof setTimeout> | undefined
 let searchResetTimer: ReturnType<typeof setTimeout> | undefined
@@ -107,6 +126,12 @@ const { displays, displayConfig, scalar1DDisplayConfig } = useDisplayConfig(
   () => taskRunsStore.selectedTaskRunIds,
 )
 
+const currentNodeDisplays = computed(() =>
+  displays.value?.every((display) => display.nodeId === nodeId.value)
+    ? displays.value
+    : null,
+)
+
 const brushFilter = computed(() => {
   if (!userSettings.get('charts.brush')?.value || !nodeId.value) {
     return
@@ -124,18 +149,51 @@ const { displayConfig: brushChartConfig } = useDisplayConfig(
   () => taskRunsStore.selectedTaskRunIds,
 )
 
-watchEffect(() => {
-  if (props.plotId) selectedPlotId.value = props.plotId
+watch([() => props.plotId, nodeId], ([plotId]) => {
+  if (plotId !== selectedPlotId.value) resetSelectionInput()
+  const availableDisplays = currentNodeDisplays.value
+  selectedPlotId.value = availableDisplays?.length
+    ? (availableDisplays.find((display) => display.plotId === plotId)?.plotId ??
+      availableDisplays[0]?.plotId)
+    : plotId
+})
+
+watch([selectedPlotId, () => props.plotId], ([plotId]) => {
+  if (!currentNodeDisplays.value) return
+  if (plotId === undefined || props.plotId === plotId) return
+
+  emit('navigate', {
+    name: 'TimeSeriesDisplay',
+    params: { plotId },
+  })
 })
 
 watch(displays, () => {
-  const plotIds = displays.value?.map((d) => d.plotId) ?? []
+  resetSelectionInput()
+  const availableDisplays = currentNodeDisplays.value
+  if (!availableDisplays) return
+  const plotIds = availableDisplays.map((d) => d.plotId)
   if (
     selectedPlotId.value === undefined ||
     !plotIds.includes(selectedPlotId.value)
   ) {
     selectedPlotId.value = plotIds[0]
   }
+})
+
+watch(nodeId, resetSelectionInput)
+
+const focusSelectedDisplay = () => {
+  if (!isDisplayMenuOpen.value) return
+
+  const list = displayList.value?.$el as HTMLElement | undefined
+  const selectedItem = list?.querySelector<HTMLElement>('.v-list-item--active')
+  selectedItem?.focus({ preventScroll: true })
+  selectedItem?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+}
+
+watch([selectedPlotId, isDisplayMenuOpen, displayList], focusSelectedDisplay, {
+  flush: 'post',
 })
 
 const findDisplayBySearch = (query: string) => {
@@ -170,7 +228,7 @@ const applyDisplayIndexSelection = () => {
   }
 }
 
-const clearSearchTimers = () => {
+function clearSearchTimers() {
   if (searchApplyTimer) {
     clearTimeout(searchApplyTimer)
     searchApplyTimer = undefined
@@ -189,30 +247,49 @@ const clearSearchTimers = () => {
   }
 }
 
+function resetSelectionInput() {
+  clearSearchTimers()
+  displaySearchBuffer.value = ''
+  displayIndexBuffer.value = ''
+}
+
 const scheduleSearch = () => {
   if (searchApplyTimer) clearTimeout(searchApplyTimer)
   if (searchResetTimer) clearTimeout(searchResetTimer)
 
   searchApplyTimer = setTimeout(() => {
     applyDisplaySearch()
-  }, 220)
+  }, DISPLAY_SEARCH_DELAY_MS)
 
   searchResetTimer = setTimeout(() => {
     displaySearchBuffer.value = ''
-  }, 1200)
+  }, DISPLAY_BUFFER_RESET_MS)
 }
 
 const scheduleIndexSelection = () => {
   if (indexApplyTimer) clearTimeout(indexApplyTimer)
   if (indexResetTimer) clearTimeout(indexResetTimer)
 
-  indexApplyTimer = setTimeout(() => {
+  const prefix = displayIndexBuffer.value
+  const hasLongerIndex = displays.value?.some((_, index) => {
+    const displayIndex = String(index + 1)
+    return (
+      displayIndex.length > prefix.length && displayIndex.startsWith(prefix)
+    )
+  })
+
+  if (hasLongerIndex) {
+    indexApplyTimer = setTimeout(() => {
+      applyDisplayIndexSelection()
+    }, DISPLAY_INDEX_DELAY_MS)
+  } else {
+    indexApplyTimer = undefined
     applyDisplayIndexSelection()
-  }, 220)
+  }
 
   indexResetTimer = setTimeout(() => {
     displayIndexBuffer.value = ''
-  }, 1200)
+  }, DISPLAY_BUFFER_RESET_MS)
 }
 
 const onMenuKeydown = (event: KeyboardEvent) => {
@@ -248,15 +325,15 @@ const onMenuKeydown = (event: KeyboardEvent) => {
 
   if (event.key.length !== 1) return
 
+  clearSearchTimers()
+  displayIndexBuffer.value = ''
   displaySearchBuffer.value += event.key
   scheduleSearch()
 }
 
 watch(isDisplayMenuOpen, (isOpen, _, onCleanup) => {
   if (!isOpen) {
-    clearSearchTimers()
-    displaySearchBuffer.value = ''
-    displayIndexBuffer.value = ''
+    resetSelectionInput()
     return
   }
 
@@ -267,3 +344,29 @@ watch(isDisplayMenuOpen, (isOpen, _, onCleanup) => {
   })
 })
 </script>
+
+<style scoped>
+.plot-selection-input {
+  display: block;
+  position: absolute;
+  bottom: calc(100% + 4px);
+  right: 0;
+  z-index: 1;
+  width: max-content;
+  min-width: 3ch;
+  max-width: min(12rem, 100%);
+  padding: 2px 6px;
+  border: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 4px;
+  background-color: rgb(var(--v-theme-surface));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: right;
+  pointer-events: none;
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>

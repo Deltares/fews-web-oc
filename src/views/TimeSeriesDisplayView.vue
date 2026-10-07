@@ -3,7 +3,7 @@
     <ColumnMenu v-model:active="active" :items="items" v-model:open="open">
     </ColumnMenu>
   </Teleport>
-  <TimeSeriesDisplay :nodeId="nodeId"></TimeSeriesDisplay>
+  <TimeSeriesDisplay :nodeId="nodeId" :plotId="plotId" @navigate="onNavigate" />
 </template>
 
 <script setup lang="ts">
@@ -13,16 +13,31 @@ import type { ColumnItem } from '../components/general/ColumnItem'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import TimeSeriesDisplay from '../components/timeseries/TimeSeriesDisplay.vue'
 import { getTopologyNodes } from '@/lib/topology/getTopologyNodes'
+import { useRoute, useRouter } from 'vue-router'
+import type { NavigateRoute } from '@/lib/router'
 
 const TIME_SERIES_DIALOG_PANEL: string = 'time series dialog'
 
 interface Props {
   nodeId?: string
+  plotId?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   nodeId: '',
 })
+
+const route = useRoute()
+const router = useRouter()
+
+function onNavigate(to: NavigateRoute) {
+  void router.replace({
+    ...to,
+    params: { nodeId: props.nodeId, ...to.params },
+    query: route.query,
+    hash: route.hash,
+  })
+}
 
 const active = ref<string | undefined>(undefined)
 const open = ref<string[]>([])

@@ -89,6 +89,7 @@ export async function getComponentPropsForNode(
     const result: PropsForComponentType<'charts'> = {
       nodeId: node.id,
       plotId:
+        routeParams?.plotId ??
         actionParams?.charts?.displayId ??
         actionParams?.charts?.chartsLocationId,
     }
