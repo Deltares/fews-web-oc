@@ -88,6 +88,7 @@ function createBenchmarkStory(
   pageSize = 0,
   useIncrementalPages = false,
   allowLoadMore = pageSize > 0,
+  nonEquidistant = false,
 ) {
   return defineComponent({
     setup() {
@@ -152,6 +153,9 @@ function createBenchmarkStory(
           editable: true,
         })
         const timeSeries = new Series(new SeriesUrlRequest('benchmark', id))
+        if (nonEquidistant) {
+          timeSeries.header.timeStep = { unit: 'nonequidistant' }
+        }
         allSeriesEvents[id] = dates.map((x, row) => ({
           x: new Date(x),
           y: ((row * 17 + column * 31) % 1000) / 10,
@@ -249,6 +253,14 @@ function createBenchmarkStory(
 }
 
 export const Benchmark200Rows = createBenchmarkStory(200)
+export const NonEquidistantRows = createBenchmarkStory(
+  3,
+  undefined,
+  0,
+  false,
+  false,
+  true,
+)
 export const LoadMore200Rows = createBenchmarkStory(
   200,
   undefined,

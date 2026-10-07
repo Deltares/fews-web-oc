@@ -53,28 +53,48 @@
                   v-if="isEditing && nonEquidistantSeries.length > 0"
                   class="table-header__actions"
                 >
-                  <v-btn
-                    icon="mdi-table-row-plus-before"
-                    @click="addRowToTimeSeries(selected, 'before')"
-                    color="primary"
-                    variant="text"
-                    density="compact"
-                    :disabled="rowAdditionDisabled"
-                  />
-                  <v-btn
-                    icon="mdi-table-row-plus-after"
-                    @click="addRowToTimeSeries(selected, 'after')"
-                    color="primary"
-                    variant="text"
-                    density="compact"
-                    :disabled="rowAdditionDisabled"
-                  />
                   <v-tooltip
-                    v-if="rowAdditionDisabled"
-                    activator="parent"
-                    text="First select a row"
+                    :text="
+                      rowAdditionDisabledReason ||
+                      'Insert row before selected row'
+                    "
                     location="bottom"
-                  />
+                  >
+                    <template #activator="{ props: tooltipProps }">
+                      <span v-bind="tooltipProps">
+                        <v-btn
+                          icon="mdi-table-row-plus-before"
+                          aria-label="Insert row before selected row"
+                          @click="addRowToTimeSeries(selected, 'before')"
+                          color="primary"
+                          variant="text"
+                          density="compact"
+                          :disabled="rowAdditionDisabled"
+                        />
+                      </span>
+                    </template>
+                  </v-tooltip>
+                  <v-tooltip
+                    :text="
+                      rowAdditionDisabledReason ||
+                      'Insert row after selected row'
+                    "
+                    location="bottom"
+                  >
+                    <template #activator="{ props: tooltipProps }">
+                      <span v-bind="tooltipProps">
+                        <v-btn
+                          icon="mdi-table-row-plus-after"
+                          aria-label="Insert row after selected row"
+                          @click="addRowToTimeSeries(selected, 'after')"
+                          color="primary"
+                          variant="text"
+                          density="compact"
+                          :disabled="rowAdditionDisabled"
+                        />
+                      </span>
+                    </template>
+                  </v-tooltip>
                 </div>
               </div>
               <div class="table-header-indicator-color"></div>
@@ -839,6 +859,8 @@ function addRowToTimeSeries(
   row: TableData | undefined,
   position: 'before' | 'after',
 ) {
+  if (rowAdditionDisabled.value) return
+
   if (row === undefined && tableData.value.length === 0) {
     const newRow = getNewRow(new Date())
     tableData.value.push(newRow)
@@ -889,9 +911,16 @@ function getNewRow(date: Date) {
   return newRow
 }
 
-const rowAdditionDisabled = computed(() => {
-  return selectedRowDates.value.size === 0 && tableData.value.length > 0
+const rowAdditionDisabledReason = computed(() => {
+  if (selectedRowDates.value.size > 1) {
+    return 'Select only one row to insert a row'
+  }
+  if (selectedRowDates.value.size === 0 && tableData.value.length > 0) {
+    return 'First select a row'
+  }
+  return ''
 })
+const rowAdditionDisabled = computed(() => !!rowAdditionDisabledReason.value)
 
 function isRowSelected(item: TableData) {
   return isEditing.value

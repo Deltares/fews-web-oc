@@ -77,6 +77,64 @@ test.describe('TableCellEdit', () => {
 })
 
 test.describe('TableCellEdit in TimeSeriesTable', () => {
+  test('insert row buttons require a single selected row and explain their state', async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/NonEquidistantRows')
+    const header = component
+      .getByRole('columnheader')
+      .filter({ hasText: 'Editable series 1' })
+    await header.getByRole('button').click()
+
+    const before = component.getByRole('button', {
+      name: 'Insert row before selected row',
+      exact: true,
+    })
+    const after = component.getByRole('button', {
+      name: 'Insert row after selected row',
+      exact: true,
+    })
+    const tooltip = page.locator(
+      '.v-tooltip.v-overlay--active .v-overlay__content',
+    )
+    const rows = component.locator('tbody tr[data-row-date]')
+
+    await expect(before).toBeDisabled()
+    await expect(after).toBeDisabled()
+    await before.locator('..').hover()
+    await expect(tooltip).toHaveText('First select a row')
+
+    await rows.nth(0).locator('td.table-date').click()
+    await expect(before).toBeEnabled()
+    await expect(after).toBeEnabled()
+    await before.locator('..').hover()
+    await expect(tooltip).toHaveText('Insert row before selected row')
+    await after.locator('..').hover()
+    await expect(tooltip).toHaveText('Insert row after selected row')
+
+    await rows
+      .nth(1)
+      .locator('td.table-date')
+      .click({ modifiers: ['Shift'] })
+    await expect(
+      component.locator('tbody tr[aria-selected="true"]'),
+    ).toHaveCount(2)
+    await expect(before).toBeDisabled()
+    await expect(after).toBeDisabled()
+    await before.locator('..').hover()
+    await expect(tooltip).toHaveText('Select only one row to insert a row')
+    await after.locator('..').hover()
+    await expect(tooltip).toHaveText('Select only one row to insert a row')
+    await expect(rows).toHaveCount(3)
+
+    await rows.nth(1).locator('td.table-date').click()
+    await expect(before).toBeEnabled()
+    await expect(after).toBeEnabled()
+    await after.click()
+    await expect(rows).toHaveCount(4)
+  })
+
   test('shows loaded rows and date range in the status bar', async ({
     mount,
   }) => {
