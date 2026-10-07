@@ -22,6 +22,13 @@
             :text="displayConfig?.title"
           />
         </template>
+        <output
+          v-if="displayIndexBuffer || displaySearchBuffer"
+          class="plot-selection-input"
+          aria-label="Plot selection input"
+        >
+          {{ displayIndexBuffer || displaySearchBuffer }}
+        </output>
         <v-list ref="displayList" v-model="selectedPlotId" density="compact">
           <v-list-item
             v-for="(display, index) in displays"
@@ -323,3 +330,29 @@ watch(isDisplayMenuOpen, (isOpen, _, onCleanup) => {
   })
 })
 </script>
+
+<style scoped>
+.plot-selection-input {
+  display: block;
+  position: absolute;
+  bottom: calc(100% + 4px);
+  right: 0;
+  z-index: 1;
+  width: max-content;
+  min-width: 3ch;
+  max-width: min(12rem, 100%);
+  padding: 2px 6px;
+  border: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 4px;
+  background-color: rgb(var(--v-theme-surface));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: right;
+  pointer-events: none;
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
