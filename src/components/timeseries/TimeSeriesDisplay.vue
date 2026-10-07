@@ -87,7 +87,7 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const selectedPlotId = ref<string | undefined>(
   typeof route.query.plotId === 'string' ? route.query.plotId : undefined,
 )
-const displayList = useTemplateRef<InstanceType<typeof VList>>('displayList')
+const displayList = useTemplateRef<VList>('displayList')
 const isDisplayMenuOpen = ref(false)
 const displaySearchBuffer = ref('')
 const displayIndexBuffer = ref('')
