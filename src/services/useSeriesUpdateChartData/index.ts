@@ -2,7 +2,6 @@ import { updateChartData } from '@/lib/charts/timeSeriesChart'
 import { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { CartesianAxes } from '@deltares/fews-web-oc-charts'
-import { difference } from 'lodash-es'
 import { MaybeRefOrGetter, toValue, watch } from 'vue'
 
 export function useSeriesUpdateChartData(
@@ -21,10 +20,20 @@ export function useSeriesUpdateChartData(
 
       if (!_axis) return
 
+      const previousResources = new Map(
+        oldValue.map((entry) => [entry.id, entry]),
+      )
       const newSeriesIds = new Set(
-        difference(newValue, oldValue).map((id) =>
-          id.substring(0, id.lastIndexOf('-')),
-        ),
+        newValue
+          .filter((entry) => {
+            const previous = previousResources.get(entry.id)
+            return (
+              entry.resource !== previous?.resource ||
+              entry.data !== previous?.data ||
+              entry.lastUpdated !== previous?.lastUpdated
+            )
+          })
+          .map((entry) => entry.id),
       )
       const requiredSeries = _config.series.filter(
         (s) =>
@@ -50,7 +59,10 @@ export function useSeriesUpdateChartData(
 }
 
 function getSeriesSignature(series: Record<string, Series>) {
-  return Object.entries(series).map(
-    ([k, s]) => `${k}-${s.lastUpdated?.getTime()}`,
-  )
+  return Object.entries(series).map(([id, resource]) => ({
+    id,
+    resource,
+    data: resource.data,
+    lastUpdated: resource.lastUpdated?.getTime(),
+  }))
 }

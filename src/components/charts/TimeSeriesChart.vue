@@ -254,7 +254,11 @@ function onResetZoom() {
 
 function setThresholdLines() {
   const series = props.config.series
-  if (!series.some((s) => s.thresholds?.length)) return
+  thresholdLinesVisitor.options = []
+  if (!series.some((s) => s.thresholds?.length)) {
+    axis.options.y?.forEach((y) => delete y.defaultDomain)
+    return { y: props.config.yAxis }
+  }
 
   const yDomains = props.config.yAxis?.map((y) => y.defaultDomain)
 
@@ -345,11 +349,11 @@ const onValueChange = () => {
   clearChart(axis)
 
   refreshChart(axis, props.config, props.series)
-  redraw(axis, props.config)
   const zoomOptions = setThresholdLines()
   if (zoomOptions) {
     axis.setOptions(zoomOptions)
   }
+  redraw(axis, props.config)
   resetAxes(false)
   setTags()
 }

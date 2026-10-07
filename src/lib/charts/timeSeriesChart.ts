@@ -138,6 +138,11 @@ export function updateChartData(
 ) {
   let allMissingData = true
   let hasAddedChart = false
+  const emptyCharts = new Set(
+    axis.charts.filter(
+      (chart) => chart.data === undefined || chart.data.length === 0,
+    ),
+  )
   chartSeries.forEach((chartSeries) => {
     const charts = axis.charts.filter((chart) => chart.id == chartSeries.id)
     if (hasMissingDataResource(chartSeries, series)) return
@@ -161,7 +166,7 @@ export function updateChartData(
       // Keep track of whether all charts had missing data before this data
       // update, in that case we should reset the y-axes as the domain is
       // probably [NaN, NaN].
-      allMissingData &&= chart.data === undefined || chart.data.length === 0
+      allMissingData &&= emptyCharts.has(chart)
       chart.data = matrixData ?? data
     })
   })
