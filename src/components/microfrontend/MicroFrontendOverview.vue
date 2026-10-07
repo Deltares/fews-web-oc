@@ -67,7 +67,6 @@
         </div>
       </div>
     </v-list>
-
   </div>
 </template>
 
