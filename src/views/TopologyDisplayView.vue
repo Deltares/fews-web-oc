@@ -219,7 +219,11 @@ function onNavigate(to: NavigateRoute) {
     case 'TimeSeriesDisplay':
       router.replace({
         name: 'TopologyTimeSeries',
-        params: { nodeId: props.nodeId, ...to.params },
+        params: {
+          ...to.params,
+          topologyId: props.topologyId,
+          nodeId: props.nodeId,
+        },
         query: route.query,
         hash: route.hash,
       })

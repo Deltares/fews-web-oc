@@ -435,6 +435,72 @@ test.describe('TimeSeriesDisplay selection menu', () => {
     await expect(component.getByTestId('route-plot-id')).toHaveValue('plot-1')
   })
 
+  test('external plot and node changes cancel pending keyboard selections', async ({
+    mount,
+    page,
+  }) => {
+    await mockDisplays(page, 30, { 30: 'Zulu river' })
+    const component = await mount(
+      'timeseries/TimeSeriesDisplay/SelectionMenu',
+      { plotId: 'plot-5' },
+    )
+    await component
+      .getByRole('button', { name: 'Display 5', exact: true })
+      .click()
+    await expect(menu(page)).toBeVisible()
+    await freezeClock(page)
+    const input = menu(page).getByLabel('Plot selection input')
+
+    await page.keyboard.type('1')
+    await expect(input).toHaveText('1')
+    await component.update({ plotId: 'plot-8' })
+    await expect(activeItem(page)).toContainText('Display 8')
+    await expect(input).toHaveCount(0)
+    await page.clock.runFor(1200)
+    await expect(activeItem(page)).toContainText('Display 8')
+
+    await page.keyboard.type('Zulu')
+    await expect(input).toHaveText('Zulu')
+    await component.update({ plotId: 'plot-25' })
+    await expect(activeItem(page)).toContainText('Display 25')
+    await expect(input).toHaveCount(0)
+    await page.clock.runFor(1200)
+    await expect(activeItem(page)).toContainText('Display 25')
+
+    await page.keyboard.type('1')
+    await expect(input).toHaveText('1')
+    await component.update({ nodeId: 'other-node', plotId: 'plot-25' })
+    await expect(input).toHaveCount(0)
+    await page.clock.runFor(1200)
+    await expect(activeItem(page)).toContainText('Display 25')
+  })
+
+  test('canonicalizes invalid and missing route params when the fallback is already selected', async ({
+    mount,
+    page,
+  }) => {
+    await mockDisplays(page)
+    const component = await mount(
+      'timeseries/TimeSeriesDisplay/SelectionMenu',
+      { routePlotId: 'plot-1' },
+    )
+    await expect(
+      component.getByRole('button', { name: 'Display 1', exact: true }),
+    ).toBeVisible()
+    const navigationCount = component.getByTestId('navigation-count')
+    const initialCount = Number(await navigationCount.inputValue())
+    await component.update({ routePlotId: 'plot-99' })
+    await expect(navigationCount).toHaveValue(String(initialCount + 1))
+    await expect(component.getByTestId('route-full-path')).toHaveValue(
+      '/series/plot-1?keep=value#selection',
+    )
+    await component.update({ routePlotId: undefined })
+    await expect(navigationCount).toHaveValue(String(initialCount + 2))
+    await expect(component.getByTestId('route-full-path')).toHaveValue(
+      '/series/plot-1?keep=value#selection',
+    )
+  })
+
   test('falls back to the first plot when the route contains an unknown plotId', async ({
     mount,
     page,

@@ -41,11 +41,13 @@ function prepareSelectionMenu() {
 
 export const SelectionMenu = defineComponent({
   props: {
+    nodeId: { type: String, default: 'selection-test' },
     plotId: { type: String, default: undefined },
     routePlotId: { type: String, default: undefined },
   },
   setup(props) {
     const settings = prepareSelectionMenu()
+    const navigationCount = ref(0)
     const router = createRouter({
       history: createMemoryHistory(),
       routes: [
@@ -78,18 +80,24 @@ export const SelectionMenu = defineComponent({
       const routePlotId = router.currentRoute.value.params.plotId
       return h('div', { style: { height: '500px' } }, [
         h(TimeSeriesDisplay, {
-          nodeId: 'selection-test',
+          nodeId: props.nodeId,
           plotId:
             props.plotId ??
             (typeof routePlotId === 'string' ? routePlotId : undefined),
           settings,
           onNavigate: (to: NavigateRoute) => {
+            navigationCount.value += 1
             void router.replace({
               ...to,
               query: router.currentRoute.value.query,
               hash: router.currentRoute.value.hash,
             })
           },
+        }),
+        h('input', {
+          type: 'hidden',
+          'data-testid': 'navigation-count',
+          value: navigationCount.value,
         }),
         h('input', {
           type: 'hidden',

@@ -146,6 +146,7 @@ const { displayConfig: brushChartConfig } = useDisplayConfig(
 watch(
   () => props.plotId,
   (plotId) => {
+    if (plotId !== selectedPlotId.value) resetSelectionInput()
     const availableDisplays = displays.value
     selectedPlotId.value = availableDisplays
       ? (availableDisplays.find((display) => display.plotId === plotId)
@@ -154,7 +155,7 @@ watch(
   },
 )
 
-watch(selectedPlotId, (plotId) => {
+watch([selectedPlotId, () => props.plotId], ([plotId]) => {
   if (plotId === undefined || props.plotId === plotId) return
 
   emit('navigate', {
@@ -164,6 +165,7 @@ watch(selectedPlotId, (plotId) => {
 })
 
 watch(displays, () => {
+  resetSelectionInput()
   const plotIds = displays.value?.map((d) => d.plotId) ?? []
   if (
     selectedPlotId.value === undefined ||
@@ -172,6 +174,8 @@ watch(displays, () => {
     selectedPlotId.value = plotIds[0]
   }
 })
+
+watch(nodeId, resetSelectionInput)
 
 const focusSelectedDisplay = () => {
   if (!isDisplayMenuOpen.value) return
@@ -218,7 +222,7 @@ const applyDisplayIndexSelection = () => {
   }
 }
 
-const clearSearchTimers = () => {
+function clearSearchTimers() {
   if (searchApplyTimer) {
     clearTimeout(searchApplyTimer)
     searchApplyTimer = undefined
@@ -235,6 +239,12 @@ const clearSearchTimers = () => {
     clearTimeout(indexResetTimer)
     indexResetTimer = undefined
   }
+}
+
+function resetSelectionInput() {
+  clearSearchTimers()
+  displaySearchBuffer.value = ''
+  displayIndexBuffer.value = ''
 }
 
 const scheduleSearch = () => {
@@ -315,9 +325,7 @@ const onMenuKeydown = (event: KeyboardEvent) => {
 
 watch(isDisplayMenuOpen, (isOpen, _, onCleanup) => {
   if (!isOpen) {
-    clearSearchTimers()
-    displaySearchBuffer.value = ''
-    displayIndexBuffer.value = ''
+    resetSelectionInput()
     return
   }
 
