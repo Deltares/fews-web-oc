@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="isEnabled">
     <div class="d-flex align-center px-4 py-3">
       <v-icon icon="mdi-puzzle-outline" class="mr-3" />
 
@@ -26,7 +26,7 @@
       </v-btn>
     </div>
 
-    <v-list v-if="isEnabled" slim class="py-0">
+    <v-list slim class="py-0">
       <div v-for="remote in remotes" :key="remote.name" class="px-4 py-3">
         <div class="d-flex align-center">
           <v-icon
@@ -68,9 +68,6 @@
       </div>
     </v-list>
 
-    <v-alert v-else type="info" variant="tonal" class="ma-4">
-      No microfrontend remotes are configured.
-    </v-alert>
   </div>
 </template>
 
