@@ -475,6 +475,58 @@ test.describe('TimeSeriesDisplay selection menu', () => {
     await expect(activeItem(page)).toContainText('Display 25')
   })
 
+  test('retains the incoming plot during a node switch until the new displays arrive', async ({
+    mount,
+    page,
+  }) => {
+    await mockDisplays(page)
+    let releaseResponse!: () => void
+    const responseReady = new Promise<void>((resolve) => {
+      releaseResponse = resolve
+    })
+    let newNodeRequests = 0
+    await page.route('**/topology/actions**', async (route) => {
+      if (!route.request().url().includes('new-node')) return route.fallback()
+      newNodeRequests += 1
+      await responseReady
+      await route.fulfill({
+        json: {
+          results: ['new-first', 'new-selected'].map((plotId, index) => ({
+            requests: [],
+            config: {
+              timeSeriesDisplay: {
+                title: plotId,
+                plotId,
+                index,
+                subplots: [],
+              },
+            },
+          })),
+        },
+      })
+    })
+    const component = await mount(
+      'timeseries/TimeSeriesDisplay/SelectionMenu',
+      { plotId: 'plot-2' },
+    )
+    await expect(
+      component.getByRole('button', { name: 'Display 2', exact: true }),
+    ).toBeVisible()
+    const navigationCount = component.getByTestId('navigation-count')
+    const initialCount = await navigationCount.inputValue()
+    try {
+      await component.update({ nodeId: 'new-node', plotId: 'new-selected' })
+      await expect.poll(() => newNodeRequests).toBeGreaterThan(0)
+      await expect(navigationCount).toHaveValue(initialCount)
+    } finally {
+      releaseResponse()
+    }
+    await expect(
+      component.getByRole('button', { name: 'new-selected', exact: true }),
+    ).toBeVisible()
+    await expect(navigationCount).toHaveValue(initialCount)
+  })
+
   test('canonicalizes invalid and missing route params when the fallback is already selected', async ({
     mount,
     page,

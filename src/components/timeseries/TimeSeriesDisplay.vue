@@ -126,6 +126,12 @@ const { displays, displayConfig, scalar1DDisplayConfig } = useDisplayConfig(
   () => taskRunsStore.selectedTaskRunIds,
 )
 
+const currentNodeDisplays = computed(() =>
+  displays.value?.every((display) => display.nodeId === nodeId.value)
+    ? displays.value
+    : null,
+)
+
 const brushFilter = computed(() => {
   if (!userSettings.get('charts.brush')?.value || !nodeId.value) {
     return
@@ -143,19 +149,17 @@ const { displayConfig: brushChartConfig } = useDisplayConfig(
   () => taskRunsStore.selectedTaskRunIds,
 )
 
-watch(
-  () => props.plotId,
-  (plotId) => {
-    if (plotId !== selectedPlotId.value) resetSelectionInput()
-    const availableDisplays = displays.value
-    selectedPlotId.value = availableDisplays
-      ? (availableDisplays.find((display) => display.plotId === plotId)
-          ?.plotId ?? availableDisplays[0]?.plotId)
-      : plotId
-  },
-)
+watch([() => props.plotId, nodeId], ([plotId]) => {
+  if (plotId !== selectedPlotId.value) resetSelectionInput()
+  const availableDisplays = currentNodeDisplays.value
+  selectedPlotId.value = availableDisplays?.length
+    ? (availableDisplays.find((display) => display.plotId === plotId)?.plotId ??
+      availableDisplays[0]?.plotId)
+    : plotId
+})
 
 watch([selectedPlotId, () => props.plotId], ([plotId]) => {
+  if (!currentNodeDisplays.value) return
   if (plotId === undefined || props.plotId === plotId) return
 
   emit('navigate', {
@@ -166,7 +170,9 @@ watch([selectedPlotId, () => props.plotId], ([plotId]) => {
 
 watch(displays, () => {
   resetSelectionInput()
-  const plotIds = displays.value?.map((d) => d.plotId) ?? []
+  const availableDisplays = currentNodeDisplays.value
+  if (!availableDisplays) return
+  const plotIds = availableDisplays.map((d) => d.plotId)
   if (
     selectedPlotId.value === undefined ||
     !plotIds.includes(selectedPlotId.value)
