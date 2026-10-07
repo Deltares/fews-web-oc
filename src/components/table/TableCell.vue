@@ -46,9 +46,7 @@ const flagStyle = computed(() => {
   return {
     backgroundColor: flagColor,
     border:
-      flagColor && resolveFlagColor(flagColor) === 'none'
-        ? 'none'
-        : undefined,
+      flagColor && resolveFlagColor(flagColor) === 'none' ? 'none' : undefined,
   }
 })
 </script>

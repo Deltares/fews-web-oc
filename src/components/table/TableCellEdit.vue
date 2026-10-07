@@ -1,6 +1,7 @@
 <template>
   <div class="table-cell-editable">
-  <!-- Use a text input because Edge ignores the English locale and may use a comma as the decimal separator. -->    <input
+    <!-- Use a text input because Edge ignores the English locale and may use a comma as the decimal separator. -->
+    <input
       :id="valueInputId"
       :aria-label="`Value for ${props.id} at ${props.item.date.toISOString()}`"
       :data-edit-date="props.item.date.toISOString()"
