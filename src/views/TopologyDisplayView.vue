@@ -216,6 +216,14 @@ function onNavigate(to: NavigateRoute) {
   const layerName = to.params?.layerName ?? props.layerName
 
   switch (to.name) {
+    case 'TimeSeriesDisplay':
+      router.replace({
+        name: 'TopologyTimeSeries',
+        params: { nodeId: props.nodeId, ...to.params },
+        query: route.query,
+        hash: route.hash,
+      })
+      break
     case 'SpatialDisplayWithLocation':
       router.push({
         name,

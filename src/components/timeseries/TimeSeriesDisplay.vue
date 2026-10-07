@@ -147,8 +147,8 @@ watch(
   (plotId) => {
     const availableDisplays = displays.value
     selectedPlotId.value = availableDisplays
-      ? availableDisplays.find((display) => display.plotId === plotId)
-          ?.plotId ?? availableDisplays[0]?.plotId
+      ? (availableDisplays.find((display) => display.plotId === plotId)
+          ?.plotId ?? availableDisplays[0]?.plotId)
       : plotId
   },
 )
@@ -172,7 +172,9 @@ watch(displays, () => {
   }
 })
 
+watch(
   [selectedPlotId, isDisplayMenuOpen],
+  () => {
     if (!isDisplayMenuOpen.value) return
 
     const list = displayList.value?.$el as HTMLElement | undefined

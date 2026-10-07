@@ -40,6 +40,66 @@ async function freezeClock(page: Page) {
 }
 
 test.describe('TimeSeriesDisplay selection menu', () => {
+  test('dashboard plots select independently without changing the route and follow chart actions', async ({
+    mount,
+    page,
+  }) => {
+    await mockDisplays(page)
+    await page.route('**/test-fews/**', (route) => {
+      if (route.request().url().includes('/topology/actions')) {
+        return route.fallback()
+      }
+      return route.fulfill({
+        json: {
+          permissions: [],
+          webOCComponentSettings: {
+            charts: {
+              general: { toolBar: 'true' },
+              timeSeriesChart: { enabled: false },
+              timeSeriesTable: { enabled: false },
+              verticalProfileChart: { enabled: false },
+              metaDataPanel: { enabled: false },
+              actions: { downloadData: false },
+            },
+          },
+        },
+      })
+    })
+    const component = await mount(
+      'timeseries/TimeSeriesDisplay/DashboardSelection',
+    )
+    const firstChart = component.getByTestId('dashboard-chart-0')
+    const secondChart = component.getByTestId('dashboard-chart-1')
+    await firstChart
+      .getByRole('button', { name: 'Display 1', exact: true })
+      .click()
+    await displayItem(page, 3).click()
+    await expect(
+      firstChart.getByRole('button', { name: /^Display 3\b/ }),
+    ).toBeVisible()
+    await expect(
+      secondChart.getByRole('button', { name: 'Display 1', exact: true }),
+    ).toBeVisible()
+    await page.keyboard.press('Escape')
+    await component.update({ actionPlotId: 'plot-8' })
+    await expect(
+      firstChart.getByRole('button', { name: 'Display 8', exact: true }),
+    ).toBeVisible()
+    await firstChart
+      .getByRole('button', { name: 'Display 8', exact: true })
+      .click()
+    await displayItem(page, 12).click()
+    await expect(
+      firstChart.getByRole('button', { name: /^Display 12\b/ }),
+    ).toBeVisible()
+    await expect(
+      secondChart.getByRole('button', { name: 'Display 8', exact: true }),
+    ).toBeVisible()
+    await expect(component.getByTestId('route-full-path')).toHaveValue(
+      '/dashboard?keep=value#selection',
+    )
+  })
+
   test('shows keyboard input while typing, deleting, scrolling, and resetting', async ({
     mount,
     page,
@@ -62,7 +122,10 @@ test.describe('TimeSeriesDisplay selection menu', () => {
     const inputBounds = await input.boundingBox()
     expect(inputBounds!.width).toBeLessThan(80)
     expect(inputBounds!.y + inputBounds!.height).toBeLessThan(listBounds!.y)
-    expect(inputBounds!.x + inputBounds!.width).toBeCloseTo(listBounds!.x + listBounds!.width, 0)
+    expect(inputBounds!.x + inputBounds!.width).toBeCloseTo(
+      listBounds!.x + listBounds!.width,
+      0,
+    )
     expect(await list.boundingBox()).toEqual(listBounds)
     await page.keyboard.type('0')
     await expect(activeItem(page)).toContainText('Zulu river')

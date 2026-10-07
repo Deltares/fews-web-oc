@@ -74,6 +74,9 @@ watch(
     const { actionId, ...params } = props.actionEventBus.payload
     const isValidAction = !actionId || props.item.actionIds?.includes(actionId)
     if (isValidAction) {
+      if (params.charts?.displayId || params.charts?.chartsLocationId) {
+        delete routeParams.value.plotId
+      }
       actionParams.value = {
         ...actionParams.value,
         ...params,
@@ -145,6 +148,7 @@ function onNavigate(to: NavigateRoute) {
     }
     case 'SpatialDisplay':
     case 'SpatialDisplayWithCoordinates':
+    case 'TimeSeriesDisplay':
     case 'SSDTimeSeriesDisplay':
     case 'SchematicStatusDisplay':
       dashboardNavigateTo(to)

@@ -137,7 +137,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     ],
   },
   {
-    path: '/series/node/:nodeId?',
+    path: '/series/node/:nodeId?/:plotId?',
     name: 'TimeSeriesDisplay',
     component: TimeSeriesDisplayView,
     props: true,
@@ -158,7 +158,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         meta: { sidebar: true },
       },
       {
-        path: 'series',
+        path: 'series/:plotId?',
         name: 'TopologyTimeSeries',
         component: TimeSeriesDisplay,
         props: true,
