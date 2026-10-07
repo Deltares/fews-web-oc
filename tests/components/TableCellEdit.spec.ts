@@ -77,6 +77,52 @@ test.describe('TableCellEdit', () => {
 })
 
 test.describe('TableCellEdit in TimeSeriesTable', () => {
+  for (const viewportWidth of [1280, 800]) {
+    test(`editing uses only the required column width at ${viewportWidth}px`, async ({
+      mount,
+      page,
+    }) => {
+      await page.setViewportSize({ width: viewportWidth, height: 800 })
+      const component = await mount('table/TimeSeriesTable/EditableCell')
+      const header = component
+        .getByRole('columnheader')
+        .filter({ hasText: 'Editable series' })
+      const cells = component.locator('tbody tr[data-row-date] td')
+      await header.getByRole('button').click()
+      await expect(component.getByPlaceholder('value')).toBeVisible()
+      await expect
+        .poll(async () => {
+          const cellWidth = await cells
+            .nth(1)
+            .evaluate((element) => element.getBoundingClientRect().width)
+          const editorWidth = await component
+            .locator('.table-cell-editable')
+            .evaluate((element) => element.getBoundingClientRect().width)
+          return cellWidth - editorWidth
+        })
+        .toBeLessThanOrEqual(2)
+      await expect
+        .poll(() =>
+          cells.nth(2).evaluate((element) => {
+            const row = element.parentElement!
+            const dateCell = row.querySelector('td.table-date')!
+            const editor = row.querySelector('.table-cell-editable')!
+            const remainingWidth =
+              row.getBoundingClientRect().width -
+              dateCell.getBoundingClientRect().width -
+              editor.getBoundingClientRect().width
+            return remainingWidth - element.getBoundingClientRect().width
+          }),
+        )
+        .toBeLessThanOrEqual(2)
+      await expect(header.getByRole('button', { name: 'Save' })).toBeVisible()
+      await expect(header.getByRole('button', { name: 'Cancel' })).toBeVisible()
+      await component.getByPlaceholder('comment').fill('Updated comment')
+      await header.getByRole('button', { name: 'Cancel' }).click()
+      await expect(component.getByPlaceholder('value')).toHaveCount(0)
+    })
+  }
+
   test('insert row buttons require a single selected row and explain their state', async ({
     mount,
     page,

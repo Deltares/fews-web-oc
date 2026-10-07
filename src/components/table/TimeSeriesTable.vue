@@ -1654,6 +1654,10 @@ td.sticky-column {
   max-width: 150px;
 }
 
+.table-header--editing {
+  width: 1px;
+}
+
 .table-header-indicator {
   display: flex;
   min-height: calc(var(--v-table-header-height) - 16px) !important;
