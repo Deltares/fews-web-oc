@@ -1,11 +1,8 @@
 <template>
   <div class="table-cell-editable">
-    <!-- Edge does not respect lang="en-US" as such to not have ',' as decimal separator we need type="text" -->
-    <label class="table-cell-editable__label" :for="valueInputId">
-      Value for {{ props.id }} at {{ props.item.date.toISOString() }}
-    </label>
-    <input
+  <!-- Use a text input because Edge ignores the English locale and may use a comma as the decimal separator. -->    <input
       :id="valueInputId"
+      :aria-label="`Value for ${props.id} at ${props.item.date.toISOString()}`"
       :data-edit-date="props.item.date.toISOString()"
       :data-edit-series-id="props.id"
       data-edit-field="y"
@@ -21,11 +18,9 @@
       @focus="emit('focus-field', 'y')"
       @blur="emit('focus-field', undefined)"
     />
-    <label class="table-cell-editable__label" :for="flagInputId">
-      Flag quality for {{ props.id }} at {{ props.item.date.toISOString() }}
-    </label>
     <select
       :id="flagInputId"
+      :aria-label="`Flag quality for ${props.id} at ${props.item.date.toISOString()}`"
       :data-edit-date="props.item.date.toISOString()"
       :data-edit-series-id="props.id"
       data-edit-field="flagEdit"
@@ -46,11 +41,9 @@
         {{ flagEdit }}
       </option>
     </select>
-    <label class="table-cell-editable__label" :for="commentInputId">
-      Comment for {{ props.id }} at {{ props.item.date.toISOString() }}
-    </label>
     <input
       :id="commentInputId"
+      :aria-label="`Comment for ${props.id} at ${props.item.date.toISOString()}`"
       :data-edit-date="props.item.date.toISOString()"
       :data-edit-series-id="props.id"
       data-edit-field="comment"
@@ -137,18 +130,6 @@ function editItem(field: TableSeriesField) {
   width: max-content;
   max-width: 100%;
   min-width: 0;
-}
-
-.table-cell-editable__label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 .table-cell-editable input[type='checkbox'] {
