@@ -126,6 +126,91 @@ describe('usePaginatedTimeSeries', () => {
     vi.clearAllMocks()
   })
 
+  it.each(['before', 'after'] as const)(
+    'stops exhausted %s loads independently and resets for changed inputs',
+    async (direction) => {
+      const loading = ref(false)
+      const entries = ref({ series: { updatedAt: new Date(0) } })
+      const responses = ref({
+        series: {
+          timeSeries: [
+            {
+              header: {
+                parameterId: 'level',
+                missVal: '-999',
+                startDate: { date: '2025-01-01', time: '00:00:00' },
+                endDate: { date: '2025-01-01', time: '00:00:00' },
+              },
+              events: [{ date: '2025-01-01', time: '00:00:00', value: '1' }],
+            },
+          ],
+        },
+      })
+      mocks.usePiTimeSeries.mockReturnValue({
+        entries,
+        responses,
+        loading,
+        refreshing: ref(false),
+        loadingKeys: computed(() => []),
+        requestRefresh: vi.fn(),
+        pauseRefresh: vi.fn(),
+        resumeRefresh: vi.fn(),
+      })
+      const requests = ref([{ key: 'series', request: 'timeseries' }])
+      const options = ref({ startTime: new Date('2025-01-01') })
+      const scope = effectScope()
+      const paginated = scope.run(() =>
+        usePaginatedTimeSeries(requests, options),
+      )!
+      const count =
+        direction === 'before'
+          ? paginated.beforeStartTimeCount
+          : paginated.afterEndTimeCount
+      const complete = async (succeeded = true) => {
+        loading.value = true
+        await nextTick()
+        if (succeeded) entries.value = { series: { updatedAt: new Date() } }
+        loading.value = false
+        await nextTick()
+      }
+
+      paginated.loadMore(direction)
+      await complete(false)
+      paginated.loadMore(direction)
+      expect(count.value).toBe(40)
+      responses.value.series.timeSeries[0].events.push({
+        date: direction === 'before' ? '2024-12-31' : '2025-01-02',
+        time: '00:00:00',
+        value: '2',
+      })
+      await complete()
+      paginated.loadMore(direction)
+      expect(count.value).toBe(60)
+      await complete()
+      paginated.loadMore(direction)
+      paginated.loadMore(direction)
+      expect(count.value).toBe(60)
+      expect(paginated.isLoadingMore.value).toBe(false)
+
+      const opposite = direction === 'before' ? 'after' : 'before'
+      paginated.loadMore(opposite)
+      expect(paginated.isLoadingMore.value).toBe(true)
+      await complete()
+
+      options.value.startTime = new Date('2025-02-01')
+      expect(count.value).toBe(0)
+      paginated.loadMore(direction)
+      expect(count.value).toBe(20)
+      await complete()
+
+      requests.value = [{ key: 'series', request: 'timeseries?changed=true' }]
+      expect(count.value).toBe(0)
+      paginated.loadMore(direction)
+      expect(count.value).toBe(20)
+      scope.stop()
+    },
+  )
+
   it('adds pagination counts to requests and prevents concurrent page loads', async () => {
     const loading = ref(false)
     const refreshing = ref(false)

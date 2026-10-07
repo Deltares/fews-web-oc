@@ -171,10 +171,12 @@ export function usePaginatedTimeSeries(
   const afterEndTimeCount = ref(0)
   const isLoadingMore = ref(false)
   const pageUpdate = ref<PaginatedTimeSeriesPageUpdate>()
+  const exhausted = { before: false, after: false }
   let pendingPage:
     | {
         direction: 'before' | 'after'
         updatedAt: Map<string, Date | undefined>
+        boundaries: Map<string, number>
       }
     | undefined
   const { timeSeries, entries, enabled, requestEntries } = useTimeSeriesData(
@@ -192,6 +194,37 @@ export function usePaginatedTimeSeries(
   )
   const { loading, refreshing } = timeSeries
 
+  function getBoundaries(direction: 'before' | 'after') {
+    const boundaries = new Map<string, number>()
+    for (const [key, series] of Object.entries(timeSeries.series.value)) {
+      for (const event of series.data ?? []) {
+        const timestamp = event.x instanceof Date ? event.x.getTime() : event.x
+        if (timestamp === null || !Number.isFinite(timestamp)) continue
+        const boundary = boundaries.get(key)
+        if (
+          boundary === undefined ||
+          (direction === 'before' ? timestamp < boundary : timestamp > boundary)
+        ) {
+          boundaries.set(key, timestamp)
+        }
+      }
+    }
+    return boundaries
+  }
+
+  watch(
+    [() => toValue(requests), () => toValue(options)],
+    () => {
+      exhausted.before = false
+      exhausted.after = false
+      pendingPage = undefined
+      isLoadingMore.value = false
+      beforeStartTimeCount.value = 0
+      afterEndTimeCount.value = 0
+    },
+    { deep: true, flush: 'sync' },
+  )
+
   watch([loading, refreshing], ([isLoading, isRefreshing]) => {
     if (isLoading || isRefreshing) return
 
@@ -201,6 +234,25 @@ export function usePaginatedTimeSeries(
     const hasSuccessfulResponse = Object.entries(entries.value).some(
       ([key, entry]) => entry.updatedAt !== pendingPage?.updatedAt.get(key),
     )
+    const allRequestsSucceeded = requestEntries.value.every(({ key }) => {
+      const updatedAt = entries.value[key]?.updatedAt
+      return (
+        updatedAt !== undefined && updatedAt !== pendingPage?.updatedAt.get(key)
+      )
+    })
+    if (allRequestsSucceeded) {
+      const { direction, boundaries } = pendingPage
+      const hasAdditionalEvents = [...getBoundaries(direction)].some(
+        ([key, boundary]) => {
+          const previous = boundaries.get(key)
+          return (
+            previous === undefined ||
+            (direction === 'before' ? boundary < previous : boundary > previous)
+          )
+        },
+      )
+      exhausted[direction] = !hasAdditionalEvents
+    }
     if (hasSuccessfulResponse) {
       pageUpdate.value = {
         revision: (pageUpdate.value?.revision ?? 0) + 1,
@@ -216,13 +268,15 @@ export function usePaginatedTimeSeries(
       requestEntries.value.length === 0 ||
       loading.value ||
       refreshing.value ||
-      isLoadingMore.value
+      isLoadingMore.value ||
+      exhausted[direction]
     ) {
       return
     }
 
     pendingPage = {
       direction,
+      boundaries: getBoundaries(direction),
       updatedAt: new Map(
         Object.entries(entries.value).map(([key, entry]) => [
           key,
