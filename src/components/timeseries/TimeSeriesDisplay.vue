@@ -55,8 +55,8 @@
 <script setup lang="ts">
 import TimeSeriesWindowComponent from './TimeSeriesWindowComponent.vue'
 import HighlightMatch from '@/components/general/HighlightMatch.vue'
-import { ref, watch, computed, watchEffect, useTemplateRef } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, watch, computed, useTemplateRef } from 'vue'
+import type { NavigateRoute } from '@/lib/router'
 import type { VList } from 'vuetify/components'
 import { configManager } from '@/services/application-config'
 import { useDisplayConfig } from '@/services/useDisplayConfig/index.ts'
@@ -77,16 +77,16 @@ const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
 })
 
+const emit = defineEmits<{
+  navigate: [to: NavigateRoute]
+}>()
+
 const userSettings = useUserSettingsStore()
 const taskRunsStore = useTaskRunsStore()
-const route = useRoute()
-const router = useRouter()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const selectedPlotId = ref<string | undefined>(
-  typeof route.query.plotId === 'string' ? route.query.plotId : undefined,
-)
+const selectedPlotId = ref(props.plotId)
 const displayList = useTemplateRef<VList>('displayList')
 const isDisplayMenuOpen = ref(false)
 const displaySearchBuffer = ref('')
@@ -142,24 +142,23 @@ const { displayConfig: brushChartConfig } = useDisplayConfig(
   () => taskRunsStore.selectedTaskRunIds,
 )
 
-watchEffect(() => {
-  if (props.plotId) selectedPlotId.value = props.plotId
-})
-
 watch(
-  () => route.query.plotId,
+  () => props.plotId,
   (plotId) => {
-    selectedPlotId.value =
-      typeof plotId === 'string' ? plotId : displays.value?.[0]?.plotId
+    const availableDisplays = displays.value
+    selectedPlotId.value = availableDisplays
+      ? availableDisplays.find((display) => display.plotId === plotId)
+          ?.plotId ?? availableDisplays[0]?.plotId
+      : plotId
   },
 )
 
 watch(selectedPlotId, (plotId) => {
-  if (plotId === undefined || route.query.plotId === plotId) return
+  if (plotId === undefined || props.plotId === plotId) return
 
-  void router.replace({
-    query: { ...route.query, plotId },
-    hash: route.hash,
+  emit('navigate', {
+    name: 'TimeSeriesDisplay',
+    params: { plotId },
   })
 })
 

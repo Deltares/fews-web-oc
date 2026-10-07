@@ -13,6 +13,7 @@ import {
 } from '@deltares/fews-web-oc-composables'
 import { getDefaultSettings } from '@/lib/topology/componentSettings'
 import { configManager } from '@/services/application-config'
+import type { NavigateRoute } from '@/lib/router'
 
 const TimeSeriesDisplay = defineAsyncComponent(
   () => import('./TimeSeriesDisplay.vue'),
@@ -34,19 +35,26 @@ export const SelectionMenu = defineComponent({
     provideHostRefreshContext({ systemTick: ref<Date>() })
     const router = createRouter({
       history: createMemoryHistory(),
-      routes: [{ path: '/', component: { render: () => null } }],
+      routes: [{
+        path: '/series/:plotId?',
+        name: 'TimeSeriesDisplay',
+        component: { render: () => null },
+      }],
     })
     getCurrentInstance()!.appContext.app.use(router)
     void router.replace({
-      path: '/',
-      query: { keep: 'value', plotId: props.routePlotId },
+      name: 'TimeSeriesDisplay',
+      params: { plotId: props.routePlotId ?? props.plotId },
+      query: { keep: 'value' },
       hash: '#selection',
     })
     watch(
       () => props.routePlotId,
       (plotId) => {
         void router.replace({
-          query: { ...router.currentRoute.value.query, plotId },
+          name: 'TimeSeriesDisplay',
+          params: { plotId },
+          query: router.currentRoute.value.query,
           hash: router.currentRoute.value.hash,
         })
       },
@@ -63,13 +71,20 @@ export const SelectionMenu = defineComponent({
       h('div', { style: { height: '500px' } }, [
         h(TimeSeriesDisplay, {
           nodeId: 'selection-test',
-          plotId: props.plotId,
+          plotId: props.plotId ?? router.currentRoute.value.params.plotId,
           settings,
+          onNavigate: (to: NavigateRoute) => {
+            void router.replace({
+              ...to,
+              query: router.currentRoute.value.query,
+              hash: router.currentRoute.value.hash,
+            })
+          },
         }),
         h('input', {
           type: 'hidden',
           'data-testid': 'route-plot-id',
-          value: router.currentRoute.value.query.plotId ?? '',
+          value: router.currentRoute.value.params.plotId ?? '',
         }),
         h('input', {
           type: 'hidden',

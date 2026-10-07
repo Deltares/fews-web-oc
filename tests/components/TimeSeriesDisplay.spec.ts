@@ -114,7 +114,7 @@ test.describe('TimeSeriesDisplay selection menu', () => {
     await page.clock.runFor(1)
     await expect(component.getByTestId('route-plot-id')).toHaveValue('plot-12')
     await expect(component.getByTestId('route-full-path')).toHaveValue(
-      '/?keep=value&plotId=plot-12#selection',
+      '/series/plot-12?keep=value#selection',
     )
   })
 
@@ -347,7 +347,7 @@ test.describe('TimeSeriesDisplay selection menu', () => {
     await expect(activeItem(page)).toContainText('Display 8')
     await expect(displayItem(page, 8)).toBeFocused()
     await expect(component.getByTestId('route-full-path')).toHaveValue(
-      '/?keep=value&plotId=plot-8#selection',
+      '/series/plot-8?keep=value#selection',
     )
     await component.update({ routePlotId: undefined })
     await expect(activeItem(page)).toContainText('Display 1')
