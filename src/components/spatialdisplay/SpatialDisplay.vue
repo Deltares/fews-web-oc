@@ -11,6 +11,7 @@
         :longitude="props.longitude"
         :group-id="groupId"
         v-model:task-run-id="taskRunId"
+        :default-current-task-run-id="defaultCurrentTaskRunId"
         :locations="filteredLocations"
         :geojson="filteredGeojson"
         @changeLocationIds="onLocationsChange"
@@ -34,7 +35,7 @@
         :settings="resolvedSettings"
         :currentTime="currentTime"
         :elevation="elevation"
-        :taskRunId="taskRunId"
+        :taskRunId="requestTaskRunId"
       >
         <template #toolbar-append>
           <v-btn
@@ -59,7 +60,11 @@ import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { configManager } from '@/services/application-config'
 import { useWmsLayerCapabilities } from '@/services/useWms'
-import type { TopologyNode, Location } from '@deltares/fews-pi-requests'
+import {
+  TaskStatus,
+  type TopologyNode,
+  type Location,
+} from '@deltares/fews-pi-requests'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import {
@@ -70,6 +75,9 @@ import { useDateRegistry } from '@deltares/fews-web-oc-composables'
 import type { NavigateRoute } from '@/lib/router'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 import { useLocationNamesStore } from '@/stores/locationNames'
+import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
+import { useTasksRuns } from '@/services/useTasksRuns'
+import { sortTasks } from '@/lib/taskruns'
 import {
   filterFeaturesByThresholds,
   filterLocationsByThresholds,
@@ -99,6 +107,27 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 const taskRunId = ref<string>()
+const availableWorkflowsStore = useAvailableWorkflowsStore()
+const { filteredTaskRuns } = useTasksRuns(
+  { startOffsetSeconds: -24 * 60 * 60, endOffsetSeconds: 0 },
+  availableWorkflowsStore.workflowIds,
+  {
+    topologyNodeId: () => props.topologyNode?.id,
+    taskRunStatusIds: [TaskStatus.A, TaskStatus.B, TaskStatus.C, TaskStatus.D],
+    includeWhatIfScenario: false,
+    refreshIntervalSeconds: 60,
+  },
+)
+const defaultCurrentTaskRunId = computed(
+  () =>
+    filteredTaskRuns.value
+      .filter((taskRun) => taskRun.isCurrent)
+      .toSorted(sortTasks)[0]?.taskRunId,
+)
+const requestTaskRunId = computed(
+  () => taskRunId.value ?? defaultCurrentTaskRunId.value,
+)
+
 watch(
   () => props.layerName,
   () => {
@@ -131,7 +160,7 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { layerCapabilities, times } = useWmsLayerCapabilities(
   baseUrl,
   () => props.layerName,
-  taskRunId,
+  requestTaskRunId,
 )
 
 function getDisplayEnabledFromLocationAttributes(

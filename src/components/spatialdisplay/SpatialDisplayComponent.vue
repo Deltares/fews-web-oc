@@ -271,6 +271,7 @@ interface Props {
   latitude?: string
   longitude?: string
   groupId?: string
+  defaultCurrentTaskRunId?: string
   boundingBox?: BoundingBox
   settings: ComponentSettings['map']
 }
@@ -296,6 +297,9 @@ const debouncedSetLayerOptions = debounce(setLayerOptions, 240, {
 })
 
 const taskRunId = defineModel<string>('taskRunId')
+const requestTaskRunId = computed(
+  () => taskRunId.value ?? props.defaultCurrentTaskRunId,
+)
 
 const currentElevation = useSelectedElevation()
 const minElevation = ref<number>(-Infinity)
@@ -411,6 +415,11 @@ const { timeSeries: maxValuesTimeSeries } = useWmsMaxValuesTimeSeries(
   selectedAggregationLabel,
   maxValuesTaskRunId,
 )
+
+watch(requestTaskRunId, (currentTaskRunId) => {
+  maxValuesTaskRunId.value = currentTaskRunId
+  setLayerOptions()
+})
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.
 watchEffect(() => {
@@ -571,7 +580,7 @@ watch(
 
     maxValuesStartTime.value = props.times?.[0] ?? null
     maxValuesEndTime.value = props.times?.at(-1) ?? null
-    maxValuesTaskRunId.value = taskRunId.value
+    maxValuesTaskRunId.value = requestTaskRunId.value
 
     setLayerOptions()
   },
@@ -627,7 +636,7 @@ function setLayerOptions(): void {
     style: currentColourScale.value?.style,
     useDisplayUnits: userSettings.useDisplayUnits,
     useLastValue: isInDatesRange(selectedDate.value, props.times),
-    taskRunId: taskRunId.value,
+    taskRunId: requestTaskRunId.value,
   }
 }
 

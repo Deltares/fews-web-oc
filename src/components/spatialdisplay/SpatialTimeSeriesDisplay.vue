@@ -63,7 +63,7 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { layerCapabilities } = useWmsLayerCapabilities(
   baseUrl,
   () => props.layerName,
-  undefined,
+  () => props.taskRunId,
 )
 
 const currentTime = computed(() => {
