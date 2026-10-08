@@ -302,12 +302,19 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await expect(editedCell).toHaveCSS('padding-left', '0px')
     await expect(editedCell).toHaveCSS('padding-right', '0px')
     await expect(component.getByTestId('table-status-row-count')).toHaveCount(0)
+    await expect(
+      component.getByTestId('table-status-date-range'),
+    ).toHaveCount(0)
     await expect(statusActivity).toContainText('Tab / Enter: move fields')
     await expect(statusActivity).not.toContainText('Shift+Tab')
     await expect(statusActivity).not.toContainText('select row')
     const saveModifier = await getSaveModifier(component)
     await expect(statusActivity).not.toContainText('save column')
-    await expect(statusActivity.locator('kbd')).toHaveText(['Tab', 'Enter'])
+    await expect(statusActivity.locator('kbd')).toHaveText([
+      'Tab',
+      'Enter',
+      saveModifier,
+    ])
     const firstKey = statusActivity.locator('kbd').first()
     await expect(firstKey).toHaveCSS('height', '20px')
     await expect(firstKey).toHaveCSS('font-size', '11px')
@@ -375,7 +382,7 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       await component.getByPlaceholder('value').fill('18.5')
       await expect(
         component.getByTestId('table-status-activity').locator('kbd'),
-      ).toHaveText(['Tab', 'Enter', modifier, 'Enter'])
+      ).toHaveText(['Tab', 'Enter', modifier, modifier, 'Enter'])
     })
   }
 
@@ -387,11 +394,16 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       .getByRole('columnheader')
       .filter({ hasText: 'Editable series 1' })
     const hints = component.getByTestId('table-status-activity')
+    const selectModifier = await getSaveModifier(component)
     await expect(hints.locator('kbd')).toHaveCount(0)
     await header.getByRole('button').click()
     await expect(hints).toContainText('Tab / Enter: move fields')
     await expect(hints).not.toContainText('save column')
-    await expect(hints.locator('kbd')).toHaveText(['Tab', 'Enter'])
+    await expect(hints.locator('kbd')).toHaveText([
+      'Tab',
+      'Enter',
+      selectModifier,
+    ])
 
     const rows = component.locator('tbody tr[data-row-date]')
     await rows.nth(1).locator('td.table-date').click()
@@ -417,7 +429,11 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await expect(hints).toContainText('extend selection')
     await rows.nth(1).locator('td.table-date').click()
     await expect(hints).toContainText('Tab / Enter: move fields')
-    await expect(hints.locator('kbd')).toHaveText(['Tab', 'Enter'])
+    await expect(hints.locator('kbd')).toHaveText([
+      'Tab',
+      'Enter',
+      selectModifier,
+    ])
     await header.getByRole('button', { name: 'Cancel', exact: true }).click()
     await expect(hints.locator('kbd')).toHaveCount(0)
   })

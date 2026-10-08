@@ -275,7 +275,7 @@
           loaded
         </span>
         <span
-          v-if="loadedDateRange"
+          v-if="loadedDateRange && !isEditing"
           class="table-status-bar__date-range"
           data-testid="table-status-date-range"
           aria-label="Loaded date range"
