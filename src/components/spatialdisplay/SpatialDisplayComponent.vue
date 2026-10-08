@@ -225,7 +225,10 @@ import {
   type MapLayerTouchEvent,
 } from 'maplibre-gl'
 import type { BoundingBox, Layer, Style } from '@deltares/fews-wms-requests'
-import type { Location } from '@deltares/fews-pi-requests'
+import type {
+  Location,
+  TimeSeriesGridMaxValuesFilter,
+} from '@deltares/fews-pi-requests'
 import { LayerKind } from '@/lib/streamlines'
 import { useColourScalesStore } from '@/stores/colourScales'
 import { useDisplay } from 'vuetify'
@@ -402,16 +405,31 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const maxValuesStartTime = ref<Date | null>(null)
 const maxValuesEndTime = ref<Date | null>(null)
 const maxValuesTaskRunId = ref<string>()
+const maxTimeSeriesFilter = computed(() => {
+  if (
+    !props.layerName ||
+    !maxValuesStartTime.value ||
+    !maxValuesEndTime.value
+  ) {
+    return undefined
+  }
+
+  const filter: TimeSeriesGridMaxValuesFilter = {
+    layers: props.layerName,
+    startTime: maxValuesStartTime.value.toISOString(),
+    endTime: maxValuesEndTime.value.toISOString(),
+    taskRunId: maxValuesTaskRunId.value,
+    aggregation: doShowAggregated.value
+      ? (selectedAggregationLabel.value ?? undefined)
+      : undefined,
+    useDisplayUnits: userSettings.useDisplayUnits,
+    convertDatum: userSettings.convertDatum,
+  }
+  return filter
+})
 const { timeSeries: maxValuesTimeSeries } = useWmsMaxValuesTimeSeries(
   baseUrl,
-  () => props.layerName,
-  maxValuesStartTime,
-  maxValuesEndTime,
-  doShowAggregated,
-  selectedAggregationLabel,
-  maxValuesTaskRunId,
-  () => userSettings.useDisplayUnits,
-  () => userSettings.convertDatum
+  maxTimeSeriesFilter,
 )
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.

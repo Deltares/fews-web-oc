@@ -196,14 +196,7 @@ export function useWmsLegend(
 
 export function useWmsMaxValuesTimeSeries(
   baseUrl: string,
-  layerName: MaybeRefOrGetter<string>,
-  start: MaybeRefOrGetter<Date | null>,
-  end: MaybeRefOrGetter<Date | null>,
-  doShowAggregated: MaybeRefOrGetter<boolean>,
-  aggregationLabel: MaybeRefOrGetter<string | null>,
-  taskRunId: MaybeRefOrGetter<string | undefined>,
-  useDisplayUnits: MaybeRefOrGetter<boolean>,
-  convertDatum: MaybeRefOrGetter<boolean>,
+  filter: MaybeRefOrGetter<TimeSeriesGridMaxValuesFilter | undefined>,
 ) {
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -211,54 +204,33 @@ export function useWmsMaxValuesTimeSeries(
 
   const timeSeries = ref<TimeSeriesData[]>([])
   watchEffect(async () => {
-    const _layerName = toValue(layerName)
-    const _start = toValue(start)
-    const _end = toValue(end)
-    const _doShowAggregated = toValue(doShowAggregated)
-    const _aggregationLabel = toValue(aggregationLabel)
-    const _taskRunId = toValue(taskRunId)
-    const _useDisplayUnits = toValue(useDisplayUnits)
-    const _convertDatum = toValue(convertDatum)
-    if (_layerName !== '' && _start && _end) {
-      const filter: TimeSeriesGridMaxValuesFilter = {
-        startTime: _start.toISOString(),
-        endTime: _end.toISOString(),
-        layers: _layerName,
-        useDisplayUnits: _useDisplayUnits,
-        convertDatum: _convertDatum,
-      }
-      if (_doShowAggregated && _aggregationLabel !== null) {
-        filter.aggregation = _aggregationLabel
-      }
-      if (_taskRunId) {
-        filter.taskRunId = _taskRunId
-      }
-      const response = await piProvider.getTimeSeriesGridMaxValues(filter)
-      if (response?.timeSeries?.length) {
-        // We will always have only one series of maximum values for a layer.
-        const series = response.timeSeries[0]
-        if (series.events) {
-          const missingValue = series.header?.missVal ?? ''
-          // If we successfully fetched, update the time series to the fetched
-          // values.
-          timeSeries.value = series.events.map((event) => {
-            const date = convertFewsPiDateTimeToJsDate(
-              { date: event.date, time: event.time },
-              'Z',
-            )
-            const value = event.value === missingValue ? null : +event.value
-            return {
-              x: date,
-              y: value,
-              flag: event.flag,
-            }
-          })
-          return
-        }
-      }
-    }
-    // In all other cases, reset the time series.
     timeSeries.value = []
+
+    const _filter = toValue(filter)
+    if (!_filter) return
+
+    const response = await piProvider.getTimeSeriesGridMaxValues(_filter)
+    if (!response?.timeSeries?.length) return
+
+    // We will always have only one series of maximum values for a layer.
+    const series = response.timeSeries[0]
+    if (!series.events) return
+
+    const missingValue = series.header?.missVal ?? ''
+    // If we successfully fetched, update the time series to the fetched
+    // values.
+    timeSeries.value = series.events.map((event) => {
+      const date = convertFewsPiDateTimeToJsDate(
+        { date: event.date, time: event.time },
+        'Z',
+      )
+      const value = event.value === missingValue ? null : +event.value
+      return {
+        x: date,
+        y: value,
+        flag: event.flag,
+      }
+    })
   })
 
   return { timeSeries }
