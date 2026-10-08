@@ -130,6 +130,8 @@
     "overranExpectedTimeBy": "Overran expected time by"
   },
   "share": {
+    "parameters": "Parameters",
+    "parametersHint": "Only selected parameters will be shown in the shared chart.",
     "applySettings": "Apply settings",
     "copyLink": "Copy link",
     "iframe": "Iframe",
