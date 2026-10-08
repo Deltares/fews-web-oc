@@ -410,6 +410,8 @@ const { timeSeries: maxValuesTimeSeries } = useWmsMaxValuesTimeSeries(
   doShowAggregated,
   selectedAggregationLabel,
   maxValuesTaskRunId,
+  () => userSettings.useDisplayUnits,
+  () => userSettings.convertDatum
 )
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.

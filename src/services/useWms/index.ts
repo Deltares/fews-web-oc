@@ -202,6 +202,8 @@ export function useWmsMaxValuesTimeSeries(
   doShowAggregated: MaybeRefOrGetter<boolean>,
   aggregationLabel: MaybeRefOrGetter<string | null>,
   taskRunId: MaybeRefOrGetter<string | undefined>,
+  useDisplayUnits: MaybeRefOrGetter<boolean>,
+  convertDatum: MaybeRefOrGetter<boolean>,
 ) {
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -215,11 +217,15 @@ export function useWmsMaxValuesTimeSeries(
     const _doShowAggregated = toValue(doShowAggregated)
     const _aggregationLabel = toValue(aggregationLabel)
     const _taskRunId = toValue(taskRunId)
+    const _useDisplayUnits = toValue(useDisplayUnits)
+    const _convertDatum = toValue(convertDatum)
     if (_layerName !== '' && _start && _end) {
       const filter: TimeSeriesGridMaxValuesFilter = {
         startTime: _start.toISOString(),
         endTime: _end.toISOString(),
         layers: _layerName,
+        useDisplayUnits: _useDisplayUnits,
+        convertDatum: _convertDatum,
       }
       if (_doShowAggregated && _aggregationLabel !== null) {
         filter.aggregation = _aggregationLabel
