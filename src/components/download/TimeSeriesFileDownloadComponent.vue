@@ -144,6 +144,11 @@ const fileTypes = computed<FileType[]>(() => [
     disabled: isOnlyHeadersDownload.value || hasCorrelationFilter.value,
   },
   {
+    title: 'ssv',
+    format: DocumentFormat.PI_SSV_ID_AND_NAME,
+    disabled: isOnlyHeadersDownload.value || hasCorrelationFilter.value,
+  },
+  {
     title: 'json',
     format: DocumentFormat.PI_JSON,
     disabled: false,
@@ -260,7 +265,6 @@ async function downloadFile(downloadFormat: DocumentFormat) {
     ? filters.value
     : [getTopologyActionsFilter()]
   const headers = await getRequestHeaders()
-
   filterList.forEach((filter, index) => {
     const url = getDownloadFileUrl(baseUrl, filter, downloadFormat, viewPeriod)
     const fileName =
