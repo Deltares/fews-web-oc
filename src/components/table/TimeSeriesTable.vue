@@ -165,15 +165,20 @@
         <tr
           :class="{
             highlighted:
-              isEditing && selectedRowDates.size > 0
-                ? selectedRowDates.has(item.date.getTime())
-                : selected?.date === item.date,
-            'row-selected': selectedRowDates.has(item.date.getTime()),
+              isEditing && selectionSeriesId !== undefined
+                ? false
+                : isEditing && selectedRowDates.size > 0
+                  ? selectedRowDates.has(item.date.getTime())
+                  : selected?.date === item.date,
+            'row-selected':
+              selectionSeriesId === undefined &&
+              selectedRowDates.has(item.date.getTime()),
             'row-selectable': isEditing,
           }"
           :data-row-date="item.date.toISOString()"
           :aria-selected="isRowSelected(item)"
           :tabindex="isEditing ? -1 : undefined"
+          @mousedown="(e) => handleRowMouseDown(e, item)"
           @click="(e) => handleRowClick(e, item)"
           @keydown="handleEditFieldKeydown($event, item)"
         >
@@ -192,14 +197,22 @@
               {{ d(item.date, 'timeSeriesTable__date') }}
             </div>
           </td>
-          <td v-for="id in seriesIds" :key="id">
+          <td
+            v-for="id in seriesIds"
+            :key="id"
+            :class="{
+              'cell-selected':
+                selectionSeriesId === id &&
+                selectedRowDates.has(item.date.getTime()),
+            }"
+          >
             <!-- Table cell when editing data -->
             <TableCellEdit
               v-if="isEditing && canEditItem(item, id)"
               :id="id"
               :item="getEditableItem(item)"
               :focused-field="
-                selectedRowDates.has(item.date.getTime()) &&
+                isCellInSelection(item.date.getTime(), id) &&
                 focusedEditField?.seriesId === id
                   ? focusedEditField.field
                   : undefined
@@ -314,6 +327,10 @@
             <span>
               <kbd>Tab</kbd> / <kbd>Enter</kbd>:
               {{ selectedRowDates.size > 0 ? 'cycle fields' : 'move fields' }}
+            </span>
+            <span v-if="selectedRowDates.size === 0">
+              <kbd>{{ isMac ? '⌘' : 'Ctrl' }}</kbd
+              >+click / drag: select cells
             </span>
             <span v-if="selectedRowDates.size > 0">
               <kbd>Shift</kbd>+<kbd>Up</kbd> / <kbd>Down</kbd>:
@@ -437,6 +454,8 @@ const activator = ref<string>('')
 const selected = ref<TableData>()
 const selectedRowDates = ref<Set<number>>(new Set())
 const selectionAnchorDate = ref<number>()
+// Undefined selects whole rows; otherwise only cells in this series column.
+const selectionSeriesId = ref<string>()
 const focusedEditField = ref<{
   seriesId: string
   field: TableSeriesField
@@ -502,6 +521,21 @@ let lastProcessedPageRevision = 0
 let hasPendingTopLoad = false
 let selectedDateVisibilityFrame: number | undefined
 let selectedDateResizeObserver: ResizeObserver | undefined
+let dragSelection:
+  | {
+      startDate: number
+      seriesId?: string
+      additive: boolean
+      active: boolean
+      baseSelection: Set<number>
+      pointer: { x: number; y: number }
+      lastRow?: HTMLElement
+    }
+  | undefined
+let dragScrollFrame: number | undefined
+let suppressRowClick = false
+const dragScrollEdge = 32
+const dragScrollMaxSpeed = 24
 
 const isEditing = ref<boolean>(false)
 const editedSeriesIds = ref<string[]>([])
@@ -749,6 +783,7 @@ watch(
 onUnmounted(() => {
   tableScrollElement.value?.removeEventListener('scroll', handleTableScroll)
   selectedDateResizeObserver?.disconnect()
+  stopDragSelection()
   if (selectedDateVisibilityFrame !== undefined) {
     cancelAnimationFrame(selectedDateVisibilityFrame)
   }
@@ -793,7 +828,16 @@ function clearSelected() {
   selected.value = undefined
   selectedRowDates.value = new Set()
   selectionAnchorDate.value = undefined
+  selectionSeriesId.value = undefined
   focusedEditField.value = undefined
+}
+
+function isCellInSelection(dateTime: number, seriesId: string) {
+  return (
+    selectedRowDates.value.has(dateTime) &&
+    (selectionSeriesId.value === undefined ||
+      selectionSeriesId.value === seriesId)
+  )
 }
 
 function deselectEditRows(event: KeyboardEvent) {
@@ -929,17 +973,27 @@ function isRowSelected(item: TableData) {
 }
 
 function handleRowClick(e: MouseEvent, item: TableData) {
+  if (suppressRowClick) {
+    suppressRowClick = false
+    return
+  }
   if (!isEditing.value || !(e.target instanceof Element)) return
-  if (e.target.closest('[data-edit-field]')) {
-    if (!selectedRowDates.value.has(item.date.getTime())) clearSelected()
+  const editField = e.target.closest<HTMLElement>('[data-edit-field]')
+  if (editField) {
+    const seriesId = editField.dataset.editSeriesId
+    if (seriesId) handleEditFieldClick(e, item.date.getTime(), seriesId)
     return
   }
   if (!e.target.closest('td.table-date')) return
   if (e.target.closest('input, select, textarea, button')) return
 
   const dateTime = item.date.getTime()
+  selectionSeriesId.value = undefined
   if (e.shiftKey && selectionAnchorDate.value !== undefined) {
-    selectRowRange(dateTime, e.ctrlKey || e.metaKey)
+    selectRowRange(
+      dateTime,
+      e.ctrlKey || e.metaKey ? new Set(selectedRowDates.value) : undefined,
+    )
   } else if (e.ctrlKey || e.metaKey) {
     toggleRowSelection(dateTime)
   } else if (
@@ -957,6 +1011,174 @@ function handleRowClick(e: MouseEvent, item: TableData) {
   ;(e.currentTarget as HTMLElement).focus({ preventScroll: true })
 }
 
+function handleEditFieldClick(
+  e: MouseEvent,
+  dateTime: number,
+  seriesId: string,
+) {
+  const hasModifier = e.shiftKey || e.ctrlKey || e.metaKey
+  if (!hasModifier) {
+    if (!isCellInSelection(dateTime, seriesId)) {
+      startCellSelection(seriesId, dateTime)
+    }
+    return
+  }
+
+  if (selectionSeriesId.value !== seriesId) {
+    startCellSelection(seriesId, dateTime)
+  }
+  if (e.shiftKey && selectionAnchorDate.value !== undefined) {
+    selectRowRange(
+      dateTime,
+      e.ctrlKey || e.metaKey ? new Set(selectedRowDates.value) : undefined,
+    )
+  } else {
+    const anchor = selectionAnchorDate.value
+    // Include the previously clicked cell when starting a Ctrl+click selection.
+    if (
+      selectedRowDates.value.size === 0 &&
+      anchor !== undefined &&
+      anchor !== dateTime
+    ) {
+      selectedRowDates.value = new Set([anchor])
+    }
+    toggleRowSelection(dateTime)
+  }
+  updateActiveSelectedRow()
+}
+
+function startCellSelection(seriesId: string, dateTime: number) {
+  selectedRowDates.value = new Set()
+  selectionSeriesId.value = seriesId
+  selectionAnchorDate.value = dateTime
+  selected.value = undefined
+}
+
+function handleRowMouseDown(e: MouseEvent, item: TableData) {
+  if (!isEditing.value || e.button !== 0 || e.shiftKey) return
+  if (!(e.target instanceof Element)) return
+  // Selects open a native popup on mousedown, so dragging only starts from text inputs.
+  const field = e.target.closest<HTMLElement>('input[data-edit-field]')
+  const isDateCell =
+    !!e.target.closest('td.table-date') &&
+    !e.target.closest('input, select, textarea, button')
+  if (!field && !isDateCell) return
+
+  stopDragSelection()
+  dragSelection = {
+    startDate: item.date.getTime(),
+    seriesId: field?.dataset.editSeriesId,
+    additive: e.ctrlKey || e.metaKey,
+    active: false,
+    baseSelection: new Set(),
+    pointer: { x: e.clientX, y: e.clientY },
+  }
+  window.addEventListener('mousemove', handleDragMouseMove)
+  window.addEventListener('mouseup', stopDragSelection)
+}
+
+function handleDragMouseMove(e: MouseEvent) {
+  if (!dragSelection) return
+  if ((e.buttons & 1) === 0) {
+    stopDragSelection()
+    return
+  }
+  dragSelection.pointer = { x: e.clientX, y: e.clientY }
+  updateDragSelection()
+  if (dragSelection.active) {
+    e.preventDefault()
+    startDragAutoScroll()
+  }
+}
+
+function getDragScrollBounds(scrollElement: HTMLElement) {
+  const bounds = scrollElement.getBoundingClientRect()
+  const top =
+    scrollElement.querySelector('thead')?.getBoundingClientRect().bottom ??
+    bounds.top
+  return {
+    left: bounds.left,
+    right: bounds.left + scrollElement.clientWidth,
+    top,
+    bottom: bounds.top + scrollElement.clientHeight,
+  }
+}
+
+function updateDragSelection() {
+  const drag = dragSelection
+  const scrollElement = tableScrollElement.value
+  if (!drag || !scrollElement) return
+
+  const bounds = getDragScrollBounds(scrollElement)
+  const clamp = (value: number, min: number, max: number) =>
+    Math.min(Math.max(value, min), max)
+  const x = clamp(drag.pointer.x, bounds.left + 1, bounds.right - 1)
+  const y = clamp(drag.pointer.y, bounds.top + 1, bounds.bottom - 1)
+  const row = document
+    .elementFromPoint(x, y)
+    ?.closest<HTMLElement>('tr[data-row-date]')
+  if (!row?.dataset.rowDate || !scrollElement.contains(row)) return
+
+  const dateTime = new Date(row.dataset.rowDate).getTime()
+  if (!drag.active) {
+    if (dateTime === drag.startDate) return
+    drag.active = true
+    suppressRowClick = true
+    drag.baseSelection =
+      drag.additive && selectionSeriesId.value === drag.seriesId
+        ? new Set(selectedRowDates.value)
+        : new Set()
+    selectionSeriesId.value = drag.seriesId
+    selectionAnchorDate.value = drag.startDate
+  }
+
+  drag.lastRow = row
+  selectRowRange(dateTime, drag.baseSelection)
+  updateActiveSelectedRow()
+}
+
+function startDragAutoScroll() {
+  if (dragScrollFrame !== undefined) return
+
+  const step = () => {
+    dragScrollFrame = undefined
+    const scrollElement = tableScrollElement.value
+    if (!dragSelection?.active || !scrollElement) return
+
+    const { top, bottom } = getDragScrollBounds(scrollElement)
+    const y = dragSelection.pointer.y
+    let speed = 0
+    if (y < top + dragScrollEdge) {
+      speed = -Math.min((top + dragScrollEdge - y) / dragScrollEdge, 1)
+    } else if (y > bottom - dragScrollEdge) {
+      speed = Math.min((y - bottom + dragScrollEdge) / dragScrollEdge, 1)
+    }
+    if (speed === 0) return
+
+    scrollElement.scrollTop += Math.round(speed * dragScrollMaxSpeed)
+    updateDragSelection()
+    dragScrollFrame = requestAnimationFrame(step)
+  }
+  dragScrollFrame = requestAnimationFrame(step)
+}
+
+function stopDragSelection() {
+  window.removeEventListener('mousemove', handleDragMouseMove)
+  window.removeEventListener('mouseup', stopDragSelection)
+  if (dragScrollFrame !== undefined) {
+    cancelAnimationFrame(dragScrollFrame)
+    dragScrollFrame = undefined
+  }
+  if (dragSelection?.active) {
+    if (dragSelection.seriesId === undefined) {
+      dragSelection.lastRow?.focus({ preventScroll: true })
+    }
+    // A click only follows when mouseup lands in the start row; reset afterwards.
+    setTimeout(() => (suppressRowClick = false))
+  }
+  dragSelection = undefined
+}
+
 function updateActiveSelectedRow() {
   const activeDate = [...selectedRowDates.value].at(-1)
   selected.value = tableData.value.find(
@@ -964,7 +1186,10 @@ function updateActiveSelectedRow() {
   )
 }
 
-function selectRowRange(dateTime: number, addToSelection: boolean) {
+function selectRowRange(
+  dateTime: number,
+  baseSelection: Set<number> = new Set(),
+) {
   const anchorIndex = tableData.value.findIndex(
     (row) => row.date.getTime() === selectionAnchorDate.value,
   )
@@ -973,9 +1198,7 @@ function selectRowRange(dateTime: number, addToSelection: boolean) {
   )
   if (anchorIndex < 0 || targetIndex < 0) return
 
-  const nextSelection = addToSelection
-    ? new Set(selectedRowDates.value)
-    : new Set<number>()
+  const nextSelection = new Set(baseSelection)
   const startIndex = Math.min(anchorIndex, targetIndex)
   const endIndex = Math.max(anchorIndex, targetIndex)
   for (const row of tableData.value.slice(startIndex, endIndex + 1)) {
@@ -1010,13 +1233,19 @@ async function handleEditFieldKeydown(event: KeyboardEvent, item: TableData) {
 
   if (!['Tab', 'Enter'].includes(event.key)) return
 
-  const isSelectedRow = selectedRowDates.value.has(item.date.getTime())
+  const targetSeriesId = (event.target as HTMLElement).dataset.editSeriesId
+  const isSelectedRow = targetSeriesId
+    ? isCellInSelection(item.date.getTime(), targetSeriesId)
+    : selectedRowDates.value.has(item.date.getTime())
   if (event.key === 'Tab' && !isSelectedRow) {
     return
   }
 
+  const seriesSelector = selectionSeriesId.value
+    ? `[data-edit-series-id="${CSS.escape(selectionSeriesId.value)}"]`
+    : ''
   const selector = isSelectedRow
-    ? `[data-edit-date="${item.date.toISOString()}"][data-edit-field]`
+    ? `[data-edit-date="${item.date.toISOString()}"]${seriesSelector}[data-edit-field]`
     : '[data-edit-field]'
   const fields = Array.from(
     tableContainer.value?.querySelectorAll<HTMLElement>(selector) ?? [],
@@ -1054,11 +1283,17 @@ async function selectEditRowWithKeyboard(
   const nextRow = tableData.value[nextIndex]
   if (currentIndex < 0 || !nextRow) return
 
-  if (!selectedRowDates.value.has(item.date.getTime())) {
-    selectionAnchorDate.value = item.date.getTime()
+  const targetSeriesId = (event.target as HTMLElement).dataset.editSeriesId
+  const itemDate = item.date.getTime()
+  const isSelected = targetSeriesId
+    ? isCellInSelection(itemDate, targetSeriesId)
+    : selectedRowDates.value.has(itemDate)
+  if (!isSelected) {
+    selectionAnchorDate.value = itemDate
+    selectionSeriesId.value = targetSeriesId
   }
-  selectionAnchorDate.value ??= item.date.getTime()
-  selectRowRange(nextRow.date.getTime(), false)
+  selectionAnchorDate.value ??= itemDate
+  selectRowRange(nextRow.date.getTime())
   selected.value = nextRow
 
   await focusEditRow(
@@ -1136,7 +1371,7 @@ function onUpdateItem(event: TableData, field: TableSeriesField) {
 
   const editedData = event[seriesId] as Partial<TableSeriesData>
   const sourceDate = event.date.getTime()
-  const targetDates = selectedRowDates.value.has(sourceDate)
+  const targetDates = isCellInSelection(sourceDate, seriesId)
     ? selectedRowDates.value
     : new Set([sourceDate])
   const rowsByDate = new Map(
@@ -1634,7 +1869,8 @@ td.sticky-column {
   -webkit-user-select: text;
 }
 
-:deep(tr.row-selected > td:has(.table-cell-editable)) {
+:deep(tr.row-selected > td:has(.table-cell-editable)),
+:deep(td.cell-selected:has(.table-cell-editable)) {
   background: repeating-linear-gradient(
     45deg,
     rgba(var(--v-theme-primary), 0.1) 0px,
@@ -1644,7 +1880,8 @@ td.sticky-column {
   );
 }
 
-:deep(tr.row-selected > td) {
+:deep(tr.row-selected > td),
+:deep(td.cell-selected) {
   background-color: rgba(var(--v-theme-primary), 0.12);
 }
 
