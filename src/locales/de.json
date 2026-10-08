@@ -130,6 +130,8 @@
     "overranExpectedTimeBy": "Erwartete Zeit überschritten um"
   },
   "share": {
+    "parameters": "Parameter",
+    "parametersHint": "Im geteilten Diagramm werden nur die ausgewählten Parameter angezeigt.",
     "applySettings": "Einstellungen anwenden",
     "copyLink": "Link kopieren",
     "iframe": "Iframe",
