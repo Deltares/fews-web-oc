@@ -16,6 +16,8 @@
     "test:dev": "vitest",
     "test:component": "playwright test -c playwright-ct.config.ts",
     "test:e2e": "playwright test -c playwright-e2e.config.ts",
+    "playwright:install": "playwright install --with-deps chromium firefox webkit",
+    "playwright:install-deps": "playwright install-deps",
     "lint": "npm run prettier",
     "prettier": "prettier . --check",
     "format": "prettier .  --write",

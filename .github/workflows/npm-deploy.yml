@@ -20,8 +20,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - run: npm ci --ignore-scripts
@@ -50,7 +50,7 @@ jobs:
           echo "${{ vars.PULAU_TEKONG_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
         shell: bash
       - name: Deploy Azure Static Web Apps Pulau Tekong
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        uses: Azure/static-web-apps-deploy@4d27395796ac319302594769cfe812bd207490b1
         with:
           action: 'upload'
           app_location: '/dist'
@@ -64,7 +64,7 @@ jobs:
           echo "${{ vars.RIVIEREN_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
         shell: bash
       - name: Deploy Azure Static Web Apps Rivieren
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        uses: Azure/static-web-apps-deploy@4d27395796ac319302594769cfe812bd207490b1
         with:
           action: 'upload'
           app_location: '/dist'
@@ -78,7 +78,7 @@ jobs:
           echo "${{ vars.FEWS_MAP_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
         shell: bash
       - name: Deploy Azure Static Web Apps FEWS Map
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        uses: Azure/static-web-apps-deploy@4d27395796ac319302594769cfe812bd207490b1
         with:
           action: 'upload'
           app_location: '/dist'
@@ -92,7 +92,7 @@ jobs:
           echo "${{ vars.IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
         shell: bash
       - name: Deploy Azure Static Web Apps IWP Public App
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        uses: Azure/static-web-apps-deploy@4d27395796ac319302594769cfe812bd207490b1
         with:
           action: 'upload'
           app_location: '/dist'
@@ -106,7 +106,7 @@ jobs:
           echo "${{ vars.IWP_SECURED_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
         shell: bash
       - name: Deploy Azure Static Web Apps IWP Public App
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        uses: Azure/static-web-apps-deploy@4d27395796ac319302594769cfe812bd207490b1
         with:
           action: 'upload'
           app_location: '/dist'
@@ -121,7 +121,7 @@ jobs:
           echo "${{ vars.BOM_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
         shell: bash
       - name: Deploy Azure Static Web Apps BOM App
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        uses: Azure/static-web-apps-deploy@4d27395796ac319302594769cfe812bd207490b1
         with:
           action: 'upload'
           app_location: '/dist'
@@ -135,7 +135,7 @@ jobs:
           echo "${{ vars.SAVA_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
         shell: bash
       - name: Deploy Azure Static Web Apps SAVA App
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        uses: Azure/static-web-apps-deploy@4d27395796ac319302594769cfe812bd207490b1
         with:
           action: 'upload'
           app_location: '/dist'
@@ -149,7 +149,7 @@ jobs:
           echo "${{ vars.GLOSSIS_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
         shell: bash
       - name: Deploy Azure Static Web Apps GLOSSIS App
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        uses: Azure/static-web-apps-deploy@4d27395796ac319302594769cfe812bd207490b1
         with:
           action: 'upload'
           app_location: '/dist'
@@ -163,7 +163,7 @@ jobs:
           echo "${{ vars.NOORDZEE_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
         shell: bash
       - name: Deploy Azure Static Web Apps Noordzee App
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        uses: Azure/static-web-apps-deploy@4d27395796ac319302594769cfe812bd207490b1
         with:
           action: 'upload'
           app_location: '/dist'
@@ -177,7 +177,7 @@ jobs:
           echo "${{ vars.DURBAN_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
         shell: bash
       - name: Deploy Azure Static Web Apps Durban App
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        uses: Azure/static-web-apps-deploy@4d27395796ac319302594769cfe812bd207490b1
         with:
           action: 'upload'
           app_location: '/dist'
@@ -191,7 +191,7 @@ jobs:
           echo "${{ vars.NAVY_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
         shell: bash
       - name: Deploy Azure Static Web Apps Navy App
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        uses: Azure/static-web-apps-deploy@4d27395796ac319302594769cfe812bd207490b1
         with:
           action: 'upload'
           app_location: '/dist'
@@ -205,7 +205,7 @@ jobs:
           echo "${{ vars.VOLVO_OCEAN_RACE_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
         shell: bash
       - name: Deploy Azure Static Web Apps Volvo Ocean Race App
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        uses: Azure/static-web-apps-deploy@4d27395796ac319302594769cfe812bd207490b1
         with:
           action: 'upload'
           app_location: '/dist'
@@ -219,7 +219,7 @@ jobs:
           echo "${{ vars.TREND_HYD_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
         shell: bash
       - name: Deploy Azure Static Web Apps Trend Hyd
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        uses: Azure/static-web-apps-deploy@4d27395796ac319302594769cfe812bd207490b1
         with:
           action: 'upload'
           app_location: '/dist'
@@ -233,7 +233,7 @@ jobs:
           echo "${{ vars.IWP_SWM_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
         shell: bash
       - name: Deploy Azure Static Web Apps IWP SWM
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        uses: Azure/static-web-apps-deploy@4d27395796ac319302594769cfe812bd207490b1
         with:
           action: 'upload'
           app_location: '/dist'
