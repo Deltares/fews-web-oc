@@ -1,0 +1,164 @@
+import { loadEnv, type PluginOption } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import vuetify from 'vite-plugin-vuetify'
+import { resolve } from 'node:path'
+import { execFileSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
+
+const GIT_CANDIDATE_PATHS =
+  process.platform === 'win32'
+    ? [
+        'C:/Program Files/Git/cmd/git.exe',
+        'C:/Program Files/Git/bin/git.exe',
+        'C:/Program Files (x86)/Git/cmd/git.exe',
+      ]
+    : ['/usr/bin/git', '/usr/local/bin/git']
+
+function runGit(args: string[], fallback = ''): string {
+  try {
+    const gitPath =
+      process.env.GIT_EXECUTABLE ??
+      GIT_CANDIDATE_PATHS.find((path) => existsSync(path))
+    if (!gitPath) return fallback
+    return execFileSync(gitPath, args, { encoding: 'utf8' }).trim()
+  } catch {
+    return fallback
+  }
+}
+
+const commitHash = runGit(['rev-parse', '--short', 'HEAD'], 'unknown')
+const commitTag = runGit(['tag', '--points-at', 'HEAD'])
+const buildDate = new Date().toISOString()
+
+const localhostURLs = [
+  `ws://localhost:*`,
+  `http://localhost:*`,
+  `https://localhost:*`,
+  `ws://127.0.0.1:*`,
+  `http://127.0.0.1:*`,
+  `https://127.0.0.1:*`,
+].join(' ')
+
+// https://vitejs.dev/config/
+export function createWebOCConfig(
+  mode: string,
+  moduleFederationAdapter: string,
+  additionalPlugins: PluginOption[] = [],
+) {
+  const env = loadEnv(mode, process.cwd(), '')
+  return {
+    define: {
+      __GIT_HASH__: JSON.stringify(commitHash),
+      __GIT_TAG__: JSON.stringify(commitTag),
+      __BUILD_DATE__: JSON.stringify(buildDate),
+    },
+    build: {
+      rolldownOptions: {
+        input: {
+          main: resolve(import.meta.dirname, 'index.html'),
+          error: resolve(import.meta.dirname, 'error/index.html'),
+        },
+      },
+    },
+    server: {
+      port: 5173,
+      proxy: {
+        '/FewsWebServices/': `${env.DEV_SERVER_PROXY_FEWS_PI}`,
+      },
+      headers: {
+        'content-security-policy': [
+          `default-src 'none'`,
+          `manifest-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
+          [
+            `font-src`,
+            `'self'`,
+            `${env.VITE_FEWS_WEBSERVICES_URL}`,
+            `${env.DEV_CSP_FONT_SRC}`,
+            localhostURLs,
+          ].join(' '),
+          `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_IMG_SRC}`, // FEWS webservices
+          `media-src 'self' ${env.DEV_CSP_MEDIA_SRC}`,
+          [
+            `script-src`,
+            `'self'`,
+            `blob:`,
+            `${env.DEV_CSP_SCRIPT_SRC}`,
+            localhostURLs,
+          ].join(' '),
+          [
+            `style-src`,
+            `'self'`,
+            `blob:`,
+            `${env.VITE_FEWS_WEBSERVICES_URL}`,
+            `${env.DEV_CSP_STYLE_SRC}`,
+            `'unsafe-inline'`, // vuetify
+          ].join(' '),
+          `worker-src 'self' blob: ${env.DEV_CSP_WORKER_SRC}`, // maplibre-gl
+          [
+            `connect-src`,
+            `'self'`,
+            `https://basemaps.cartocdn.com`,
+            `https://*.basemaps.cartocdn.com`,
+            `https://login.microsoftonline.com`,
+            `${env.VITE_FEWS_WEBSERVICES_URL}`,
+            `${env.DEV_CSP_CONNECT_SRC}`,
+            localhostURLs,
+          ].join(' '), // FEWS webservices, Authentication, Basemaps
+          [
+            `frame-src`,
+            `'self'`,
+            `blob:`,
+            `${env.VITE_FEWS_WEBSERVICES_URL}`,
+            `${env.DEV_CSP_FRAME_SRC}`,
+          ].join(' '),
+        ].join('; '),
+      },
+    },
+    resolve: {
+      alias: {
+        '@weboc/module-federation': resolve(
+          import.meta.dirname,
+          moduleFederationAdapter,
+        ),
+        '@': resolve(import.meta.dirname, './src'),
+        'vuetify/labs/VNumberInput': resolve(
+          import.meta.dirname,
+          'node_modules/vuetify/lib/components/VNumberInput/index.js',
+        ),
+        'vuetify/labs/VTimePicker': resolve(
+          import.meta.dirname,
+          'node_modules/vuetify/lib/components/VTimePicker/index.js',
+        ),
+        'vuetify/labs/VStepperVertical': resolve(
+          import.meta.dirname,
+          'node_modules/vuetify/lib/components/VStepperVertical/index.js',
+        ),
+      },
+    },
+    plugins: [
+      vue({
+        template: {
+          compilerOptions: {
+            isCustomElement: (tag) => tag === 'schematic-status-display',
+            // ...
+          },
+        },
+      }),
+      ...additionalPlugins,
+      mode === 'production'
+        ? vuetify({
+            styles: {
+              configFile:
+                resolve(import.meta.dirname, './src') + '/styles/settings.scss',
+            },
+          })
+        : vuetify(),
+    ],
+    optimizeDeps: {
+      exclude: ['@deltares/fews-ssd-webcomponent', 'vuetify'],
+    },
+    test: {
+      include: ['**/*.test.?(c|m)[jt]s?(x)'],
+    },
+  }
+}

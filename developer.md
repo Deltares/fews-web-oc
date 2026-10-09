@@ -20,6 +20,54 @@ If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has a
 
 
 
+## Build variants
+
+The default commands (`npm run dev`, `npm run build`, and `npm run preview`)
+retain Module Federation support.
+
+For a standalone application without Module Federation:
+
+```sh
+npm run dev:standalone
+npm run build:standalone
+npm run preview:standalone
+```
+
+The standalone build writes to `dist-standalone`, leaving the federated output
+in `dist` untouched. It uses a separate Vite configuration that does not import
+or install the federation plugin. A build guard rejects federation package
+imports and generated federation modules, including transitive imports.
+Federation dependencies remain installed for the default build.
+
+Both variants share the same Vue, Vuetify, proxy, CSP, entry point, and dependency
+optimization settings. Vite arguments can be passed through as usual:
+
+```sh
+npm run build:standalone -- --base=/weboc/ --mode e2e
+```
+
+The standalone build never fetches a federation manifest, registers remotes, or
+requests microfrontend configuration. If `VITE_FEWS_WEBOC_MF_MANIFEST_URL` is
+configured, startup logs a warning and ignores it. Microfrontend-only topology
+nodes, display tabs, and remote status panels are hidden; opening a microfrontend
+display URL shows an explicit unsupported-feature error. Other displays and
+authentication remain available.
+
+Application code imports `@weboc/module-federation`, which Vite resolves to the
+appropriate adapter. Keep all federation package imports in the federated
+adapter or the default Vite configuration, not shared application code.
+The component-test configuration uses the standalone adapter.
+
+Targeted adapter and exclusion tests:
+
+```sh
+npm run test:unit -- tests/unit/lib/moduleFederation.standalone.test.ts tests/unit/lib/moduleFederation.federated.test.ts tests/unit/lib/moduleFederation.build.test.ts
+npm run test:unit -- --config vite.config.standalone.ts tests/unit/lib/moduleFederation.standalone.test.ts tests/unit/lib/moduleFederation.build.test.ts
+```
+
+The federated adapter test intentionally imports the federation runtime and
+therefore runs only with the default configuration, not the standalone guard.
+
 ## E2E testing
 
 For end-to-end testing we use [Playwright](https://playwright.dev/).

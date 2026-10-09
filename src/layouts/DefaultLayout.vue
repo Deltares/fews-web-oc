@@ -201,7 +201,7 @@ import SearchDialog from '@/components/dialog/SearchDialog.vue'
 
 import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
-import packageConfig from '@/../package.json'
+import { version } from '@/../package.json'
 import { toCharacterIcon } from '@/lib/icons/index.ts'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { useCustomStyleSheet } from '@/services/useCustomStyleSheet/index.ts'
@@ -288,7 +288,7 @@ const versionString = computed(() => {
   if (showHash.value && !__GIT_TAG__) {
     return __GIT_HASH__
   }
-  return packageConfig.version
+  return version
 })
 
 const helpMenu = computed(() => configStore.general.helpMenu)

@@ -22,6 +22,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(import.meta.dirname, './src'),
+      '@weboc/module-federation': resolve(
+        import.meta.dirname,
+        './src/lib/moduleFederation/standalone.ts',
+      ),
       'vuetify/labs/VNumberInput': resolve(
         import.meta.dirname,
         'node_modules/vuetify/lib/components/VNumberInput/index.js',

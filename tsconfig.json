@@ -17,6 +17,7 @@
     "noFallthroughCasesInSwitch": true,
     "experimentalDecorators": true,
     "paths": {
+      "@weboc/module-federation": ["./src/lib/moduleFederation/index.ts"],
       "@/*": ["./src/*"]
     }
   },

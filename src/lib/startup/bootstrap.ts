@@ -14,7 +14,7 @@ import {
   provideHostWebserviceContext,
 } from '@deltares/fews-web-oc-composables'
 import { useSystemTimeStore } from '@/stores/systemTime.js'
-import { initializeModuleFederation } from '../moduleFederation/index.js'
+import { initializeModuleFederation } from '@weboc/module-federation'
 
 export { loadApplicationConfig } from './config-loader.js'
 export {
@@ -71,7 +71,7 @@ async function bootstrapApp(app: VueApp<Element>): Promise<void> {
       baseUrl,
     })
 
-    app.use(moduleFederationPlugin, registry)
+    if (registry) app.use(moduleFederationPlugin, registry)
   } else {
     console.info(
       'Module Federation: No manifest URL configured. ' +

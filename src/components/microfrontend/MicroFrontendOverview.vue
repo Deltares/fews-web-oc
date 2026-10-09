@@ -73,7 +73,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useMicroFrontEnd } from '@/composables/useMicroFrontEnd'
-import { type RemoteWithEntry } from '@module-federation/sdk'
+import type { MicroFrontendRemote } from '@/lib/moduleFederation/types'
 
 type RemoteStatus = 'unknown' | 'checking' | 'up' | 'down'
 
@@ -130,7 +130,7 @@ function getRemoteEntryUrl(url: string): string {
   return url
 }
 
-async function checkRemote(remote: RemoteWithEntry): Promise<void> {
+async function checkRemote(remote: MicroFrontendRemote): Promise<void> {
   const url = getRemoteEntryUrl(remote.entry)
   const start = performance.now()
 

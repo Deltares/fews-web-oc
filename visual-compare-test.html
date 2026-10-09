@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VisualCompare Test</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .h-100 {
+        height: 400px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>VisualCompare Component Test</h1>
+      <p>
+        Updated component now uses slots instead of leftImage/rightImage props:
+      </p>
+
+      <div id="app">
+        <visual-compare :skeleton="false" class="h-100">
+          <template #left>
+            <img
+              src="https://cdn.vuetifyjs.com/images/cards/docks.jpg"
+              alt="Left Image"
+            />
+          </template>
+          <template #right>
+            <img
+              src="https://cdn.vuetifyjs.com/images/cards/sunshine.jpg"
+              alt="Right Image"
+            />
+          </template>
+        </visual-compare>
+      </div>
+
+      <h2>Changes Made</h2>
+      <ul>
+        <li>
+          Removed <code>leftImage</code>, <code>rightImage</code>,
+          <code>leftImageAlt</code>, <code>rightImageAlt</code>,
+          <code>leftImageCss</code>, and <code>rightImageCss</code> props
+        </li>
+        <li>Replaced hardcoded img tags with slot containers</li>
+        <li>Updated image loading detection to work with slotted content</li>
+        <li>Modified aspect ratio calculation to work with slotted images</li>
+        <li>Updated CSS to handle div containers with slotted content</li>
+      </ul>
+
+      <h2>Usage</h2>
+      <pre><code>&lt;VisualCompare
+  :skeleton="false"
+  class="h-100"
+&gt;
+  &lt;template #left&gt;
+    &lt;img src="left-image.jpg" alt="Left Image" /&gt;
+  &lt;/template&gt;
+  &lt;template #right&gt;
+    &lt;img src="right-image.jpg" alt="Right Image" /&gt;
+  &lt;/template&gt;
+&lt;/VisualCompare&gt;</code></pre>
+    </div>
+  </body>
+</html>
