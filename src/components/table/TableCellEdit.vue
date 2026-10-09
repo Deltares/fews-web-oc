@@ -149,15 +149,15 @@ function editItem(field: TableSeriesField) {
   display: block;
   flex: 0 0 auto;
   min-width: 0;
-  height: 24px;
-  min-height: 24px;
+  height: 26px;
+  min-height: 26px;
   padding: 0px 1px;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 4px;
   background-color: rgb(var(--v-theme-surface));
   color: currentColor;
   font: inherit;
-  line-height: 20px;
+  line-height: 22px;
   transition:
     border-color 120ms ease,
     background-color 120ms ease;
@@ -179,13 +179,13 @@ input.table-cell-edit--value {
 }
 
 input.table-cell-edit--comment {
-  flex: 1 1 0;
+  flex: 1 0 10ch;
   width: 0;
 }
 
 select.table-cell-edit {
-  width: 22ch;
-  max-width: 22ch;
+  /* Persistent Unreliable */
+  max-width: 21ch;
 }
 
 .table-cell-edit::placeholder {
