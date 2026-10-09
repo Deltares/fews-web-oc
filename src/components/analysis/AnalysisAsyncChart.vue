@@ -131,8 +131,8 @@ watch(
       if (filterCharts.length || archiveCharts.length) {
         emit('remove')
         // Reverse the order of archiveCharts to maintain the configured order
-        archiveCharts.toReversed().forEach((chart) => emit('addChart', chart))
-        filterCharts.forEach((chart) => emit('addChart', chart))
+        archiveCharts.toReversed().forEach((chart) => emit('addChart', chart)) // NOSONAR(S8961) - Sonar does not understand extended interace
+        filterCharts.forEach((chart) => emit('addChart', chart)) // NOSONAR(S8961) - Sonar does not understand extended interace
       }
     }
   },
