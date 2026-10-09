@@ -69,14 +69,14 @@ test.describe('TableCellEdit', () => {
     await expect(valueInput).toHaveCSS('outline-style', 'solid')
     await expect(valueInput).toHaveCSS('outline-width', '1px')
     await expect(valueInput).toHaveCSS('outline-offset', '-1px')
-    await expect(valueInput).toHaveCSS('height', '24px')
+    await expect(valueInput).toHaveCSS('height', '26px')
     await expect(valueInput).toHaveCSS('border-radius', '4px')
 
     await flagSelect.focus()
     await expect(flagSelect).toHaveCSS('outline-style', 'solid')
     await expect(flagSelect).toHaveCSS('outline-width', '1px')
     await expect(flagSelect).toHaveCSS('outline-offset', '-1px')
-    await expect(flagSelect).toHaveCSS('height', '24px')
+    await expect(flagSelect).toHaveCSS('height', '26px')
   })
 })
 
