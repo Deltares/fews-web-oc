@@ -302,9 +302,9 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await expect(editedCell).toHaveCSS('padding-left', '0px')
     await expect(editedCell).toHaveCSS('padding-right', '0px')
     await expect(component.getByTestId('table-status-row-count')).toHaveCount(0)
-    await expect(
-      component.getByTestId('table-status-date-range'),
-    ).toHaveCount(0)
+    await expect(component.getByTestId('table-status-date-range')).toHaveCount(
+      0,
+    )
     await expect(statusActivity).toContainText('Tab / Enter: move fields')
     await expect(statusActivity).not.toContainText('Shift+Tab')
     await expect(statusActivity).not.toContainText('select row')
