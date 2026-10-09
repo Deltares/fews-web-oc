@@ -81,7 +81,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import packageConfig from '../../package.json'
+import { version as packageVersion } from '../../package.json'
 import { PiWebserviceProvider, Version } from '@deltares/fews-pi-requests'
 import { useConfigStore } from '../stores/config.ts'
 import { configManager } from '@/services/application-config'
@@ -92,7 +92,7 @@ import MicroFrontendOverview from '@/components/microfrontend/MicroFrontendOverv
 
 const webServiceUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const version = ref(packageConfig.version)
+const version = ref(packageVersion)
 const commitHash = __GIT_TAG__ ? '' : __GIT_HASH__
 const buildDate = new Date(__BUILD_DATE__).toISOString()
 

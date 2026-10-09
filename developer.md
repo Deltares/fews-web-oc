@@ -20,6 +20,85 @@ If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has a
 
 
 
+## Build variants
+
+The default commands (`npm run dev`, `npm run build`, and `npm run preview`)
+produce the Module Federation host build. WebOC acts as the host that loads
+microfrontend remotes, not as a remote itself.
+
+The startup splash shows `Micro Frontends` with the `mdi-puzzle-check` icon for
+the Module Federation host build. The About page shows the microfrontend remotes
+overview whenever the build supports microfrontends, even without configured
+remotes. The build without Module Federation hides both. This identifies the compiled capability,
+regardless of whether a federation manifest is configured or remotes are loaded
+at runtime.
+
+For the build without Module Federation (using `standalone` as command shorthand):
+
+```sh
+npm run dev:standalone
+npm run build:standalone
+npm run preview:standalone
+```
+
+The build without Module Federation writes to `dist-standalone`, leaving the host output
+in `dist` untouched. It uses a separate Vite configuration that does not import
+or install the federation plugin. A build guard rejects federation package
+imports and generated federation modules, including transitive imports.
+Federation dependencies remain installed for the host build.
+
+Both variants share the same Vue, Vuetify, proxy, CSP, entry point, and dependency
+optimization settings. Vite arguments can be passed through as usual:
+
+```sh
+npm run build:standalone -- --base=/weboc/ --mode e2e
+```
+
+The build without Module Federation never fetches a federation manifest, registers remotes, or
+requests microfrontend configuration. If `VITE_FEWS_WEBOC_MF_MANIFEST_URL` is
+configured, startup logs a warning and ignores it. Microfrontend-only topology
+nodes, display tabs, and remote status panels are hidden; opening a microfrontend
+display URL shows an explicit unsupported-feature error. Other displays and
+authentication remain available.
+
+Application code imports `@weboc/module-federation`, which Vite resolves to the
+appropriate adapter. Keep all federation package imports in the host
+adapter or the default Vite configuration, not shared application code.
+The component-test configuration uses the standalone adapter.
+
+Targeted adapter and exclusion tests:
+
+```sh
+npm run test:unit -- tests/unit/lib/moduleFederation.standalone.test.ts tests/unit/lib/moduleFederation.federated.test.ts tests/unit/lib/moduleFederation.build.test.ts
+npm run test:unit -- --config vite.config.standalone.ts tests/unit/lib/moduleFederation.standalone.test.ts tests/unit/lib/moduleFederation.build.test.ts
+```
+
+The host adapter test intentionally imports the federation runtime and
+therefore runs only with the default configuration, not the standalone guard.
+
+### Release artifacts
+
+Publishing a GitHub release builds both variants for both deployment paths:
+
+| Release asset                                     | Base path | Module Federation |
+| ------------------------------------------------- | --------- | ----------------- |
+| `deltares-fews-weboc-<tag>.zip`                     | `/`       | Enabled           |
+| `deltares-fews-weboc-weboc-<tag>.zip`               | `/weboc/` | Enabled           |
+| `deltares-fews-weboc-standalone-<tag>.zip`           | `/`       | Disabled          |
+| `deltares-fews-weboc-weboc-standalone-<tag>.zip`     | `/weboc/` | Disabled          |
+
+Archive names include the `deltares` prefix, package name, and published release
+tag, for example `deltares-fews-weboc-v1.5.1.zip`. The `weboc` suffix identifies
+the `/weboc/` base path.
+
+Each archive contains a `dist/` directory for consistent deployment across
+variants. The release workflow overrides the standalone output directory only
+for packaging; local standalone builds still write to `dist-standalone`.
+The `standalone` filename suffix denotes the build without Module Federation.
+Archives are uploaded as workflow artifacts using `actions/upload-artifact`
+and attached to the published release using `gh release upload`.
+Rerunning the workflow replaces release assets with matching names.
+
 ## E2E testing
 
 For end-to-end testing we use [Playwright](https://playwright.dev/).

@@ -96,11 +96,19 @@ const loaded = ref(false)
 const PluginComponent = shallowRef<any>(null)
 const microFrontEndError = ref<string | null>(null)
 
-const { loadWebOCRemote } = useMicroFrontEnd()
+const { loadWebOCRemote, isSupported, unsupportedMicroFrontendMessage } =
+  useMicroFrontEnd()
 
 watchEffect(async () => {
   loaded.value = false
   microFrontEndError.value = null
+
+  if (!isSupported) {
+    PluginComponent.value = null
+    microFrontEndError.value = unsupportedMicroFrontendMessage
+    loaded.value = true
+    return
+  }
 
   const microFrontEndId = topologyNode?.microFrontEnds?.map((mf) => mf.id)[0]
   if (!microFrontEndId) {

@@ -1,4 +1,5 @@
 import type { ColumnItem } from '@/components/general/ColumnItem'
+import { isModuleFederationSupported } from '@weboc/module-federation'
 import type {
   TopologyNode,
   TopologyThresholdNode,
@@ -201,5 +202,5 @@ export function nodeHasDocumentDisplay(node: TopologyNode) {
 }
 
 export function nodeHasMF(node: TopologyNode) {
-  return !!node.microFrontEnds?.length
+  return isModuleFederationSupported && !!node.microFrontEnds?.length
 }

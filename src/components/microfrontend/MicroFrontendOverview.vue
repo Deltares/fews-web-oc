@@ -1,17 +1,21 @@
 <template>
-  <div v-if="isEnabled">
+  <div v-if="isSupported">
     <div class="d-flex align-center px-4 py-3">
       <v-icon icon="mdi-puzzle-outline" class="mr-3" />
 
-      <span class="text-body-1"> Microfrontend Remotes </span>
+      <span class="text-body-1">Micro Frontends</span>
 
       <v-spacer />
 
-      <span class="text-caption text-medium-emphasis mr-2">
+      <span
+        v-if="remotes.length > 0"
+        class="text-caption text-medium-emphasis mr-2"
+      >
         {{ lastChecked ? lastChecked.toLocaleTimeString() : 'Never' }}
       </span>
 
       <v-btn
+        v-if="remotes.length > 0"
         icon="mdi-refresh"
         variant="text"
         size="small"
@@ -73,7 +77,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useMicroFrontEnd } from '@/composables/useMicroFrontEnd'
-import { type RemoteWithEntry } from '@module-federation/sdk'
+import type { MicroFrontendRemote } from '@/lib/moduleFederation/types'
 
 type RemoteStatus = 'unknown' | 'checking' | 'up' | 'down'
 
@@ -81,7 +85,7 @@ const statuses = ref<Record<string, RemoteStatus>>({})
 const responseTimes = ref<Record<string, number>>({})
 const isChecking = ref(false)
 const lastChecked = ref<Date | null>(null)
-const { isEnabled, getRemotes } = useMicroFrontEnd()
+const { isSupported, getRemotes } = useMicroFrontEnd()
 
 const remotes = computed(() => {
   return getRemotes()
@@ -130,7 +134,7 @@ function getRemoteEntryUrl(url: string): string {
   return url
 }
 
-async function checkRemote(remote: RemoteWithEntry): Promise<void> {
+async function checkRemote(remote: MicroFrontendRemote): Promise<void> {
   const url = getRemoteEntryUrl(remote.entry)
   const start = performance.now()
 
@@ -166,6 +170,6 @@ async function checkAllRemotes(): Promise<void> {
 }
 
 onMounted(() => {
-  checkAllRemotes()
+  if (remotes.value.length > 0) checkAllRemotes()
 })
 </script>

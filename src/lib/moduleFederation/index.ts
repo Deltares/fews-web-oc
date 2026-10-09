@@ -1,11 +1,17 @@
 import {
   type MicroFrontendRegistry,
   type ModuleFederationOptions,
-} from '@/composables/useMicroFrontEnd'
+} from './types'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
 import { registerRemotes } from '@module-federation/enhanced/runtime'
 import { type RemoteWithEntry } from '@module-federation/sdk'
+
+export { loadRemote } from '@module-federation/enhanced/runtime'
+export const isModuleFederationSupported = true
+export const buildType = 'Micro Frontends'
+export const unsupportedMicroFrontendMessage =
+  'Microfrontends are not supported in this build without Module Federation.'
 
 export async function initializeModuleFederation(
   options: ModuleFederationOptions,

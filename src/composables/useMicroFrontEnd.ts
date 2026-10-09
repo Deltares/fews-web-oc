@@ -1,18 +1,17 @@
 import { inject, type InjectionKey } from 'vue'
-import { type WebOCMicroFrontEndsResponse } from '@deltares/fews-pi-requests'
-import { loadRemote } from '@module-federation/enhanced/runtime'
-import { type RemoteWithEntry } from '@module-federation/sdk'
-
-export interface ModuleFederationOptions {
-  manifestUrl: string
-  baseUrl: string
-}
-
-export interface MicroFrontendRegistry {
-  config: WebOCMicroFrontEndsResponse
-  options: ModuleFederationOptions
-  remotes: RemoteWithEntry[]
-}
+import {
+  isModuleFederationSupported,
+  loadRemote,
+  unsupportedMicroFrontendMessage,
+} from '@weboc/module-federation'
+import type {
+  MicroFrontendRegistry,
+  MicroFrontendRemote,
+} from '@/lib/moduleFederation/types'
+export type {
+  MicroFrontendRegistry,
+  ModuleFederationOptions,
+} from '@/lib/moduleFederation/types'
 
 export const MF_REGISTRY_KEY: InjectionKey<MicroFrontendRegistry> =
   Symbol('WebOCMicroFrontEnd')
@@ -20,17 +19,20 @@ export const MF_REGISTRY_KEY: InjectionKey<MicroFrontendRegistry> =
 export function useMicroFrontEnd() {
   const moduleFederation = inject(MF_REGISTRY_KEY, null)
 
-  const isEnabled = moduleFederation !== null
+  const isEnabled = isModuleFederationSupported && moduleFederation !== null
 
   function microFrontEndConfig() {
-    return moduleFederation?.config.microFrontEnds ?? []
+    return isEnabled ? (moduleFederation?.config.microFrontEnds ?? []) : []
   }
 
-  function getRemotes(): RemoteWithEntry[] {
-    return moduleFederation?.remotes ?? []
+  function getRemotes(): MicroFrontendRemote[] {
+    return isEnabled ? (moduleFederation?.remotes ?? []) : []
   }
 
   async function loadWebOCRemote(microFrontEndId: string) {
+    if (!isModuleFederationSupported) {
+      throw new Error(unsupportedMicroFrontendMessage)
+    }
     if (!moduleFederation) {
       throw new Error(
         'Module Federation is not configured. ' +
@@ -108,6 +110,8 @@ export function useMicroFrontEnd() {
   }
 
   return {
+    isSupported: isModuleFederationSupported,
+    unsupportedMicroFrontendMessage,
     isEnabled,
     microFrontEndConfig,
     getRemotes,
