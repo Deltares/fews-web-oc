@@ -78,19 +78,19 @@
       <v-btn
         variant="plain"
         @click="showDownloadDialog = true"
-        :disabled="filters.length === 0"
+        :disabled="selectedFilters.length === 0"
         icon="mdi-download"
       />
       <TimeSeriesFileDownloadComponent
         v-model="showDownloadDialog"
-        :filter="filters"
+        :filter="selectedFilters"
         :startTime="startTime"
         :endTime="endTime"
       />
       <v-spacer />
       <AnalysisAddToButton
         :charts
-        :filters
+        :filters="selectedFilters"
         :loadingNewCharts="isLoadingNewCharts"
         :loadingAddToChart="isLoadingAddToChart"
         @addToChart="addFilter"
@@ -124,6 +124,7 @@ import {
 import { useFilterLocations } from '@/services/useFilterLocations'
 import { useTimeSeriesHeaders } from '@/services/useTimeSeries'
 import { configManager } from '@/services/application-config'
+import { createSelectionFilters } from '@/lib/analysis/selectionFilters'
 
 interface Props {
   charts: Chart[]
@@ -202,46 +203,21 @@ const filteredLocations = computed(() =>
     filteredData.value.locationIds.includes(location.locationId),
   ),
 )
-const filters = computed(() => {
-  if (!filterId.value) return []
-  if (!selectedParameterIds.value.length) return []
-  if (!selectedLocationIds.value.length) return []
-
-  const parameters = selectedParameterIds.value
-    .map(parametersStore.byId)
-    .filter((parameter) => parameter !== undefined)
-
-  // Group by parameterGroup
-  const groupedParameters: Record<string, string[]> = {}
-  parameters.forEach((parameter) => {
-    const group = parameter?.parameterGroup
-    if (!group) return
-
-    if (!groupedParameters[group]) {
-      groupedParameters[group] = []
-    }
-    groupedParameters[group].push(parameter.id)
-  })
-
-  return Object.values(groupedParameters).map((parameterIds) => {
-    const moduleInstanceIds = selectedModuleInstanceIds.value
-    return {
-      filterId: filterId.value,
-      locationIds: selectedLocationIds.value.join(','),
-      parameterIds: parameterIds.join(','),
-      moduleInstanceIds: moduleInstanceIds.length
-        ? moduleInstanceIds.join(',')
-        : undefined,
-    }
-  })
-})
+const selectedFilters = computed(() =>
+  createSelectionFilters(
+    filterId.value,
+    selectedLocationIds.value,
+    selectedParameterIds.value.map((id) => parametersStore.byId(id)),
+    selectedModuleInstanceIds.value,
+  ),
+)
 
 async function addFilter(chart?: Chart) {
-  if (!filters.value.length) return
+  if (!selectedFilters.value.length) return
 
   if (chart === undefined) {
     isLoadingNewCharts.value = true
-    const charts = await createNewChartsForFilters(filters.value)
+    const charts = await createNewChartsForFilters(selectedFilters.value)
     isLoadingNewCharts.value = false
 
     charts.forEach((newChart) => emit('addChart', newChart))
@@ -250,7 +226,7 @@ async function addFilter(chart?: Chart) {
 
   if (chart.type !== 'filter') return
 
-  const promises = filters.value.map((filter) =>
+  const promises = selectedFilters.value.map((filter) =>
     addFilterToChart(chart, filter),
   )
 
