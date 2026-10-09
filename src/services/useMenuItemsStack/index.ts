@@ -28,16 +28,17 @@ export function useMenuItemsStack(
 }
 
 function recursiveFind(stack: ColumnItem[], id: string): boolean {
-  const item = stack[stack.length - 1]
+  const item = stack.at(-1)
+  if (!item) return false
   if (item.id === id) return true
-  if (item.children?.length) {
-    for (const child of item.children) {
-      stack.push(child)
-      if (recursiveFind(stack, id)) {
-        return true
-      }
-      stack.pop()
+
+  for (const child of item.children ?? []) {
+    stack.push(child)
+    if (recursiveFind(stack, id)) {
+      return true
     }
+    stack.pop()
   }
+
   return false
 }

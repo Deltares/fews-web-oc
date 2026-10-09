@@ -279,7 +279,7 @@ export function isInDatesRange(
   if (!date || !dates || dates.length < 2) {
     return false
   }
-  const [start, end] = [dates[0], dates[dates.length - 1]]
+  const [start, end] = [dates[0], dates[dates.length - 1]] // NOSONAR(S7755)
   return date >= start && date <= end
 }
 
