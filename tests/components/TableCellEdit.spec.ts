@@ -632,6 +632,35 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     )
   })
 
+  test('Ctrl or Meta-click includes the cell anchor and toggles selected cells', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    await component
+      .getByRole('columnheader')
+      .filter({ hasText: 'Editable series 1' })
+      .getByRole('button')
+      .click()
+
+    const rows = component.locator('tbody tr[data-row-date]')
+    const selectedRows = component.locator('tbody tr[aria-selected="true"]')
+    const anchorField = rows.nth(1).getByPlaceholder('value')
+    const targetField = rows.nth(3).getByPlaceholder('value')
+
+    await anchorField.click()
+    await expect(selectedRows).toHaveCount(0)
+    await targetField.click({ modifiers: ['ControlOrMeta'] })
+    await expect(selectedRows).toHaveCount(2)
+    await expect(rows.nth(1)).toHaveAttribute('aria-selected', 'true')
+    await expect(rows.nth(2)).toHaveAttribute('aria-selected', 'false')
+    await expect(rows.nth(3)).toHaveAttribute('aria-selected', 'true')
+
+    await anchorField.click({ modifiers: ['ControlOrMeta'] })
+    await expect(selectedRows).toHaveCount(1)
+    await expect(rows.nth(1)).toHaveAttribute('aria-selected', 'false')
+    await expect(rows.nth(3)).toHaveAttribute('aria-selected', 'true')
+  })
+
   test('clicking an editor outside selected rows clears selection and its anchor', async ({
     mount,
   }) => {
@@ -664,6 +693,15 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
         .locator('td.table-date')
         .click({ modifiers: ['Shift'] })
       await expect(selectedRows).toHaveCount(1)
+      await expect(rows.nth(4)).toHaveAttribute('aria-selected', 'true')
+      await rows
+        .nth(5)
+        .locator('td.table-date')
+        .click({ modifiers: ['Shift'] })
+      await expect(selectedRows).toHaveCount(2)
+      await expect(rows.nth(4)).toHaveAttribute('aria-selected', 'true')
+      await expect(rows.nth(5)).toHaveAttribute('aria-selected', 'true')
+      await rows.nth(4).locator('td.table-date').click()
       await rows.nth(4).locator('td.table-date').click()
     }
   })

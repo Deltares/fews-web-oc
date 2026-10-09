@@ -972,6 +972,13 @@ function isRowSelected(item: TableData) {
     : selected.value?.date === item.date
 }
 
+function isDateCellTarget(target: Element) {
+  return (
+    !!target.closest('td.table-date') &&
+    !target.closest('input, select, textarea, button')
+  )
+}
+
 function handleRowClick(e: MouseEvent, item: TableData) {
   if (suppressRowClick) {
     suppressRowClick = false
@@ -984,17 +991,23 @@ function handleRowClick(e: MouseEvent, item: TableData) {
     if (seriesId) handleEditFieldClick(e, item.date.getTime(), seriesId)
     return
   }
-  if (!e.target.closest('td.table-date')) return
-  if (e.target.closest('input, select, textarea, button')) return
+  if (!isDateCellTarget(e.target)) return
 
-  const dateTime = item.date.getTime()
+  handleDateCellClick(e, item.date.getTime())
+}
+
+function handleDateCellClick(e: MouseEvent, dateTime: number) {
+  const additive = e.ctrlKey || e.metaKey
+  if (selectionSeriesId.value !== undefined) {
+    selectionAnchorDate.value = undefined
+  }
   selectionSeriesId.value = undefined
   if (e.shiftKey && selectionAnchorDate.value !== undefined) {
     selectRowRange(
       dateTime,
-      e.ctrlKey || e.metaKey ? new Set(selectedRowDates.value) : undefined,
+      additive ? new Set(selectedRowDates.value) : undefined,
     )
-  } else if (e.ctrlKey || e.metaKey) {
+  } else if (additive) {
     toggleRowSelection(dateTime)
   } else if (
     selectedRowDates.value.size === 1 &&
@@ -1016,8 +1029,8 @@ function handleEditFieldClick(
   dateTime: number,
   seriesId: string,
 ) {
-  const hasModifier = e.shiftKey || e.ctrlKey || e.metaKey
-  if (!hasModifier) {
+  const additive = e.ctrlKey || e.metaKey
+  if (!e.shiftKey && !additive) {
     if (!isCellInSelection(dateTime, seriesId)) {
       startCellSelection(seriesId, dateTime)
     }
@@ -1030,21 +1043,25 @@ function handleEditFieldClick(
   if (e.shiftKey && selectionAnchorDate.value !== undefined) {
     selectRowRange(
       dateTime,
-      e.ctrlKey || e.metaKey ? new Set(selectedRowDates.value) : undefined,
+      additive ? new Set(selectedRowDates.value) : undefined,
     )
   } else {
-    const anchor = selectionAnchorDate.value
-    // Include the previously clicked cell when starting a Ctrl+click selection.
-    if (
-      selectedRowDates.value.size === 0 &&
-      anchor !== undefined &&
-      anchor !== dateTime
-    ) {
-      selectedRowDates.value = new Set([anchor])
-    }
-    toggleRowSelection(dateTime)
+    toggleCellSelection(dateTime)
   }
   updateActiveSelectedRow()
+}
+
+function toggleCellSelection(dateTime: number) {
+  const anchor = selectionAnchorDate.value
+  // Include the previously clicked cell when starting a Ctrl+click selection.
+  if (
+    selectedRowDates.value.size === 0 &&
+    anchor !== undefined &&
+    anchor !== dateTime
+  ) {
+    selectedRowDates.value = new Set([anchor])
+  }
+  toggleRowSelection(dateTime)
 }
 
 function startCellSelection(seriesId: string, dateTime: number) {
@@ -1059,10 +1076,7 @@ function handleRowMouseDown(e: MouseEvent, item: TableData) {
   if (!(e.target instanceof Element)) return
   // Selects open a native popup on mousedown, so dragging only starts from text inputs.
   const field = e.target.closest<HTMLElement>('input[data-edit-field]')
-  const isDateCell =
-    !!e.target.closest('td.table-date') &&
-    !e.target.closest('input, select, textarea, button')
-  if (!field && !isDateCell) return
+  if (!field && !isDateCellTarget(e.target)) return
 
   stopDragSelection()
   dragSelection = {
