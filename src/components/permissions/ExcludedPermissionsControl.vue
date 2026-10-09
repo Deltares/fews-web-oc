@@ -13,20 +13,26 @@
       </div>
     </div>
 
-    <v-list density="compact" class="py-0">
-      <v-list-item
-        v-for="permissionId in permissionsStore.assignedPermissionIds"
-        :key="permissionId"
-        :title="permissionsStore.getPermissionName(permissionId)"
-        class="pl-12"
-      >
-        <template v-if="canExcludePermissions" #append>
-          <v-checkbox-btn v-model="isActive[permissionId]" />
-        </template>
-      </v-list-item>
+    <v-container v-if="canExcludePermissions" fluid class="pt-0 pb-3 pl-12">
+      <v-row dense>
+        <v-col
+          v-for="permissionId in permissionsStore.assignedPermissionIds"
+          :key="permissionId"
+          cols="12"
+          md="4"
+          sm="4"
+        >
+          <v-checkbox-btn
+            v-model="isActive[permissionId]"
+            density="compact"
+            class="permission-checkbox"
+            :label="permissionsStore.getPermissionName(permissionId)"
+          />
+        </v-col>
+      </v-row>
 
-      <v-list-item v-if="canExcludePermissions" class="pl-12">
-        <div class="d-flex justify-end ga-2">
+      <v-row dense justify="end">
+        <v-col cols="auto" class="d-flex ga-2">
           <v-btn
             color="primary"
             size="small"
@@ -44,9 +50,9 @@
             :disabled="!hasPendingChanges"
             @click="applyPendingChanges()"
           />
-        </div>
-      </v-list-item>
-    </v-list>
+        </v-col>
+      </v-row>
+    </v-container>
 
     <v-divider />
   </div>
@@ -108,3 +114,10 @@ function initialiseCheckboxes(): void {
   isActive.value = newIsActive
 }
 </script>
+
+<style scoped>
+.permission-checkbox :deep(.v-label) {
+  font-size: 0.85rem;
+  opacity: 1;
+}
+</style>
