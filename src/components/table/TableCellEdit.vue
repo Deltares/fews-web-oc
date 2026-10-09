@@ -128,7 +128,7 @@ function editItem(field: TableSeriesField) {
   flex: 0 0 auto;
   align-items: center;
   gap: 2px;
-  width: max-content;
+  width: 100%;
   max-width: 100%;
   min-width: 0;
 }
@@ -149,8 +149,9 @@ function editItem(field: TableSeriesField) {
   display: block;
   flex: 0 0 auto;
   min-width: 0;
-  min-height: 28px;
-  padding: 3px 6px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0px 1px;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 4px;
   background-color: rgb(var(--v-theme-surface));
@@ -166,15 +167,11 @@ function editItem(field: TableSeriesField) {
   border-color: rgba(var(--v-theme-on-surface), 0.6);
 }
 
-.table-cell-edit:focus-visible {
-  border-color: rgb(var(--v-theme-primary));
-  outline: 2px solid rgb(var(--v-theme-primary)) !important;
-  outline-offset: 1px !important;
-}
-
+.table-cell-edit:focus-visible,
 .table-cell-edit--column-focused {
-  border-color: rgb(var(--v-theme-primary));
-  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
+  border-color: transparent;
+  outline: 1px solid rgb(var(--v-theme-primary));
+  outline-offset: -1px;
 }
 
 input.table-cell-edit--value {
@@ -182,7 +179,8 @@ input.table-cell-edit--value {
 }
 
 input.table-cell-edit--comment {
-  width: 12ch;
+  flex: 1 1 0;
+  width: 0;
 }
 
 select.table-cell-edit {

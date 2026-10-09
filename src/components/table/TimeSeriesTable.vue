@@ -514,7 +514,7 @@ const selectedDateButtonStyle = ref<Record<string, string>>({})
 const virtualTable = ref<{
   scrollToIndex: (index: number, position?: 'start' | 'center' | 'end') => void
 } | null>(null)
-const virtualItemHeight = 36
+const virtualItemHeight = 28
 const paginationThreshold = 100
 let seriesDataLengths = new Map<string, number>()
 let lastProcessedPageRevision = 0
@@ -1616,6 +1616,7 @@ function handleTableScroll() {
 }
 
 .data-table {
+  --v-table-row-height: 28px;
   display: flex;
   position: relative;
   flex: 1 1 0;
