@@ -92,7 +92,7 @@ const newCollectionName = ref('')
 
 const canAddName = computed(() => {
   const name = newCollectionName.value.trim()
-  return name && !props.collections.some((c) => c.name === name)
+  return name && !collections.value.some((c) => c.name === name)
 })
 
 function addCollection(): void {
