@@ -13,8 +13,9 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - name: Use Node.js LTS
+        uses: actions/setup-node@v7
         with:
           node-version: lts/*
       - name: Get installed Playwright version
@@ -23,7 +24,7 @@ jobs:
           echo "PLAYWRIGHT_VERSION=$(npm ls playwright --depth=1 --package-lock-only --json \
             | sed -n '/\"playwright\": {/,/}/ s/.*\"version\": \"\([^\"]*\)\".*/playwright@\1/p')" >> $GITHUB_ENV
       - name: Cache playwright binaries
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         id: playwright-cache
         with:
           path: |
@@ -38,7 +39,7 @@ jobs:
         run: npx playwright install-deps
       - name: Run Playwright component tests
         run: npm run test:component
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: playwright-report

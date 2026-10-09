@@ -19,9 +19,9 @@ jobs:
           - base: /weboc/
             asset_name: dist-weboc
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup node v20
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v7
         with:
           node-version: 24
       - run: npm ci --ignore-scripts
@@ -31,11 +31,7 @@ jobs:
       - run: zip -r ${{ matrix.asset_name }} dist
 
       - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v3
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./${{ matrix.asset_name }}.zip
-          asset_name: ${{ matrix.asset_name }}.zip
-          asset_content_type: application/zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: ./${{ matrix.asset_name }}.zip
