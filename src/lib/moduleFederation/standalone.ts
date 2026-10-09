@@ -1,10 +1,11 @@
 import type { ModuleFederationOptions } from './types'
 
 export const isModuleFederationSupported = false
+export const buildType = ''
 export const unsupportedMicroFrontendMessage =
-  'Micro Frontends are not supported in the standalone build.'
+  'Microfrontends are not supported in this build without Module Federation.'
 
-export async function initializeModuleFederation(
+export function initializeModuleFederation(
   options: ModuleFederationOptions,
 ): Promise<null> {
   if (options.manifestUrl) {
@@ -13,9 +14,9 @@ export async function initializeModuleFederation(
         'VITE_FEWS_WEBOC_MF_MANIFEST_URL is ignored.',
     )
   }
-  return null
+  return Promise.resolve(null)
 }
 
-export async function loadRemote(_entryId: string): Promise<unknown> {
-  throw new Error(unsupportedMicroFrontendMessage)
+export function loadRemote(_entryId: string): Promise<unknown> {
+  return Promise.reject(new Error(unsupportedMicroFrontendMessage))
 }

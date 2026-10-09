@@ -9,8 +9,9 @@ import { type RemoteWithEntry } from '@module-federation/sdk'
 
 export { loadRemote } from '@module-federation/enhanced/runtime'
 export const isModuleFederationSupported = true
+export const buildType = 'Micro Frontends'
 export const unsupportedMicroFrontendMessage =
-  'Micro Frontends are not supported in the standalone build.'
+  'Microfrontends are not supported in this build without Module Federation.'
 
 export async function initializeModuleFederation(
   options: ModuleFederationOptions,

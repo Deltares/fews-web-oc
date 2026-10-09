@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
+  buildType,
   initializeModuleFederation,
   isModuleFederationSupported,
   loadRemote,
@@ -32,6 +33,7 @@ describe('standalone Module Federation adapter', () => {
     const warning = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     expect(isModuleFederationSupported).toBe(false)
+    expect(buildType).toBe('')
     expect(
       await initializeModuleFederation({
         manifestUrl: 'https://example.com/mf-manifest.json',

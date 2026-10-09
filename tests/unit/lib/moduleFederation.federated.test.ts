@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
+  buildType,
   initializeModuleFederation,
   isModuleFederationSupported,
   loadRemote,
@@ -49,6 +50,7 @@ describe('federated Module Federation adapter', () => {
     getMicroFrontEnds.mockResolvedValue(config)
 
     expect(isModuleFederationSupported).toBe(true)
+    expect(buildType).toBe('Micro Frontends')
     expect(await initializeModuleFederation(options)).toEqual({
       config,
       options,
