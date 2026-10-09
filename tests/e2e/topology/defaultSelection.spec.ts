@@ -3,6 +3,10 @@ import { test, expect } from '@playwright/test'
 const base = '/topology/early_warning/node'
 
 test.describe('Default Selection in Topology', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.route('**/topology/thresholds*', (route) => route.abort())
+  })
+
   test('when no defaultPath is defined, the first topology node should be auto selected', async ({
     page,
   }) => {
@@ -14,8 +18,8 @@ test.describe('Default Selection in Topology', () => {
         const json = await response.json()
 
         // Find the topology component and remove its defaultPath
-        if (json.webOcComponents) {
-          json.webOcComponents = json.webOcComponents.map((component) => {
+        if (json.components) {
+          json.components = json.components.map((component) => {
             if (component.type === 'TopologyDisplay') {
               // Make a copy of the component without the defaultPath
               const { defaultPath, ...topologyWithoutDefaultPath } = component
@@ -37,8 +41,7 @@ test.describe('Default Selection in Topology', () => {
     await expect(topologyTree).toBeVisible()
 
     // Check that we're redirected to a specific node page (URL should change from /topology to include a node ID)
-    const url = page.url()
-    expect(url).toMatch(/\/topology\/early_warning\/node\/[^/]+/)
+    await expect(page).toHaveURL(/\/topology\/early_warning\/node\/[^/]+/)
 
     // Verify that the first node in the topology tree is selected (has active class or visual indicator)
     const firstNode = topologyTree.getByRole('link').first()
@@ -66,7 +69,7 @@ test.describe('Default Selection in Topology', () => {
               return {
                 ...component,
                 defaultPath: {
-                  nodeId: 'viewer_meteorology_rainfall_hazard_map',
+                  nodeId: 'viewer_meteorology_rainfall_hazard_map_saws',
                 },
               }
             }
@@ -85,18 +88,20 @@ test.describe('Default Selection in Topology', () => {
     const topologyTree = page.locator('[data-test-id="topology-tree"]')
     await expect(topologyTree).toBeVisible()
 
-    // Wait for the topology to load and the node to be selected
-    await page.waitForTimeout(1000)
-
     // Check that we're redirected to the specific node defined in defaultPath
-    const url = page.url()
-    await expect(url).toContain('viewer_meteorology_rainfall_hazard_map')
+    await expect(page).toHaveURL(
+      /\/viewer_meteorology_rainfall_hazard_map_saws(?:\/|$)/,
+    )
 
-    // Verify that the specified node is selected in the topology tree
-    const nodeLink = await topologyTree
-      .getByRole('link')
-      .filter({ hasText: 'Hazard map' })
+    const leafNodeButton = page.getByRole('button', { name: 'Leaf node' })
+    await expect(leafNodeButton).toContainText('Regional NWP')
+    await leafNodeButton.click()
+    const nodeLink = page.getByRole('link', {
+      name: 'Regional NWP',
+      exact: true,
+    })
     await expect(nodeLink).toHaveClass(/active/)
+    await leafNodeButton.click()
 
     // Verify content specific to this node is displayed
     await expect(page.getByText('WATCH (2 YEAR)')).toBeVisible()
