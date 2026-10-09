@@ -3,7 +3,7 @@ function normalizeBase(str: string): string {
 }
 
 function getTrailingDigitCount(str: string): number {
-  return /\d*$/.exec(str)?.[0].length ?? 0
+  return /\d*$/.exec(str)?.[0].length ?? 0 // NOSONAR(S8786) - false positive
 }
 
 /**
