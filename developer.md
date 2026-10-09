@@ -68,6 +68,28 @@ npm run test:unit -- --config vite.config.standalone.ts tests/unit/lib/moduleFed
 The federated adapter test intentionally imports the federation runtime and
 therefore runs only with the default configuration, not the standalone guard.
 
+### Release artifacts
+
+Publishing a GitHub release builds both variants for both deployment paths:
+
+| Release asset                                     | Base path | Module Federation |
+| ------------------------------------------------- | --------- | ----------------- |
+| `deltares-fews-weboc-<tag>.zip`                     | `/`       | Enabled           |
+| `deltares-fews-weboc-weboc-<tag>.zip`               | `/weboc/` | Enabled           |
+| `deltares-fews-weboc-standalone-<tag>.zip`           | `/`       | Disabled          |
+| `deltares-fews-weboc-weboc-standalone-<tag>.zip`     | `/weboc/` | Disabled          |
+
+Archive names include the `deltares` prefix, package name, and published release
+tag, for example `deltares-fews-weboc-v1.5.1.zip`. The `weboc` suffix identifies
+the `/weboc/` base path.
+
+Each archive contains a `dist/` directory for consistent deployment across
+variants. The release workflow overrides the standalone output directory only
+for packaging; local standalone builds still write to `dist-standalone`.
+Archives are uploaded as workflow artifacts using `actions/upload-artifact`
+and attached to the published release using `gh release upload`.
+Rerunning the workflow replaces release assets with matching names.
+
 ## E2E testing
 
 For end-to-end testing we use [Playwright](https://playwright.dev/).

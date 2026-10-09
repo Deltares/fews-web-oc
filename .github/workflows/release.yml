@@ -10,14 +10,24 @@ permissions:
 
 jobs:
   build:
+    name: Build ${{ matrix.asset_name }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - base: /
-            asset_name: dist
+            asset_name: deltares-fews-weboc
+            build_script: build
           - base: /weboc/
-            asset_name: dist-weboc
+            asset_name: deltares-fews-weboc-weboc
+            build_script: build
+          - base: /
+            asset_name: deltares-fews-weboc-standalone
+            build_script: build:standalone
+          - base: /weboc/
+            asset_name: deltares-fews-weboc-weboc-standalone
+            build_script: build:standalone
     steps:
       - uses: actions/checkout@v7
       - name: Setup Node.js 24
@@ -27,11 +37,26 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run patch-package
 
-      - run: npm run build -- --base=${{ matrix.base }}
-      - run: zip -r ${{ matrix.asset_name }} dist
+      - name: Build application
+        run: npm run "${{ matrix.build_script }}" -- --base="${{ matrix.base }}" --outDir=dist
+      - name: Package build
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          ASSET_NAME: ${{ matrix.asset_name }}
+        run: zip -r "$ASSET_NAME-$RELEASE_TAG.zip" dist
 
-      - name: Upload Release Asset
-        uses: softprops/action-gh-release@v3
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          files: ./${{ matrix.asset_name }}.zip
+          name: ${{ matrix.asset_name }}-${{ github.event.release.tag_name }}
+          path: ./${{ matrix.asset_name }}-${{ github.event.release.tag_name }}.zip
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          ASSET_NAME: ${{ matrix.asset_name }}
+        run: gh release upload "$RELEASE_TAG" "./$ASSET_NAME-$RELEASE_TAG.zip" --clobber
