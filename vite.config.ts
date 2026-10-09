@@ -1,10 +1,9 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vuetify from 'vite-plugin-vuetify'
-import { dirname, resolve } from 'node:path'
+import { resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { federation } from '@module-federation/vite'
 
 const GIT_CANDIDATE_PATHS =
