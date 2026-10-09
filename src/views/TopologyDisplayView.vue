@@ -117,9 +117,11 @@ const nodesStore = useNodesStore()
 const topologyNodesStore = useTopologyNodesStore()
 const searchContext = useSearchContext()
 
-topologyNodesStore
-  .fetch()
-  .catch(() => console.error('Failed to fetch topology nodes'))
+try {
+  await topologyNodesStore.fetch()
+} catch {
+  console.error('Failed to fetch topology nodes')
+}
 
 // Clear the preferred workflow IDs when we unmount.
 onUnmounted(() => availableWorkflowsStore.clearPreferredWorkflowIds())
