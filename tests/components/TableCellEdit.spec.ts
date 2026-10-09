@@ -67,12 +67,16 @@ test.describe('TableCellEdit', () => {
 
     await valueInput.focus()
     await expect(valueInput).toHaveCSS('outline-style', 'solid')
-    await expect(valueInput).toHaveCSS('outline-width', '2px')
+    await expect(valueInput).toHaveCSS('outline-width', '1px')
+    await expect(valueInput).toHaveCSS('outline-offset', '-1px')
+    await expect(valueInput).toHaveCSS('height', '24px')
     await expect(valueInput).toHaveCSS('border-radius', '4px')
 
     await flagSelect.focus()
     await expect(flagSelect).toHaveCSS('outline-style', 'solid')
-    await expect(flagSelect).toHaveCSS('outline-width', '2px')
+    await expect(flagSelect).toHaveCSS('outline-width', '1px')
+    await expect(flagSelect).toHaveCSS('outline-offset', '-1px')
+    await expect(flagSelect).toHaveCSS('height', '24px')
   })
 })
 
@@ -90,6 +94,18 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       const cells = component.locator('tbody tr[data-row-date] td')
       await header.getByRole('button').click()
       await expect(component.getByPlaceholder('value')).toBeVisible()
+      await expect
+        .poll(async () => {
+          const editor = component.locator('.table-cell-editable')
+          const editorRight = await editor.evaluate(
+            (element) => element.getBoundingClientRect().right,
+          )
+          const commentRight = await component
+            .getByPlaceholder('comment')
+            .evaluate((element) => element.getBoundingClientRect().right)
+          return editorRight - commentRight
+        })
+        .toBeLessThanOrEqual(1)
       await expect
         .poll(async () => {
           const cellWidth = await cells
