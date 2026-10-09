@@ -30,7 +30,7 @@
         :settings="settings.charts.timeSeriesChart"
       />
     </div>
-    <AnalysisChartEdit v-model="editing" :chart />
+    <AnalysisChartEdit v-model="editing" :chart v-bind="$attrs" />
   </AnalysisChartCard>
 </template>
 
