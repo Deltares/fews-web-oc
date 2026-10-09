@@ -15,6 +15,7 @@
         :startTime
         :endTime
         @remove="removeChart(chart)"
+        @update:chart="updateChart"
       />
       <AnalysisCorrelationChart
         v-else-if="chart.type === 'correlation'"
@@ -23,22 +24,26 @@
         :startTime
         :endTime
         @remove="removeChart(chart)"
+        @update:chart="updateChart"
       />
       <AnalysisAsyncChart
         v-else-if="chart.type === 'async'"
         :chart
         @addChart="emit('addChart', $event)"
         @remove="removeChart(chart)"
+        @update:chart="updateChart"
       />
       <AnalysisProductChart
         v-else-if="chart.type === 'product'"
         :chart
         @remove="removeChart(chart)"
+        @update:chart="updateChart"
       />
       <AnalysisUnsupportedChart
         v-else
         :chart="chart"
         @remove="removeChart(chart)"
+        @update:chart="updateChart"
       />
     </template>
   </div>
@@ -76,6 +81,18 @@ const emit = defineEmits<CollectionEmits>()
 const { sharedZoomHandler, sharedPanHandler } = useChartHandlers()
 
 function removeChart(chart: Chart) {
-  collection.value.charts.splice(collection.value.charts.indexOf(chart), 1)
+  collection.value = {
+    ...collection.value,
+    charts: collection.value.charts.filter(({ id }) => id !== chart.id),
+  }
+}
+
+function updateChart(updatedChart: Chart) {
+  collection.value = {
+    ...collection.value,
+    charts: collection.value.charts.map((chart) =>
+      chart.id === updatedChart.id ? updatedChart : chart,
+    ),
+  }
 }
 </script>

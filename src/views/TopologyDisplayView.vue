@@ -117,9 +117,11 @@ const nodesStore = useNodesStore()
 const topologyNodesStore = useTopologyNodesStore()
 const searchContext = useSearchContext()
 
-topologyNodesStore
-  .fetch()
-  .catch(() => console.error('Failed to fetch topology nodes'))
+try {
+  await topologyNodesStore.fetch()
+} catch (error) {
+  console.error('Failed to fetch topology nodes', error)
+}
 
 // Clear the preferred workflow IDs when we unmount.
 onUnmounted(() => availableWorkflowsStore.clearPreferredWorkflowIds())
@@ -173,14 +175,6 @@ watch(
   ([nodes, topologyId]) => searchContext.setTopologyNodes(nodes, topologyId),
   { immediate: true },
 )
-watch(
-  () => topologyNodesStore.nodes,
-  async () => {
-    const to = await reroute(route)
-    if (to) router.push(to)
-  },
-)
-
 function getComponentConfig(topologyId?: string) {
   const component = topologyId
     ? configStore.getComponentById(topologyId)
@@ -210,6 +204,15 @@ watchEffect(() => {
     nodesStore.activeNodeId = props.nodeId[1]
   }
 })
+
+watch(
+  () => topologyNodesStore.nodes,
+  async () => {
+    const to = await reroute(route)
+    if (to) await router.replace(to)
+  },
+  { immediate: true },
+)
 
 function onNavigate(to: NavigateRoute) {
   const name = `Topology${String(to.name)}`
@@ -317,17 +320,27 @@ function onNavigate(to: NavigateRoute) {
 
 onBeforeRouteUpdate(reroute)
 
+function getFirstSubNodeId() {
+  const firstSubNode = subNodes.value[0]
+  return firstSubNode
+    ? topologyNodesStore.getFirstLeafNodeForId(firstSubNode.id)?.id
+    : undefined
+}
+
 async function reroute(
   to: RouteLocationNormalized,
   from?: RouteLocationNormalized,
 ) {
-  if (!to.params.nodeId) {
-    const firstSubNodeId = topologyNodesStore.getFirstLeafNodeForId(
-      subNodes.value[0].id,
-    )?.id
+  if (
+    !to.params.nodeId ||
+    (Array.isArray(to.params.nodeId) && to.params.nodeId.length === 0)
+  ) {
+    const firstSubNodeId = getFirstSubNodeId()
     if (firstSubNodeId) {
-      to.params.nodeId = firstSubNodeId
-      return reroute(to, from)
+      return reroute(
+        { ...to, params: { ...to.params, nodeId: firstSubNodeId } },
+        from,
+      )
     }
     return
   }

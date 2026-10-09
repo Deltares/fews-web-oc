@@ -29,7 +29,11 @@ const lineStyle = computed({
     const currentStyle = props.item.lineStyle ?? ''
     const currentEnding = currentStyle.split(';')[1]
     const newStyle = value + (currentEnding ? `;${currentEnding}` : '')
-    props.item.lineStyle = newStyle
+    emit('update:item', { ...props.item, lineStyle: newStyle })
   },
 })
+
+const emit = defineEmits<{
+  'update:item': [item: TimeSeriesDisplaySubplotItem]
+}>()
 </script>

@@ -1,7 +1,11 @@
 <template>
   <v-card flat density="compact" color="transparent">
     <v-card-title class="d-flex align-center">
-      <EditableTitle v-model="chart.title" class="ml-2" />
+      <EditableTitle
+        :model-value="chart.title"
+        class="ml-2"
+        @update:model-value="updateTitle"
+      />
       <v-spacer />
       <v-menu location="bottom right">
         <template #activator="{ props }">
@@ -19,25 +23,25 @@
             title="Edit"
             prepend-icon="mdi-pencil"
             density="compact"
-            @click="$emit('edit')"
+            @click="emit('edit')"
           />
           <v-list-item
             title="Download"
             prepend-icon="mdi-download"
             density="compact"
-            @click="$emit('download')"
+            @click="emit('download')"
           />
           <v-list-item
             title="Save as Image"
             prepend-icon="mdi-image"
             density="compact"
-            @click="$emit('saveAsImage')"
+            @click="emit('saveAsImage')"
           />
           <v-list-item
             title="Remove"
             prepend-icon="mdi-delete"
             density="compact"
-            @click="$emit('remove')"
+            @click="emit('remove')"
           />
         </v-list>
       </v-menu>
@@ -54,7 +58,17 @@ interface Props {
   chart: Chart
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
-defineEmits(['edit', 'remove', 'download', 'saveAsImage'])
+const emit = defineEmits<{
+  'update:chart': [chart: Chart]
+  edit: []
+  remove: []
+  download: []
+  saveAsImage: []
+}>()
+
+function updateTitle(title: string) {
+  emit('update:chart', { ...props.chart, title })
+}
 </script>

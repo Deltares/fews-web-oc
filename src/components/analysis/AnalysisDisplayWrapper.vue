@@ -1,7 +1,7 @@
 <template>
   <AnalysisDisplayComponent
     v-if="isValidDisplayCollections && state"
-    :collections="state.collections"
+    v-model:collections="state.collections"
     :config
     :boundingBox
   />
