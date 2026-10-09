@@ -302,12 +302,19 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await expect(editedCell).toHaveCSS('padding-left', '0px')
     await expect(editedCell).toHaveCSS('padding-right', '0px')
     await expect(component.getByTestId('table-status-row-count')).toHaveCount(0)
+    await expect(component.getByTestId('table-status-date-range')).toHaveCount(
+      0,
+    )
     await expect(statusActivity).toContainText('Tab / Enter: move fields')
     await expect(statusActivity).not.toContainText('Shift+Tab')
     await expect(statusActivity).not.toContainText('select row')
     const saveModifier = await getSaveModifier(component)
     await expect(statusActivity).not.toContainText('save column')
-    await expect(statusActivity.locator('kbd')).toHaveText(['Tab', 'Enter'])
+    await expect(statusActivity.locator('kbd')).toHaveText([
+      'Tab',
+      'Enter',
+      saveModifier,
+    ])
     const firstKey = statusActivity.locator('kbd').first()
     await expect(firstKey).toHaveCSS('height', '20px')
     await expect(firstKey).toHaveCSS('font-size', '11px')
@@ -375,7 +382,7 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       await component.getByPlaceholder('value').fill('18.5')
       await expect(
         component.getByTestId('table-status-activity').locator('kbd'),
-      ).toHaveText(['Tab', 'Enter', modifier, 'Enter'])
+      ).toHaveText(['Tab', 'Enter', modifier, modifier, 'Enter'])
     })
   }
 
@@ -387,11 +394,16 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
       .getByRole('columnheader')
       .filter({ hasText: 'Editable series 1' })
     const hints = component.getByTestId('table-status-activity')
+    const selectModifier = await getSaveModifier(component)
     await expect(hints.locator('kbd')).toHaveCount(0)
     await header.getByRole('button').click()
     await expect(hints).toContainText('Tab / Enter: move fields')
     await expect(hints).not.toContainText('save column')
-    await expect(hints.locator('kbd')).toHaveText(['Tab', 'Enter'])
+    await expect(hints.locator('kbd')).toHaveText([
+      'Tab',
+      'Enter',
+      selectModifier,
+    ])
 
     const rows = component.locator('tbody tr[data-row-date]')
     await rows.nth(1).locator('td.table-date').click()
@@ -417,7 +429,11 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     await expect(hints).toContainText('extend selection')
     await rows.nth(1).locator('td.table-date').click()
     await expect(hints).toContainText('Tab / Enter: move fields')
-    await expect(hints.locator('kbd')).toHaveText(['Tab', 'Enter'])
+    await expect(hints.locator('kbd')).toHaveText([
+      'Tab',
+      'Enter',
+      selectModifier,
+    ])
     await header.getByRole('button', { name: 'Cancel', exact: true }).click()
     await expect(hints.locator('kbd')).toHaveCount(0)
   })
@@ -616,6 +632,35 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
     )
   })
 
+  test('Ctrl or Meta-click includes the cell anchor and toggles selected cells', async ({
+    mount,
+  }) => {
+    const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
+    await component
+      .getByRole('columnheader')
+      .filter({ hasText: 'Editable series 1' })
+      .getByRole('button')
+      .click()
+
+    const rows = component.locator('tbody tr[data-row-date]')
+    const selectedRows = component.locator('tbody tr[aria-selected="true"]')
+    const anchorField = rows.nth(1).getByPlaceholder('value')
+    const targetField = rows.nth(3).getByPlaceholder('value')
+
+    await anchorField.click()
+    await expect(selectedRows).toHaveCount(0)
+    await targetField.click({ modifiers: ['ControlOrMeta'] })
+    await expect(selectedRows).toHaveCount(2)
+    await expect(rows.nth(1)).toHaveAttribute('aria-selected', 'true')
+    await expect(rows.nth(2)).toHaveAttribute('aria-selected', 'false')
+    await expect(rows.nth(3)).toHaveAttribute('aria-selected', 'true')
+
+    await anchorField.click({ modifiers: ['ControlOrMeta'] })
+    await expect(selectedRows).toHaveCount(1)
+    await expect(rows.nth(1)).toHaveAttribute('aria-selected', 'false')
+    await expect(rows.nth(3)).toHaveAttribute('aria-selected', 'true')
+  })
+
   test('clicking an editor outside selected rows clears selection and its anchor', async ({
     mount,
   }) => {
@@ -648,6 +693,15 @@ test.describe('TableCellEdit in TimeSeriesTable', () => {
         .locator('td.table-date')
         .click({ modifiers: ['Shift'] })
       await expect(selectedRows).toHaveCount(1)
+      await expect(rows.nth(4)).toHaveAttribute('aria-selected', 'true')
+      await rows
+        .nth(5)
+        .locator('td.table-date')
+        .click({ modifiers: ['Shift'] })
+      await expect(selectedRows).toHaveCount(2)
+      await expect(rows.nth(4)).toHaveAttribute('aria-selected', 'true')
+      await expect(rows.nth(5)).toHaveAttribute('aria-selected', 'true')
+      await rows.nth(4).locator('td.table-date').click()
       await rows.nth(4).locator('td.table-date').click()
     }
   })
