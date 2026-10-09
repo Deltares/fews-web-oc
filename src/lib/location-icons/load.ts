@@ -1,5 +1,5 @@
 import { type FeatureCollection, type Geometry } from 'geojson'
-import { uniqBy } from 'lodash-es'
+import { uniqBy } from '../utils/uniq'
 import { Map } from 'maplibre-gl'
 
 import { type Location } from '@deltares/fews-pi-requests'
@@ -8,7 +8,7 @@ import { getResourcesIconsUrl } from '../fews-config'
 function getUniqueIconNames(
   locations: FeatureCollection<Geometry, Location>,
 ): string[] {
-  return uniqBy(locations.features, 'properties.iconName')
+  return uniqBy(locations.features, (feature) => feature.properties.iconName)
     .map((feature) => feature.properties.iconName)
     .filter((iconName) => iconName !== undefined) as string[]
 }

@@ -11,7 +11,7 @@ import {
 import { FilterChart, FilterSubplot, FilterSubplotItem } from './types'
 import { configManager } from '@/services/application-config'
 import { absoluteUrl } from '../utils/absoluteUrl'
-import { uniq, uniqBy } from 'lodash-es'
+import { uniq, uniqBy } from '../utils/uniq'
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 import { convertFewsPiDateTimeToJsDate } from '../date'
 import { uid } from '@/lib/utils/uid'

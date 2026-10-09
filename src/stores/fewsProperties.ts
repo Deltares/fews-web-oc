@@ -7,7 +7,7 @@ import {
   loadTimeSeriesFlagSources,
   loadTimeSeriesFlags,
 } from '@/lib/fews-properties/fewsProperties.js'
-import { uniq } from 'lodash-es'
+import { uniq } from '@/lib/utils/uniq'
 interface FewsPropertiesState {
   flags?: TimeSeriesFlag[]
   flagSources?: TimeSeriesFlagSource[]
