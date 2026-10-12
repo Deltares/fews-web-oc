@@ -138,6 +138,7 @@ watchEffect(() => {
   const setting = userSettingsStore.get('ui.scale')
   const uiScale =
     setting?.type === 'oneOfMultiple' &&
+    typeof setting.value === 'string' &&
     setting.items.some((item) => item.value === setting.value)
       ? setting.value
       : '1'
