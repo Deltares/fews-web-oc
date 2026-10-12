@@ -149,15 +149,15 @@ function editItem(field: TableSeriesField) {
   display: block;
   flex: 0 0 auto;
   min-width: 0;
-  height: 26px;
-  min-height: 26px;
+  height: 30px;
+  min-height: 30px;
   padding: 0px 1px;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 4px;
   background-color: rgb(var(--v-theme-surface));
   color: currentColor;
   font: inherit;
-  line-height: 22px;
+  line-height: 26px;
   transition:
     border-color 120ms ease,
     background-color 120ms ease;
