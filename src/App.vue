@@ -135,10 +135,13 @@ function setTheme(setDark: boolean): void {
 }
 
 watchEffect(() => {
-  const uiScale = userSettingsStore.get('ui.scale')?.value
-  if (typeof uiScale === 'string') {
-    applyUiScale(uiScale)
-  }
+  const setting = userSettingsStore.get('ui.scale')
+  const uiScale =
+    setting?.type === 'oneOfMultiple' &&
+    setting.items.some((item) => item.value === setting.value)
+      ? setting.value
+      : '1'
+  applyUiScale(uiScale)
 })
 
 function applyUiScale(value: string): void {
