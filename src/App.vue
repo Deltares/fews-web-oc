@@ -133,6 +133,21 @@ function setTheme(setDark: boolean): void {
     isDark.value = setDark
   }
 }
+
+watchEffect(() => {
+  const setting = userSettingsStore.get('ui.scale')
+  const uiScale =
+    setting?.type === 'oneOfMultiple' &&
+    typeof setting.value === 'string' &&
+    setting.items.some((item) => item.value === setting.value)
+      ? setting.value
+      : '1'
+  applyUiScale(uiScale)
+})
+
+function applyUiScale(value: string): void {
+  document.body.style.zoom = value
+}
 </script>
 
 <style>

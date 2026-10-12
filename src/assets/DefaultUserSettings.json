@@ -93,6 +93,43 @@
     "group": "UI"
   },
   {
+    "id": "ui.scale",
+    "type": "oneOfMultiple",
+    "label": "UI scale",
+    "value": "1",
+    "items": [
+      {
+        "value": "0.8",
+        "title": "80%"
+      },
+      {
+        "value": "0.85",
+        "title": "85%"
+      },
+      {
+        "value": "0.9",
+        "title": "90%"
+      },
+      {
+        "value": "0.95",
+        "title": "95%"
+      },
+      {
+        "value": "1",
+        "title": "100%"
+      },
+      {
+        "value": "1.1",
+        "title": "110%"
+      },
+      {
+        "value": "1.2",
+        "title": "120%"
+      }
+    ],
+    "group": "UI"
+  },
+  {
     "id": "ui.map.theme",
     "type": "oneOfMultiple",
     "label": "Basemap",
