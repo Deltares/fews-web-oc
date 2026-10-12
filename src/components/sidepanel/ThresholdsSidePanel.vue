@@ -4,7 +4,7 @@
       {{ t('thresholds.warningSeverityLevels') }}
     </v-list-item-title>
     <template #append>
-      <v-menu>
+      <v-menu v-if="hasMultipleCrossingsAtLocation">
         <template #activator="{ props, isActive }">
           <v-chip variant="tonal" pilled v-bind="props" class="mt-2 ms-2">
             <template #default>
@@ -150,6 +150,12 @@ const groupedCrossings = computed(() => {
   })
   return Object.values(grouped)
 })
+
+// Only show the menu if there are multiple crossings at a location
+// otherwise switching between locations or crossings changes nothing
+const hasMultipleCrossingsAtLocation = computed(() =>
+  groupedCrossings.value.some((group) => group.length > 1),
+)
 
 // Scroll to the selected item
 async function scrollToSelectedItem() {
