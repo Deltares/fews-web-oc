@@ -175,7 +175,9 @@ function subplotToFilterSubplot(
   return { ...item, items: newItems }
 }
 
-export function getFilterSubplotTitle(subplot: FilterSubplot) {
+export function getFilterSubplotTitle(subplot: {
+  items: Pick<FilterSubplotItem, 'parameterGroup' | 'locationName'>[]
+}) {
   const uniqueParameterGroups = getParameterGroups(subplot.items)
   const uniqueLocationNames = getLocationNames(subplot.items)
 

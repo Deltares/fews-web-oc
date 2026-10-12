@@ -22,6 +22,12 @@
     "apply": "Apply",
     "reset": "Reset"
   },
+  "analysis": {
+    "correlation": {
+      "loadError": "Could not load correlation data.",
+      "noData": "No data points are available for the selected time series and time range."
+    }
+  },
   "layout": {
     "about": "About",
     "switchTo": "Switch to"

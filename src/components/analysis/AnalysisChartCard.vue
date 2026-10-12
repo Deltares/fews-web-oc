@@ -72,3 +72,9 @@ function updateTitle(title: string) {
   emit('update:chart', { ...props.chart, title })
 }
 </script>
+
+<style scoped>
+:deep(.chart-container) {
+  min-height: 332px;
+}
+</style>

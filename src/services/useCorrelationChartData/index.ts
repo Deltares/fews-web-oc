@@ -11,14 +11,29 @@ import type { CorrelationFilter } from '@deltares/fews-pi-requests'
 export function useCorrelationChartData(
   filter: MaybeRefOrGetter<CorrelationFilter | undefined>,
 ) {
-  const { correlation } = useCorrelation(filter)
+  const { correlation, isLoading, error } = useCorrelation(filter)
+
+  const hasScatterPoints = computed(
+    () => (correlation.value?.values?.length ?? 0) > 0,
+  )
+
+  const hasRegressionFit = computed(
+    () => (correlation.value?.fitPoints?.length ?? 0) > 0,
+  )
 
   const description = computed(() => {
     return correlation.value?.equation?.description
   })
 
+  const statusDescription = computed(() => {
+    const equation = correlation.value?.equation
+    return equation && equation.status !== 'nominal'
+      ? equation.statusDescription
+      : undefined
+  })
+
   const rSquared = computed(() => {
-    return correlation.value?.equation?.['R-squared']
+    return correlation.value?.equation?.rSquared
   })
 
   const series = computed(() => {
@@ -56,6 +71,11 @@ export function useCorrelationChartData(
   return {
     series,
     description,
+    statusDescription,
     rSquared,
+    hasScatterPoints,
+    hasRegressionFit,
+    isLoading,
+    error,
   }
 }
