@@ -158,6 +158,19 @@ function getComponentForSidePanel(type: SidePanelType): Component | undefined {
 }
 
 function getTitleForSidePanel(type: SidePanelType): string {
+  const importStatusEnabled =
+    configStore.general.sidePanel?.importStatus?.enabled ?? false
+  const exportStatusEnabled =
+    configStore.general.sidePanel?.exportStatus?.enabled ?? false
+
+  if (type === 'importStatus' && importStatusEnabled && exportStatusEnabled) {
+    return 'Import/Export Status'
+  }
+
+  if (type === 'exportStatus' && !importStatusEnabled && exportStatusEnabled) {
+    return t('sidePanel.exportStatus')
+  }
+
   const title = t(`sidePanel.${type}`)
 
   if (type === 'logDisplay') {
@@ -168,11 +181,23 @@ function getTitleForSidePanel(type: SidePanelType): string {
 }
 
 function propsForSidePanel(panel: OpenSidePanel): Record<string, unknown> {
+  const importStatusEnabled =
+    configStore.general.sidePanel?.importStatus?.enabled ?? false
+  const exportStatusEnabled =
+    configStore.general.sidePanel?.exportStatus?.enabled ?? false
+
   switch (panel.type) {
     case 'logDisplay':
       return { logDisplayId: logDisplayId.value, ...panel.props }
     case 'thresholds':
       return { locationIds: props.locationIds, ...panel.props }
+    case 'importStatus':
+    case 'exportStatus':
+      return {
+        showImport: importStatusEnabled,
+        showExport: exportStatusEnabled,
+        ...(panel.props ?? {}),
+      }
     default:
       return panel.props
   }
