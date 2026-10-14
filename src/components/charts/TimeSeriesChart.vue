@@ -525,12 +525,14 @@ function getChartLayoutStyle() {
   max-width: none;
 }
 
-.chart-with-chips:not(.maximized):nth-child(1):nth-last-child(1) {
-  max-height: 100%;
+.chart-with-chips:not(.maximized):not(.vertical-profile):only-child {
+  max-height: max(50%, 400px);
 }
 
-.chart-with-chips:not(.maximized):nth-child(1):nth-last-child(2),
-.chart-with-chips:not(.maximized):nth-child(2):nth-last-child(1) {
+.chart-with-chips:not(.maximized):not(.vertical-profile):is(
+    :nth-child(1):nth-last-child(2),
+    :nth-child(2):nth-last-child(1)
+  ) {
   max-height: 50%;
 }
 
