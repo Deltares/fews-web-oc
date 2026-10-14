@@ -6,7 +6,15 @@
     :settings
     v-bind="$attrs"
     @download="downloadChart"
-  />
+    @remove="emit('remove')"
+  >
+    <template #overlay v-if="errorState">
+      <v-alert :type="errorState.type" variant="flat" class="ma-8 border">
+        {{ errorState.message }}
+      </v-alert>
+    </template>
+  </AnalysisPlotChart>
+
   <TimeSeriesFileDownloadComponent
     v-model="showDownloadDialog"
     :filter
@@ -24,6 +32,7 @@ import { useCorrelationChartData } from '@/services/useCorrelationChartData'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
 import { computed, ref } from 'vue'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
+import { CORRELATION_LINE_ID } from '@/lib/analysis/correlation'
 
 interface Props {
   chart: CorrelationChart
@@ -33,6 +42,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{ remove: [] }>()
 
 const showDownloadDialog = ref(false)
 
@@ -42,21 +52,29 @@ const filter = computed(() => ({
   endTime: convertJSDateToFewsPiParameter(props.endTime),
 }))
 
-const { series, description, rSquared } = useCorrelationChartData(filter)
+const { series, description, rSquared, hasRegressionFit, errorState } =
+  useCorrelationChartData(filter)
 
 const chartConfig = computed(() =>
   timeSeriesDisplayToChartConfig(props.chart.subplot),
 )
 
 const config = computed(() => {
-  return {
-    ...chartConfig.value,
-    series: chartConfig.value.series.map((s) => ({
+  const series = chartConfig.value.series
+    .filter((s) => hasRegressionFit.value || s.id !== CORRELATION_LINE_ID)
+    .map((s) => ({
       ...s,
       name: s.name
         .replace('{description}', description.value ?? 'unknown')
         .replace('{rSquared}', rSquared.value?.toFixed(3) ?? 'unknown'),
-    })),
+    }))
+
+  return {
+    ...chartConfig.value,
+    series: [
+      ...series.filter((s) => s.id !== CORRELATION_LINE_ID),
+      ...series.filter((s) => s.id === CORRELATION_LINE_ID),
+    ],
   }
 })
 

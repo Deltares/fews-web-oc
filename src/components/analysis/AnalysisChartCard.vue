@@ -9,13 +9,8 @@
       <v-spacer />
       <v-menu location="bottom right">
         <template #activator="{ props }">
-          <v-btn
-            icon="mdi-dots-horizontal"
-            size="small"
-            density="compact"
-            v-bind="props"
-          >
-            <v-icon size="small">mdi-dots-horizontal</v-icon>
+          <v-btn icon density="compact" v-bind="props">
+            <v-icon size="x-small">mdi-dots-horizontal</v-icon>
           </v-btn>
         </template>
         <v-list density="compact">
@@ -72,3 +67,9 @@ function updateTitle(title: string) {
   emit('update:chart', { ...props.chart, title })
 }
 </script>
+
+<style scoped>
+:deep(.chart-container) {
+  min-height: 332px;
+}
+</style>
