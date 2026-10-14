@@ -7,6 +7,7 @@ import {
   CORRELATION_POINTS_ID,
 } from '@/lib/analysis/correlation'
 import type { CorrelationFilter } from '@deltares/fews-pi-requests'
+import { useI18n } from 'vue-i18n'
 
 export function useCorrelationChartData(
   filter: MaybeRefOrGetter<CorrelationFilter | undefined>,
@@ -34,6 +35,21 @@ export function useCorrelationChartData(
 
   const rSquared = computed(() => {
     return correlation.value?.equation?.rSquared
+  })
+
+  const { t } = useI18n()
+
+  const errorState = computed(() => {
+    if (isLoading.value || (!error.value && hasScatterPoints.value)) return
+
+    const type: 'error' | 'warning' = error.value ? 'error' : 'warning'
+
+    return {
+      type,
+      message: error.value
+        ? t('analysis.correlation.loadError')
+        : (statusDescription.value ?? t('analysis.correlation.noData')),
+    }
   })
 
   const series = computed(() => {
@@ -77,5 +93,6 @@ export function useCorrelationChartData(
     hasRegressionFit,
     isLoading,
     error,
+    errorState,
   }
 }

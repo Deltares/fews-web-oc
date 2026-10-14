@@ -5,19 +5,24 @@
     @edit="editing = true"
     @save-as-image="downloadChartImage"
   >
-    <TimeSeriesChart
-      v-model:domain="visibleDomain"
-      :config
-      :series
-      :zoomHandler
-      :panHandler
-      :settings="settings.charts.timeSeriesChart"
-      :forecast-legend="chart.forecastLegend"
-    >
-      <template #brush="{ margin }">
-        <slot name="brush" :margin />
-      </template>
-    </TimeSeriesChart>
+    <div class="plot-chart-container">
+      <TimeSeriesChart
+        v-model:domain="visibleDomain"
+        :config
+        :series
+        :zoomHandler
+        :panHandler
+        :settings="settings.charts.timeSeriesChart"
+        :forecast-legend="chart.forecastLegend"
+      >
+        <template #brush="{ margin }">
+          <slot name="brush" :margin />
+        </template>
+      </TimeSeriesChart>
+      <div v-if="$slots.overlay" class="chart-overlay">
+        <slot name="overlay" />
+      </div>
+    </div>
     <!-- Used to render the chart for downloading as image. -->
     <!-- This is done to have the same chart size across different devices. -->
     <div v-if="renderingChart" class="render-chart-container">
@@ -139,6 +144,23 @@ async function downloadChartImage() {
 </script>
 
 <style scoped>
+.plot-chart-container {
+  position: relative;
+}
+
+.chart-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+
+.chart-overlay :deep(> *) {
+  pointer-events: auto;
+}
+
 .render-chart-container {
   visibility: hidden;
   position: fixed;

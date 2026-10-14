@@ -1,43 +1,20 @@
 <template>
-  <div
-    v-if="isLoading"
-    class="chart-container d-flex align-center justify-center"
-    role="status"
+  <AnalysisPlotChart
+    :chart
+    :config
+    :series
+    :settings
+    v-bind="$attrs"
+    @download="downloadChart"
+    @remove="emit('remove')"
   >
-    <v-progress-circular indeterminate />
-  </div>
-  <template v-else-if="hasScatterPoints">
-    <v-alert
-      v-if="statusDescription"
-      type="warning"
-      variant="tonal"
-      class="ma-4"
-    >
-      {{ statusDescription }}
-    </v-alert>
-    <AnalysisPlotChart
-      :chart
-      :config
-      :series
-      :settings
-      v-bind="$attrs"
-      @download="downloadChart"
-      @remove="emit('remove')"
-    />
-  </template>
-  <div
-    v-else
-    class="chart-container d-flex align-center justify-center"
-    role="status"
-  >
-    <v-alert type="warning" variant="tonal" class="ma-4">
-      {{
-        error
-          ? t('analysis.correlation.loadError')
-          : (statusDescription ?? t('analysis.correlation.noData'))
-      }}
-    </v-alert>
-  </div>
+    <template #overlay v-if="errorState">
+      <v-alert :type="errorState.type" variant="flat" class="ma-8 border">
+        {{ errorState.message }}
+      </v-alert>
+    </template>
+  </AnalysisPlotChart>
+
   <TimeSeriesFileDownloadComponent
     v-model="showDownloadDialog"
     :filter
@@ -53,11 +30,9 @@ import type { CorrelationChart } from '@/lib/analysis'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useCorrelationChartData } from '@/services/useCorrelationChartData'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import { CORRELATION_LINE_ID } from '@/lib/analysis/correlation'
-import { useI18n } from 'vue-i18n'
-import { useAlertsStore } from '@/stores/alerts'
 
 interface Props {
   chart: CorrelationChart
@@ -67,9 +42,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const { t } = useI18n()
 const emit = defineEmits<{ remove: [] }>()
-const alertsStore = useAlertsStore()
 
 const showDownloadDialog = ref(false)
 
@@ -79,31 +52,8 @@ const filter = computed(() => ({
   endTime: convertJSDateToFewsPiParameter(props.endTime),
 }))
 
-const {
-  series,
-  description,
-  statusDescription,
-  rSquared,
-  hasScatterPoints,
-  hasRegressionFit,
-  isLoading,
-  error,
-} = useCorrelationChartData(filter)
-
-watch(
-  [error, statusDescription, isLoading, hasScatterPoints],
-  ([loadError, statusMessage, loading, hasPoints]) => {
-    if (loading || (!loadError && hasPoints)) return
-
-    alertsStore.addAlert({
-      type: loadError ? 'error' : 'warning',
-      message: loadError
-        ? t('analysis.correlation.loadError')
-        : (statusMessage ?? t('analysis.correlation.noData')),
-    })
-    emit('remove')
-  },
-)
+const { series, description, rSquared, hasRegressionFit, errorState } =
+  useCorrelationChartData(filter)
 
 const chartConfig = computed(() =>
   timeSeriesDisplayToChartConfig(props.chart.subplot),
