@@ -11,6 +11,8 @@ export const ThresholdSwitching = defineComponent({
     dataReady: { type: Boolean, default: true },
     autoScaleY: { type: Boolean, default: false },
     includeMarkers: { type: Boolean, default: false },
+    chartCount: { type: Number, default: 1 },
+    verticalProfile: { type: Boolean, default: false },
   },
   setup(props) {
     const start = new Date('2026-01-01T00:00:00Z')
@@ -78,12 +80,17 @@ export const ThresholdSwitching = defineComponent({
     })
     const settings = getDefaultSettings().charts.timeSeriesChart
     return () =>
-      h('div', { style: { height: '400px', display: 'flex' } }, [
-        h(TimeSeriesChart, {
-          config: config.value,
-          series: series.value,
-          settings,
-        }),
-      ])
+      h(
+        'div',
+        { style: { height: '400px', display: 'flex' } },
+        Array.from({ length: props.chartCount }, () =>
+          h(TimeSeriesChart, {
+            config: config.value,
+            series: series.value,
+            settings,
+            verticalProfile: props.verticalProfile,
+          }),
+        ),
+      )
   },
 })
