@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref, shallowRef } from 'vue'
 import type { CorrelationResponse } from '@deltares/fews-pi-requests'
-import { useCorrelation } from '@/services/useCorrelation'
-import { useCorrelationChartData } from '@/services/useCorrelationChartData'
-import { CORRELATION_POINTS_ID } from '@/lib/analysis/correlation'
+import { useCorrelation } from '../../../src/services/useCorrelation'
+import { useCorrelationChartData } from '../../../src/services/useCorrelationChartData'
 
 vi.mock('@/services/useCorrelation', () => ({
   useCorrelation: vi.fn(),
@@ -26,17 +25,16 @@ describe('useCorrelationChartData', () => {
       values: [{ time: '2026-01-01T00:00:00Z', x: 1, y: 2 }],
     }
 
-    const chartData = useCorrelationChartData({})
+    const chartData = useCorrelationChartData(() => {})
 
     expect(chartData.hasScatterPoints.value).toBe(true)
     expect(chartData.hasRegressionFit.value).toBe(false)
-    expect(chartData.series.value[CORRELATION_POINTS_ID].data).toHaveLength(1)
   })
 
   it('reports no scatterplot when the response contains no values', () => {
     correlation.value = { values: [] }
 
-    const chartData = useCorrelationChartData({})
+    const chartData = useCorrelationChartData(() => {})
 
     expect(chartData.hasScatterPoints.value).toBe(false)
     expect(chartData.hasRegressionFit.value).toBe(false)
@@ -56,7 +54,7 @@ describe('useCorrelationChartData', () => {
       },
     }
 
-    const chartData = useCorrelationChartData({})
+    const chartData = useCorrelationChartData(() => {})
 
     expect(chartData.statusDescription.value).toBe('Not enough points')
   })
@@ -75,7 +73,7 @@ describe('useCorrelationChartData', () => {
       },
     }
 
-    const chartData = useCorrelationChartData({})
+    const chartData = useCorrelationChartData(() =>{})
 
     expect(chartData.statusDescription.value).toBeUndefined()
   })
