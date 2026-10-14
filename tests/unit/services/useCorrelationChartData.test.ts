@@ -8,6 +8,10 @@ vi.mock('@/services/useCorrelation', () => ({
   useCorrelation: vi.fn(),
 }))
 
+vi.mock('vue-i18n', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+}))
+
 const correlation = shallowRef<CorrelationResponse>()
 
 describe('useCorrelationChartData', () => {
@@ -25,19 +29,24 @@ describe('useCorrelationChartData', () => {
       values: [{ time: '2026-01-01T00:00:00Z', x: 1, y: 2 }],
     }
 
-    const chartData = useCorrelationChartData(() => {})
+    const chartData = useCorrelationChartData(() => undefined)
 
     expect(chartData.hasScatterPoints.value).toBe(true)
     expect(chartData.hasRegressionFit.value).toBe(false)
+    expect(chartData.errorState.value).toBeUndefined()
   })
 
   it('reports no scatterplot when the response contains no values', () => {
     correlation.value = { values: [] }
 
-    const chartData = useCorrelationChartData(() => {})
+    const chartData = useCorrelationChartData(() => undefined)
 
     expect(chartData.hasScatterPoints.value).toBe(false)
     expect(chartData.hasRegressionFit.value).toBe(false)
+    expect(chartData.errorState.value).toEqual({
+      type: 'warning',
+      message: 'analysis.correlation.noData',
+    })
   })
 
   it('exposes the equation status description when status is not nominal', () => {
@@ -54,7 +63,7 @@ describe('useCorrelationChartData', () => {
       },
     }
 
-    const chartData = useCorrelationChartData(() => {})
+    const chartData = useCorrelationChartData(() => undefined)
 
     expect(chartData.statusDescription.value).toBe('Not enough points')
   })
@@ -73,7 +82,7 @@ describe('useCorrelationChartData', () => {
       },
     }
 
-    const chartData = useCorrelationChartData(() =>{})
+    const chartData = useCorrelationChartData(() => undefined)
 
     expect(chartData.statusDescription.value).toBeUndefined()
   })

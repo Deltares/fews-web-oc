@@ -12,6 +12,7 @@ import { useI18n } from 'vue-i18n'
 export function useCorrelationChartData(
   filter: MaybeRefOrGetter<CorrelationFilter | undefined>,
 ) {
+  const { t } = useI18n()
   const { correlation, isLoading, error } = useCorrelation(filter)
 
   const hasScatterPoints = computed(
@@ -36,8 +37,6 @@ export function useCorrelationChartData(
   const rSquared = computed(() => {
     return correlation.value?.equation?.rSquared
   })
-
-  const { t } = useI18n()
 
   const errorState = computed(() => {
     if (isLoading.value || (!error.value && hasScatterPoints.value)) return
