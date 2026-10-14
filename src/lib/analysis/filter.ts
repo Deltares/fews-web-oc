@@ -336,7 +336,9 @@ export function replaceDuplicateColors(items: FilterSubplotItem[]) {
   })
 }
 
-export function getLocationNames(items: FilterSubplotItem[]) {
+export function getLocationNames(
+  items: Pick<FilterSubplotItem, 'locationName'>[],
+) {
   return uniq(items.map((item) => item.locationName ?? ''))
 }
 
@@ -348,7 +350,9 @@ export function getParameterIds(items: FilterSubplotItem[]) {
   return uniq(items.flatMap((item) => item.filter.parameterIds ?? []))
 }
 
-export function getParameterGroups(items: FilterSubplotItem[]) {
+export function getParameterGroups(
+  items: Pick<FilterSubplotItem, 'parameterGroup'>[],
+) {
   return uniq(items.flatMap((item) => item.parameterGroup ?? []))
 }
 
