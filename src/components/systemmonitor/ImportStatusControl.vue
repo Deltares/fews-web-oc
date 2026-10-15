@@ -104,10 +104,9 @@ const resultFilterOptions: Array<{
 
 const filteredStatusItems = computed<ImportExportStatusItem[]>(() => {
   return statusItems.value.filter((item) => {
-    const sourceMatches =
-      props.statusType === 'all'
-        ? selectedSources.value.includes(item.statusType)
-        : item.statusType === props.statusType
+    const sourceMatches = isCombinedMode.value
+      ? selectedSources.value.includes(item.statusType)
+      : item.statusType === props.statusType
 
     const resultType: StatusResultFilter =
       item.filesFailedCount > 0 ? 'unsuccessful' : 'successful'

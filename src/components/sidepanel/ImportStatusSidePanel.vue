@@ -30,7 +30,7 @@ const effectiveStatusType = computed<'import' | 'export' | 'all'>(() => {
   if (props.showImport && props.showExport) return 'all'
   if (props.showImport) return 'import'
   if (props.showExport) return 'export'
-  return 'all'
+  return props.statusType
 })
 
 const emit = defineEmits(['openSidePanel'])

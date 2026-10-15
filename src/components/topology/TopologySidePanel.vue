@@ -164,7 +164,7 @@ function getTitleForSidePanel(type: SidePanelType): string {
     configStore.general.sidePanel?.exportStatus?.enabled ?? false
 
   if (type === 'importStatus' && importStatusEnabled && exportStatusEnabled) {
-    return 'Import/Export Status'
+    return t('sidePanel.importExportStatus')
   }
 
   if (type === 'exportStatus' && !importStatusEnabled && exportStatusEnabled) {
@@ -192,12 +192,14 @@ function propsForSidePanel(panel: OpenSidePanel): Record<string, unknown> {
     case 'thresholds':
       return { locationIds: props.locationIds, ...panel.props }
     case 'importStatus':
-    case 'exportStatus':
-      return {
+    case 'exportStatus': {
+      const baseProps = {
         showImport: importStatusEnabled,
         showExport: exportStatusEnabled,
-        ...(panel.props ?? {}),
       }
+
+      return panel.props ? { ...baseProps, ...panel.props } : baseProps
+    }
     default:
       return panel.props
   }

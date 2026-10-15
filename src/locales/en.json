@@ -103,6 +103,7 @@
   "sidePanel": {
     "documentFile": "More info",
     "importStatus": "Import Status",
+    "importExportStatus": "Import/Export Status",
     "exportStatus": "Export Status",
     "logDisplay": "Logs",
     "nonCurrentData": "Non-current data",
