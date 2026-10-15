@@ -2,6 +2,7 @@
   <div class="status-panel h-100 d-flex flex-column">
     <div class="d-flex pt-3 pb-2 align-center flex-shrink-0">
       <BaseTaskFilterControl
+        v-if="isCombinedMode"
         v-model="selectedSources"
         :items="sourceFilterOptions"
         label="Source"
@@ -33,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import BaseTaskFilterControl from '@/components/tasks/BaseTaskFilterControl.vue'
 import type {
   ImportExportStatusItem,
@@ -43,6 +44,14 @@ import type {
 import ImportStatusSummary from './ImportStatusSummary.vue'
 import type { SidePanelRequest } from '@/lib/sidepanel'
 import { useImportExportStatus } from './useImportExportStatus'
+
+interface Props {
+  statusType?: 'import' | 'export' | 'all'
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  statusType: 'all',
+})
 
 interface Emits {
   openSidePanel: [request: SidePanelRequest]
@@ -58,6 +67,22 @@ const selectedResults = ref<StatusResultFilter[]>([
   'successful',
   'unsuccessful',
 ])
+
+const isCombinedMode = computed(() => props.statusType === 'all')
+
+watch(
+  () => props.statusType,
+  (statusType) => {
+    if (statusType === 'import') {
+      selectedSources.value = ['import']
+    } else if (statusType === 'export') {
+      selectedSources.value = ['export']
+    } else {
+      selectedSources.value = ['import', 'export']
+    }
+  },
+  { immediate: true },
+)
 
 const sourceFilterOptions: Array<{
   id: string
@@ -79,7 +104,10 @@ const resultFilterOptions: Array<{
 
 const filteredStatusItems = computed<ImportExportStatusItem[]>(() => {
   return statusItems.value.filter((item) => {
-    const sourceMatches = selectedSources.value.includes(item.statusType)
+    const sourceMatches = isCombinedMode.value
+      ? selectedSources.value.includes(item.statusType)
+      : item.statusType === props.statusType
+
     const resultType: StatusResultFilter =
       item.filesFailedCount > 0 ? 'unsuccessful' : 'successful'
     const resultMatches = selectedResults.value.includes(resultType)

@@ -50,6 +50,11 @@ const sidePanelDefinitions = [
     component: ImportStatusSidePanel,
   },
   {
+    type: 'exportStatus',
+    icon: 'mdi-database-export',
+    component: ImportStatusSidePanel,
+  },
+  {
     type: 'nonCurrentData',
     icon: 'mdi-chart-box-multiple',
     component: NonCurrentDataSidePanel,
@@ -147,10 +152,24 @@ export function getEnabledSidePanels(
   }
   const allOverrides = { ...defaultOverrides, ...overrides }
 
-  return sidePanels.filter(
-    (sidePanel) =>
+  const showImport =
+    allOverrides.importStatus ?? config?.importStatus?.enabled ?? false
+  const showExport =
+    allOverrides.exportStatus ?? config?.exportStatus?.enabled ?? false
+
+  return sidePanels.filter((sidePanel) => {
+    if (sidePanel.type === 'importStatus') {
+      return showImport
+    }
+
+    if (sidePanel.type === 'exportStatus') {
+      return showExport && !showImport
+    }
+
+    return (
       allOverrides[sidePanel.type] ??
       config?.[sidePanel.type as keyof SidePanelConfig]?.enabled ??
-      false,
-  )
+      false
+    )
+  })
 }
