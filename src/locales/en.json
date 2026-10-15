@@ -66,7 +66,8 @@
     "drawBoundingBox": "Draw Bounding Box",
     "endTime": "End Time",
     "errors": {
-      "failed": "Download failed"
+      "failed": "Download failed",
+      "unsupportedFormat": "File format unsupported, please check FewsWebService version."
     },
     "failed": "Download failed",
     "fileFormat": "File format",
