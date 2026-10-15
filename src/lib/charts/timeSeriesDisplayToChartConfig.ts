@@ -182,6 +182,7 @@ function getChartSeries(
     style: getChartStyle(seriesType, items[0]),
     thresholds: getThresholdLinesFromItem(items[0], config),
     thresholdAxisScaling: items[0].thresholdAxisScaling,
+    parameterId: items[0].parameterId,
   }
 }
 
