@@ -67,7 +67,8 @@
     "drawBoundingBox": "Begrenzungsrahmen zeichnen",
     "endTime": "Endzeit",
     "errors": {
-      "failed": "Download fehlgeschlagen"
+      "failed": "Download fehlgeschlagen",
+      "unsupportedFormat": "Dateiformat nicht unterstützt, bitte überprüfen Sie die FewsWebService-Version."
     },
     "fileFormat": "Dateiformat",
     "fileName": "Dateiname",
