@@ -2,6 +2,7 @@ import type {
   LogDisplayDisseminationAction,
   LogDisplayLogsFilter,
   LogDisplaySystemLog,
+  LogsDisplay,
 } from '@deltares/fews-pi-requests'
 import type { LogLevel, LogMessage, LogType } from './types'
 import { WorkflowItem } from '../workflows'
@@ -218,6 +219,10 @@ export function logToActions(
   })
 
   return actions
+}
+
+export function canOpenTaskRunLogs(logDisplay?: LogsDisplay): boolean {
+  return Boolean(logDisplay?.systemLog)
 }
 
 export function getManualFilters(
