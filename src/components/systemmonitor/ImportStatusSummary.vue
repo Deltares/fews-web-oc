@@ -77,11 +77,12 @@
                 >
                   <template #activator="{ props: errorProps }">
                     <v-btn
+                      v-if="canOpenLogsPanel"
                       v-bind="mergeProps(hoverProps, errorProps)"
-                      icon="mdi-launch"
+                      class="log-launch-button"
+                      icon="mdi-message-text-clock"
                       variant="text"
                       density="compact"
-                      size="small"
                       aria-label="Open logs for task run"
                       @click.stop="onTaskRunIdClick(item.taskRunId)"
                     />
@@ -179,8 +180,10 @@
 import { computed, mergeProps, onUnmounted, ref } from 'vue'
 import type { ImportExportStatusItem } from './statusTypes'
 import { toHumanReadableDateTime } from '@/lib/date'
+import { canOpenTaskRunLogs } from '@/lib/log/utils'
 import { useDark } from '@/services/useDark'
 import { useConfigStore } from '@/stores/config'
+import { useLogDisplay } from '@/services/useLogDisplay'
 import type { SidePanelRequest } from '@/lib/sidepanel'
 
 interface Props {
@@ -200,12 +203,20 @@ const expanded = defineModel<boolean>('expanded', {
 
 const isDark = useDark()
 const configStore = useConfigStore()
+const logDisplayId = computed(
+  () => configStore.general.sidePanel?.logDisplay?.logDisplayId,
+)
+const { logDisplay } = useLogDisplay(logDisplayId)
 const showLogsNotFoundTooltip = ref<boolean>(false)
 let hideTooltipTimer: ReturnType<typeof setTimeout> | null = null
 
 const canOpenLogsPanel = computed<boolean>(() => {
   const logDisplayConfig = configStore.general.sidePanel?.logDisplay
-  return Boolean(logDisplayConfig?.enabled && logDisplayConfig.logDisplayId)
+  return Boolean(
+    logDisplayConfig?.enabled &&
+    logDisplayConfig.logDisplayId &&
+    canOpenTaskRunLogs(logDisplay.value),
+  )
 })
 
 onUnmounted(() => {
@@ -301,6 +312,16 @@ function onTaskRunIdClick(taskRunId?: string): void {
 .datafeed-label.long {
   width: 240px;
   transition-delay: 0.3s;
+}
+
+.log-launch-button {
+  min-width: 1.05rem;
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.log-launch-button :deep(.v-btn__content) {
+  font-size: 0.7rem;
 }
 
 /* Smooth slide + fade for chip transitions */
