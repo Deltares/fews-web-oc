@@ -1,5 +1,57 @@
+function skipMatching(text: string, position: number, pattern: RegExp): number {
+  while (position < text.length && pattern.test(text[position])) position++
+  return position
+}
+
+function findValueEnd(text: string, position: number): number {
+  const quote = text[position]
+  if (quote === '"' || quote === "'") {
+    const closingQuote = text.indexOf(quote, position + 1)
+    return closingQuote === -1 ? text.length : closingQuote + 1
+  }
+  return skipMatching(text, position, /[^\s,;]/)
+}
+
+function redactAssignments(text: string): string {
+  const parts: string[] = []
+  let position = 0
+  let copiedUntil = 0
+
+  while (position < text.length) {
+    if (!/[\w-]/.test(text[position])) {
+      position++
+      continue
+    }
+
+    const keyStart = position
+    position = skipMatching(text, position, /[\w-]/)
+    const key = text.slice(keyStart, position)
+    if (['"', "'"].includes(text[position])) position++
+    position = skipMatching(text, position, /\s/)
+    if (text[position] !== ':' && text[position] !== '=') continue
+    position++
+    position = skipMatching(text, position, /\s/)
+
+    const valueStart = position
+    position = findValueEnd(text, position)
+
+    if (
+      position > valueStart &&
+      /(?:password|passwd|secret|token|api[_-]?key|authorization|cookie)$/i.test(
+        key,
+      )
+    ) {
+      parts.push(text.slice(copiedUntil, valueStart), '[redacted]')
+      copiedUntil = position
+    }
+  }
+
+  parts.push(text.slice(copiedUntil))
+  return parts.join('')
+}
+
 export function redactDiagnosticText(text: string): string {
-  return text
+  const redacted = text
     .replace(/https?:\/\/[^\s<>"']+/gi, (value) => {
       const url = new URL(value)
       url.username = ''
@@ -10,17 +62,8 @@ export function redactDiagnosticText(text: string): string {
     })
     .replace(/[?#][^\s<>"']+/g, '[redacted parameters]')
     .replace(/\b(Bearer|Basic)\s+[\w.~+/=-]+/gi, '$1 [redacted]')
-    .replace(
-      /(["']?([\w-]+)["']?\s*[:=]\s*)("[^"]*"|'[^']*'|[^\s,;]+)/g,
-      (assignment: string, prefix: string, key: string) =>
-        /(?:password|passwd|secret|token|api[_-]?key|authorization|cookie)$/i.test(
-          key,
-        )
-          ? `${prefix}[redacted]`
-          : assignment,
-    )
-    .replace(
-      /\beyJ[\w-]+\.[\w-]+\.[\w-]+\b/g,
-      '[redacted token]',
-    )
+  return redactAssignments(redacted).replace(
+    /\beyJ[\w-]+\.[\w-]+\.[\w-]+\b/g,
+    '[redacted token]',
+  )
 }

@@ -34,6 +34,34 @@ describe('copied startup diagnostics', () => {
     ).toBe('status=503, token=[redacted]; stage="Load configuration"')
   })
 
+  it('handles long keys without an assignment delimiter', () => {
+    const text = 'a'.repeat(100_000)
+    expect(redactDiagnosticText(text)).toBe(text)
+  })
+
+  it('handles long whitespace without an assignment delimiter', () => {
+    const text = `token${' '.repeat(100_000)}end`
+    expect(redactDiagnosticText(text)).toBe(text)
+  })
+
+  it('handles many non-matching keys before a sensitive assignment', () => {
+    const prefix = 'ordinary '.repeat(10_000)
+    expect(redactDiagnosticText(`${prefix}token=example-value`)).toBe(
+      `${prefix}token=[redacted]`,
+    )
+  })
+
+  it('redacts the rest of an unterminated sensitive quoted value', () => {
+    expect(
+      redactDiagnosticText('token="private value without a closing quote'),
+    ).toBe('token=[redacted]')
+  })
+
+  it('preserves empty values and redacts empty quoted values', () => {
+    expect(redactDiagnosticText('token=')).toBe('token=')
+    expect(redactDiagnosticText('token=""')).toBe('token=[redacted]')
+  })
+
   it('removes URL credentials, queries, and fragments', () => {
     expect(
       redactDiagnosticText(
