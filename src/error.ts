@@ -1,5 +1,6 @@
 import './assets/config-error.css'
 import { version as packageVersion } from '../package.json'
+import { redactDiagnosticText } from './lib/startup/diagnostics.js'
 import {
   CONFIG_ERROR_STORAGE_KEY,
   CONFIG_ERROR_SOURCE_STORAGE_KEY,
@@ -15,13 +16,6 @@ function isErrorPagePath(pathname: string): boolean {
   return (
     pathname === `${BASE_URL}error` || pathname.startsWith(`${BASE_URL}error/`)
   )
-}
-
-function isPageReload(): boolean {
-  const navEntries = performance.getEntriesByType(
-    'navigation',
-  ) as PerformanceNavigationTiming[]
-  return navEntries.length > 0 && navEntries[0].type === 'reload'
 }
 
 const errorCategories = {
@@ -133,12 +127,37 @@ function bootstrapErrorPage(): void {
     return
   }
 
-  if (isPageReload()) {
-    globalThis.location.replace(BASE_URL)
-    return
-  }
-
   renderStoredErrorMessage()
+  document
+    .getElementById('copy-diagnostics')
+    ?.addEventListener('click', copyDiagnostics)
+}
+
+async function copyDiagnostics(): Promise<void> {
+  const feedback = document.getElementById('copy-feedback')
+  const source = sessionStorage.getItem(CONFIG_ERROR_SOURCE_STORAGE_KEY)
+  const category =
+    source && Object.hasOwn(errorCategories, source) ? source : 'unexpected'
+  const diagnostics = [
+    `Category: ${category}`,
+    document.getElementById('error-context')?.textContent ?? '',
+    `Message: ${document.getElementById('error-message')?.textContent?.trim() ?? ''}`,
+    `FEWS WebOC: ${packageVersion}`,
+    ...(commitHash
+      ? [`Commit: ${commitHash}`, `Build date: ${buildDate}`]
+      : []),
+  ].join('\n')
+  try {
+    await navigator.clipboard.writeText(redactDiagnosticText(diagnostics))
+    if (feedback)
+      feedback.textContent =
+        'Diagnostic details copied. Review them before sharing.'
+  } catch (error) {
+    console.error('Could not copy diagnostic details:', error)
+    if (feedback)
+      feedback.textContent =
+        'Could not copy diagnostic details. Check browser clipboard permissions and try again.'
+  }
 }
 
 bootstrapErrorPage()

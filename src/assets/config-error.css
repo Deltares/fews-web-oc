@@ -55,6 +55,37 @@ h1 {
   color: var(--error-muted);
 }
 
+.technical-details {
+  margin-top: 24px;
+  text-align: left;
+}
+
+.technical-details summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.copy-btn {
+  margin: 12px 0;
+  padding: 8px 12px;
+  border: 1px solid var(--error-border);
+  border-radius: 8px;
+  background: var(--error-panel);
+  color: var(--error-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.copy-btn:focus-visible {
+  outline: 3px solid #f0bcae;
+  outline-offset: 2px;
+}
+
+.technical-details summary:focus-visible {
+  outline: 3px solid #f0bcae;
+  outline-offset: 2px;
+}
+
 .troubleshooting {
   margin: 22px 0 0;
   text-align: left;

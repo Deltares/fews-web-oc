@@ -189,4 +189,73 @@ describe('startup error deployment checks', () => {
       webOcComponents: [],
     })
   })
+
+  it('keeps diagnostics collapsed and Retry outside technical details', async () => {
+    await import('../../../src/error')
+    const details = document.querySelector('details')
+    expect(details?.open).toBe(false)
+    expect(details?.querySelector('summary')?.textContent).toBe(
+      'Technical details',
+    )
+    expect(details?.contains(document.getElementById('error-message'))).toBe(
+      true,
+    )
+    expect(details?.contains(document.getElementById('error-context'))).toBe(
+      true,
+    )
+    expect(details?.querySelector('.troubleshooting')).not.toBeNull()
+    expect(details?.contains(document.getElementById('retry-link'))).toBe(false)
+  })
+
+  it('renders stored diagnostics on refresh without restarting the app', async () => {
+    vi.spyOn(performance, 'getEntriesByType').mockReturnValue([
+      { type: 'reload' } as PerformanceNavigationTiming,
+    ])
+    sessionStorage.setItem(CONFIG_ERROR_STORAGE_KEY, 'Saved failure')
+    await import('../../../src/error')
+    expect(window.location.pathname).toBe('/error/')
+    expect(document.getElementById('error-message')?.textContent).toBe(
+      'Saved failure',
+    )
+    expect(document.getElementById('weboc-version')?.textContent).not.toBe('')
+  })
+
+  it('copies sanitized diagnostics and reports success', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    vi.stubGlobal('navigator', { clipboard: { writeText } })
+    handleStartupError(
+      new StartupError(
+        'Failed https://user:pass@example.test/pi?token=secret',
+        'fews-pi',
+        'Load configuration',
+        undefined,
+        503,
+      ),
+    )
+    await import('../../../src/error')
+    document.getElementById('copy-diagnostics')?.click()
+    await Promise.resolve()
+    expect(writeText).toHaveBeenCalledOnce()
+    const copied = writeText.mock.calls[0][0]
+    expect(copied).toContain('Category: fews-pi')
+    expect(copied).toContain('HTTP 503')
+    expect(copied).toContain('Commit: abc1234')
+    expect(copied).not.toContain('secret')
+    expect(copied).not.toContain('user:pass')
+    expect(document.getElementById('copy-feedback')?.textContent).toContain(
+      'copied',
+    )
+  })
+
+  it('reports clipboard failures without claiming success', async () => {
+    const writeText = vi.fn().mockRejectedValue(new Error('Permission denied'))
+    vi.stubGlobal('navigator', { clipboard: { writeText } })
+    await import('../../../src/error')
+    document.getElementById('copy-diagnostics')?.click()
+    await Promise.resolve()
+    expect(document.getElementById('copy-feedback')?.textContent).toContain(
+      'Could not copy',
+    )
+    expect(console.error).toHaveBeenCalled()
+  })
 })
