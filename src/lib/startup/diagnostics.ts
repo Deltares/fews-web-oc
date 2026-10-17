@@ -45,7 +45,7 @@ function redactAssignments(text: string): string {
 
     if (
       position > valueStart &&
-      /(?:password|passwd|secret|token|api[_-]?key|authorization|cookie)$/i.test(
+      /(?:password|passwd|secret|client[_-]?secret|token|api[_-]?key|authorization|cookie)$/i.test(
         key,
       )
     ) {
