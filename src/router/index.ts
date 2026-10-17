@@ -14,6 +14,7 @@ import { configManager } from '../services/application-config'
 import { authenticationManager } from '../services/authentication/AuthenticationManager'
 import { useConfigStore } from '../stores/config.ts'
 import { hasDefaultPath, type WebOcComponent } from '@/lib/fews-config/types.ts'
+import { loadCustomStyleSheet } from '@/services/useCustomStyleSheet/index.ts'
 
 const SystemMonitorDisplayView = () =>
   import('../views/SystemMonitorDisplayView.vue')
@@ -344,6 +345,7 @@ async function handleAuthorization(to: RouteLocationNormalized) {
 async function addDynamicRoutes() {
   const store = useConfigStore()
   await store.setFewsConfig()
+  await loadCustomStyleSheet()
   const configuredComponents = Object.values(store.components)
 
   configuredComponents.forEach((component: any) => {

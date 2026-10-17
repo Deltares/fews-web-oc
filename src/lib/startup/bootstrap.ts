@@ -15,6 +15,8 @@ import {
 } from '@deltares/fews-web-oc-composables'
 import { useSystemTimeStore } from '@/stores/systemTime.js'
 import { initializeModuleFederation } from '@weboc/module-federation'
+import { useConfigStore } from '@/stores/config.js'
+import { loadCustomStyleSheet } from '@/services/useCustomStyleSheet/index.js'
 
 export { loadApplicationConfig } from './config-loader.js'
 export {
@@ -39,6 +41,12 @@ async function bootstrapApp(app: VueApp<Element>): Promise<void> {
 
   if (configManager.authenticationIsEnabled) {
     authenticationManager.init(configManager.getUserManagerSettings())
+  }
+
+  if (!configManager.authenticationIsEnabled) {
+    const configStore = useConfigStore()
+    await configStore.setFewsConfig()
+    await loadCustomStyleSheet()
   }
 
   const locale = configManager.getWithDefault('VITE_I18N_LOCALE', 'en-GB')
