@@ -71,6 +71,23 @@ describe('federated Module Federation adapter', () => {
     expect(runtimeLoadRemote).toHaveBeenCalledWith('example/component')
   })
 
+  it('classifies FEWS module configuration failures consistently', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('{"remotes":[]}')),
+    )
+    getMicroFrontEnds.mockRejectedValueOnce(new Error('Request timed out'))
+    await expect(
+      initializeModuleFederation({
+        manifestUrl: 'https://example.com/mf-manifest.json',
+        baseUrl: 'https://example.com/FewsWebServices',
+      }),
+    ).rejects.toMatchObject({
+      category: 'fews-pi',
+      stage: 'Load FEWS microfrontend configuration',
+    })
+  })
+
   it('rejects failed manifest requests before registering remotes', async () => {
     vi.stubGlobal(
       'fetch',
