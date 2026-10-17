@@ -1,8 +1,11 @@
 import './assets/config-error.css'
+import { version as packageVersion } from '../package.json'
 
 const ERROR_MESSAGE_STORAGE_KEY = 'configError'
 const ERROR_MESSAGE_ELEMENT_ID = 'error-message'
 const BASE_URL = import.meta.env.BASE_URL
+const commitHash = __GIT_TAG__ ? '' : __GIT_HASH__
+const buildDate = new Date(__BUILD_DATE__).toISOString()
 
 function isErrorPagePath(pathname: string): boolean {
   return (
@@ -27,6 +30,25 @@ function renderStoredErrorMessage(): void {
   const appConfigLink = document.getElementById('app-config-link')
   if (appConfigLink instanceof HTMLAnchorElement) {
     appConfigLink.href = `${BASE_URL}app-config.json`
+  }
+
+  const versionElement = document.getElementById('weboc-version')
+  if (versionElement) {
+    versionElement.textContent = packageVersion
+  }
+
+  if (commitHash !== '') {
+    const commitHashElement = document.getElementById('weboc-commit-hash')
+    if (commitHashElement) {
+      commitHashElement.textContent = commitHash
+      commitHashElement.hidden = false
+    }
+
+    const buildDateElement = document.getElementById('weboc-build-date')
+    if (buildDateElement) {
+      buildDateElement.textContent = buildDate
+      buildDateElement.hidden = false
+    }
   }
 }
 

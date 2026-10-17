@@ -141,6 +141,32 @@ p {
   outline-offset: 2px;
 }
 
+.weboc-build-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--error-border);
+  text-align: left;
+}
+
+.weboc-build-details {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.weboc-build-chip {
+  padding: 4px 8px;
+  border: 1px solid var(--error-border);
+  border-radius: 999px;
+  color: var(--error-muted);
+  font-size: 0.8rem;
+}
+
 @keyframes fade-in-up {
   from {
     opacity: 0;
@@ -168,5 +194,14 @@ p {
 
   .retry-btn {
     width: 100%;
+  }
+
+  .weboc-build-info {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .weboc-build-details {
+    justify-content: flex-start;
   }
 }
