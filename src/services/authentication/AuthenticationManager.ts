@@ -7,8 +7,9 @@ export class AuthenticationManager {
   private user: User | null = null
   private userReady: Promise<void> | null = null
 
-  init(settings: UserManagerSettings): void {
+  init(settings: UserManagerSettings): Promise<void> {
     this.userReady = this.initializeUser(settings)
+    return this.userReady
   }
 
   private async initializeUser(settings: UserManagerSettings): Promise<void> {
