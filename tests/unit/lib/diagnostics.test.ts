@@ -34,6 +34,14 @@ describe('copied startup diagnostics', () => {
     ).toBe('status=503, token=[redacted]; stage="Load configuration"')
   })
 
+  it('redacts sensitive assignments inside non-sensitive quoted values', () => {
+    expect(
+      redactDiagnosticText(
+        '{"error":"Provider failed with token=private-value due to retry"}',
+      ),
+    ).toBe('{"error":"Provider failed with token=[redacted] due to retry"}')
+  })
+
   it('handles long keys without an assignment delimiter', () => {
     const text = 'a'.repeat(100_000)
     expect(redactDiagnosticText(text)).toBe(text)

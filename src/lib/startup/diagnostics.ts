@@ -51,6 +51,8 @@ function redactAssignments(text: string): string {
     ) {
       parts.push(text.slice(copiedUntil, valueStart), '[redacted]')
       copiedUntil = position
+    } else {
+      position = valueStart
     }
   }
 
