@@ -82,6 +82,39 @@ describe('startup error deployment checks', () => {
     )
   })
 
+  it('sanitizes error messages before storing and rendering them', async () => {
+    const url = new URL('https://example.test/FewsWebServices')
+    url.username = 'alice'
+    url.password = 'pass'
+    url.searchParams.set('token', 'url-secret')
+    handleStartupError(
+      new StartupError(
+        `Failed ${url} access_token=assignment-secret`,
+        'fews-pi',
+        'Load configuration',
+      ),
+    )
+
+    const message =
+      'Failed https://example.test/FewsWebServices access_token=[redacted]'
+    expect(sessionStorage.getItem(CONFIG_ERROR_STORAGE_KEY)).toBe(message)
+    expect(
+      JSON.parse(sessionStorage.getItem(CONFIG_ERROR_CONTEXT_STORAGE_KEY)!)
+        .message,
+    ).toBe(message)
+
+    await import('../../../src/error')
+    expect(document.getElementById('error-message')?.textContent).toBe(message)
+    for (const secret of ['alice', 'pass', 'url-secret', 'assignment-secret']) {
+      expect(sessionStorage.getItem(CONFIG_ERROR_STORAGE_KEY)).not.toContain(
+        secret,
+      )
+      expect(
+        document.getElementById('error-message')?.textContent,
+      ).not.toContain(secret)
+    }
+  })
+
   it('replaces stale FEWS PI context when application configuration fails', async () => {
     sessionStorage.setItem(CONFIG_ERROR_SOURCE_STORAGE_KEY, 'fews-pi')
     const error = await runStartupStage(

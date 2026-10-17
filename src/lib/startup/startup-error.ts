@@ -4,6 +4,7 @@ import {
   CONFIG_ERROR_SOURCE_STORAGE_KEY,
   CONFIG_ERROR_CONTEXT_STORAGE_KEY,
 } from './startup-constants.js'
+import { redactDiagnosticText } from './diagnostics.js'
 
 export type StartupErrorCategory =
   | 'application-config'
@@ -94,10 +95,10 @@ export function handleStartupError(err: unknown): void {
   const redirectDelayMs = import.meta.env.DEV ? 3000 : 1000
   console.error(`Redirecting to config-error page in ${redirectDelayMs} ms...`)
 
-  sessionStorage.setItem(
-    CONFIG_ERROR_STORAGE_KEY,
+  const message = redactDiagnosticText(
     configError.message || String(configError),
   )
+  sessionStorage.setItem(CONFIG_ERROR_STORAGE_KEY, message)
   sessionStorage.setItem(
     CONFIG_ERROR_SOURCE_STORAGE_KEY,
     configError instanceof StartupError ? configError.category : 'unexpected',
@@ -113,7 +114,7 @@ export function handleStartupError(err: unknown): void {
         configError instanceof StartupError
           ? configError.stage
           : 'Application startup',
-      message: configError.message,
+      message,
       status:
         configError instanceof StartupError ? configError.status : undefined,
     }),
