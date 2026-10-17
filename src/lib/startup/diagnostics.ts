@@ -6,8 +6,16 @@ function skipMatching(text: string, position: number, pattern: RegExp): number {
 function findValueEnd(text: string, position: number): number {
   const quote = text[position]
   if (quote === '"' || quote === "'") {
-    const closingQuote = text.indexOf(quote, position + 1)
-    return closingQuote === -1 ? text.length : closingQuote + 1
+    let index = position + 1
+    while (index < text.length) {
+      if (text[index] === '\\') {
+        index += 2
+        continue
+      }
+      if (text[index] === quote) return index + 1
+      index++
+    }
+    return text.length
   }
   return skipMatching(text, position, /[^\s,;]/)
 }
