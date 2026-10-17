@@ -8,24 +8,15 @@ export async function getFewsConfig(): Promise<WebOcConfiguration> {
   const webServiceProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
   })
-  let webOcConfiguration: WebOcConfiguration = {
-    general: {},
-    webOcComponents: [],
+  const fewsConfig = await webServiceProvider.getWebOcConfiguration()
+  const webOcComponents: WebOcComponent[] = []
+  for (const componentConfig of fewsConfig.components) {
+    webOcComponents.push(componentConfig as WebOcComponent)
   }
-  try {
-    const fewsConfig = await webServiceProvider.getWebOcConfiguration()
-    const webOcComponents: WebOcComponent[] = []
-    for (const componentConfig of fewsConfig.components) {
-      webOcComponents.push(componentConfig as WebOcComponent)
-    }
-    webOcConfiguration = {
-      general: fewsConfig.general,
-      webOcComponents,
-    }
-  } catch (error) {
-    console.error(error)
+  return {
+    general: fewsConfig.general,
+    webOcComponents,
   }
-  return webOcConfiguration
 }
 
 export function getResourcesStaticUrl(resource: string) {
