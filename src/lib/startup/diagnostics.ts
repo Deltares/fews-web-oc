@@ -60,13 +60,17 @@ function redactAssignments(text: string): string {
 
 export function redactDiagnosticText(text: string): string {
   const redacted = text
-    .replace(/https?:\/\/[^\s<>"']+/gi, (value) => {
-      const url = new URL(value)
-      url.username = ''
-      url.password = ''
-      url.search = ''
-      url.hash = ''
-      return url.toString()
+.replace(/https?:\/\/[^\s<>"']+/gi, (value) => {
+      try {
+        const url = new URL(value)
+        url.username = ''
+        url.password = ''
+        url.search = ''
+        url.hash = ''
+        return url.toString()
+      } catch {
+        return '[redacted URL]'
+      }
     })
     .replace(/[?#][^\s<>"']+/g, '[redacted parameters]')
     .replace(/\b(Bearer|Basic)\s+[\w.~+/=-]+/gi, '$1 [redacted]')
