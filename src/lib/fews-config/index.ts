@@ -56,13 +56,20 @@ export async function getLocalOrRemoteFileUrl(
     return contentType?.includes('text/html') ?? false
   }
 
+  let remoteMayBeAvailable = false
   try {
     const remoteResponse = await fetch(remoteUrl, { method: 'HEAD' })
     if (remoteResponse.ok && !isHtmlResponse(remoteResponse)) {
       return remoteUrl
     }
+    remoteMayBeAvailable =
+      remoteResponse.status === 405 || remoteResponse.status === 501
   } catch (error) {
-    // Handle fetch error
+    console.warn(
+      `Could not verify remote resource with HEAD; will try other stylesheet locations: ${remoteUrl}`,
+      error,
+    )
+    remoteMayBeAvailable = true
   }
 
   try {
@@ -71,6 +78,11 @@ export async function getLocalOrRemoteFileUrl(
       return localUrl
     }
   } catch (error) {
-    // Handle fetch error
+    console.warn(
+      `Could not verify local resource with HEAD: ${localUrl}`,
+      error,
+    )
   }
+
+  if (remoteMayBeAvailable) return remoteUrl
 }

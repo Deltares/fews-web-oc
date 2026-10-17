@@ -1,6 +1,7 @@
 <template>
   <v-layout id="app">
     <v-app-bar
+      ref="appBar"
       :color="appBarColor"
       :style="appBarStyle"
       density="compact"
@@ -187,6 +188,7 @@ import {
   onMounted,
   onUnmounted,
   ref,
+  useTemplateRef,
   type StyleValue,
   watch,
 } from 'vue'
@@ -227,6 +229,7 @@ if (import.meta.env.DEV) useSharedRequestHistoryTracker()
 const showHash = ref(false)
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
+const appBar = useTemplateRef('appBar')
 
 const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform)
 
@@ -239,13 +242,16 @@ function onGlobalKeydown(event: KeyboardEvent): void {
   }
 }
 
-onMounted(() => document.addEventListener('keydown', onGlobalKeydown))
+onMounted(() => {
+  document.addEventListener('keydown', onGlobalKeydown)
+  updateAppBarStyles()
+})
 onUnmounted(() => document.removeEventListener('keydown', onGlobalKeydown))
 
 function updateAppBarStyles() {
-  appBarColor.value = getComputedStyle(document.body).getPropertyValue(
-    '--weboc-app-bar-bg-color',
-  )
+  appBarColor.value = getComputedStyle(
+    appBar.value?.$el ?? document.documentElement,
+  ).getPropertyValue('--weboc-app-bar-bg-color')
   const meta = document.querySelector('meta[name="theme-color"]')
   if (meta) {
     meta.setAttribute('content', appBarColor.value)
