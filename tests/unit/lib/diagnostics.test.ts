@@ -65,6 +65,23 @@ describe('copied startup diagnostics', () => {
     ).toBe('token=[redacted]')
   })
 
+  it.each(['"', "'"])(
+    'redacts complete sensitive values containing escaped %s quotes',
+    (quote) => {
+      expect(
+        redactDiagnosticText(
+          `token=${quote}private\\${quote}suffix${quote}; status=503`,
+        ),
+      ).toBe('token=[redacted]; status=503')
+    },
+  )
+
+  it('redacts malformed URL-shaped text without throwing', () => {
+    expect(
+      redactDiagnosticText('Failed https://[invalid token=private-value'),
+    ).toBe('Failed [redacted URL] token=[redacted]')
+  })
+
   it('preserves empty values and redacts empty quoted values', () => {
     expect(redactDiagnosticText('token=')).toBe('token=')
     expect(redactDiagnosticText('token=""')).toBe('token=[redacted]')
