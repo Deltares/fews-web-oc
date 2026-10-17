@@ -62,7 +62,7 @@ function redactAssignments(text: string): string {
 
 export function redactDiagnosticText(text: string): string {
   const redacted = text
-.replace(/https?:\/\/[^\s<>"']+/gi, (value) => {
+    .replace(/https?:\/\/[^\s<>"']+/gi, (value) => {
       try {
         const url = new URL(value)
         url.username = ''
