@@ -158,6 +158,7 @@ addUpdateWatcher(
     layer.setUseLastValue(useLastValue ?? false)
   },
 )
+// TODO: change in webgl-streamline-visualiser
 
 function setupLayer(): WMSStreamlineLayer {
   const options: WMSStreamlineLayerOptions = {

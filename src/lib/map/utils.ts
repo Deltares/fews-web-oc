@@ -88,5 +88,10 @@ export function getFilterFromLayerOptions(options: AnimatedRasterLayerOptions) {
     filter.useDisplayUnits = options.useDisplayUnits
   }
 
+  if (options.ensembleSelection) {
+    filter.ensembleId = options.ensembleSelection.ensembleId
+    filter.ensembleMemberId = options.ensembleSelection.ensembleMemberId
+  }
+
   return filter
 }

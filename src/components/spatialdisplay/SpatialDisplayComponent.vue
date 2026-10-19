@@ -30,6 +30,7 @@
       aria-label="map legend"
       v-if="currentColourScale"
     >
+      {{ ensembleSelection ?? 'no selection' }}
       <ColourLegend
         v-if="!currentColourScale.useGradients"
         :colourMap="currentColourScale.colourMap"
@@ -94,6 +95,13 @@
           v-model:show-layer="showLayer"
           @changeLayer="onLayerChange"
         >
+          <template v-if="ensembles.length > 0">
+            <v-divider />
+            <EnsemblesPanel
+              v-model="ensembleSelection"
+              :ensembles="ensembles"
+            />
+          </template>
           <template v-if="aggregations.length > 0">
             <v-divider />
             <AggregationPanel
@@ -206,6 +214,7 @@ import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import InformationPanel from '@/components/wms/panel/InformationPanel.vue'
 import OverlayInformationPanel from '@/components/wms/panel/OverlayInformationPanel.vue'
+import EnsemblesPanel from '../wms/panel/EnsemblesPanel.vue'
 import AggregationPanel from '../wms/panel/AggregationPanel.vue'
 import AggregationExtension from '@/components/wms/panel/AggregationExtension.vue'
 import ColourPanel from '@/components/wms/panel/ColourPanel.vue'
@@ -224,7 +233,12 @@ import {
   type MapLayerMouseEvent,
   type MapLayerTouchEvent,
 } from 'maplibre-gl'
-import type { BoundingBox, Layer, Style } from '@deltares/fews-wms-requests'
+import {
+  Ensemble,
+  type BoundingBox,
+  type Layer,
+  type Style,
+} from '@deltares/fews-wms-requests'
 import type {
   Location,
   TimeSeriesGridMaxValuesFilter,
@@ -254,6 +268,7 @@ import { provideLayerOrder } from '@/services/useLayerOrder'
 import { useOverlays } from '@/services/useOverlays'
 import SnapshotStrip from '@/components/spatialdisplay/SnapshotStrip.vue'
 import { useSearchContext } from '@/stores/searchContext'
+import type { EnsembleSelection } from '@/lib/ensemble'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -305,6 +320,9 @@ const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
+
+const ensembleSelection = ref<EnsembleSelection | null>(null)
+watch(ensembleSelection, () => setLayerOptions())
 
 const doFollowNow = ref(taskRunId.value === undefined)
 // Set follow now to false when a task run is selected because taskRun data is typically historical data,
@@ -424,6 +442,7 @@ const maxTimeSeriesFilter = computed(() => {
       : undefined,
     useDisplayUnits: userSettings.useDisplayUnits,
     convertDatum: userSettings.convertDatum,
+    // TODO: this endpoint does not accept ensemble parameters.
   }
   return filter
 })
@@ -648,6 +667,7 @@ function setLayerOptions(): void {
     useDisplayUnits: userSettings.useDisplayUnits,
     useLastValue: isInDatesRange(selectedDate.value, props.times),
     taskRunId: taskRunId.value,
+    ensembleSelection: ensembleSelection.value ?? undefined,
   }
 }
 
@@ -690,6 +710,10 @@ function onCoordinateClick(
 function onCoordinateMoved(lat: number, lng: number): void {
   emit('coordinateClick', +lat.toFixed(5), +lng.toFixed(5))
 }
+
+const ensembles = computed<Ensemble[]>(
+  () => props.layerCapabilities?.ensembles ?? [],
+)
 </script>
 
 <style scoped>
