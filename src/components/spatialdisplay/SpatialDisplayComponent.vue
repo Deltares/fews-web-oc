@@ -321,8 +321,18 @@ const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
 
-const { ensembles } = useWmsEnsembles(props.layerCapabilities)
+const { ensembles, initialiseEnsembleSelection } = useWmsEnsembles(
+  props.layerCapabilities,
+)
 const ensembleSelection = ref<EnsembleSelection | null>(null)
+// If the ensembles change, reinitialise the selection.
+watch(
+  ensembles,
+  () => {
+    ensembleSelection.value = initialiseEnsembleSelection()
+  },
+  { immediate: true },
+)
 watch(ensembleSelection, () => setLayerOptions())
 
 const doFollowNow = ref(taskRunId.value === undefined)

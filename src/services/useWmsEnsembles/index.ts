@@ -1,4 +1,4 @@
-import { sortEnsembleMemberIds } from '@/lib/ensemble'
+import { EnsembleSelection, sortEnsembleMemberIds } from '@/lib/ensemble'
 import type { Ensemble, Layer } from '@deltares/fews-wms-requests'
 import { computed, type MaybeRefOrGetter, toValue } from 'vue'
 
@@ -21,5 +21,15 @@ export function useWmsEnsembles(
     })
   })
 
-  return { ensembles }
+  function initialiseEnsembleSelection(): EnsembleSelection | null {
+    const firstEnsemble = ensembles.value[0]
+    const firstMemberId = firstEnsemble?.ensembleMemberIds[0]
+    if (firstEnsemble === undefined || firstMemberId === undefined) return null
+    return {
+      ensembleId: firstEnsemble.ensembleId,
+      ensembleMemberId: firstMemberId,
+    }
+  }
+
+  return { ensembles, initialiseEnsembleSelection }
 }
