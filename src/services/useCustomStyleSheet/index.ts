@@ -47,6 +47,7 @@ export function useCustomStyleSheet(options?: { onload: () => void }) {
   watch(
     () => configStore.general,
     async () => {
+      await configStore.setFewsConfig()
       await loadCustomStyleSheet()
       options?.onload()
     },
