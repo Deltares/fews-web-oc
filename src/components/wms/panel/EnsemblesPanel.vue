@@ -5,7 +5,9 @@
       <v-col cols="8">
         <v-select
           v-model="selectedEnsembleId"
-          :items="ensembleItems"
+          :items="ensembles"
+          item-value="ensembleId"
+          item-title="ensembleId"
           density="compact"
           hide-details
         />
@@ -16,7 +18,7 @@
       <v-col cols="8">
         <v-select
           v-model="selectedEnsembleMemberId"
-          :items="sortedEnsembleMemberIds"
+          :items="ensembleMemberIds"
           density="compact"
           hide-details
         />
@@ -30,7 +32,7 @@ import type { Ensemble } from '@deltares/fews-wms-requests'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { sortEnsembleMemberIds, type EnsembleSelection } from '@/lib/ensemble'
+import type { EnsembleSelection } from '@/lib/ensemble'
 
 const { t } = useI18n()
 
@@ -52,16 +54,9 @@ const selectedEnsemble = computed<Ensemble | null>(() => {
   return ensemble ?? null
 })
 
-const ensembleItems = computed(() =>
-  props.ensembles.map((ensemble) => ({
-    value: ensemble.ensembleId,
-    // TODO: get ensemble name from ensembles endpoint?
-    title: ensemble.ensembleId,
-  })),
-)
-const sortedEnsembleMemberIds = computed(() => {
-  if (selectedEnsemble.value === null) return []
-  return sortEnsembleMemberIds(selectedEnsemble.value.ensembleMemberIds)
+// TODO: get ensemble name from ensembles endpoint?
+const ensembleMemberIds = computed(() => {
+  return selectedEnsemble.value?.ensembleMemberIds ?? []
 })
 
 // Update the model value based on the select fields and vice versa.

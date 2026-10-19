@@ -234,7 +234,6 @@ import {
   type MapLayerTouchEvent,
 } from 'maplibre-gl'
 import {
-  Ensemble,
   type BoundingBox,
   type Layer,
   type Style,
@@ -266,6 +265,7 @@ import { clamp } from '@/lib/utils/math'
 import { useAggregations } from '@/services/useAggregations'
 import { provideLayerOrder } from '@/services/useLayerOrder'
 import { useOverlays } from '@/services/useOverlays'
+import { useWmsEnsembles } from '@/services/useWmsEnsembles'
 import SnapshotStrip from '@/components/spatialdisplay/SnapshotStrip.vue'
 import { useSearchContext } from '@/stores/searchContext'
 import type { EnsembleSelection } from '@/lib/ensemble'
@@ -321,6 +321,7 @@ const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
 
+const { ensembles } = useWmsEnsembles(props.layerCapabilities)
 const ensembleSelection = ref<EnsembleSelection | null>(null)
 watch(ensembleSelection, () => setLayerOptions())
 
@@ -710,10 +711,6 @@ function onCoordinateClick(
 function onCoordinateMoved(lat: number, lng: number): void {
   emit('coordinateClick', +lat.toFixed(5), +lng.toFixed(5))
 }
-
-const ensembles = computed<Ensemble[]>(
-  () => props.layerCapabilities?.ensembles ?? [],
-)
 </script>
 
 <style scoped>
