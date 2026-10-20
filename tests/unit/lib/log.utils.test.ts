@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { createRouteToken, parseLogTextSegments } from '@/lib/log/utils'
+import {
+  canOpenTaskRunLogs,
+  createRouteToken,
+  parseLogTextSegments,
+} from '@/lib/log/utils'
 
 describe('log route token helpers', () => {
   describe('createRouteToken', () => {
@@ -7,6 +11,29 @@ describe('log route token helpers', () => {
       expect(createRouteToken('/topology/abc/node/def?tab=log')).toBe(
         '[[route:/topology/abc/node/def?tab=log]]',
       )
+    })
+  })
+
+  describe('canOpenTaskRunLogs', () => {
+    it('returns false when the configured log display only has manual logs', () => {
+      expect(
+        canOpenTaskRunLogs({
+          id: 'log-1',
+          name: 'manual-only',
+          manualLog: { noteGroupId: 'note-group-1' },
+        }),
+      ).toBe(false)
+    })
+
+    it('returns true when the configured log display has system logs', () => {
+      expect(
+        canOpenTaskRunLogs({
+          id: 'log-1',
+          name: 'system-enabled',
+          manualLog: { noteGroupId: 'note-group-1' },
+          systemLog: { logLevel: 'INFO' },
+        }),
+      ).toBe(true)
     })
   })
 

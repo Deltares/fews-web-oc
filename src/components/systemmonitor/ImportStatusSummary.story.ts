@@ -2,6 +2,7 @@ import { defineComponent, h, ref } from 'vue'
 import ImportStatusSummary from './ImportStatusSummary.vue'
 import type { ImportExportStatusItem } from './statusTypes'
 import { useConfigStore } from '@/stores/config'
+import { configManager } from '@/services/application-config'
 
 const baseItem: ImportExportStatusItem = {
   mcId: 'mc-1',
@@ -20,7 +21,13 @@ const baseItem: ImportExportStatusItem = {
   statusType: 'import',
 }
 
-function configureLogPanel(enabled: boolean) {
+type LogDisplayMode = 'system' | 'manual' | 'disabled'
+
+function configureLogPanel(enabled: boolean, mode: LogDisplayMode = 'system') {
+  configManager.update({
+    VITE_FEWS_WEBSERVICES_URL: `${window.location.origin}/test-fews`,
+  })
+
   const configStore = useConfigStore()
   configStore.general = {
     ...configStore.general,
@@ -32,13 +39,68 @@ function configureLogPanel(enabled: boolean) {
       },
     },
   }
+
+  const originalFetch = window.fetch.bind(window)
+  window.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+    let payload: { logDisplays: Array<Record<string, unknown>> }
+
+    if (mode === 'system') {
+      payload = {
+        logDisplays: [
+          {
+            id: 'log-display-1',
+            name: 'system-enabled',
+            manualLog: { noteGroupId: 'notes-1' },
+            systemLog: { logLevel: 'INFO' },
+          },
+        ],
+      }
+    } else if (mode === 'manual') {
+      payload = {
+        logDisplays: [
+          {
+            id: 'log-display-1',
+            name: 'manual-only',
+            manualLog: { noteGroupId: 'notes-1' },
+          },
+        ],
+      }
+    } else {
+      payload = { logDisplays: [] }
+    }
+
+    let url: string
+
+    if (typeof input === 'string') {
+      url = input
+    } else if (input instanceof URL) {
+      url = input.toString()
+    } else {
+      url = input.url
+    }
+
+    if (
+      url.includes('logDisplays') ||
+      url.includes('logDisplay') ||
+      url.includes('fews')
+    ) {
+      return Promise.resolve(
+        new Response(JSON.stringify(payload), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      )
+    }
+
+    return originalFetch(input, init)
+  }) as typeof window.fetch
 }
 
 export const LogsEnabled = defineComponent(() => {
   const expanded = ref(true)
   const emittedTaskRunId = ref<string>()
 
-  configureLogPanel(true)
+  configureLogPanel(true, 'system')
 
   return () =>
     h('div', [
@@ -58,11 +120,26 @@ export const LogsEnabled = defineComponent(() => {
     ])
 })
 
+export const ManualOnlyLogs = defineComponent(() => {
+  const expanded = ref(true)
+
+  configureLogPanel(true, 'manual')
+
+  return () =>
+    h(ImportStatusSummary, {
+      item: { ...baseItem, taskRunId: 'task-run-3' },
+      expanded: expanded.value,
+      'onUpdate:expanded': (value: boolean) => {
+        expanded.value = value
+      },
+    })
+})
+
 export const LogsDisabled = defineComponent(() => {
   const expanded = ref(true)
   const emittedTaskRunId = ref<string>()
 
-  configureLogPanel(false)
+  configureLogPanel(false, 'disabled')
 
   return () =>
     h('div', [
@@ -85,7 +162,7 @@ export const LogsDisabled = defineComponent(() => {
 export const OptionalFieldsMissing = defineComponent(() => {
   const expanded = ref(true)
 
-  configureLogPanel(true)
+  configureLogPanel(true, 'system')
 
   return () =>
     h(ImportStatusSummary, {
