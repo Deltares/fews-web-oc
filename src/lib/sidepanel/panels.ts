@@ -3,7 +3,7 @@ import type { SidePanelConfig } from '@deltares/fews-pi-requests'
 
 import ThresholdsButton from '@/components/thresholds/ThresholdsButton.vue'
 
-import ImportStatusSidePanel from '@/components/sidepanel/ImportStatusSidePanel.vue'
+import ImportExportStatusSidePanel from '@/components/sidepanel/ImportExportStatusSidePanel.vue'
 import LogSidePanel from '@/components/sidepanel/LogSidePanel.vue'
 import MoreInfoSidePanel from '@/components/sidepanel/MoreInfoSidePanel.vue'
 import NonCurrentDataSidePanel from '@/components/sidepanel/NonCurrentDataSidePanel.vue'
@@ -47,12 +47,12 @@ const sidePanelDefinitions = [
   {
     type: 'importStatus',
     icon: 'mdi-database-import',
-    component: ImportStatusSidePanel,
+    component: ImportExportStatusSidePanel,
   },
   {
     type: 'exportStatus',
     icon: 'mdi-database-export',
-    component: ImportStatusSidePanel,
+    component: ImportExportStatusSidePanel,
   },
   {
     type: 'nonCurrentData',

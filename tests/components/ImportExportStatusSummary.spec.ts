@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('ImportStatusSummary runtime behavior', () => {
+test.describe('ImportExportStatusSummary runtime behavior', () => {
   test('emits trimmed taskRunId when logs are enabled', async ({ mount }) => {
     const component = await mount(
-      'systemmonitor/ImportStatusSummary/LogsEnabled',
+      'systemmonitor/ImportExportStatusSummary/LogsEnabled',
     )
 
     await component.getByLabel('Open logs for task run').click()
@@ -18,7 +18,7 @@ test.describe('ImportStatusSummary runtime behavior', () => {
     page,
   }) => {
     const component = await mount(
-      'systemmonitor/ImportStatusSummary/LogsDisabled',
+      'systemmonitor/ImportExportStatusSummary/LogsDisabled',
     )
 
     await component.getByLabel('Open logs for task run').click()
@@ -31,7 +31,7 @@ test.describe('ImportStatusSummary runtime behavior', () => {
     page,
   }) => {
     const component = await mount(
-      'systemmonitor/ImportStatusSummary/LogsDisabled',
+      'systemmonitor/ImportExportStatusSummary/LogsDisabled',
     )
     const tooltip = page.getByText('Logs not found')
 
@@ -50,7 +50,7 @@ test.describe('ImportStatusSummary runtime behavior', () => {
     mount,
   }) => {
     const component = await mount(
-      'systemmonitor/ImportStatusSummary/OptionalFieldsMissing',
+      'systemmonitor/ImportExportStatusSummary/OptionalFieldsMissing',
     )
 
     await expect(component.getByText('Task run ID')).toHaveCount(0)
