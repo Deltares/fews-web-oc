@@ -95,7 +95,7 @@
           v-model:show-layer="showLayer"
           @changeLayer="onLayerChange"
         >
-          <template v-if="ensembles.length > 0">
+          <template v-if="hasEnsembles">
             <v-divider />
             <EnsemblesPanel
               v-model="ensembleSelection"
@@ -132,6 +132,7 @@
               :aggregations="aggregations"
               v-model:selected-aggregation-label="selectedAggregationLabel"
             />
+            <EnsemblesExtension v-if="hasEnsembles" />
           </template>
         </InformationPanel>
         <TaskRunControl v-model:taskRunId="taskRunId" />
@@ -214,8 +215,9 @@ import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import InformationPanel from '@/components/wms/panel/InformationPanel.vue'
 import OverlayInformationPanel from '@/components/wms/panel/OverlayInformationPanel.vue'
-import EnsemblesPanel from '../wms/panel/EnsemblesPanel.vue'
-import AggregationPanel from '../wms/panel/AggregationPanel.vue'
+import EnsemblesPanel from '@/components/wms/panel/EnsemblesPanel.vue'
+import EnsemblesExtension from '@/components/wms/panel/EnsemblesExtension.vue'
+import AggregationPanel from '@/components/wms/panel/AggregationPanel.vue'
 import AggregationExtension from '@/components/wms/panel/AggregationExtension.vue'
 import ColourPanel from '@/components/wms/panel/ColourPanel.vue'
 import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
@@ -324,6 +326,7 @@ const elevationUnit = ref('')
 const { ensembles, initialiseEnsembleSelection } = useWmsEnsembles(
   props.layerCapabilities,
 )
+const hasEnsembles = computed<boolean>(() => ensembles.value.length > 0)
 const ensembleSelection = ref<EnsembleSelection | null>(null)
 // If the ensembles change, reinitialise the selection.
 watch(
