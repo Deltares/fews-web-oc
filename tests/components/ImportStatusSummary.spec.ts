@@ -1,11 +1,14 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('ImportStatusSummary runtime behavior', () => {
-  test('emits trimmed taskRunId when logs are enabled', async ({ mount }) => {
+  test('emits trimmed taskRunId when the configured log panel supports system logs', async ({
+    mount,
+  }) => {
     const component = await mount(
       'systemmonitor/ImportStatusSummary/LogsEnabled',
     )
 
+    await expect(component.getByLabel('Open logs for task run')).toBeVisible()
     await component.getByLabel('Open logs for task run').click()
 
     await expect(component.getByTestId('emitted-task-run')).toHaveText(
@@ -13,37 +16,24 @@ test.describe('ImportStatusSummary runtime behavior', () => {
     )
   })
 
-  test('shows tooltip and does not emit when logs are disabled', async ({
+  test('does not render the log link when only manual logs are configured', async ({
     mount,
-    page,
   }) => {
     const component = await mount(
-      'systemmonitor/ImportStatusSummary/LogsDisabled',
+      'systemmonitor/ImportStatusSummary/ManualOnlyLogs',
     )
 
-    await component.getByLabel('Open logs for task run').click()
-    await expect(page.getByText('Logs not found')).toBeVisible()
-    await expect(component.getByTestId('emitted-task-run')).toHaveText('')
+    await expect(component.getByLabel('Open logs for task run')).toHaveCount(0)
   })
 
-  test('toggles and auto-hides logs unavailable tooltip', async ({
+  test('does not render the log link when the panel is disabled', async ({
     mount,
-    page,
   }) => {
     const component = await mount(
       'systemmonitor/ImportStatusSummary/LogsDisabled',
     )
-    const tooltip = page.getByText('Logs not found')
 
-    await component.getByLabel('Open logs for task run').click()
-    await expect(tooltip).toBeVisible()
-
-    await component.getByLabel('Open logs for task run').click()
-    await expect(tooltip).not.toBeVisible()
-
-    await component.getByLabel('Open logs for task run').click()
-    await expect(tooltip).toBeVisible()
-    await expect(tooltip).not.toBeVisible()
+    await expect(component.getByLabel('Open logs for task run')).toHaveCount(0)
   })
 
   test('hides optional backend fields when values are not populated', async ({
