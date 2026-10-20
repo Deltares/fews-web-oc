@@ -1,6 +1,6 @@
 <template>
   <div v-if="hasVisibleStatus" class="d-flex flex-column h-100 w-100">
-    <ImportStatusControl
+    <ImportExportStatusControl
       :status-type="effectiveStatusType"
       @open-side-panel="emit('openSidePanel', $event)"
     />
@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import ImportStatusControl from '@/components/systemmonitor/ImportStatusControl.vue'
+import ImportExportStatusControl from '@/components/systemmonitor/ImportExportStatusControl.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 
 interface Props {
