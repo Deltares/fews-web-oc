@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('ImportStatusSummary runtime behavior', () => {
+test.describe('ImportExportStatusSummary runtime behavior', () => {
   test('emits trimmed taskRunId when the configured log panel supports system logs', async ({
     mount,
   }) => {
     const component = await mount(
-      'systemmonitor/ImportStatusSummary/LogsEnabled',
+      'systemmonitor/ImportExportStatusSummary/LogsEnabled',
     )
 
     await expect(component.getByLabel('Open logs for task run')).toBeVisible()
@@ -20,7 +20,7 @@ test.describe('ImportStatusSummary runtime behavior', () => {
     mount,
   }) => {
     const component = await mount(
-      'systemmonitor/ImportStatusSummary/ManualOnlyLogs',
+      'systemmonitor/ImportExportStatusSummary/ManualOnlyLogs',
     )
 
     await expect(component.getByLabel('Open logs for task run')).toHaveCount(0)
@@ -30,7 +30,7 @@ test.describe('ImportStatusSummary runtime behavior', () => {
     mount,
   }) => {
     const component = await mount(
-      'systemmonitor/ImportStatusSummary/LogsDisabled',
+      'systemmonitor/ImportExportStatusSummary/LogsDisabled',
     )
 
     await expect(component.getByLabel('Open logs for task run')).toHaveCount(0)
@@ -40,7 +40,7 @@ test.describe('ImportStatusSummary runtime behavior', () => {
     mount,
   }) => {
     const component = await mount(
-      'systemmonitor/ImportStatusSummary/OptionalFieldsMissing',
+      'systemmonitor/ImportExportStatusSummary/OptionalFieldsMissing',
     )
 
     await expect(component.getByText('Task run ID')).toHaveCount(0)
