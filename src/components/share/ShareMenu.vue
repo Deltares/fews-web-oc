@@ -30,6 +30,19 @@
           />
         </v-btn-toggle>
       </div>
+      <v-select
+        v-if="sharingChart && chartParameters.parameterIds.length"
+        v-model="selectedParameterIds"
+        :items="parameterItems"
+        :label="t('share.parameters')"
+        :hint="t('share.parametersHint')"
+        multiple
+        chips
+        closable-chips
+        persistent-hint
+        density="compact"
+        variant="outlined"
+      />
       <CopyUrlField :url />
       <div v-if="embedType === 'iframe'" class="d-flex ga-2">
         <v-number-input
@@ -108,10 +121,18 @@ import UserSettingsOneOfMultiple from '@/components/user-settings/UserSettingsOn
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useParametersStore } from '@/stores/parameters'
+import { useChartParametersStore } from '@/stores/chartParameters'
+import {
+  getParameterIdsQuery,
+  parseParameterIds,
+} from '@/lib/display/parameters'
 
 const route = useRoute()
 const router = useRouter()
 const store = useUserSettingsStore()
+const parameters = useParametersStore()
+const chartParameters = useChartParametersStore()
 const { t } = useI18n()
 
 const applySettings = ref(false)
@@ -138,6 +159,24 @@ const routeHasChart = computed(() => {
   )
 })
 
+const sharingChart = computed(
+  () => !routeHasMap.value || viewType.value === 'chart',
+)
+const parameterItems = computed(() =>
+  chartParameters.parameterIds.map((id) => ({
+    title: parameters.getName(id),
+    value: id,
+  })),
+)
+const selectedParameterIds = ref<string[]>([])
+watch(
+  [() => chartParameters.parameterIds, () => route.query.parameterIds],
+  ([available, query]) => {
+    selectedParameterIds.value = parseParameterIds(query) ?? [...available]
+  },
+  { immediate: true },
+)
+
 watch(routeHasChart, (newValue) => {
   if (!newValue && viewType.value === 'chart') {
     viewType.value = 'map'
@@ -152,6 +191,18 @@ const embedUrl = computed(() => {
   }
 
   newRoute.params['embed'] = 'embed'
+
+  if (sharingChart.value && chartParameters.parameterIds.length) {
+    const query = getParameterIdsQuery(
+      selectedParameterIds.value,
+      chartParameters.parameterIds,
+    )
+    if (query === undefined) {
+      delete newRoute.query.parameterIds
+    } else {
+      newRoute.query.parameterIds = query
+    }
+  }
 
   if (applySettings.value) {
     settings.value.forEach((setting) => {
