@@ -65,7 +65,10 @@ import {
 } from '@deltares/fews-pi-requests'
 import { configManager } from '@/services/application-config'
 import { DisplayConfig } from '@/lib/display/DisplayConfig.ts'
-import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
+import {
+  DownloadError,
+  downloadFileAttachment,
+} from '@/lib/download/downloadFiles.ts'
 import { computed, ref, watchEffect, watch } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime.ts'
 import type { PiTimeSeriesQueryOptions } from '@deltares/fews-web-oc-composables'
@@ -286,7 +289,11 @@ async function downloadFileSafe(
     await downloadFileAttachment(url, fileName, documentFormat, headers)
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : t('download.errors.failed')
+      error instanceof DownloadError && error.status === 400
+        ? t('download.errors.unsupportedFormat')
+        : error instanceof Error
+          ? error.message
+          : t('download.errors.failed')
     alertStore.addAlert({
       type: 'error',
       message,
