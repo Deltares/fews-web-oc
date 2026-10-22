@@ -67,12 +67,12 @@ describe('AuthenticationManager initialization', () => {
     expect(mocks.getUser).not.toHaveBeenCalled()
   })
 
-  it('loads the stored user without changing the synchronous init API', async () => {
+  it('loads the stored user and resolves the initialization promise', async () => {
     const user = createUser()
     mocks.getUser.mockResolvedValue(user)
     const manager = new AuthenticationManager()
 
-    expect(manager.init(settings)).toBeUndefined()
+    await expect(manager.init(settings)).resolves.toBeUndefined()
 
     await expect(manager.getUser()).resolves.toBe(user)
     expect(mocks.construct).toHaveBeenCalledWith(settings)
@@ -130,7 +130,7 @@ describe('AuthenticationManager initialization', () => {
     const error = new Error('Stored-user request failed')
     mocks.getUser.mockRejectedValue(error)
     const manager = new AuthenticationManager()
-    manager.init(settings)
+    await expect(manager.init(settings)).rejects.toBe(error)
 
     await expect(manager.getUser()).rejects.toBe(error)
   })
@@ -142,7 +142,7 @@ describe('AuthenticationManager initialization', () => {
     })
     const manager = new AuthenticationManager()
 
-    expect(() => manager.init(settings)).not.toThrow()
+    await expect(manager.init(settings)).rejects.toBe(error)
     await expect(manager.getUser()).rejects.toBe(error)
   })
 })

@@ -1,13 +1,18 @@
 import type { ApplicationConfig } from '../../services/application-config/ApplicationConfig.js'
 import { BASE_URL } from './startup-constants.js'
+import { StartupError } from './startup-error.js'
 
 export async function loadApplicationConfig(): Promise<
   Partial<ApplicationConfig>
 > {
   const response = await fetch(`${BASE_URL}app-config.json`)
   if (!response.ok) {
-    throw new Error(
+    throw new StartupError(
       `Failed to load app-config.json (${response.status} ${response.statusText})`,
+      'application-config',
+      'Load application configuration',
+      undefined,
+      response.status,
     )
   }
 

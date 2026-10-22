@@ -6,6 +6,10 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
 import { registerRemotes } from '@module-federation/enhanced/runtime'
 import { type RemoteWithEntry } from '@module-federation/sdk'
+import {
+  FewsConfigLoadError,
+  StartupError,
+} from '@/lib/startup/startup-error.js'
 
 export { loadRemote } from '@module-federation/enhanced/runtime'
 export const isModuleFederationSupported = true
@@ -23,9 +27,13 @@ export async function initializeModuleFederation(
   const response = await fetch(options.manifestUrl)
 
   if (!response.ok) {
-    throw new Error(
+    throw new StartupError(
       `Module Federation: Failed to fetch manifest ` +
         `(${response.status} ${response.statusText}).`,
+      'microfrontends',
+      'Load module manifest',
+      undefined,
+      response.status,
     )
   }
 
@@ -39,7 +47,14 @@ export async function initializeModuleFederation(
     transformRequestFn: createTransformRequestFn(),
   })
 
-  const config = await piProvider.getMicroFrontEnds({})
+  const config = await piProvider
+    .getMicroFrontEnds({})
+    .catch((cause: unknown) => {
+      throw new FewsConfigLoadError(
+        cause,
+        'Load FEWS microfrontend configuration',
+      )
+    })
 
   return {
     config,

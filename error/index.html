@@ -5,45 +5,143 @@
     <link rel="icon" type="image/svg+xml" href="/images/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="" />
-    <title>Configuration Error–Delft-FEWS WebOC</title>
+    <title>Startup Error–Delft-FEWS WebOC</title>
   </head>
   <body>
     <div class="error-card">
-      <div class="error-icon" aria-hidden="true">⚠️</div>
+      <img
+        class="error-illustration"
+        src="../images/weboc-startup-error.png"
+        width="1536"
+        height="1024"
+        alt="A blue water-drop character rowing a boat in a Delft canal, stuck in weeds beneath a water-monitoring dashboard showing an error."
+      />
 
-      <h1>Configuration Error</h1>
+      <h1 id="error-title">Web OC could not start</h1>
 
-      <p class="subtitle">
-        Web OC could not start because its runtime configuration is missing,
-        invalid, or unavailable.
+      <p id="error-subtitle" class="subtitle">
+        An unexpected error interrupted startup. Try again or contact your
+        administrator.
       </p>
 
-      <pre id="error-message" class="error-message">
+      <p>
+        Try again. If the problem persists, open Technical details, copy the
+        diagnostics, and share them with your administrator after reviewing them
+        for sensitive information. Refreshing this page keeps the error visible;
+        use Retry to restart Web OC.
+      </p>
+      <a id="retry-link" class="retry-btn" href="../">Retry</a>
+
+      <details class="technical-details">
+        <summary>Technical details</summary>
+        <pre id="error-message" class="error-message">
         No startup error details were provided.
       </pre>
+        <p id="error-context" hidden></p>
+        <button id="copy-diagnostics" class="copy-btn" type="button">
+          Copy diagnostic details
+        </button>
+        <output id="copy-feedback" aria-live="polite"></output>
 
-      <section class="troubleshooting" aria-labelledby="troubleshooting-title">
-        <h2 id="troubleshooting-title">Deployment checks</h2>
-        <ol>
-          <li>
-            <a id="app-config-link" target="_blank" rel="noreferrer">
-              Inspect the deployed app-config.json
-            </a>
-            and confirm it returns HTTP 200 with valid JSON.
-          </li>
-          <li>
-            Confirm <code>VITE_FEWS_WEBSERVICES_URL</code> is configured to the
-            target FEWS Web Services endpoint.
-          </li>
-          <li>
-            Verify the endpoint is reachable from the browser and check the
-            browser Network and Console panels for HTTP or CORS failures.
-          </li>
-        </ol>
-        <p>After correcting the configuration, reload Web OC.</p>
+        <section
+          class="troubleshooting"
+          aria-labelledby="troubleshooting-title"
+        >
+          <h2 id="troubleshooting-title">Deployment checks</h2>
+          <ol id="application-config-checks" hidden>
+            <li>
+              <a id="app-config-link" target="_blank" rel="noreferrer">
+                Inspect the deployed app-config.json
+              </a>
+              and confirm it returns HTTP 200 with valid JSON.
+            </li>
+            <li>
+              Confirm <code>VITE_FEWS_WEBSERVICES_URL</code> is configured to
+              the target FEWS Web Services endpoint.
+            </li>
+            <li>
+              Verify the endpoint is reachable from the browser and check the
+              browser Network and Console panels for HTTP or CORS failures.
+            </li>
+          </ol>
+          <ol id="fews-pi-checks" hidden>
+            <li>
+              Confirm <code>VITE_FEWS_WEBSERVICES_URL</code> points to the
+              correct FEWS PI Web Services endpoint in the deployed
+              app-config.json.
+            </li>
+            <li>
+              Verify FEWS PI Web Services is running and reachable from the
+              browser. Check your network or VPN connection and any proxy,
+              firewall, or TLS certificate issues.
+            </li>
+            <li>
+              Inspect the failed FEWS configuration request in the browser
+              Network panel for timeouts or HTTP errors, and check the Console
+              for CORS or Content Security Policy failures.
+            </li>
+            <li>
+              For HTTP 401 or 403 responses, verify your login and permissions
+              to access the FEWS WebOC configuration.
+            </li>
+          </ol>
+          <ol id="authentication-checks" hidden>
+            <li>
+              Try signing in again and verify your account has the required FEWS
+              permissions.
+            </li>
+            <li>
+              For HTTP 401 or 403 responses, ask your administrator to check
+              authentication and access to the requested configuration.
+            </li>
+            <li>
+              Verify the identity provider and authentication settings are
+              available and correctly configured.
+            </li>
+          </ol>
+          <ol id="microfrontends-checks" hidden>
+            <li>
+              Verify the configured module manifest is reachable and contains
+              valid JSON.
+            </li>
+            <li>
+              Check module registration, remote availability, and browser
+              Network and Console errors.
+            </li>
+            <li>
+              Ask your administrator to verify the module deployment and
+              configuration.
+            </li>
+          </ol>
+          <ol id="unexpected-checks">
+            <li>
+              Try again. If startup continues to fail, contact your
+              administrator.
+            </li>
+            <li>
+              Provide the error details and WebOC version/build information
+              below.
+            </li>
+            <li>
+              Check the browser Console and Network panels for additional
+              diagnostics.
+            </li>
+          </ol>
+          <p>After resolving the problem, retry Web OC.</p>
+        </section>
+      </details>
+
+      <section
+        class="weboc-build-info"
+        aria-label="FEWS WebOC build information"
+      >
+        <strong>FEWS WebOC</strong>
+        <div class="weboc-build-details">
+          <span id="weboc-version" class="weboc-build-chip"></span>
+          <span id="weboc-commit-hash" class="weboc-build-chip" hidden></span>
+          <span id="weboc-build-date" class="weboc-build-chip" hidden></span>
+        </div>
       </section>
-
-      <a class="retry-btn" href="/">Retry</a>
     </div>
     <script type="module" src="../src/error.ts"></script>
   </body>
