@@ -10,7 +10,12 @@
       ghost-class="overlay-panel__ghost"
     >
       <template #item="{ element }">
-        <v-list-item v-if="element.type === 'overLay'" density="compact">
+        <v-list-item
+          v-if="
+            element.type === 'overLay' || element.type === 'externalOverLay'
+          "
+          density="compact"
+        >
           <template #prepend>
             <v-list-item-action start>
               <v-icon
@@ -91,6 +96,10 @@ const overlays = defineModel<Overlay[]>('overlays', {
 function getTitle(overlay: Overlay): string {
   if (overlay.type === 'gridLayer') {
     return props.layer?.title ?? t('wms.noDataLayer')
+  }
+
+  if (overlay.type === 'externalOverLay') {
+    return overlay.name ?? overlay.id ?? 'Unnamed overlay'
   }
 
   const foundLayer = props.capabilities?.layers.find(

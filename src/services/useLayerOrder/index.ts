@@ -87,7 +87,7 @@ function convertOverlayToLayerId(overlay: Overlay): string {
     return mapIds.wms.layer
   }
 
-  if (overlay.type === 'overLay') {
+  if (overlay.type === 'overLay' || overlay.type === 'externalOverLay') {
     return getLayerId(`overlay-${overlay.id}`)
   }
 
