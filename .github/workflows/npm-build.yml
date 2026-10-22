@@ -3,6 +3,9 @@
 
 name: Run npm build
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: ['main', 'next']
