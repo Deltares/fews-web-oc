@@ -48,6 +48,49 @@ function createResource(
 }
 
 describe('v5 static chart config', () => {
+  it('assigns unique, repeatable mark IDs when FEWS entries share a series ID', () => {
+    const config: ChartConfig = {
+      id: 'subplot',
+      title: '',
+      series: [
+        createChartSeries('shared', 'line', ['lower', 'upper']),
+        createChartSeries('shared', 'marker', ['lower']),
+        createChartSeries('shared', 'line', ['lower']),
+        createChartSeries('shared', 'area', ['lower']),
+        createChartSeries('shared', 'area', ['lower', 'upper']),
+        createChartSeries('shared', 'bar', ['lower']),
+      ],
+    }
+    const stores = {
+      lower: createSeries({ x: [0, 1], y: [1, 2] }),
+      upper: createSeries({ x: [0, 1], y: [3, 4] }),
+    }
+    const resources = {
+      lower: createResource([
+        { x: new Date(0), y: 1 },
+        { x: new Date(1), y: 2 },
+      ]),
+      upper: createResource([
+        { x: new Date(0), y: 3 },
+        { x: new Date(1), y: 4 },
+      ]),
+    }
+    const build = () =>
+      toPlotConfig(
+        config,
+        stores,
+        defaultChartSettings.timeSeriesChart,
+        {},
+        resources,
+      )
+    const ids = build().marks?.map((mark) => mark.id)
+
+    expect(ids).toHaveLength(7)
+    expect(new Set(ids).size).toBe(7)
+    expect(build().marks?.map((mark) => mark.id)).toEqual(ids)
+    expect(config.series.every((item) => item.id === 'shared')).toBe(true)
+  })
+
   it.each(['line', 'marker', 'area'] as const)(
     'binds %s marks to their configured left and right y scales',
     (type) => {
@@ -165,12 +208,15 @@ describe('v5 static chart config', () => {
     expect(plotConfig.scales?.y0?.kind).toBe('linear')
     expect(plotConfig.scales?.y1?.kind).toBe('linear')
     expect(plotConfig.axes).toHaveLength(3)
+    expect(
+      plotConfig.axes?.map((axis) => axis.options.get().resolved.style),
+    ).toEqual(['classic', 'classic', 'classic'])
     expect(plotConfig.marks).toHaveLength(5)
     expect(plotConfig.marks?.filter((mark) => 'xValues' in mark)).toHaveLength(
       1,
     )
     expect(plotConfig.marks?.filter((mark) => 'data' in mark)).toHaveLength(4)
-    const lineMark = plotConfig.marks?.find((mark) => mark.id === 'line')
+    const lineMark = plotConfig.marks?.[0]
     expect(lineMark && 'visible' in lineMark && lineMark.visible).toBe(true)
   })
 
