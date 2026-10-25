@@ -226,6 +226,7 @@ function createMarks(
           scales: { x: 'x', y: yScale },
           renderer: 'svg',
           orientation: 'vertical',
+          interval: { start: 'start', end: 'x' },
           groupPadding: 0.1,
           layerPadding: 0,
           visible: true,
@@ -348,19 +349,26 @@ function addDataToMap(map: Map<number, number>, data: SeriesData[]) {
 function getBarData(item: ChartSeries, resources: Record<string, Series>) {
   const resource = resources[item.dataResources[0]]
   if (!resource?.data) return undefined
-  const rows = resource.data.filter(
+  const timedRows = resource.data.filter(
     (event) =>
       event.x !== null &&
-      Number.isFinite(event.x instanceof Date ? event.x.getTime() : event.x) &&
-      event.y !== null &&
-      Number.isFinite(event.y) &&
-      isReliableData(event),
+      Number.isFinite(event.x instanceof Date ? event.x.getTime() : event.x),
   )
-  const x = rows.map((event) =>
+  const times = timedRows.map((event) =>
     event.x instanceof Date ? event.x.getTime() : event.x!,
   )
-  const y = rows.map((event) => event.y!)
-  return { store: createTable({ x, y }, { x: 'x' }) }
+  const x: number[] = []
+  const start: number[] = []
+  const y: number[] = []
+  for (const [index, event] of timedRows.entries()) {
+    if (event.y === null || !Number.isFinite(event.y) || !isReliableData(event))
+      continue
+    x.push(times[index])
+    // FEWS bars represent the interval ending at the sample timestamp.
+    start.push(times[index - 1] ?? times[index])
+    y.push(event.y)
+  }
+  return { store: createTable({ x, start, y }, { x: 'x' }) }
 }
 
 function markerSymbol(shape?: string): MarkerSymbol {
