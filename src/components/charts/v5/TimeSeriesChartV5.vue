@@ -12,6 +12,7 @@
         settings.legend.placement === 'above chart' ||
         settings.legend.placement === 'under chart'
       "
+      ref="legendContainer"
     >
       <ChartLegend
         :tags="legendTags"
@@ -47,15 +48,20 @@
         </v-btn>
       </template>
     </v-tooltip>
-    <div ref="chartContainer" class="chart-container"></div>
-    <div class="brush-container">
+    <div
+      ref="chartContainer"
+      class="chart-container"
+      :style="chartContainerStyle"
+    ></div>
+    <div ref="brushContainer" class="brush-container">
       <slot name="brush" :margin />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useTemplateRef, watch } from 'vue'
+import { computed, ref, useTemplateRef, watch, type CSSProperties } from 'vue'
+import { useResizeObserver } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import {
   ModifierKey,
@@ -93,6 +99,18 @@ const emit = defineEmits<{
 const domain = defineModel<[Date, Date]>('domain')
 const chartGroup = props.group ?? useChartHandlers()
 const chartContainer = useTemplateRef<HTMLElement>('chartContainer')
+const legendContainer = useTemplateRef<HTMLElement>('legendContainer')
+const brushContainer = useTemplateRef<HTMLElement>('brushContainer')
+const legendContainerHeight = ref(0)
+const brushContainerHeight = ref(0)
+useResizeObserver(
+  legendContainer,
+  ([entry]) => (legendContainerHeight.value = entry.contentRect.height),
+)
+useResizeObserver(
+  brushContainer,
+  ([entry]) => (brushContainerHeight.value = entry.contentRect.height),
+)
 const userSettings = useUserSettingsStore()
 const { locale } = useI18n()
 const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -159,14 +177,35 @@ const interactions = [
   crossSectionInteraction,
 ]
 
-const chartLayoutStyle = computed(
-  () =>
-    ({
-      flexDirection: props.settings.legend.placement.includes('under')
-        ? 'column-reverse'
-        : 'column',
-    }) as const,
-)
+const plotWeight = computed(() => props.config.plotWeight)
+
+const chartLayoutStyle = computed<CSSProperties>(() => {
+  const flexDirection = props.settings.legend.placement.includes('under')
+    ? 'column-reverse'
+    : 'column'
+  if (plotWeight.value === undefined) return { flexDirection }
+
+  const top = margin.value.top ?? 0
+  const bottom = margin.value.bottom ?? 0
+  const basis =
+    top + bottom + brushContainerHeight.value + legendContainerHeight.value
+  return {
+    flexDirection,
+    flexBasis: `${basis}px`,
+    flexGrow: plotWeight.value,
+    flexShrink: 0,
+    minHeight: `${basis + Math.max(plotWeight.value, 80)}px`,
+  }
+})
+
+const chartContainerStyle = computed<CSSProperties>(() => {
+  if (plotWeight.value === undefined) return {}
+  const axisHeight = 25 + 40 // axis.top + axis.bottom
+  return {
+    flex: `${plotWeight.value} 0 ${axisHeight}px`,
+    minHeight: 0,
+  }
+})
 
 const stores = useSeriesStores(() => props.series)
 const chartTheme = computed(() => {
@@ -374,9 +413,41 @@ defineExpose({ getSvgElement, exportImage })
 <style scoped>
 .chart-v5 {
   position: relative;
-  flex: 1 1 100%;
+  flex: 1 1 80%;
   min-height: 160px;
   min-width: 0;
+  max-height: max(50%, 275px);
+  width: 100%;
+}
+
+@container (height >= 825px) {
+  .chart-v5 {
+    max-height: max(33.333%, 275px);
+  }
+}
+
+.chart-v5.maximized {
+  flex: 1 1 100%;
+  max-height: none;
+  max-width: none;
+}
+
+.chart-v5:not(.maximized):not(.vertical-profile):only-child {
+  max-height: max(50%, 400px);
+}
+
+.chart-v5:not(.maximized):not(.vertical-profile):is(
+    :nth-child(1):nth-last-child(2),
+    :nth-child(2):nth-last-child(1)
+  ) {
+  max-height: 50%;
+}
+
+.chart-v5.vertical-profile {
+  max-height: unset;
+  max-width: 600px;
+  flex: 1 1 80%;
+  height: 100%;
 }
 
 .chart-container {
