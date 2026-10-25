@@ -67,11 +67,9 @@ const plotConfig = computed(() =>
       theme: chartTheme.value,
       themeElement: chartContainer.value ?? undefined,
       sharedTimeScale: sync?.brushTimeScale,
-      margins: props.mainChartMargin ?? {
-        top: 0,
-        right: 50,
-        bottom: 0,
-        left: 50,
+      margins: {
+        left: props.mainChartMargin?.left,
+        right: props.mainChartMargin?.right,
       },
       autoMargins: false,
       isBrush: true,
