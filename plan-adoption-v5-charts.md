@@ -1,6 +1,6 @@
 # Plan: adopting `@deltares/fews-web-oc-charts` v5 in FEWS Web OC
 
-Status date: 2026-10-25 (updated 21:00). Based on `fews-web-oc-charts@next` **`7018de8`**
+Status date: 2026-10-25 (updated 21:46). Based on `fews-web-oc-charts@next` **`7018de8`**
 (production live-stream acceptance; **Phase 4 complete**) and `PLAN-v5.md`; the locally
 installed build `deltares-fews-web-oc-charts-4.7.2.tgz` (rebuilt 20:54) matches that commit and exposes
 **both** the v4 classes (`CartesianAxes`, `ChartLine`, visitors, …) and the v5 functional
@@ -237,31 +237,26 @@ Known limits that PLAN-v5 records (relevant to web-oc):
 
 Issues still open in the library:
 
-- **`'zoom'` and `'brush'` domain sources are still never emitted.** Only `'wheel'`,
-  `'reset'` and `'pan'` use `withSource`. There is still **no box zoom**. The
-  examples write a brush selection into the domain with `scale.domain.set()`, so it is
-  reported as `'api'`. FEWS Web OC uses drag-box zoom (rec. 4).
 - `plot.paused` is a getter, not a signal or event, so the app cannot react to a plot
   becoming visible (e.g. lazy-load data only when visible). Minor (rec. 17).
 
-**For web-oc:** the library now supports W0–W3 and **W5**. Only W4 (Phase 6 marks)
-and the box-zoom gesture are still blocked on library work.
+**For web-oc:** the installed build supports W0–W3 and **W5**. Only W4 (Phase 6 marks)
+is still blocked on library work.
 
 ## 6. Recommendations for v5 (library)
 
 Priority **A = needed for web-oc parity**, **B = strong improvement**, **C = later**.
-✅ = implemented (as of `7018de8`).
+✅ = implemented in the installed build based on `7018de8`.
 
 1. ✅ **A – Public reactivity API** (`subscribe`, `effect`, `plot.on`, DOM events). Examples
-   now use it. Open follow-up: emit `'zoom'`/`'brush'` sources (needs rec. 4).
+   now use it.
 2. ✅ **A – Full marker symbol set** (`MarkerSymbol`, 15 shapes). Verify that legend
    swatches (`createLegendSwatch`/`SymbolSpec`) render the same shapes and rotations.
 3. ✅ **A – Tooltip formatting hooks** (`formatValue`, `formatUnit`, `formatRange`).
    Still open: per-mark label/unit without a closure lookup (e.g. a `meta` field on marks
    passed through `TooltipFormatContext.mark`), and flags/comments (B10).
-4. **A – Box zoom** (new): drag-rectangle zoom in the `zoom` plugin, or a brush
-   `action: 'zoom'`, with source attribution and a shared-scale target. This is v4
-   `ZoomHandler` parity that web-oc relies on.
+4. ✅ **A – Box zoom**: the `zoom` plugin supports drag-rectangle zoom, source attribution,
+   and shared-scale targets (confirmed in the installed package README).
 5. **A – Range-rule / error-bar mark**: vertical segments between two y values per x
    (v4 `ChartRule`), for FEWS paired-area-with-line items. Not present.
 6. **A – Discrete/threshold colour scale** (`classBreaks` → colours) for `heatmap`;
@@ -298,13 +293,13 @@ Priority **A = needed for web-oc parity**, **B = strong improvement**, **C = lat
 | --- | --- | --- | --- |
 | W0 | Engine switch setting + URL override, `TimeSeriesChartSwitch`, engine-neutral `ChartConfig`/props/`ChartGroup`, move v4 code to `lib/charts/v4` | – | v4 behaviour unchanged (unit + e2e tests green); `?charts.engine=v5` mounts a placeholder |
 | W1 | Static v5 chart: `usePlot`, series stores, `toPlotConfig` for line/marker (all FEWS shapes)/area/band/bar, left/right y axes, time/value/degrees axes, theme (`themeElement`), automargins, settings (labels, ticks) | ✅ available | Side-by-side visual check of representative FEWS displays |
-| W2 | Interaction: zoom/pan/wheel mode, crosshair + tooltip with FEWS formatting, `highlightTime` via `crossSectionSelect`, legend via `legendchange` + swatches in `ChartLegend`/`Overlay` (engine-neutral `Tag`) | ✅ available; box zoom needs rec. 4 (interim: brush + `domain.set`) | Toggle, isolate, zoom, reset, pan work on one subplot |
+| W2 | Implemented interaction: box zoom/pan/wheel mode, crosshair + tooltip with FEWS formatting, `highlightTime` via `crossSectionSelect`, legend via `legendchange` + swatches in `ChartLegend`/`Overlay` (engine-neutral `Tag`) | ✅ available | Toggle, isolate, zoom, reset, pan work on one subplot |
 | W3 | Multi-subplot sync: shared time scale, `sharedPointer`, `v-model:domain` via `subscribe`, brush plot on shared scale, margins via `layoutchange` | ✅ available (rec. 8 optional) | Behaviour parity with `TimeSeriesComponent` v4 |
 | W4 | Thresholds (rule + text interim), current time (`sharedClock` + rule interim), horizontalColorCode (heatmap), vertical profile (shared y), Analysis charts + PNG export, SSD display | rec. 5, 6, 7, 10 | All chart display types render under v5 |
 | W5 | Live/perf: `append/upsert` on incremental FEWS updates, retention, optional `follow`; verify hidden plots idle (automatic) | ✅ available (Phase 4 complete) | No full rebuild on data refresh; hidden plots idle |
 | W6 | Parity hardening: Playwright e2e for both engines (parametrise on `?charts.engine`), perf comparison, docs; flip default to v5, keep v4 one release, then delete v4 code and `compat` import | 5.0.0 | v5 default; v4 removed |
 
-W0–W3 and W5 can start now (W5 after W1). W4 can start with interim marks, but full parity waits on Phase 6. Box zoom needs the brush workaround until rec. 4 lands.
+W0–W3 and W5 can start now (W5 after W1). W4 can start with interim marks, but full parity waits on Phase 6.
 
 ## 8. Risks
 

@@ -32,6 +32,7 @@ export interface ToPlotConfigOptions {
   theme?: ThemeMode
   themeElement?: Element
   verticalProfile?: boolean
+  plugins?: PlotConfig['plugins']
 }
 
 type YScale = {
@@ -78,6 +79,7 @@ export function toPlotConfig(
     directions,
     axes: createAxes(xAxis, yScales, settings, options),
     marks: createMarks(config.series, stores, resources, yScales),
+    plugins: options.plugins,
   }
 }
 
@@ -209,6 +211,10 @@ function createMarks(
           yValues: pairedData.y,
           fill: styleValue(item, 'fill'),
           label: item.visibleInLegend === false ? undefined : item.name,
+          legendGroup:
+            item.visibleInLegend === false
+              ? undefined
+              : nonEmptyLabel(item.name),
           visible: true,
         }),
       )
@@ -231,6 +237,10 @@ function createMarks(
           layerPadding: 0,
           visible: true,
           label: item.visibleInLegend === false ? '' : item.name,
+          legendGroup:
+            item.visibleInLegend === false
+              ? undefined
+              : nonEmptyLabel(item.name),
           fill: styleValue(item, 'fill'),
           opacity: 1,
           stroke: styleValue(item, 'stroke'),
@@ -253,6 +263,10 @@ function createMarks(
           x: 'x',
           y: yScale,
           label: item.visibleInLegend === false ? '' : item.name,
+          legendGroup:
+            item.visibleInLegend === false
+              ? undefined
+              : nonEmptyLabel(item.name),
           visible: true,
           line:
             item.type === 'line' || item.type === 'rule'
@@ -399,4 +413,8 @@ function styleValue(item: ChartSeries, key: string) {
 function styleNumber(item: ChartSeries, key: string, fallback: number) {
   const value = Number.parseFloat(styleValue(item, key) ?? '')
   return Number.isFinite(value) ? value : fallback
+}
+
+function nonEmptyLabel(label: string) {
+  return label.trim() ? label : undefined
 }
