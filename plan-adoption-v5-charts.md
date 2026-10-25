@@ -102,7 +102,7 @@ Define the common surface once (`lib/charts/types/TimeSeriesChartProps.ts`):
 | vertical profile y zoom | `ZoomHandler({ sharedZoomMode: Y })` | shared `linearScale` for the y (elevation) axis |
 | wheel mode | `WheelMode` enum | `ZoomWheelMode` string (`'x' \| 'y' \| 'xy' \| 'none'`) |
 | hover across subplots | – (not synchronised) | one `sharedPointer({ by: 'x' })` passed to every `crosshair({ pointer })` |
-| brush ↔ main charts | `BrushHandler` + `update:x-brush-domain` + watchers | brush plot on the shared time scale; `sharedSelection()` for overview highlighting |
+| brush ↔ main charts | `BrushHandler` + `update:x-brush-domain` + watchers | shared main time scale; full-domain overview scale + `sharedSelection()` for the brush selection |
 | current time | `CurrentTime` visitor per chart | one `sharedClock({ interval })` (rendering still Phase 6, interim `rule`) |
 
 `userSettingsStore.scrollZoomMode` should return an engine-neutral string
@@ -294,7 +294,7 @@ Priority **A = needed for web-oc parity**, **B = strong improvement**, **C = lat
 | W0 | Engine switch setting + URL override, `TimeSeriesChartSwitch`, engine-neutral `ChartConfig`/props/`ChartGroup`, move v4 code to `lib/charts/v4` | – | v4 behaviour unchanged (unit + e2e tests green); `?charts.engine=v5` mounts a placeholder |
 | W1 | Static v5 chart: `usePlot`, series stores, `toPlotConfig` for line/marker (all FEWS shapes)/area/band/bar, left/right y axes, time/value/degrees axes, theme (`themeElement`), automargins, settings (labels, ticks) | ✅ available | Side-by-side visual check of representative FEWS displays |
 | W2 | Implemented interaction: box zoom/pan/wheel mode, crosshair + tooltip with FEWS formatting, `highlightTime` via `crossSectionSelect`, legend via `legendchange` + swatches in `ChartLegend`/`Overlay` (engine-neutral `Tag`) | ✅ available | Toggle, isolate, zoom, reset, pan work on one subplot |
-| W3 | Multi-subplot sync: shared time scale, `sharedPointer`, `v-model:domain` via `subscribe`, brush plot on shared scale, margins via `layoutchange` | ✅ available (rec. 8 optional) | Behaviour parity with `TimeSeriesComponent` v4 |
+| W3 | Multi-subplot sync: shared time scale, `sharedPointer`, `v-model:domain` via `subscribe`, shared-selection brush with a full-domain overview scale, margins via `layoutchange` | ✅ available (rec. 8 optional) | Implemented; focused sync tests and production build pass. Representative-display visual parity remains part of W6 hardening. |
 | W4 | Thresholds (rule + text interim), current time (`sharedClock` + rule interim), horizontalColorCode (heatmap), vertical profile (shared y), Analysis charts + PNG export, SSD display | rec. 5, 6, 7, 10 | All chart display types render under v5 |
 | W5 | Live/perf: `append/upsert` on incremental FEWS updates, retention, optional `follow`; verify hidden plots idle (automatic) | ✅ available (Phase 4 complete) | No full rebuild on data refresh; hidden plots idle |
 | W6 | Parity hardening: Playwright e2e for both engines (parametrise on `?charts.engine`), perf comparison, docs; flip default to v5, keep v4 one release, then delete v4 code and `compat` import | 5.0.0 | v5 default; v4 removed |

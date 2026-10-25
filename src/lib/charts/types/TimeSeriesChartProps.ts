@@ -1,12 +1,27 @@
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ChartsSettings } from '@/lib/topology/componentSettings'
+import type {
+  ScaleHandle,
+  SharedPointer,
+  SharedSelection,
+} from '@deltares/fews-web-oc-charts'
 import type { ChartConfig } from './ChartConfig'
 
 export type ChartEngine = 'v4' | 'v5'
 export type ChartWheelMode = 'x' | 'y' | 'xy' | 'none'
 
+export interface V5ChartGroup {
+  timeScale: ScaleHandle
+  brushTimeScale: ScaleHandle
+  pointer: SharedPointer
+  selection: SharedSelection
+  timeScaleInitialized: boolean
+  brushTimeScaleInitialized: boolean
+}
+
 export interface ChartGroup {
   readonly id: symbol
+  v5?: V5ChartGroup
 }
 
 export interface ChartMargin {

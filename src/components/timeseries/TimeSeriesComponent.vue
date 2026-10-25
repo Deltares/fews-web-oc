@@ -34,6 +34,7 @@
               :series="brushChartSeries"
               :settings="settings.timeSeriesChart"
               :mainChartMargin="chartMargin"
+              :group="chartGroup"
             />
           </template>
         </TimeSeriesChart>
@@ -131,7 +132,7 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
 import TimeSeriesChart from '../charts/TimeSeriesChartSwitch.vue'
-import TimeSeriesChartBrush from '../charts/TimeSeriesChartBrush.vue'
+import TimeSeriesChartBrush from '../charts/TimeSeriesChartBrushSwitch.vue'
 import TimeSeriesTable from '../table/TimeSeriesTable.vue'
 import DynamicReportPanel from './DynamicReportPanel.vue'
 import type { DynamicReportPanelConfig } from '@/services/useDynamicReport'
