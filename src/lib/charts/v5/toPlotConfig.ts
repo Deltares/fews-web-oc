@@ -146,7 +146,7 @@ function createAxes(
         unit: xAxis.unit ?? '',
         grid: settings.xAxis.xTicks && (xAxis.showGrid ?? true),
         tickCount: settings.xAxis.xTicks ? 6 : 1,
-        style: 'default',
+        style: 'classic',
         locale: xAxis.locale ?? options.locale,
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         ...(!settings.xAxis.xTicks ? { format: () => '' } : {}),
@@ -172,7 +172,7 @@ function createAxes(
           unit: yAxis.unit ?? '',
           grid: settings.yAxis.yTicks && (yAxis.showGrid ?? isPrimary),
           tickCount: settings.yAxis.yTicks ? 6 : 1,
-          style: 'default',
+          style: 'classic',
           locale: yAxis.locale ?? options.locale,
           timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           ...(!settings.yAxis.yTicks ? { format: () => '' } : {}),
@@ -192,8 +192,9 @@ function createMarks(
 ): (BandMark | BarMark | SeriesMark)[] {
   const marks: (BandMark | BarMark | SeriesMark)[] = []
 
-  for (const item of chartSeries) {
+  for (const [seriesIndex, item] of chartSeries.entries()) {
     if (item.visibleInPlot === false || item.type === 'dummy') continue
+    const markId = `${seriesIndex}:${item.id}`
     const yScale = yScales[item.options.y.axisIndex]?.id ?? 'y0'
 
     if (item.type === 'area' && item.dataResources.length > 1) {
@@ -201,7 +202,7 @@ function createMarks(
       if (!pairedData) continue
       marks.push(
         band({
-          id: item.id,
+          id: markId,
           x: 'x',
           y: yScale,
           xValues: pairedData.x,
@@ -219,7 +220,7 @@ function createMarks(
       if (!data) continue
       marks.push(
         bar(data.store, {
-          id: item.id,
+          id: markId,
           x: 'x',
           y: 'y',
           scales: { x: 'x', y: yScale },
@@ -247,7 +248,7 @@ function createMarks(
       const isArea = item.type === 'area'
       marks.push(
         seriesMark(store, {
-          id: index === 0 ? item.id : `${item.id}-${index}`,
+          id: `${markId}:${index}`,
           x: 'x',
           y: yScale,
           label: item.visibleInLegend === false ? '' : item.name,
