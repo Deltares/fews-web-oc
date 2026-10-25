@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { brush, subscribe } from '@deltares/fews-web-oc-charts'
+import { brush, ModifierKey, subscribe } from '@deltares/fews-web-oc-charts'
 import { computed, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -43,6 +43,7 @@ const userSettings = useUserSettingsStore()
 const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
 const interaction = brush({
   mode: 'x',
+  modifier: ModifierKey.None,
   persistent: true,
   ...(sync ? { selection: sync.selection } : {}),
 })
@@ -56,6 +57,11 @@ if (sync) {
   initializeV5TimeScale(sync, 'brushTimeScale', props.fullDomain)
 }
 
+// Only recompute the plot config when the main chart's horizontal margins
+// actually change; a new config during a drag aborts the brush gesture.
+const marginLeft = computed(() => props.mainChartMargin?.left)
+const marginRight = computed(() => props.mainChartMargin?.right)
+
 const plotConfig = computed(() =>
   toPlotConfig(
     props.config,
@@ -67,10 +73,7 @@ const plotConfig = computed(() =>
       theme: chartTheme.value,
       themeElement: chartContainer.value ?? undefined,
       sharedTimeScale: sync?.brushTimeScale,
-      margins: {
-        left: props.mainChartMargin?.left,
-        right: props.mainChartMargin?.right,
-      },
+      margins: { left: marginLeft.value, right: marginRight.value },
       autoMargins: false,
       isBrush: true,
       plugins: [interaction],
