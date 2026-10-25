@@ -34,7 +34,7 @@ export interface ToPlotConfigOptions {
   verticalProfile?: boolean
   plugins?: PlotConfig['plugins']
   sharedTimeScale?: ScaleHandle
-  margins?: PlotConfig['margins']
+  margins?: Partial<PlotConfig['margins']>
   autoMargins?: boolean
   isBrush?: boolean
 }
@@ -75,10 +75,10 @@ export function toPlotConfig(
   return {
     title: config.title,
     autoMargins: options.autoMargins ?? true,
-    axisLayout: 'outside',
+    axisLayout: 'inset',
     background: 'chart',
     clipMarks: true,
-    margins: options.margins ?? { top: 25, right: 50, bottom: 40, left: 50 },
+    margins: getV5PlotMargins(settings, options),
     theme: options.theme ?? 'auto',
     themeElement: options.themeElement,
     scales,
@@ -86,6 +86,52 @@ export function toPlotConfig(
     axes: options.isBrush ? [] : createAxes(xAxis, yScales, settings, options),
     marks: createMarks(config.series, stores, resources, yScales),
     plugins: options.plugins,
+  }
+}
+
+export function getV5PlotMargins(
+  settings:
+    ChartsSettings['timeSeriesChart'] | ChartsSettings['verticalProfileChart'],
+  options: Pick<
+    ToPlotConfigOptions,
+    'verticalProfile' | 'isBrush' | 'margins'
+  > = {},
+): NonNullable<PlotConfig['margins']> {
+  const margins = {
+    top: 25,
+    right: 50,
+    bottom: 40,
+    left: 50,
+  }
+
+  if (options.verticalProfile) {
+    margins.left = 70
+    margins.right = 30
+  }
+  if (!settings.yAxis.yLabel) {
+    margins.top = 20
+  }
+  if (settings.legend.placement.includes('under')) {
+    margins.top = 40
+    margins.bottom = 25
+  }
+  if (options.isBrush) {
+    margins.top = 5
+    margins.bottom = 25
+  }
+
+  return {
+    ...margins,
+    ...(options.margins?.top !== undefined ? { top: options.margins.top } : {}),
+    ...(options.margins?.right !== undefined
+      ? { right: options.margins.right }
+      : {}),
+    ...(options.margins?.bottom !== undefined
+      ? { bottom: options.margins.bottom }
+      : {}),
+    ...(options.margins?.left !== undefined
+      ? { left: options.margins.left }
+      : {}),
   }
 }
 
