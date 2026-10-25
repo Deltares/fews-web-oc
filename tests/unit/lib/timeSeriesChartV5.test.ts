@@ -1,6 +1,7 @@
-import { createSeries } from '@deltares/fews-web-oc-charts'
+// @vitest-environment jsdom
+import { createPlot, createSeries } from '@deltares/fews-web-oc-charts'
 import { effectScope, nextTick, ref } from 'vue'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { defaultChartSettings } from '@/lib/topology/componentSettings/chartSettings'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import type { ChartSeries } from '@/lib/charts/types/ChartSeries'
@@ -48,6 +49,75 @@ function createResource(
 }
 
 describe('v5 static chart config', () => {
+  it('gives time bars explicit preceding-sample intervals without bridging missing values', () => {
+    const config: ChartConfig = {
+      id: 'subplot',
+      title: '',
+      series: [createChartSeries('bars', 'bar', ['resource'])],
+    }
+    const plotConfig = toPlotConfig(
+      config,
+      {},
+      defaultChartSettings.timeSeriesChart,
+      {},
+      {
+        resource: createResource([
+          { x: new Date(0), y: 1 },
+          { x: new Date(1000), y: 2 },
+          { x: new Date(3000), y: 3, flag: '6' },
+          { x: new Date(6000), y: 4 },
+        ]),
+      },
+    )
+    const mark = plotConfig.marks?.[0]
+    expect(mark).toBeDefined()
+    if (!mark || !('data' in mark) || !('valueAt' in mark.data)) {
+      throw new Error('Expected a table-backed bar mark')
+    }
+    expect(mark.options.get().resolved).toMatchObject({
+      interval: { start: 'start', end: 'x' },
+      scales: { x: 'x', y: 'y0' },
+    })
+    expect(
+      Array.from({ length: mark.data.length }, (_, index) => [
+        mark.data.valueAt('start', index),
+        mark.data.valueAt('x', index),
+        mark.data.valueAt('y', index),
+      ]),
+    ).toEqual([
+      [0, 0, 1],
+      [0, 1000, 2],
+      [3000, 6000, 4],
+    ])
+
+    class Observer {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+    vi.stubGlobal('ResizeObserver', Observer)
+    vi.stubGlobal('IntersectionObserver', Observer)
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({
+        matches: false,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    )
+    const container = document.createElement('div')
+    try {
+      const plot = createPlot(container, plotConfig)
+      try {
+        expect(() => plot.setConfig(plotConfig)).not.toThrow()
+      } finally {
+        plot.destroy()
+      }
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
   it('assigns unique, repeatable mark IDs when FEWS entries share a series ID', () => {
     const config: ChartConfig = {
       id: 'subplot',
