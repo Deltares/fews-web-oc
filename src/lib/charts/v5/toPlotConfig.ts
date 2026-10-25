@@ -245,8 +245,10 @@ function createMarks(
   yScales: YScale[],
 ): (BandMark | BarMark | SeriesMark)[] {
   const marks: (BandMark | BarMark | SeriesMark)[] = []
+  const mergedMarkerIndices = new Set<number>()
 
   for (const [seriesIndex, item] of chartSeries.entries()) {
+    if (mergedMarkerIndices.has(seriesIndex)) continue
     if (item.visibleInPlot === false || item.type === 'dummy') continue
     const markId = `${seriesIndex}:${item.id}`
     const yScale = yScales[item.options.y.axisIndex]?.id ?? 'y0'
@@ -302,12 +304,17 @@ function createMarks(
       continue
     }
 
+    const pairedMarker = getPairedMarkerSeries(chartSeries, seriesIndex)
+    if (pairedMarker) mergedMarkerIndices.add(seriesIndex + 1)
+    const markerItem =
+      pairedMarker ??
+      (item.type === 'marker' || item.marker !== undefined ? item : undefined)
+
     const resourceIds = item.dataResources
     for (const [index, resourceId] of resourceIds.entries()) {
       const store = stores[resourceId]
       if (!store) continue
 
-      const marker = item.type === 'marker' || item.marker !== undefined
       const isArea = item.type === 'area'
       marks.push(
         seriesMark(store, {
@@ -333,13 +340,13 @@ function createMarks(
                   strokeLinejoin: 'round',
                 }
               : false,
-          markers: marker
+          markers: markerItem
             ? {
-                symbol: markerSymbol(item.marker?.shape),
-                size: item.marker?.size ?? 9,
-                fill: styleValue(item, 'fill'),
-                stroke: styleValue(item, 'stroke'),
-                strokeWidth: styleNumber(item, 'stroke-width', 1),
+                symbol: markerSymbol(markerItem.marker?.shape),
+                size: markerItem.marker?.size ?? 9,
+                fill: styleValue(markerItem, 'fill'),
+                stroke: styleValue(markerItem, 'stroke'),
+                strokeWidth: styleNumber(markerItem, 'stroke-width', 1),
               }
             : false,
           area: isArea
@@ -355,6 +362,34 @@ function createMarks(
   }
 
   return marks
+}
+
+/**
+ * FEWS items with both a line and a marker style are split into a line series
+ * directly followed by a marker series; v5 can draw both in a single mark.
+ *
+ * FIXME: Remove this function once the line/marker split in
+ * timeSeriesDisplayToChartConfig.ts is applied to the v4 path only, so v5
+ * receives a single series with both line and marker styles.
+ */
+function getPairedMarkerSeries(
+  chartSeries: ChartSeries[],
+  seriesIndex: number,
+): ChartSeries | undefined {
+  const item = chartSeries[seriesIndex]
+  const next = chartSeries[seriesIndex + 1]
+  if (
+    item.type !== 'line' ||
+    next?.type !== 'marker' ||
+    next.id !== item.id ||
+    next.visibleInPlot !== item.visibleInPlot ||
+    next.options.y.axisIndex !== item.options.y.axisIndex ||
+    next.dataResources.length !== item.dataResources.length ||
+    next.dataResources.some((id, index) => id !== item.dataResources[index])
+  ) {
+    return undefined
+  }
+  return next
 }
 
 function getPairedData(
