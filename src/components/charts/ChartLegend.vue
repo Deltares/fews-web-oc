@@ -30,7 +30,7 @@
               role="button"
               density="default"
               :variant="tag.disabled ? 'text' : 'tonal'"
-              @click="toggleLine(tag)"
+              @click="toggleLine(tag, $event)"
               :disabled="!tag.interactive"
             >
               <div
@@ -82,7 +82,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const emit = defineEmits(['toggleLine'])
+const emit = defineEmits<{
+  toggleLine: [tag: Tag, event: MouseEvent | KeyboardEvent]
+}>()
 
 const numberOfLines = computed(() => {
   const minLines =
@@ -126,9 +128,9 @@ watch(requiresExpand, () => {
 
 const [expanded, toggleExpand] = useToggle(false)
 
-function toggleLine(tag: Tag) {
+function toggleLine(tag: Tag, event: MouseEvent | KeyboardEvent) {
   tag.disabled = !tag.disabled
-  emit('toggleLine', tag)
+  emit('toggleLine', tag, event)
 }
 
 const chipMargin = 8
