@@ -132,6 +132,7 @@ const panInteraction = pan({
 const crosshairInteraction = crosshair({
   mode: props.verticalProfile ? 'y' : 'x',
   pointer: props.verticalProfile ? undefined : chartGroup.v5?.pointer,
+  labels: props.verticalProfile ? {} : { x: 'x' },
 })
 const crossSectionInteraction = crossSectionSelect(
   props.highlightTime?.getTime() ?? 0,
@@ -143,9 +144,9 @@ const crossSectionInteraction = crossSectionSelect(
   },
 )
 const tooltipInteraction = tooltip({
-  axis: 'xy',
-  showX: true,
-  position: 'top',
+  axis: 'x',
+  showX: false,
+  position: 'right',
   crosshair: crosshairInteraction,
   formatValue: (_value, context) => context.defaultText,
   formatUnit: ({ axis, mark }) => (axis === 'y' ? getUnitForMark(mark.id) : ''),
@@ -211,6 +212,7 @@ watch(
     panInteraction.update({ mode: verticalProfile ? 'y' : 'x' })
     crosshairInteraction.update({
       pointer: verticalProfile ? undefined : chartGroup.v5?.pointer,
+      labels: verticalProfile ? {} : { x: 'x' },
     })
   },
 )
@@ -333,14 +335,16 @@ function getUnitForMark(markId: string | undefined) {
 
   for (const [index, item] of props.config.series.entries()) {
     const markIdPrefix = `${index}:${item.id}`
-    if (
-      markId === markIdPrefix ||
-      item.dataResources.some(
-        (_, resourceIndex) => markId === `${markIdPrefix}:${resourceIndex}`,
-      )
-    ) {
-      return item.unit
-    }
+    const resourceIndex =
+      markId === markIdPrefix
+        ? 0
+        : item.dataResources.findIndex(
+            (_, resourceIndex) => markId === `${markIdPrefix}:${resourceIndex}`,
+          )
+    if (resourceIndex === -1) continue
+
+    const resourceId = item.dataResources[resourceIndex]
+    return item.unit || props.series[resourceId]?.header.unit || ''
   }
 
   return ''
