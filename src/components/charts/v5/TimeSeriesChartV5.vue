@@ -138,7 +138,7 @@ if (!props.verticalProfile) {
 }
 
 const zoomInteraction = zoom({
-  mode: 'xy',
+  mode: 'auto',
   wheel: userSettings.scrollZoomMode,
   modifier: ModifierKey.None,
   reset: 'initial',
