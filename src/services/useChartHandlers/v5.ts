@@ -43,8 +43,7 @@ export function updateTimeScaleDomain(
   if (!domain) return
 
   const next = domain.map((value) => value.getTime())
-  const current = scale.domain.get()
-  if (current[0] === next[0] && current[1] === next[1]) return
+  if (sameRange(scale.domain.get(), next)) return
 
   scale.update({ domain: next })
 }
@@ -58,14 +57,29 @@ export function updateBrushSelection(
     return
   }
 
+  const next = domain.map((value) => value.getTime())
+  const current = group.selection.selection
+    .get()
+    ?.ranges.find(({ axis }) => axis === 'x')?.range
+  if (sameRange(current, next)) return
+
   group.selection.setSelection({
     mode: 'x',
-    ranges: [
-      {
-        scale: group.brushTimeScale,
-        axis: 'x',
-        range: domain.map((value) => value.getTime()),
-      },
-    ],
+    ranges: [{ scale: group.brushTimeScale, axis: 'x', range: next }],
   })
+}
+
+// Date round-trips truncate to whole milliseconds; treat sub-ms differences as
+// equal so echoing a domain back does not abort an in-progress brush gesture.
+function sameRange(
+  current: readonly unknown[] | undefined,
+  next: readonly number[],
+): boolean {
+  return (
+    current?.length === next.length &&
+    current.every(
+      (value, index) =>
+        typeof value === 'number' && Math.abs(value - next[index]) < 1,
+    )
+  )
 }

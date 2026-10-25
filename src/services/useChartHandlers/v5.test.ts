@@ -42,6 +42,21 @@ describe('v5 chart group synchronization', () => {
     expect(group.selection.selection.get()).toBeUndefined()
   })
 
+  it('keeps an equal brush selection when echoing a truncated domain', () => {
+    const group = createV5ChartGroup()
+    group.selection.setSelection({
+      mode: 'x',
+      ranges: [
+        { scale: group.brushTimeScale, axis: 'x', range: [1000.4, 2000.7] },
+      ],
+    })
+    const before = group.selection.selection.get()
+
+    updateBrushSelection(group, [new Date(1000), new Date(2000)])
+
+    expect(group.selection.selection.get()).toBe(before)
+  })
+
   it('keeps the first configured full domain as the reset domain', () => {
     const group = createV5ChartGroup()
     const firstDomain: [Date, Date] = [
