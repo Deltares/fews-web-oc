@@ -161,6 +161,48 @@ describe('v5 static chart config', () => {
     expect(config.series.every((item) => item.id === 'shared')).toBe(true)
   })
 
+  it('merges a line and its paired marker series into a single mark', () => {
+    const config: ChartConfig = {
+      id: 'subplot',
+      title: '',
+      series: [
+        createChartSeries('observed', 'line', ['observed']),
+        createChartSeries('observed', 'marker', ['observed'], 0, {
+          shape: 'diamond',
+          size: 16,
+          skip: 1,
+        }),
+        createChartSeries('other', 'marker', ['observed']),
+      ],
+    }
+    config.series[1].style = { fill: '#ff0000', stroke: '#ff0000' }
+
+    const plotConfig = toPlotConfig(
+      config,
+      { observed: createSeries({ x: [0, 1], y: [1, 2] }) },
+      defaultChartSettings.timeSeriesChart,
+    )
+
+    expect(plotConfig.marks?.map((mark) => mark.id)).toEqual([
+      '0:observed:0',
+      '2:other:0',
+    ])
+    const merged = plotConfig.marks?.[0]
+    if (!merged || !('options' in merged)) {
+      throw new Error('Expected a series mark')
+    }
+    const resolved = merged.options.get().resolved as {
+      line: unknown
+      markers: unknown
+    }
+    expect(resolved.line).toMatchObject({ stroke: '#336699' })
+    expect(resolved.markers).toMatchObject({
+      symbol: 'diamond',
+      size: 16,
+      fill: '#ff0000',
+    })
+  })
+
   it.each(['line', 'marker', 'area'] as const)(
     'binds %s marks to their configured left and right y scales',
     (type) => {
