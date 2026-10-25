@@ -383,6 +383,8 @@ defineExpose({ getSvgElement, exportImage })
   flex: 1 1 100%;
   min-height: 160px;
   min-width: 0;
+  /* Clip the plot's pixel-sized SVG until it re-renders at the new size. */
+  overflow: hidden;
 }
 
 .brush-container {
