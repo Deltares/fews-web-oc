@@ -19,7 +19,7 @@ export function createV4ChartGroup(): {
   group: ChartGroup
   handlers: V4ChartHandlers
 } {
-  const group = { id: Symbol('chartGroup') }
+  const group: ChartGroup = { id: Symbol('chartGroup') }
   const handlers = {
     sharedZoomHandler: new ZoomHandler({
       sharedZoomMode: 'x',

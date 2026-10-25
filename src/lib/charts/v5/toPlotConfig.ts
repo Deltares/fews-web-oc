@@ -33,6 +33,10 @@ export interface ToPlotConfigOptions {
   themeElement?: Element
   verticalProfile?: boolean
   plugins?: PlotConfig['plugins']
+  sharedTimeScale?: ScaleHandle
+  margins?: PlotConfig['margins']
+  autoMargins?: boolean
+  isBrush?: boolean
 }
 
 type YScale = {
@@ -57,7 +61,9 @@ export function toPlotConfig(
       position: 'bottom',
     } satisfies ChartAxis)
   const yScales = getYScales(config.yAxis)
-  const xScale = createScale(xAxis, options, options.domain)
+  const xScale =
+    (!options.verticalProfile && options.sharedTimeScale) ||
+    createScale(xAxis, options, options.domain)
   const scales: Record<string, ScaleHandle> = { x: xScale }
   const directions: Record<string, 'x' | 'y'> = { x: 'x' }
 
@@ -68,16 +74,16 @@ export function toPlotConfig(
 
   return {
     title: config.title,
-    autoMargins: true,
+    autoMargins: options.autoMargins ?? true,
     axisLayout: 'outside',
     background: 'chart',
     clipMarks: true,
-    margins: { top: 25, right: 50, bottom: 40, left: 50 },
+    margins: options.margins ?? { top: 25, right: 50, bottom: 40, left: 50 },
     theme: options.theme ?? 'auto',
     themeElement: options.themeElement,
     scales,
     directions,
-    axes: createAxes(xAxis, yScales, settings, options),
+    axes: options.isBrush ? [] : createAxes(xAxis, yScales, settings, options),
     marks: createMarks(config.series, stores, resources, yScales),
     plugins: options.plugins,
   }

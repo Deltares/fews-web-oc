@@ -20,6 +20,7 @@
         :series="brushSeries"
         :settings="settings.charts.timeSeriesChart"
         :mainChartMargin="margin"
+        :group
       />
     </template>
   </AnalysisPlotChart>
@@ -33,7 +34,7 @@
 
 <script setup lang="ts">
 import AnalysisPlotChart from '@/components/analysis/AnalysisPlotChart.vue'
-import TimeSeriesChartBrush from '@/components/charts/TimeSeriesChartBrush.vue'
+import TimeSeriesChartBrush from '@/components/charts/TimeSeriesChartBrushSwitch.vue'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
 import type { FilterChart } from '@/lib/analysis'
@@ -43,6 +44,7 @@ import { computed, ref } from 'vue'
 import { getSubplotWithDomain } from '@/lib/display'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import type { ChartGroup } from '@/lib/charts/types/TimeSeriesChartProps'
+import { createChartHandlersGroup } from '@/services/useChartHandlers'
 
 interface Props {
   chart: FilterChart
@@ -59,6 +61,7 @@ const props = defineProps<Props>()
 
 const userSettings = useUserSettingsStore()
 const showDownloadDialog = ref(false)
+const localChartGroup = createChartHandlersGroup()
 
 const showBrush = computed(
   () => userSettings.get('charts.brush')?.value === true,
@@ -75,7 +78,7 @@ const xDomain = computed(
 const visibleDomain = defineModel<[Date, Date]>('domain')
 
 const chartGroup = computed(() =>
-  props.chart.domain ? undefined : props.group,
+  props.chart.domain ? localChartGroup : props.group,
 )
 
 const config = computed(() =>
