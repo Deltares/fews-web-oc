@@ -65,6 +65,7 @@ import { useResizeObserver } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import {
   ModifierKey,
+  handleCache,
   type LayoutChangeDetail,
   crosshair,
   crossSectionSelect,
@@ -211,6 +212,7 @@ const chartTheme = computed(() => {
   const value = userSettings.get('ui.theme')?.value
   return value === 'light' || value === 'dark' ? value : 'auto'
 })
+const handles = handleCache()
 const plotConfig = computed(() =>
   toPlotConfig(
     props.config,
@@ -223,6 +225,7 @@ const plotConfig = computed(() =>
       themeElement: chartContainer.value ?? undefined,
       verticalProfile: props.verticalProfile,
       plugins: interactions,
+      handles,
       sharedTimeScale: chartGroup.v5?.timeScale,
       align: props.verticalProfile ? undefined : chartGroup.v5?.align,
     },

@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { brush, ModifierKey } from '@deltares/fews-web-oc-charts'
+import { brush, handleCache, ModifierKey } from '@deltares/fews-web-oc-charts'
 import { computed, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -52,6 +52,7 @@ if (sync) {
   initializeV5TimeScale(sync, 'brushTimeScale', props.fullDomain)
 }
 
+const handles = handleCache()
 const plotConfig = computed(() =>
   toPlotConfig(
     props.config,
@@ -67,6 +68,7 @@ const plotConfig = computed(() =>
       autoMargins: false,
       isBrush: true,
       plugins: [interaction],
+      handles,
     },
     props.series,
   ),
