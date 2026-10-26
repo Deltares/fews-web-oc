@@ -301,7 +301,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { refDebounced } from '@vueuse/core'
 import { useSearchContext } from '@/stores/searchContext'
 import type { SearchItem } from '@/stores/searchContext'
-import { containsSubstring } from '@/lib/search'
 import HighlightMatch from '@/components/general/HighlightMatch.vue'
 import { getResourcesIconsUrl } from '@/lib/fews-config'
 import { useDisplay } from 'vuetify'
@@ -360,6 +359,8 @@ const searchQuery = computed(() => {
   return searchMode.value ? value.slice(1).trim() : value
 })
 
+const normalizedSearchQuery = computed(() => searchQuery.value.toLowerCase())
+
 /**
  * We only need to search the top-level SearchItems.
  *
@@ -378,7 +379,7 @@ interface MatchedRoot {
 }
 
 const matchedRoots = computed<MatchedRoot[]>(() => {
-  const query = searchQuery.value
+  const query = normalizedSearchQuery.value
 
   let roots
   if (searchMode.value === 'location') {
@@ -427,8 +428,8 @@ interface MatchResult {
  */
 function findMatch(item: SearchItem, query: string): MatchResult {
   const ownMatch =
-    containsSubstring(item.label, query) ||
-    (item.type === 'location' && containsSubstring(item.id, query))
+    item.normalizedLabel.includes(query) ||
+    (item.type === 'location' && item.normalizedId.includes(query))
 
   let descendantMatch = false
 
@@ -473,7 +474,7 @@ type VisibleRow = GroupRow | TreeRow
  */
 const visibleRows = computed<VisibleRow[]>(() => {
   const rows: VisibleRow[] = []
-  const query = searchQuery.value
+  const query = normalizedSearchQuery.value
   const topologyRoots = matchedRoots.value.filter(
     ({ item }) => item.type === 'topology',
   )
@@ -532,8 +533,8 @@ function appendVisibleItem(
 ): void {
   const ownMatch =
     !query ||
-    containsSubstring(item.label, query) ||
-    (item.type === 'location' && containsSubstring(item.id, query))
+    item.normalizedLabel.includes(query) ||
+    (item.type === 'location' && item.normalizedId.includes(query))
 
   // If an ancestor matched, everything below it is visible.
   // Otherwise, this item must either match or have a matching descendant.
@@ -584,7 +585,7 @@ const openedTreeIds = ref<Set<string>>(new Set())
 function getDefaultOpenedIds(): Set<string> {
   const result = new Set<string>()
 
-  const query = searchQuery.value
+  const query = normalizedSearchQuery.value
 
   for (const { item } of matchedRoots.value) {
     result.add(item.id)
@@ -617,8 +618,8 @@ function openMatchingAncestors(
 
   for (const child of item.children) {
     const ownMatch =
-      containsSubstring(child.label, query) ||
-      (child.type === 'location' && containsSubstring(child.id, query))
+      child.normalizedLabel.includes(query) ||
+      (child.type === 'location' && child.normalizedId.includes(query))
 
     const descendantMatch = openMatchingAncestors(child, query, result)
 
@@ -656,14 +657,14 @@ function selectTreeItem(item: SearchItem): void {
 }
 
 function showLocationId(item: SearchItem): boolean {
-  const query = searchQuery.value
+  const query = normalizedSearchQuery.value
 
   if (!query || item.type !== 'location') {
     return false
   }
 
   return (
-    containsSubstring(item.id, query) && !containsSubstring(item.label, query)
+    item.normalizedId.includes(query) && !item.normalizedLabel.includes(query)
   )
 }
 

@@ -20,6 +20,15 @@ If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has a
 
 
 
+## Search data
+
+The search context stores its item tree in a `shallowRef`. Replace locations
+and routes through `setLocations` and `setTopologyNodes` rather than mutating
+nested search items. These setters cache lowercase labels and IDs for each
+item; the search dialog normalizes the query once and uses the cached text
+for matching. Original labels and IDs remain unchanged for highlighting and
+navigation.
+
 ## Build variants
 
 The default commands (`npm run dev`, `npm run build`, and `npm run preview`)

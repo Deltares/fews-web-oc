@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import type { Location, TopologyNode } from '@deltares/fews-pi-requests'
 import { topologyNodeIsVisible } from '@/lib/topology/nodes'
@@ -9,6 +9,8 @@ export type SearchItemType =
 export interface SearchItem {
   id: string
   label: string
+  normalizedLabel: string
+  normalizedId: string
   iconName?: string
   params: Record<string, string | number | string[] | undefined>
   type: SearchItemType
@@ -19,7 +21,8 @@ export const useSearchContext = defineStore('searchContext', () => {
   // The dialog passes the user's input here.
   const search = ref('')
 
-  const items = ref<SearchItem[]>([])
+  // Replace the tree through the setters; nested items are not reactive.
+  const items = shallowRef<SearchItem[]>([])
 
   const filteredItems = computed(() => {
     const query = search.value.trim().toLowerCase()
@@ -28,9 +31,7 @@ export const useSearchContext = defineStore('searchContext', () => {
       return items.value
     }
 
-    return items.value.filter((item) =>
-      item.label.toLowerCase().includes(query),
-    )
+    return items.value.filter((item) => item.normalizedLabel.includes(query))
   })
 
   function setLocations(locations: Location[]): void {
@@ -49,11 +50,14 @@ export const useSearchContext = defineStore('searchContext', () => {
 
     function toSearchItem(location: Location): SearchItem {
       const children = locationsByParent.get(location.locationId)
+      const label =
+        location.locationName ?? location.shortName ?? location.locationId
 
       return {
         id: location.locationId,
-        label:
-          location.locationName ?? location.shortName ?? location.locationId,
+        label,
+        normalizedLabel: label.toLowerCase(),
+        normalizedId: location.locationId.toLowerCase(),
         iconName: location.thresholdIconName ?? location.iconName,
         type: 'location',
         params: {
@@ -91,10 +95,14 @@ export const useSearchContext = defineStore('searchContext', () => {
     ): SearchItem {
       const nodePath = [...parentNodeIds, node.id]
       const visibleChildren = node.topologyNodes?.filter(topologyNodeIsVisible)
+      const id = `topology:${topologyId ?? 'default'}:${node.id}`
+      const label = node.name ?? node.id
 
       return {
-        id: `topology:${topologyId ?? 'default'}:${node.id}`,
-        label: node.name ?? node.id,
+        id,
+        label,
+        normalizedLabel: label.toLowerCase(),
+        normalizedId: id.toLowerCase(),
         iconName: node.iconId,
         type: 'topology',
         params: {
