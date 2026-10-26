@@ -107,9 +107,7 @@ function buildPlotConfig(
     themeElement: options.themeElement,
     scales,
     directions,
-    axes: options.isBrush
-      ? []
-      : createAxes(xAxis, yScales, settings, options, handles),
+    axes: createAxes(xAxis, yScales, settings, options, handles),
     marks: createMarks(config.series, stores, resources, yScales, handles),
     plugins: options.plugins,
   }
@@ -217,7 +215,8 @@ function createAxes(
         position: xAxis.position === 'top' ? 'top' : 'bottom',
         label: settings.xAxis.xLabel ? (xAxis.label ?? '') : '',
         unit: xAxis.unit ?? '',
-        grid: settings.xAxis.xTicks && (xAxis.showGrid ?? true),
+        grid:
+          !options.isBrush && settings.xAxis.xTicks && (xAxis.showGrid ?? true),
         tickCount: settings.xAxis.xTicks ? 6 : 1,
         style: 'classic',
         locale: xAxis.locale ?? options.locale,
@@ -227,7 +226,7 @@ function createAxes(
     )
   }
 
-  if (settings.yAxis.enabled) {
+  if (settings.yAxis.enabled && !options.isBrush) {
     for (const [index, { id, axis: yAxis }] of yScales.entries()) {
       const position =
         yAxis.position === 'right'
