@@ -73,6 +73,11 @@ test('sets chart max height based on the number of chart siblings', async ({
   await expect
     .poll(async () => (await svg.boundingBox())?.height ?? 0)
     .toBeGreaterThan(initialHeight + 50)
+
+  await component.update({ chartCount: 1 })
+
+  await expect(charts).toHaveCount(1)
+  await expect(charts.first()).toHaveCSS('max-height', 'max(50%, 400px)')
 })
 
 test('vertical profile charts are not limited by the regular chart heights', async ({
