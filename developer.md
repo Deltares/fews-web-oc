@@ -29,6 +29,12 @@ item; the search dialog normalizes the query once and uses the cached text
 for matching. Original labels and IDs remain unchanged for highlighting and
 navigation.
 
+The dialog height is applied to Vuetify's overlay content via the `height`
+prop. Its virtual list is the only scroll container and fills the remaining
+card space with a zero flex basis, keeping the rendered row count bounded
+by the viewport. Keyboard navigation uses the virtual list's `scrollToIndex`
+API rather than scrolling a wrapper.
+
 ## Build variants
 
 The default commands (`npm run dev`, `npm run build`, and `npm run preview`)

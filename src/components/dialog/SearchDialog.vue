@@ -4,6 +4,7 @@
     transition="dialog-top-transition"
     :fullscreen="mobile"
     :max-width="mobile ? undefined : '900'"
+    :height="mobile ? undefined : '60vh'"
     class="search-dialog"
     @keydown="onKeydown"
   >
@@ -59,10 +60,7 @@
       <v-divider />
 
       <div class="search-dialog__results">
-        <div
-          ref="searchResultsContainer"
-          class="search-dialog__scroll-container"
-        >
+        <div class="search-dialog__scroll-container">
           <v-virtual-scroll
             ref="virtualScroll"
             :items="visibleRows"
@@ -304,6 +302,7 @@ import type { SearchItem } from '@/stores/searchContext'
 import HighlightMatch from '@/components/general/HighlightMatch.vue'
 import { getResourcesIconsUrl } from '@/lib/fews-config'
 import { useDisplay } from 'vuetify'
+import { VVirtualScroll } from 'vuetify/components'
 
 const modelValue = defineModel<boolean>({
   type: Boolean,
@@ -316,9 +315,8 @@ const route = useRoute()
 const { mobile } = useDisplay()
 const searchContext = useSearchContext()
 const searchInput = useTemplateRef<HTMLInputElement>('searchInput')
-const searchResultsContainer = useTemplateRef<HTMLDivElement>(
-  'searchResultsContainer',
-)
+const virtualScroll =
+  useTemplateRef<InstanceType<typeof VVirtualScroll>>('virtualScroll')
 
 const LOCATION_SEARCH_SHORTCUT = '@' as const
 const ROUTE_SEARCH_SHORTCUT = '#' as const
@@ -1006,22 +1004,27 @@ function toggleSelectedTreeItem(key: string, items: SearchItem[]): void {
 }
 
 function scrollSelectedItemIntoView(): void {
-  const container = searchResultsContainer.value
-  if (!container) return
+  const virtual = virtualScroll.value
+  if (!virtual) return
 
   const virtualIndex = selectedVirtualIndex.value
   if (virtualIndex < 0) return
 
-  const rowTop = virtualIndex * 48
-  const rowBottom = rowTop + 48
+  const container: HTMLElement = virtual.$el
+  const row = container.querySelector<HTMLElement>(
+    `[data-search-row-index="${virtualIndex}"]`,
+  )
+  if (!row) {
+    virtual.scrollToIndex(virtualIndex)
+    return
+  }
 
-  const visibleTop = container.scrollTop
-  const visibleBottom = visibleTop + container.clientHeight
-
-  if (rowTop < visibleTop) {
-    container.scrollTop = rowTop
-  } else if (rowBottom > visibleBottom) {
-    container.scrollTop = rowBottom - container.clientHeight
+  const viewport = container.getBoundingClientRect()
+  const bounds = row.getBoundingClientRect()
+  if (bounds.top < viewport.top) {
+    virtual.scrollToIndex(virtualIndex, 'start')
+  } else if (bounds.bottom > viewport.bottom) {
+    virtual.scrollToIndex(virtualIndex, 'end')
   }
 }
 
@@ -1055,10 +1058,6 @@ watch(modelValue, async (value) => {
 </script>
 
 <style scoped>
-.search-dialog:not(.v-dialog--fullscreen) {
-  height: 60vh;
-}
-
 .search-dialog__card {
   height: 100%;
   display: flex;
@@ -1108,12 +1107,16 @@ watch(modelValue, async (value) => {
 
 .search-dialog__scroll-container {
   min-height: 0;
-  flex: 1;
-  overflow: auto;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .search-dialog__virtual-scroll {
-  height: 100%;
+  min-height: 0;
+  height: 0;
+  flex: 1 1 0;
 }
 
 .search-dialog__row {
