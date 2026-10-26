@@ -31,9 +31,7 @@ export function initializeV5TimeScale(
     scale === 'timeScale' ? 'timeScaleInitialized' : 'brushTimeScaleInitialized'
   if (group[initializedKey]) return
 
-  const values = domain.map((value) =>
-    value instanceof Date ? value.getTime() : value,
-  )
+  const values: [number, number] = [Number(domain[0]), Number(domain[1])]
   group[scale].update({ domain: values, defaultDomain: values })
   group[initializedKey] = true
 }
@@ -44,7 +42,7 @@ export function updateTimeScaleDomain(
 ): void {
   if (!domain) return
 
-  const next = domain.map((value) => value.getTime())
+  const next: [number, number] = [domain[0].getTime(), domain[1].getTime()]
   if (sameRange(scale.domain.get(), next)) return
 
   scale.update({ domain: next })

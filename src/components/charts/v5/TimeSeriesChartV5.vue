@@ -304,12 +304,7 @@ watch(
       subscribe(
         chartGroup.v5.timeScale.domain,
         (nextDomain) => {
-          if (
-            typeof nextDomain[0] === 'number' &&
-            typeof nextDomain[1] === 'number'
-          ) {
-            domain.value = [new Date(nextDomain[0]), new Date(nextDomain[1])]
-          }
+          domain.value = [new Date(nextDomain[0]), new Date(nextDomain[1])]
         },
         { immediate: true, signal: controller.signal },
       )
