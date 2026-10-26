@@ -126,7 +126,7 @@ export const ManualOnlyLogs = defineComponent(() => {
   configureLogPanel(true, 'manual')
 
   return () =>
-    h(ImportStatusSummary, {
+    h(ImportExportStatusSummary, {
       item: { ...baseItem, taskRunId: 'task-run-3' },
       expanded: expanded.value,
       'onUpdate:expanded': (value: boolean) => {
