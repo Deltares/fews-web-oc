@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { defaultChartSettings } from '@/lib/topology/componentSettings'
 import { getV5PlotMargins, toPlotConfig } from './toPlotConfig'
+import { createV5ChartGroup } from '@/services/useChartHandlers/v5'
 
 describe('getV5PlotMargins', () => {
   it('uses the same default and vertical-profile margins as v4', () => {
@@ -24,6 +25,37 @@ describe('getV5PlotMargins', () => {
   })
 
   describe('toPlotConfig axis layout', () => {
+    it('shares only the primary elevation scale between vertical profiles', () => {
+      const group = createV5ChartGroup()
+      const build = (verticalProfile: boolean) =>
+        toPlotConfig(
+          {
+            id: 'profile',
+            title: '',
+            series: [],
+            yAxis: [{ kind: 'value' }, { kind: 'value', position: 'right' }],
+          },
+          {},
+          defaultChartSettings.verticalProfileChart,
+          {
+            verticalProfile,
+            sharedElevationScale: group.elevationScale,
+            sharedTimeScale: group.timeScale,
+          },
+        )
+      const first = build(true)
+      const second = build(true)
+      expect(first.scales?.y0).toBe(group.elevationScale)
+      expect(second.scales?.y0).toBe(first.scales?.y0)
+      expect(second.scales?.y1).not.toBe(first.scales?.y1)
+      expect(second.scales?.x).not.toBe(first.scales?.x)
+      group.elevationScale.update({ domain: [10, 20] })
+      expect(second.scales?.y0?.domain.get()).toEqual([10, 20])
+      const regular = build(false)
+      expect(regular.scales?.y0).not.toBe(group.elevationScale)
+      expect(regular.scales?.x).toBe(group.timeScale)
+    })
+
     it('fits axis space within margins and enables automatic margin sizing', () => {
       const config = toPlotConfig(
         { id: 'test', title: 'Test', series: [] },

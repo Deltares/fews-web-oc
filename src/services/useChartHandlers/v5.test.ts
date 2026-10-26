@@ -1,12 +1,38 @@
 import { describe, expect, it } from 'vitest'
 import {
   createV5ChartGroup,
+  initializeV5ElevationScale,
   initializeV5TimeScale,
   updateBrushSelection,
   updateTimeScaleDomain,
 } from './v5'
 
 describe('v5 chart group synchronization', () => {
+  it('initializes elevation independently and preserves interactive domains', () => {
+    const group = createV5ChartGroup()
+    initializeV5ElevationScale(group, {
+      kind: 'value',
+      domain: [-10, 100],
+      defaultDomain: [-20, 120],
+      reverse: true,
+      nice: false,
+    })
+    expect(group.elevationScale.domain.get()).toEqual([-10, 100])
+    expect(group.elevationScale.options.get().resolved).toMatchObject({
+      defaultDomain: [-20, 120],
+      reverse: true,
+      nice: false,
+      includeZero: false,
+    })
+    group.elevationScale.update({ domain: [20, 40] })
+    initializeV5ElevationScale(group, { kind: 'value', domain: [0, 200] })
+    expect(group.elevationScale.domain.get()).toEqual([20, 40])
+    expect(group.timeScale.domain.get()).toEqual([0, 1])
+    expect(group.pointer.by).toBe('x')
+    expect(group.elevationPointer.by).toBe('y')
+    expect(createV5ChartGroup().elevationScale).not.toBe(group.elevationScale)
+  })
+
   it('shares time domains and brush selections within a chart group', () => {
     const group = createV5ChartGroup()
     const fullDomain: [Date, Date] = [

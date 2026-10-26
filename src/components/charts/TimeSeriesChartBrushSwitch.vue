@@ -1,13 +1,15 @@
 <template>
-  <TimeSeriesChartBrushV5
-    v-if="engine === 'v5'"
-    v-model:domain="domain"
-    :config
-    :series
-    :settings
-    :full-domain="fullDomain"
-    :group
-  />
+  <!-- Reserve space before the async v5 brush component loads. -->
+  <div v-if="engine === 'v5'" class="brush-chart-placeholder">
+    <TimeSeriesChartBrushV5
+      v-model:domain="domain"
+      :config
+      :series
+      :settings
+      :full-domain="fullDomain"
+      :group
+    />
+  </div>
   <TimeSeriesChartBrushV4
     v-else
     v-model:domain="domain"
@@ -48,3 +50,11 @@ const TimeSeriesChartBrushV5 = defineAsyncComponent(
   () => import('./v5/TimeSeriesChartBrushV5.vue'),
 )
 </script>
+
+<style scoped>
+.brush-chart-placeholder {
+  height: 60px;
+  flex: 0 0 60px;
+  width: 100%;
+}
+</style>
