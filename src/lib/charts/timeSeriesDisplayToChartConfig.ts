@@ -45,7 +45,8 @@ export function timeSeriesDisplayToChartConfig(
     .map((item) => item.plotWeight)
     .filter((weight): weight is number => Number.isFinite(weight))
 
-  const plotWeight = itemPlotWeights.length > 0 ? Math.max(...itemPlotWeights) : 200
+  const plotWeight =
+    itemPlotWeights.length > 0 ? Math.max(...itemPlotWeights) : 200
 
   const config: ChartConfig = {
     id: subplotId,
