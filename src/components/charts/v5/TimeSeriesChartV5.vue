@@ -225,6 +225,7 @@ const plotConfig = computed(() =>
       verticalProfile: props.verticalProfile,
       plugins: interactions,
       sharedTimeScale: chartGroup.v5?.timeScale,
+      align: props.verticalProfile ? undefined : chartGroup.v5?.align,
     },
     props.series,
   ),

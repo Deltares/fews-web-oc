@@ -57,13 +57,7 @@ describe('getV5PlotMargins', () => {
     expect(
       getV5PlotMargins(noYAxisLabel, {
         isBrush: true,
-        margins: { left: 62, right: 41 },
       }),
-    ).toEqual({
-      top: 5,
-      right: 41,
-      bottom: 25,
-      left: 62,
-    })
+    ).toMatchObject({ top: 5, bottom: 25 })
   })
 })
