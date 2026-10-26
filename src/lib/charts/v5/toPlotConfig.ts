@@ -6,6 +6,7 @@ import {
   bar,
   createTable,
   degreesScale,
+  handleCache,
   linearScale,
   series as seriesMark,
   timeScale,
@@ -13,11 +14,13 @@ import {
   type BandMark,
   type BarMark,
   type MarkerSymbol,
+  type HandleCache,
   type PlotConfig,
   type ScaleHandle,
   type SeriesMark,
   type SeriesStore,
   type ThemeMode,
+  type TableInput,
 } from '@deltares/fews-web-oc-charts'
 import type { ChartAxis } from '@/lib/charts/types/ChartAxis'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -38,6 +41,8 @@ export interface ToPlotConfigOptions {
   align?: AlignGroup
   autoMargins?: boolean
   isBrush?: boolean
+  /** Reuse one cache per plot; omitted for one-off configuration builds. */
+  handles?: HandleCache
 }
 
 type YScale = {
@@ -53,6 +58,21 @@ export function toPlotConfig(
   options: ToPlotConfigOptions = {},
   resources: Record<string, Series> = {},
 ): PlotConfig {
+  const handles = options.handles ?? handleCache()
+  return handles.collect(() =>
+    buildPlotConfig(config, stores, settings, options, resources, handles),
+  )
+}
+
+function buildPlotConfig(
+  config: ChartConfig,
+  stores: Readonly<Record<string, SeriesStore>>,
+  settings:
+    ChartsSettings['timeSeriesChart'] | ChartsSettings['verticalProfileChart'],
+  options: ToPlotConfigOptions,
+  resources: Record<string, Series>,
+  handles: HandleCache,
+): PlotConfig {
   const xAxis =
     config.xAxis?.find((candidate) =>
       ['bottom', 'top'].includes(candidate.position ?? 'bottom'),
@@ -64,12 +84,12 @@ export function toPlotConfig(
   const yScales = getYScales(config.yAxis)
   const xScale =
     (!options.verticalProfile && options.sharedTimeScale) ||
-    createScale(xAxis, options, options.domain)
+    createScale('x', xAxis, options, handles, options.domain)
   const scales: Record<string, ScaleHandle> = { x: xScale }
   const directions: Record<string, 'x' | 'y'> = { x: 'x' }
 
   for (const { id, axis: yAxis } of yScales) {
-    scales[id] = createScale(yAxis, options)
+    scales[id] = createScale(id, yAxis, options, handles)
     directions[id] = 'y'
   }
 
@@ -85,8 +105,10 @@ export function toPlotConfig(
     themeElement: options.themeElement,
     scales,
     directions,
-    axes: options.isBrush ? [] : createAxes(xAxis, yScales, settings, options),
-    marks: createMarks(config.series, stores, resources, yScales),
+    axes: options.isBrush
+      ? []
+      : createAxes(xAxis, yScales, settings, options, handles),
+    marks: createMarks(config.series, stores, resources, yScales, handles),
     plugins: options.plugins,
   }
 }
@@ -138,8 +160,10 @@ function getYScales(axes: ChartAxis[] = []): YScale[] {
 }
 
 function createScale(
+  id: string,
   axisConfig: ChartAxis,
   options: ToPlotConfigOptions,
+  handles: HandleCache,
   domain?: [Date, Date],
 ): ScaleHandle {
   const source = domain ?? axisConfig.domain
@@ -159,11 +183,11 @@ function createScale(
 
   switch (axisConfig.kind) {
     case 'time':
-      return timeScale(numeric)
+      return handles.use(`scale:${id}`, timeScale, numeric)
     case 'degrees':
-      return degreesScale(numeric)
+      return handles.use(`scale:${id}`, degreesScale, numeric)
     case 'band':
-      return bandScale({
+      return handles.use(`scale:${id}`, bandScale, {
         includeZero: common.includeZero,
         nice: common.nice,
         reverse: common.reverse,
@@ -171,7 +195,7 @@ function createScale(
         timeZone: common.timeZone,
       })
     default:
-      return linearScale(numeric)
+      return handles.use(`scale:${id}`, linearScale, numeric)
   }
 }
 
@@ -181,12 +205,13 @@ function createAxes(
   settings:
     ChartsSettings['timeSeriesChart'] | ChartsSettings['verticalProfileChart'],
   options: ToPlotConfigOptions,
+  handles: HandleCache,
 ): AxisHandle[] {
   const axes: AxisHandle[] = []
 
   if (settings.xAxis.enabled) {
     axes.push(
-      axis('x', {
+      handles.use('axis:x', axis, 'x', {
         position: xAxis.position === 'top' ? 'top' : 'bottom',
         label: settings.xAxis.xLabel ? (xAxis.label ?? '') : '',
         unit: xAxis.unit ?? '',
@@ -212,7 +237,7 @@ function createAxes(
               : 'right'
       const isPrimary = position === 'left'
       axes.push(
-        axis(id, {
+        handles.use(`axis:${id}`, axis, id, {
           position,
           label: settings.yAxis.yLabel ? (yAxis.label ?? '') : '',
           unit: yAxis.unit ?? '',
@@ -235,6 +260,7 @@ function createMarks(
   stores: Readonly<Record<string, SeriesStore>>,
   resources: Record<string, Series>,
   yScales: YScale[],
+  handles: HandleCache,
 ): (BandMark | BarMark | SeriesMark)[] {
   const marks: (BandMark | BarMark | SeriesMark)[] = []
   const mergedMarkerIndices = new Set<number>()
@@ -249,29 +275,30 @@ function createMarks(
       const pairedData = getPairedData(item.dataResources, resources)
       if (!pairedData) continue
       marks.push(
-        band({
+        handles.use(`mark:${markId}`, band, {
           id: markId,
           x: 'x',
           y: yScale,
-          xValues: pairedData.x,
-          yValues: pairedData.y,
-          fill: styleValue(item, 'fill'),
           label: item.visibleInLegend === false ? undefined : item.name,
           legendGroup:
             item.visibleInLegend === false
               ? undefined
               : nonEmptyLabel(item.name),
           visible: true,
+          xValues: pairedData.x,
+          yValues: pairedData.y,
+          fill: styleValue(item, 'fill'),
         }),
       )
       continue
     }
 
     if (item.type === 'bar') {
-      const data = getBarData(item, resources)
-      if (!data) continue
+      const rows = getBarData(item, resources)
+      if (!rows) continue
+      const data = handles.use(`table:${markId}`, createBarStore, { rows })
       marks.push(
-        bar(data.store, {
+        handles.use(`mark:${markId}`, bar, data.store, {
           id: markId,
           x: 'x',
           y: 'y',
@@ -309,7 +336,7 @@ function createMarks(
 
       const isArea = item.type === 'area'
       marks.push(
-        seriesMark(store, {
+        handles.use(`mark:${markId}:${index}`, seriesMark, store, {
           id: `${markId}:${index}`,
           x: 'x',
           y: yScale,
@@ -461,7 +488,22 @@ function getBarData(item: ChartSeries, resources: Record<string, Series>) {
     start.push(times[index - 1] ?? times[index])
     y.push(event.y)
   }
-  return { store: createTable({ x, start, y }, { x: 'x' }) }
+  return { x, start, y }
+}
+
+function createBarStore({ rows }: { rows: TableInput }) {
+  const store = createTable(rows, { x: 'x' })
+  let currentRows = rows
+  return {
+    store,
+    update({ rows }: { rows?: TableInput }) {
+      if (rows) {
+        // handleCache patches only changed columns; replace needs all columns.
+        currentRows = { ...currentRows, ...rows }
+        store.replace(currentRows)
+      }
+    },
+  }
 }
 
 function markerSymbol(shape?: string): MarkerSymbol {
