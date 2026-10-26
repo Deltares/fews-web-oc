@@ -38,7 +38,7 @@ for (const { count, story } of [
         (element) => element.getBoundingClientRect().height,
       ),
     ).toBe(852)
-    const expectedSvgHeight = count === 1 ? 784 : count === 2 ? 358 : 216
+    const expectedSvgHeight = count <= 2 ? 358 : 216
     await expect
       .poll(() =>
         svgs.evaluateAll((elements) =>

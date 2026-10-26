@@ -80,6 +80,7 @@ test('Button should render with text', async ({ mount }) => {
 `ThreeCharts`, `FourCharts`, and `FiveCharts` stories with mock data in an
 852px container. With default plot sizing, three or more charts retain the
 three-chart height and additional charts scroll rather than shrinking.
+A single chart uses `max(50%, 400px)` rather than filling the container.
 Explicit plot weights distribute the available canvas height proportionally,
 excluding axes and legend space, without the default chart-height limits.
 Vertical profiles retain their existing sizing.

@@ -531,7 +531,7 @@ function getChartLayoutStyle() {
 }
 
 .chart-with-chips:only-child {
-  --plot-height: 100%;
+  --plot-height: max(50%, 400px);
 }
 
 .chart-with-chips:first-child:nth-last-child(2),
