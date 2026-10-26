@@ -140,12 +140,13 @@ if (!props.verticalProfile) {
 const zoomInteraction = zoom({
   mode: 'auto',
   wheel: userSettings.scrollZoomMode,
-  modifier: ModifierKey.Shift,
+  wheelModifier: userSettings.scrollZoomModifierKey,
+  modifier: getDragZoomModifier(),
   reset: 'initial',
 })
 const panInteraction = pan({
   mode: props.verticalProfile ? 'y' : 'x',
-  modifier: ModifierKey.Shift,
+  modifier: userSettings.panModifierKey,
 })
 const crosshairInteraction = crosshair({
   mode: props.verticalProfile ? 'y' : 'x',
@@ -176,6 +177,12 @@ const interactions = [
   tooltipInteraction,
   crossSectionInteraction,
 ]
+
+function getDragZoomModifier(): ModifierKey {
+  return userSettings.panModifierKey === ModifierKey.None
+    ? ModifierKey.Shift
+    : ModifierKey.None
+}
 
 const plotWeight = computed(() => props.config.plotWeight)
 
@@ -246,6 +253,19 @@ watch(
 watch(
   () => userSettings.scrollZoomMode,
   (wheel) => zoomInteraction.update({ wheel }),
+)
+
+watch(
+  () => userSettings.scrollZoomModifierKey,
+  (wheelModifier) => zoomInteraction.update({ wheelModifier }),
+)
+
+watch(
+  () => userSettings.panModifierKey,
+  (modifier) => {
+    panInteraction.update({ modifier })
+    zoomInteraction.update({ modifier: getDragZoomModifier() })
+  },
 )
 
 watch(
