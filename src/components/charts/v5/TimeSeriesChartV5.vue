@@ -140,7 +140,7 @@ if (!props.verticalProfile) {
 const zoomInteraction = zoom({
   mode: 'auto',
   wheel: userSettings.scrollZoomMode,
-  modifier: ModifierKey.None,
+  modifier: ModifierKey.Shift,
   reset: 'initial',
 })
 const panInteraction = pan({
