@@ -29,6 +29,17 @@ export function getExtension(documentFormat: DocumentFormat): string {
       return ''
   }
 }
+
+export class DownloadError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message)
+    this.name = 'DownloadError'
+  }
+}
+
 export async function downloadFileAttachment(
   url: string,
   fileName: string,
@@ -100,7 +111,7 @@ async function downloadFileWithFetch(
     clickDownloadBlob(blob, fileName)
   } else {
     const message = await response.text()
-    throw new Error(message)
+    throw new DownloadError(message, response.status)
   }
 }
 
