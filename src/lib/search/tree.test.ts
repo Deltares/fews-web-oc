@@ -82,9 +82,9 @@ describe('matchSearchTree', () => {
       type: 'topology',
     }
 
-    expect(
-      matchSearchTree([station, route], 'station-a').matchedRoots,
-    ).toEqual([station])
+    expect(matchSearchTree([station, route], 'station-a').matchedRoots).toEqual(
+      [station],
+    )
     expect(matchSearchTree([route], 'river').matchedRoots).toEqual([route])
   })
 

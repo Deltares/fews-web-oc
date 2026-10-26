@@ -82,6 +82,72 @@ describe('Search context', () => {
     expect(store.filteredItems).toEqual([])
   })
 
+  it('preserves root and sibling order with children before parents', () => {
+    const store = useSearchContext()
+    store.setLocations([
+      { locationId: 'second-child', parentLocationId: 'root' },
+      { locationId: 'other-root' },
+      { locationId: 'first-child', parentLocationId: 'root' },
+      { locationId: 'root' },
+    ])
+
+    expect(store.items.map((item) => item.id)).toEqual(['other-root', 'root'])
+    expect(store.items[1].children?.map((item) => item.id)).toEqual([
+      'second-child',
+      'first-child',
+    ])
+  })
+
+  it('builds orphaned subtrees once even when descendants precede their parents', () => {
+    const store = useSearchContext()
+    store.setLocations([
+      { locationId: 'grandchild', parentLocationId: 'child' },
+      { locationId: 'child', parentLocationId: 'orphan' },
+      { locationId: 'orphan', parentLocationId: 'missing' },
+      { locationId: 'root' },
+      { locationId: 'other-orphan', parentLocationId: 'missing' },
+    ])
+
+    expect(store.items.map((item) => item.id)).toEqual([
+      'root',
+      'orphan',
+      'other-orphan',
+    ])
+    expect(store.items[1].children?.map((item) => item.id)).toEqual(['child'])
+    expect(
+      store.items[1].children?.[0].children?.map((item) => item.id),
+    ).toEqual(['grandchild'])
+  })
+
+  it('constructs each of 20,000 nested locations only once', () => {
+    const store = useSearchContext()
+    let labelReads = 0
+    store.setLocations(
+      Array.from({ length: 20_000 }, (_, index) => ({
+        locationId: `station-${index}`,
+        parentLocationId:
+          index === 0 ? 'missing' : `station-${Math.floor((index - 1) / 2)}`,
+        get locationName() {
+          labelReads++
+          return `Station ${index}`
+        },
+      })).reverse(),
+    )
+
+    expect(labelReads).toBe(20_000)
+    expect(store.items.map((item) => item.id)).toEqual(['station-0'])
+    const pending = [...store.items]
+    const ids = new Set<string>()
+    let count = 0
+    while (pending.length) {
+      const item = pending.pop()!
+      count++
+      ids.add(item.id)
+      pending.push(...(item.children ?? []))
+    }
+    expect(count).toBe(20_000)
+    expect(ids.size).toBe(20_000)
+  })
   it('indexes nested routes while retaining their original paths', () => {
     const store = useSearchContext()
     store.setTopologyNodes(

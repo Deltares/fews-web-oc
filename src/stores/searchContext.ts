@@ -39,6 +39,10 @@ export const useSearchContext = defineStore('searchContext', () => {
       (item) => item.type !== 'location',
     )
     const locationsByParent = new Map<string, Location[]>()
+    const locationIds = new Set(
+      locations.map((location) => location.locationId),
+    )
+    const includedLocationIds = new Set<string>()
 
     for (const location of locations) {
       if (location.parentLocationId === undefined) continue
@@ -49,6 +53,7 @@ export const useSearchContext = defineStore('searchContext', () => {
     }
 
     function toSearchItem(location: Location): SearchItem {
+      includedLocationIds.add(location.locationId)
       const children = locationsByParent.get(location.locationId)
       const label =
         location.locationName ?? location.shortName ?? location.locationId
@@ -71,12 +76,23 @@ export const useSearchContext = defineStore('searchContext', () => {
       .filter((location) => location.parentLocationId === undefined)
       .map(toSearchItem)
 
-    const nestedLocationIds = new Set(
-      locationItems.flatMap((item) => getNestedLocationIds(item)),
-    )
-    const orphanedLocations = locations
-      .filter((location) => !nestedLocationIds.has(location.locationId))
-      .map(toSearchItem)
+    const orphanedLocations: SearchItem[] = []
+    for (const location of locations) {
+      if (
+        location.parentLocationId !== undefined &&
+        !locationIds.has(location.parentLocationId) &&
+        !includedLocationIds.has(location.locationId)
+      ) {
+        orphanedLocations.push(toSearchItem(location))
+      }
+    }
+
+    // Retain locations in disconnected hierarchies without rebuilding descendants.
+    for (const location of locations) {
+      if (!includedLocationIds.has(location.locationId)) {
+        orphanedLocations.push(toSearchItem(location))
+      }
+    }
 
     items.value = [...nonLocationItems, ...locationItems, ...orphanedLocations]
   }
@@ -121,10 +137,6 @@ export const useSearchContext = defineStore('searchContext', () => {
         .filter(topologyNodeIsVisible)
         .map((node) => toSearchItem(node, [])),
     ]
-  }
-
-  function getNestedLocationIds(item: SearchItem): string[] {
-    return [item.id, ...(item.children?.flatMap(getNestedLocationIds) ?? [])]
   }
 
   return {

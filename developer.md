@@ -29,6 +29,12 @@ item; the search dialog normalizes the query once and uses the cached text
 for matching. Original labels and IDs remain unchanged for highlighting and
 navigation.
 
+Location-tree construction tracks included IDs as items are created instead
+of collecting and copying descendant-ID arrays afterward. Missing-parent
+locations become orphan roots; their descendants stay nested and are not
+duplicated as extra roots, even when they precede their parents in the input.
+Normal roots remain first, with input ordering preserved among roots and siblings.
+
 For each query, `matchSearchTree` computes each node's own and descendant
 matches in one traversal, together with the default expanded ancestors.
 The dialog reuses those results when flattening visible rows; expanding or
