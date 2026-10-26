@@ -65,7 +65,6 @@ import { useResizeObserver } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import {
   ModifierKey,
-  subscribe,
   type LayoutChangeDetail,
   crosshair,
   crossSectionSelect,
@@ -301,12 +300,12 @@ watch(
     onCleanup(() => controller.abort())
 
     if (!props.verticalProfile && chartGroup.v5) {
-      subscribe(
+      currentPlot.subscribe(
         chartGroup.v5.timeScale.domain,
         (nextDomain) => {
           domain.value = [new Date(nextDomain[0]), new Date(nextDomain[1])]
         },
-        { immediate: true, signal: controller.signal },
+        { immediate: true },
       )
     }
 
