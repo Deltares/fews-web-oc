@@ -222,6 +222,7 @@ const plotConfig = computed(() =>
       domain: domain.value,
       locale: locale.value,
       theme: chartTheme.value,
+      colorContrast: userSettings.chartColorContrast,
       themeElement: chartContainer.value ?? undefined,
       verticalProfile: props.verticalProfile,
       plugins: interactions,

@@ -3,6 +3,7 @@ import DefaultUserSettings from '@/assets/DefaultUserSettings.json'
 import { LayerKind } from '@/lib/streamlines'
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import type { ColorContrast } from '@deltares/fews-web-oc-charts'
 import type {
   ChartEngine,
   ChartWheelMode,
@@ -75,6 +76,9 @@ export const useUserSettingsStore = defineStore(
     const route = useRoute()
     const chartEngine = computed<ChartEngine>(() =>
       get('charts.engine')?.value === 'v5' ? 'v5' : 'v4',
+    )
+    const chartColorContrast = computed<ColorContrast>(() =>
+      get('charts.colorContrast')?.value === 'none' ? 'none' : 'auto',
     )
 
     const listFavorite = computed(() =>
@@ -177,6 +181,7 @@ export const useUserSettingsStore = defineStore(
       useDisplayUnits,
       preferredLayerKind,
       chartEngine,
+      chartColorContrast,
       listByGroup,
       listFavorite,
       get,

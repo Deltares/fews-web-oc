@@ -221,6 +221,24 @@
     "favorite": false
   },
   {
+    "id": "charts.colorContrast",
+    "type": "oneOfMultiple",
+    "label": "Color contrast (v5 only)",
+    "value": "auto",
+    "items": [
+      {
+        "value": "auto",
+        "title": "Automatic"
+      },
+      {
+        "value": "none",
+        "title": "None"
+      }
+    ],
+    "group": "Charts",
+    "favorite": false
+  },
+  {
     "id": "charts.scrollZoomMode",
     "type": "oneOfMultiple",
     "label": "Scroll wheel zoom mode",

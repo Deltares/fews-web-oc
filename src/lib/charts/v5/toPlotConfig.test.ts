@@ -33,7 +33,24 @@ describe('getV5PlotMargins', () => {
 
       expect(config.axisLayout).toBe('inset')
       expect(config.autoMargins).toBe(true)
+      expect(config.colorContrast).toBe('auto')
     })
+
+    it.each(['auto', 'none'] as const)(
+      'applies %s color contrast to main and brush plots',
+      (colorContrast) => {
+        for (const isBrush of [false, true]) {
+          const config = toPlotConfig(
+            { id: 'test', title: 'Test', series: [] },
+            {},
+            defaultChartSettings.timeSeriesChart,
+            { colorContrast, isBrush },
+          )
+
+          expect(config.colorContrast).toBe(colorContrast)
+        }
+      },
+    )
   })
 
   it('applies the v4 label, legend, and brush margin overrides in order', () => {

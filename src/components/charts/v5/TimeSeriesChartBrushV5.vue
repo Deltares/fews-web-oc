@@ -62,6 +62,7 @@ const plotConfig = computed(() =>
       domain: props.fullDomain,
       locale: locale.value,
       theme: chartTheme.value,
+      colorContrast: userSettings.chartColorContrast,
       themeElement: chartContainer.value ?? undefined,
       sharedTimeScale: sync?.brushTimeScale,
       align: sync?.align,
