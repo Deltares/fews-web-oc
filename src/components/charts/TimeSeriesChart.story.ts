@@ -1,5 +1,6 @@
 import { computed, defineComponent, h, ref } from 'vue'
 import TimeSeriesChartBrush from './TimeSeriesChartBrush.vue'
+import TimeSeriesChartBrushSwitch from './TimeSeriesChartBrushSwitch.vue'
 import type { Margin } from '@deltares/fews-web-oc-charts'
 import TimeSeriesChart from './TimeSeriesChartSwitch.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -19,6 +20,8 @@ export const ThresholdSwitching = defineComponent({
     includeMarkers: { type: Boolean, default: false },
     chartCount: { type: Number, default: 1 },
     verticalProfile: { type: Boolean, default: false },
+    withBrush: { type: Boolean, default: false },
+    plotWeight: Number,
   },
   setup(props) {
     const userSettings = useUserSettingsStore()
@@ -58,6 +61,7 @@ export const ThresholdSwitching = defineComponent({
       const result: ChartConfig = {
         id: 'threshold-switching',
         title: 'Threshold switching',
+        plotWeight: props.plotWeight,
         xAxis: [{ kind: 'time', domain: [start, end] }],
         yAxis: [
           props.autoScaleY
@@ -110,12 +114,27 @@ export const ThresholdSwitching = defineComponent({
         'div',
         { style: { height: '400px', display: 'flex' } },
         Array.from({ length: props.chartCount }, () =>
-          h(TimeSeriesChart, {
-            config: config.value,
-            series: series.value,
-            settings,
-            verticalProfile: props.verticalProfile,
-          }),
+          h(
+            TimeSeriesChart,
+            {
+              config: config.value,
+              series: series.value,
+              settings,
+              verticalProfile: props.verticalProfile,
+            },
+            props.withBrush
+              ? {
+                  brush: ({ margin }: { margin: Margin }) =>
+                    h(TimeSeriesChartBrushSwitch, {
+                      config: config.value,
+                      series: series.value,
+                      settings,
+                      fullDomain: [start, end],
+                      mainChartMargin: margin,
+                    }),
+                }
+              : undefined,
+          ),
         ),
       )
   },
@@ -141,8 +160,8 @@ function createMockChart(
     id: `mock-chart-${index + 1}`,
     title: `Mock chart ${index + 1}`,
     plotWeight,
-    xAxis: [{ domain }],
-    yAxis: [{ defaultDomain: [0, 8] }],
+    xAxis: [{ kind: 'time', domain }],
+    yAxis: [{ kind: 'value', defaultDomain: [0, 8] }],
     series: [
       {
         id: resourceId,

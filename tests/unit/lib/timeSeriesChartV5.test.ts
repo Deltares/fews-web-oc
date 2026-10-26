@@ -53,6 +53,44 @@ function createResource(
 }
 
 describe('v5 static chart config', () => {
+  it.each(['line', 'marker', 'area'] as const)(
+    'preserves elevation order, gaps and legends for %s profiles with reversing x values',
+    (type) => {
+      const item = createChartSeries('profile', type, ['profile'])
+      const plotConfig = toPlotConfig(
+        { id: 'profile', title: '', series: [item] },
+        {},
+        defaultChartSettings.verticalProfileChart,
+        { verticalProfile: true },
+        {
+          profile: {
+            data: [
+              { x: 3, y: 0, flag: '0' },
+              { x: 2, y: 25, flag: '0' },
+              { x: 1, y: 50, flag: '6' },
+              { x: null, y: 75, flag: '0' },
+              { x: 2, y: 100, flag: '0' },
+            ],
+          } as Series,
+        },
+      )
+      expect(plotConfig.marks).toHaveLength(1)
+      const mark = plotConfig.marks![0]
+      if (!('xValues' in mark)) throw new Error('Expected a profile line mark')
+      expect(mark.xValues).toEqual([3, 2, 1, null, 2])
+      expect(mark.yValues).toEqual([0, 25, null, 75, 100])
+      expect(mark).toMatchObject({
+        id: '0:profile:0',
+        x: 'x',
+        y: 'y0',
+        line: type === 'line',
+      })
+      if (!('markers' in mark)) throw new Error('Expected a profile line mark')
+      expect(!!mark.markers).toBe(type === 'marker')
+      expect(!!mark.area).toBe(type === 'area')
+    },
+  )
+
   it('reuses bands across data, style, scale binding and legend changes', () => {
     const handles = handleCache()
     const item = createChartSeries('range', 'area', ['low', 'high'])
