@@ -4,6 +4,7 @@
     :class="{
       'vertical-profile': verticalProfile,
       maximized: maximized,
+      'default-plot-height': config.plotWeight === undefined,
     }"
     :style="getPlotContainerStyle()"
   >
@@ -454,14 +455,13 @@ function getPlotContainerStyle(): CSSProperties {
     }
   }
   const plotContainerBasis = getPlotContainerBasis()
-  const minAxisHeight = Math.max(plotWeight.value, 80)
   return {
     flexDirection: props.settings.legend.placement.includes('under')
       ? 'column-reverse'
       : 'column',
     flexBasis: `${plotContainerBasis}px`,
     flexGrow: plotWeight.value,
-    minHeight: `${plotContainerBasis + minAxisHeight}px`,
+    minHeight: `${plotContainerBasis}px`,
     flexShrink: 0,
   }
 }
@@ -506,16 +506,21 @@ function getChartLayoutStyle() {
 }
 
 .chart-with-chips {
+  --plot-height: max(50%, 275px);
   display: flex;
   position: relative;
   flex: 1 1 80%;
-  max-height: max(50%, 275px);
   width: 100%;
+}
+
+.chart-with-chips.default-plot-height:not(.vertical-profile):not(.maximized) {
+  min-height: var(--plot-height);
+  max-height: var(--plot-height);
 }
 
 @container (height >= 825px) {
   .chart-with-chips {
-    max-height: max(33.333%, 275px);
+    --plot-height: max(33.333%, 275px);
   }
 }
 
@@ -525,15 +530,13 @@ function getChartLayoutStyle() {
   max-width: none;
 }
 
-.chart-with-chips:not(.maximized):not(.vertical-profile):only-child {
-  max-height: max(50%, 400px);
+.chart-with-chips:only-child {
+  --plot-height: 100%;
 }
 
-.chart-with-chips:not(.maximized):not(.vertical-profile):is(
-    :nth-child(1):nth-last-child(2),
-    :nth-child(2):nth-last-child(1)
-  ) {
-  max-height: 50%;
+.chart-with-chips:first-child:nth-last-child(2),
+.chart-with-chips:nth-child(2):last-child {
+  --plot-height: 50%;
 }
 
 .chart-maximize-btn {

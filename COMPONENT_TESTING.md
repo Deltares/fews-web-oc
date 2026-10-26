@@ -74,6 +74,27 @@ test('Button should render with text', async ({ mount }) => {
 
 ## Testing Patterns
 
+### Chart heights
+
+`components/charts/TimeSeriesChart` provides `OneChart`, `TwoCharts`,
+`ThreeCharts`, `FourCharts`, and `FiveCharts` stories with mock data in an
+852px container. With default plot sizing, three or more charts retain the
+three-chart height and additional charts scroll rather than shrinking.
+Explicit plot weights distribute the available canvas height proportionally,
+excluding axes and legend space, without the default chart-height limits.
+Vertical profiles retain their existing sizing.
+`FourWeightedCharts` covers plot weights `1, 2, 2, 1` with overlay legends in
+an 861px container. The layout test checks the heights of `.canvas > rect`,
+not the outer SVG, and whether the container scrolls.
+`FourWeightedChartsWithBrush` adds a 60px brush to each weighted chart. Its
+regression test also requires the main canvases to retain the weight ratio.
+
+Run the focused layout checks with:
+
+```bash
+npm run test:component -- timeSeriesChartLayout.spec.ts
+```
+
 ### Callbacks and events
 Create state inside the story and record it for assertions:
 
