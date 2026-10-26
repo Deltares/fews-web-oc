@@ -97,6 +97,49 @@ export const ThresholdSwitching = defineComponent({
   },
 })
 
+function createMockChart(
+  index: number,
+  domain: [Date, Date],
+  plotWeight?: number,
+) {
+  const [start, end] = domain
+  const resourceId = `observation-${index + 1}`
+  const observation = new Series(
+    new SeriesUrlRequest('story', `/${resourceId}`),
+  )
+  observation.data = [
+    { x: start, y: index + 1, flag: '0' },
+    { x: end, y: index + 2, flag: '0' },
+  ]
+  observation.lastUpdated = start
+
+  const config: ChartConfig = {
+    id: `mock-chart-${index + 1}`,
+    title: `Mock chart ${index + 1}`,
+    plotWeight,
+    xAxis: [{ domain }],
+    yAxis: [{ defaultDomain: [0, 8] }],
+    series: [
+      {
+        id: resourceId,
+        dataResources: [resourceId],
+        name: `Observation ${index + 1}`,
+        type: 'line',
+        options: {
+          x: { key: 'x', axisIndex: 0 },
+          y: { key: 'y', axisIndex: 0 },
+        },
+        unit: 'm',
+        style: { stroke: 'black' },
+        visibleInLegend: true,
+        visibleInPlot: true,
+        visibleInTable: false,
+      },
+    ],
+  }
+  return { config, series: { [resourceId]: observation } }
+}
+
 function createChartStory(
   chartCount: number,
   containerHeight = 852,
@@ -108,47 +151,16 @@ function createChartStory(
       const start = new Date('2026-01-01T00:00:00Z')
       const end = new Date('2026-01-02T00:00:00Z')
       const domain = ref<[Date, Date]>([start, end])
+      const updateDomain = (value: [Date, Date] | undefined) => {
+        if (value) domain.value = value
+      }
       const settings = { ...getDefaultSettings().charts.timeSeriesChart }
       if (plotWeights) {
         settings.legend = { ...settings.legend, placement: 'upper left' }
       }
-      const charts = Array.from({ length: chartCount }, (_, index) => {
-        const resourceId = `observation-${index + 1}`
-        const observation = new Series(
-          new SeriesUrlRequest('story', `/${resourceId}`),
-        )
-        observation.data = [
-          { x: start, y: index + 1, flag: '0' },
-          { x: end, y: index + 2, flag: '0' },
-        ]
-        observation.lastUpdated = start
-
-        const config: ChartConfig = {
-          id: `mock-chart-${index + 1}`,
-          title: `Mock chart ${index + 1}`,
-          plotWeight: plotWeights?.[index],
-          xAxis: [{ domain: [start, end] }],
-          yAxis: [{ defaultDomain: [0, 8] }],
-          series: [
-            {
-              id: resourceId,
-              dataResources: [resourceId],
-              name: `Observation ${index + 1}`,
-              type: 'line',
-              options: {
-                x: { key: 'x', axisIndex: 0 },
-                y: { key: 'y', axisIndex: 0 },
-              },
-              unit: 'm',
-              style: { stroke: 'black' },
-              visibleInLegend: true,
-              visibleInPlot: true,
-              visibleInTable: false,
-            },
-          ],
-        }
-        return { config, series: { [resourceId]: observation } }
-      })
+      const charts = Array.from({ length: chartCount }, (_, index) =>
+        createMockChart(index, [start, end], plotWeights?.[index]),
+      )
 
       return () =>
         h(
@@ -173,9 +185,7 @@ function createChartStory(
                 series,
                 settings,
                 domain: domain.value,
-                'onUpdate:domain': (value: [Date, Date] | undefined) => {
-                  if (value) domain.value = value
-                },
+                'onUpdate:domain': updateDomain,
               },
               withBrush
                 ? {
@@ -187,9 +197,7 @@ function createChartStory(
                         fullDomain: [start, end],
                         mainChartMargin: margin,
                         domain: domain.value,
-                        'onUpdate:domain': (value: [Date, Date] | undefined) => {
-                          if (value) domain.value = value
-                        },
+                        'onUpdate:domain': updateDomain,
                       }),
                   }
                 : undefined,

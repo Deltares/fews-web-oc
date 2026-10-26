@@ -26,13 +26,17 @@ for (const { count, story } of [
   { count: 4, story: 'FourCharts' },
   { count: 5, story: 'FiveCharts' },
 ]) {
-  test(`renders ${count} mock charts in an 852px container`, async ({ page }) => {
+  test(`renders ${count} mock charts in an 852px container`, async ({
+    page,
+  }) => {
     const fixture = await mountChartStory(page, story)
     await expect(fixture.locator('.chart-with-chips')).toHaveCount(count)
     const svgs = fixture.locator('.chart-container svg')
     await expect(svgs).toHaveCount(count)
     expect(
-      await fixture.evaluate((element) => element.getBoundingClientRect().height),
+      await fixture.evaluate(
+        (element) => element.getBoundingClientRect().height,
+      ),
     ).toBe(852)
     const expectedSvgHeight = count === 1 ? 784 : count === 2 ? 358 : 216
     await expect
@@ -78,7 +82,9 @@ for (const withBrush of [false, true]) {
     await expect(canvases).toHaveCount(4)
     await expect(fixture.locator('.chart-controls-container')).toHaveCount(4)
     expect(
-      await fixture.evaluate((element) => element.getBoundingClientRect().height),
+      await fixture.evaluate(
+        (element) => element.getBoundingClientRect().height,
+      ),
     ).toBe(861)
     await expect
       .poll(async () => {
@@ -89,7 +95,8 @@ for (const withBrush of [false, true]) {
         return (
           heights[0] > 0 &&
           heights.every(
-            (height, index) => Math.abs(height - heights[0] * weights[index]) <= 2,
+            (height, index) =>
+              Math.abs(height - heights[0] * weights[index]) <= 2,
           )
         )
       })
