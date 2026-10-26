@@ -40,7 +40,12 @@ export function timeSeriesDisplayToChartConfig(
 ): ChartConfig {
   const xAxis = subplot.xAxis ? xAxisFromPlotItemXAxis(subplot.xAxis) : []
   const subplotId = hashString([...getAxisLabels(subplot)].join('|'))
-  const plotWeight = subplot.items?.[0]?.plotWeight
+
+  const itemPlotWeights = (subplot.items ?? [])
+    .map((item) => item.plotWeight)
+    .filter((weight): weight is number => Number.isFinite(weight))
+
+  const plotWeight = itemPlotWeights.length > 0 ? Math.max(...itemPlotWeights) : 200
 
   const config: ChartConfig = {
     id: subplotId,
