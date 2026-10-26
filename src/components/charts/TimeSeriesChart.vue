@@ -85,7 +85,6 @@ import {
   MouseOverDirection,
   WheelMode,
   ZoomEvent,
-  ModifierKey,
   PanHandler,
 } from '@deltares/fews-web-oc-charts'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
@@ -105,7 +104,11 @@ import {
 import type { ChartMargin } from '@/lib/charts/types/TimeSeriesChartProps'
 import { getAxisOptions } from '@/lib/charts/v4/axisOptions'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { getV4ChartHandlers } from '@/services/useChartHandlers/v4'
+import {
+  attachV4PanHandler,
+  getV4ChartHandlers,
+  updateV4PanModifierKey,
+} from '@/services/useChartHandlers/v4'
 
 import {
   clearChart,
@@ -132,12 +135,6 @@ const zoomHandler = computed(
       ? v4Handlers.value?.sharedVerticalZoomHandler
       : v4Handlers.value?.sharedZoomHandler),
 )
-const panHandler = computed(
-  () =>
-    props.panHandler ??
-    (props.verticalProfile ? undefined : v4Handlers.value?.sharedPanHandler),
-)
-
 const userSettingsStore = useUserSettingsStore()
 const emit = defineEmits<{
   'toggle-maximize': []
@@ -209,7 +206,7 @@ onMounted(() => {
   })
 
   const wheelMode = toV4WheelMode(userSettingsStore.scrollZoomMode)
-  const scrollModifierKey = ModifierKey.Shift
+  const scrollModifierKey = userSettingsStore.scrollZoomModifierKey
   if (zoomHandler.value) {
     zoom = zoomHandler.value
     zoom.updateOptions({ wheelMode, scrollModifierKey })
@@ -239,9 +236,24 @@ useResizeObserver(
 )
 
 watch(
-  () => userSettingsStore.scrollZoomMode,
-  (scrollZoomMode) =>
-    zoom?.updateOptions({ wheelMode: toV4WheelMode(scrollZoomMode) }),
+  [
+    () => userSettingsStore.scrollZoomMode,
+    () => userSettingsStore.scrollZoomModifierKey,
+  ],
+  ([scrollZoomMode, scrollZoomModifierKey]) =>
+    zoom?.updateOptions({
+      wheelMode: toV4WheelMode(scrollZoomMode),
+      scrollModifierKey: scrollZoomModifierKey,
+    }),
+)
+
+watch(
+  () => userSettingsStore.panModifierKey,
+  (modifierKey) => {
+    if (props.group && !props.panHandler && !props.verticalProfile) {
+      updateV4PanModifierKey(props.group, modifierKey)
+    }
+  },
 )
 
 const xTicksDisplay = computed(() =>
@@ -474,8 +486,10 @@ function attachAxisVisitors(mouseOver: MouseOver, currentTime: CurrentTime) {
     axis.accept(axisTime.value)
   }
 
-  if (panHandler.value) {
-    axis.accept(panHandler.value)
+  if (props.panHandler) {
+    axis.accept(props.panHandler)
+  } else if (props.group && !props.verticalProfile) {
+    attachV4PanHandler(props.group, axis, userSettingsStore.panModifierKey)
   }
 
   axis.accept(thresholdLinesVisitor)

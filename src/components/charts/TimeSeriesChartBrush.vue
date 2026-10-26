@@ -108,4 +108,8 @@ watch(
 :deep(.brush .selection) {
   stroke: none;
 }
+
+:deep(.brush .handle) {
+  fill: #fff;
+}
 </style>

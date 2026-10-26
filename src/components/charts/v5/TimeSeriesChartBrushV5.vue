@@ -113,4 +113,8 @@ watch(
   min-width: 0;
   overflow: hidden;
 }
+
+:deep([data-brush-handle]) {
+  fill: #fff;
+}
 </style>

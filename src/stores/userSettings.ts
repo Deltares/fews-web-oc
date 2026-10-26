@@ -8,6 +8,7 @@ import type {
   ChartEngine,
   ChartWheelMode,
 } from '@/lib/charts/types/TimeSeriesChartProps'
+import { ModifierKey } from '@deltares/fews-web-oc-charts'
 
 export interface UserSettingsWithIcon {
   value: string
@@ -64,6 +65,19 @@ const defaultGroups: UserSettingsGroup[] = [
   { id: 'Charts', title: 'Charts', icon: 'mdi-chart-line' },
 ]
 
+function toModifierKey(value: unknown): ModifierKey {
+  switch (value) {
+    case ModifierKey.None:
+      return ModifierKey.None
+    case ModifierKey.Ctrl:
+      return ModifierKey.Ctrl
+    case ModifierKey.Shift:
+      return ModifierKey.Shift
+    default:
+      return ModifierKey.Shift
+  }
+}
+
 export const useUserSettingsStore = defineStore(
   'userSettings',
   () => {
@@ -101,6 +115,12 @@ export const useUserSettingsStore = defineStore(
           return 'x'
       }
     })
+    const panModifierKey = computed<ModifierKey>(() =>
+      toModifierKey(get('charts.panModifierKey')?.value),
+    )
+    const scrollZoomModifierKey = computed<ModifierKey>(() =>
+      toModifierKey(get('charts.scrollZoomModifierKey')?.value),
+    )
 
     function listByGroup(group: string) {
       return items.value.filter((item) => item.group === group)
@@ -186,6 +206,8 @@ export const useUserSettingsStore = defineStore(
       listFavorite,
       get,
       scrollZoomMode,
+      panModifierKey,
+      scrollZoomModifierKey,
       add,
       updateSettingItems,
     }
