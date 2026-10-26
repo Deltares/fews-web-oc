@@ -103,6 +103,10 @@ watch(
 
 <style scoped>
 .brush-chart-container {
+  --fews-chart-background: var(--canvas-fill);
+  --fews-chart-grid: var(--theme-color);
+  --fews-chart-font-family: var(--font-family);
+  --fews-chart-font-size: 14.4px;
   width: 100%;
   height: 60px;
   min-width: 0;
