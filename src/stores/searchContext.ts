@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import type { Location, TopologyNode } from '@deltares/fews-pi-requests'
 import { topologyNodeIsVisible } from '@/lib/topology/nodes'
@@ -9,6 +9,8 @@ export type SearchItemType =
 export interface SearchItem {
   id: string
   label: string
+  normalizedLabel: string
+  normalizedId: string
   iconName?: string
   params: Record<string, string | number | string[] | undefined>
   type: SearchItemType
@@ -19,7 +21,8 @@ export const useSearchContext = defineStore('searchContext', () => {
   // The dialog passes the user's input here.
   const search = ref('')
 
-  const items = ref<SearchItem[]>([])
+  // Replace the tree through the setters; nested items are not reactive.
+  const items = shallowRef<SearchItem[]>([])
 
   const filteredItems = computed(() => {
     const query = search.value.trim().toLowerCase()
@@ -28,9 +31,7 @@ export const useSearchContext = defineStore('searchContext', () => {
       return items.value
     }
 
-    return items.value.filter((item) =>
-      item.label.toLowerCase().includes(query),
-    )
+    return items.value.filter((item) => item.normalizedLabel.includes(query))
   })
 
   function setLocations(locations: Location[]): void {
@@ -38,6 +39,10 @@ export const useSearchContext = defineStore('searchContext', () => {
       (item) => item.type !== 'location',
     )
     const locationsByParent = new Map<string, Location[]>()
+    const locationIds = new Set(
+      locations.map((location) => location.locationId),
+    )
+    const includedLocationIds = new Set<string>()
 
     for (const location of locations) {
       if (location.parentLocationId === undefined) continue
@@ -48,12 +53,16 @@ export const useSearchContext = defineStore('searchContext', () => {
     }
 
     function toSearchItem(location: Location): SearchItem {
+      includedLocationIds.add(location.locationId)
       const children = locationsByParent.get(location.locationId)
+      const label =
+        location.locationName ?? location.shortName ?? location.locationId
 
       return {
         id: location.locationId,
-        label:
-          location.locationName ?? location.shortName ?? location.locationId,
+        label,
+        normalizedLabel: label.toLowerCase(),
+        normalizedId: location.locationId.toLowerCase(),
         iconName: location.thresholdIconName ?? location.iconName,
         type: 'location',
         params: {
@@ -67,12 +76,23 @@ export const useSearchContext = defineStore('searchContext', () => {
       .filter((location) => location.parentLocationId === undefined)
       .map(toSearchItem)
 
-    const nestedLocationIds = new Set(
-      locationItems.flatMap((item) => getNestedLocationIds(item)),
-    )
-    const orphanedLocations = locations
-      .filter((location) => !nestedLocationIds.has(location.locationId))
-      .map(toSearchItem)
+    const orphanedLocations: SearchItem[] = []
+    for (const location of locations) {
+      if (
+        location.parentLocationId !== undefined &&
+        !locationIds.has(location.parentLocationId) &&
+        !includedLocationIds.has(location.locationId)
+      ) {
+        orphanedLocations.push(toSearchItem(location))
+      }
+    }
+
+    // Retain locations in disconnected hierarchies without rebuilding descendants.
+    for (const location of locations) {
+      if (!includedLocationIds.has(location.locationId)) {
+        orphanedLocations.push(toSearchItem(location))
+      }
+    }
 
     items.value = [...nonLocationItems, ...locationItems, ...orphanedLocations]
   }
@@ -91,10 +111,14 @@ export const useSearchContext = defineStore('searchContext', () => {
     ): SearchItem {
       const nodePath = [...parentNodeIds, node.id]
       const visibleChildren = node.topologyNodes?.filter(topologyNodeIsVisible)
+      const id = `topology:${topologyId ?? 'default'}:${node.id}`
+      const label = node.name ?? node.id
 
       return {
-        id: `topology:${topologyId ?? 'default'}:${node.id}`,
-        label: node.name ?? node.id,
+        id,
+        label,
+        normalizedLabel: label.toLowerCase(),
+        normalizedId: id.toLowerCase(),
         iconName: node.iconId,
         type: 'topology',
         params: {
@@ -113,10 +137,6 @@ export const useSearchContext = defineStore('searchContext', () => {
         .filter(topologyNodeIsVisible)
         .map((node) => toSearchItem(node, [])),
     ]
-  }
-
-  function getNestedLocationIds(item: SearchItem): string[] {
-    return [item.id, ...(item.children?.flatMap(getNestedLocationIds) ?? [])]
   }
 
   return {

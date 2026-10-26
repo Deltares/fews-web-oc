@@ -4,6 +4,7 @@
     transition="dialog-top-transition"
     :fullscreen="mobile"
     :max-width="mobile ? undefined : '900'"
+    :height="mobile ? undefined : '60vh'"
     class="search-dialog"
     @keydown="onKeydown"
   >
@@ -59,10 +60,7 @@
       <v-divider />
 
       <div class="search-dialog__results">
-        <div
-          ref="searchResultsContainer"
-          class="search-dialog__scroll-container"
-        >
+        <div class="search-dialog__scroll-container">
           <v-virtual-scroll
             ref="virtualScroll"
             :items="visibleRows"
@@ -301,10 +299,11 @@ import { useRoute, useRouter } from 'vue-router'
 import { refDebounced } from '@vueuse/core'
 import { useSearchContext } from '@/stores/searchContext'
 import type { SearchItem } from '@/stores/searchContext'
-import { containsSubstring } from '@/lib/search'
+import { matchSearchTree } from '@/lib/search/tree'
 import HighlightMatch from '@/components/general/HighlightMatch.vue'
 import { getResourcesIconsUrl } from '@/lib/fews-config'
 import { useDisplay } from 'vuetify'
+import { VVirtualScroll } from 'vuetify/components'
 
 const modelValue = defineModel<boolean>({
   type: Boolean,
@@ -317,9 +316,8 @@ const route = useRoute()
 const { mobile } = useDisplay()
 const searchContext = useSearchContext()
 const searchInput = useTemplateRef<HTMLInputElement>('searchInput')
-const searchResultsContainer = useTemplateRef<HTMLDivElement>(
-  'searchResultsContainer',
-)
+const virtualScroll =
+  useTemplateRef<InstanceType<typeof VVirtualScroll>>('virtualScroll')
 
 const LOCATION_SEARCH_SHORTCUT = '@' as const
 const ROUTE_SEARCH_SHORTCUT = '#' as const
@@ -360,26 +358,9 @@ const searchQuery = computed(() => {
   return searchMode.value ? value.slice(1).trim() : value
 })
 
-/**
- * We only need to search the top-level SearchItems.
- *
- * The original implementation did:
- *
- *   filter -> isMatchingItem -> recursive traversal
- *   then hasMatchingDescendant -> recursive traversal again
- *   then collectOpenedDescendants -> recursive traversal again
- *   then collectVisibleItems -> recursive traversal again
- *
- * This combines that work.
- */
-interface MatchedRoot {
-  item: SearchItem
-  hasMatchingDescendant: boolean
-}
+const normalizedSearchQuery = computed(() => searchQuery.value.toLowerCase())
 
-const matchedRoots = computed<MatchedRoot[]>(() => {
-  const query = searchQuery.value
-
+const treeMatches = computed(() => {
   let roots
   if (searchMode.value === 'location') {
     roots = searchContext.items.filter((item) => item.type === 'location')
@@ -389,65 +370,8 @@ const matchedRoots = computed<MatchedRoot[]>(() => {
     roots = searchContext.items
   }
 
-  if (!query) {
-    return roots.map((item) => ({
-      item,
-      hasMatchingDescendant: false,
-    }))
-  }
-
-  const result: MatchedRoot[] = []
-
-  for (const item of roots) {
-    const match = findMatch(item, query)
-
-    if (match.matches) {
-      result.push({
-        item,
-        hasMatchingDescendant: match.hasMatchingDescendant,
-      })
-    }
-  }
-
-  return result
+  return matchSearchTree(roots, normalizedSearchQuery.value)
 })
-
-interface MatchResult {
-  matches: boolean
-  hasMatchingDescendant: boolean
-}
-
-/**
- * Single recursive search.
- *
- * A node matches when:
- * - its label matches
- * - its location ID matches
- * - one of its descendants matches
- */
-function findMatch(item: SearchItem, query: string): MatchResult {
-  const ownMatch =
-    containsSubstring(item.label, query) ||
-    (item.type === 'location' && containsSubstring(item.id, query))
-
-  let descendantMatch = false
-
-  if (item.children?.length) {
-    for (const child of item.children) {
-      const result = findMatch(child, query)
-
-      if (result.matches) {
-        descendantMatch = true
-        break
-      }
-    }
-  }
-
-  return {
-    matches: ownMatch || descendantMatch,
-    hasMatchingDescendant: descendantMatch,
-  }
-}
 
 interface GroupRow {
   kind: 'group'
@@ -473,12 +397,12 @@ type VisibleRow = GroupRow | TreeRow
  */
 const visibleRows = computed<VisibleRow[]>(() => {
   const rows: VisibleRow[] = []
-  const query = searchQuery.value
-  const topologyRoots = matchedRoots.value.filter(
-    ({ item }) => item.type === 'topology',
+  const query = normalizedSearchQuery.value
+  const topologyRoots = treeMatches.value.matchedRoots.filter(
+    (item) => item.type === 'topology',
   )
-  const locationRoots = matchedRoots.value.filter(
-    ({ item }) => item.type === 'location',
+  const locationRoots = treeMatches.value.matchedRoots.filter(
+    (item) => item.type === 'location',
   )
   appendGroup(rows, 'topology', 'Routes', topologyRoots, query)
   appendGroup(rows, 'location', 'Locations', locationRoots, query)
@@ -507,7 +431,7 @@ function appendGroup(
   rows: VisibleRow[],
   id: 'topology' | 'location',
   label: string,
-  roots: MatchedRoot[],
+  roots: SearchItem[],
   query: string,
 ): void {
   if (!roots.length) return
@@ -519,7 +443,7 @@ function appendGroup(
   })
 
   for (const root of roots) {
-    appendVisibleItem(rows, root.item, 0, query)
+    appendVisibleItem(rows, root, 0, query)
   }
 }
 
@@ -530,19 +454,12 @@ function appendVisibleItem(
   query: string,
   ancestorMatches = false,
 ): void {
-  const ownMatch =
-    !query ||
-    containsSubstring(item.label, query) ||
-    (item.type === 'location' && containsSubstring(item.id, query))
+  const match = treeMatches.value.matches.get(item)
+  const ownMatch = !query || match?.ownMatch === true
 
   // If an ancestor matched, everything below it is visible.
   // Otherwise, this item must either match or have a matching descendant.
-  if (
-    query &&
-    !ancestorMatches &&
-    !ownMatch &&
-    !findMatch(item, query).hasMatchingDescendant
-  ) {
+  if (query && !ancestorMatches && !ownMatch && !match?.hasMatchingDescendant) {
     return
   }
 
@@ -582,53 +499,7 @@ const searchResults = computed<SearchItem[]>(() =>
 const openedTreeIds = ref<Set<string>>(new Set())
 
 function getDefaultOpenedIds(): Set<string> {
-  const result = new Set<string>()
-
-  const query = searchQuery.value
-
-  for (const { item } of matchedRoots.value) {
-    result.add(item.id)
-
-    if (!query) continue
-
-    openMatchingAncestors(item, query, result)
-  }
-
-  return result
-}
-
-/**
- * Opens only ancestors of matching nodes.
- *
- * Unlike the previous implementation, this doesn't first
- * calculate `hasMatchingDescendant()` and then traverse
- * everything again.
- */
-function openMatchingAncestors(
-  item: SearchItem,
-  query: string,
-  result: Set<string>,
-): boolean {
-  if (!item.children?.length) {
-    return false
-  }
-
-  let hasMatch = false
-
-  for (const child of item.children) {
-    const ownMatch =
-      containsSubstring(child.label, query) ||
-      (child.type === 'location' && containsSubstring(child.id, query))
-
-    const descendantMatch = openMatchingAncestors(child, query, result)
-
-    if (ownMatch || descendantMatch) {
-      hasMatch = true
-      result.add(item.id)
-    }
-  }
-
-  return hasMatch
+  return new Set(treeMatches.value.defaultOpenedIds)
 }
 
 function isSelected(item: SearchItem): boolean {
@@ -656,14 +527,14 @@ function selectTreeItem(item: SearchItem): void {
 }
 
 function showLocationId(item: SearchItem): boolean {
-  const query = searchQuery.value
+  const query = normalizedSearchQuery.value
 
   if (!query || item.type !== 'location') {
     return false
   }
 
   return (
-    containsSubstring(item.id, query) && !containsSubstring(item.label, query)
+    item.normalizedId.includes(query) && !item.normalizedLabel.includes(query)
   )
 }
 
@@ -1005,22 +876,27 @@ function toggleSelectedTreeItem(key: string, items: SearchItem[]): void {
 }
 
 function scrollSelectedItemIntoView(): void {
-  const container = searchResultsContainer.value
-  if (!container) return
+  const virtual = virtualScroll.value
+  if (!virtual) return
 
   const virtualIndex = selectedVirtualIndex.value
   if (virtualIndex < 0) return
 
-  const rowTop = virtualIndex * 48
-  const rowBottom = rowTop + 48
+  const container: HTMLElement = virtual.$el
+  const row = container.querySelector<HTMLElement>(
+    `[data-search-row-index="${virtualIndex}"]`,
+  )
+  if (!row) {
+    virtual.scrollToIndex(virtualIndex)
+    return
+  }
 
-  const visibleTop = container.scrollTop
-  const visibleBottom = visibleTop + container.clientHeight
-
-  if (rowTop < visibleTop) {
-    container.scrollTop = rowTop
-  } else if (rowBottom > visibleBottom) {
-    container.scrollTop = rowBottom - container.clientHeight
+  const viewport = container.getBoundingClientRect()
+  const bounds = row.getBoundingClientRect()
+  if (bounds.top < viewport.top) {
+    virtual.scrollToIndex(virtualIndex, 'start')
+  } else if (bounds.bottom > viewport.bottom) {
+    virtual.scrollToIndex(virtualIndex, 'end')
   }
 }
 
@@ -1054,10 +930,6 @@ watch(modelValue, async (value) => {
 </script>
 
 <style scoped>
-.search-dialog:not(.v-dialog--fullscreen) {
-  height: 60vh;
-}
-
 .search-dialog__card {
   height: 100%;
   display: flex;
@@ -1107,12 +979,16 @@ watch(modelValue, async (value) => {
 
 .search-dialog__scroll-container {
   min-height: 0;
-  flex: 1;
-  overflow: auto;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .search-dialog__virtual-scroll {
-  height: 100%;
+  min-height: 0;
+  height: 0;
+  flex: 1 1 0;
 }
 
 .search-dialog__row {

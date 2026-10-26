@@ -20,6 +20,33 @@ If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has a
 
 
 
+## Search data
+
+The search context stores its item tree in a `shallowRef`. Replace locations
+and routes through `setLocations` and `setTopologyNodes` rather than mutating
+nested search items. These setters cache lowercase labels and IDs for each
+item; the search dialog normalizes the query once and uses the cached text
+for matching. Original labels and IDs remain unchanged for highlighting and
+navigation.
+
+Location-tree construction tracks included IDs as items are created instead
+of collecting and copying descendant-ID arrays afterward. Missing-parent
+locations become orphan roots; their descendants stay nested and are not
+duplicated as extra roots, even when they precede their parents in the input.
+Normal roots remain first, with input ordering preserved among roots and siblings.
+
+For each query, `matchSearchTree` computes each node's own and descendant
+matches in one traversal, together with the default expanded ancestors.
+The dialog reuses those results when flattening visible rows; expanding or
+collapsing a branch does not rerun text matching. A matching parent still
+includes all children when expanded.
+
+The dialog height is applied to Vuetify's overlay content via the `height`
+prop. Its virtual list is the only scroll container and fills the remaining
+card space with a zero flex basis, keeping the rendered row count bounded
+by the viewport. Keyboard navigation uses the virtual list's `scrollToIndex`
+API rather than scrolling a wrapper.
+
 ## Build variants
 
 The default commands (`npm run dev`, `npm run build`, and `npm run preview`)
