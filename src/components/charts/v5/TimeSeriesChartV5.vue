@@ -449,6 +449,10 @@ defineExpose({ getSvgElement, exportImage })
 }
 
 .chart-container {
+  --fews-chart-background: var(--canvas-fill);
+  --fews-chart-grid: var(--theme-color);
+  --fews-chart-font-family: var(--font-family);
+  --fews-chart-font-size: 14.4px;
   flex: 1 1 100%;
   min-height: 160px;
   min-width: 0;
