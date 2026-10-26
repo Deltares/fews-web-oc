@@ -22,24 +22,11 @@ export function useSeriesStores(
       const nextStores: Record<string, SeriesStore> = {}
 
       for (const { id, resource } of resources) {
-        const rows = (resource.data ?? []).flatMap((event) => {
-          if (event.x === null) return []
-          const x = event.x instanceof Date ? event.x.getTime() : event.x
-          if (!Number.isFinite(x)) return []
-          return [
-            {
-              x,
-              y:
-                event.y === null ||
-                !Number.isFinite(event.y) ||
-                !isReliableData(event)
-                  ? Number.NaN
-                  : event.y,
-            },
-          ]
-        })
-        const x = Float64Array.from(rows, (row) => row.x)
-        const y = Float64Array.from(rows, (row) => row.y)
+        const events = (resource.data ?? []).filter((event) => event.x !== null)
+        const x = events.map((event) => event.x as Date | number)
+        const y = events.map((event) =>
+          event.y !== null && isReliableData(event) ? event.y : null,
+        )
         const existing = stores.value[id]
 
         if (existing) {
