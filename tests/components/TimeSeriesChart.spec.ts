@@ -1,5 +1,17 @@
 import { test, expect } from '@playwright/test'
 
+test('uses the v5 placeholder when the URL overrides the v4 setting', async ({
+  mount,
+}) => {
+  const component = await mount('charts/TimeSeriesChart/ThresholdSwitching', {
+    engine: 'v4',
+    queryEngine: 'v5',
+  })
+
+  await expect(component.getByRole('status')).toContainText('Version 5 chart')
+  await expect(component.locator('svg')).toHaveCount(0)
+})
+
 test('renders delayed series data after switching plot configurations', async ({
   mount,
 }) => {

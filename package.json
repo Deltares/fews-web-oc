@@ -31,7 +31,7 @@
     "@deltares/fews-pi-requests": "^3.6.0",
     "@deltares/fews-ssd-requests": "^2.0.0",
     "@deltares/fews-ssd-webcomponent": "^2.0.0",
-    "@deltares/fews-web-oc-charts": "^4.7.2",
+    "@deltares/fews-web-oc-charts": "file:deltares-fews-web-oc-charts-4.7.2.tgz",
     "@deltares/fews-web-oc-composables": "^0.3.0",
     "@deltares/fews-wms-requests": "^4.3.0",
     "@deltares/webgl-streamline-visualizer": "^5.0.1-alpha.1",

@@ -5,8 +5,7 @@
     :config
     :series
     :settings
-    :zoomHandler
-    :panHandler
+    :group="chartGroup"
     :startTime
     :endTime
     v-bind="$attrs"
@@ -40,18 +39,17 @@ import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayTo
 import type { FilterChart } from '@/lib/analysis'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import type { PanHandler, ZoomHandler } from '@deltares/fews-web-oc-charts'
 import { computed, ref } from 'vue'
 import { getSubplotWithDomain } from '@/lib/display'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import type { ChartGroup } from '@/lib/charts/types/TimeSeriesChartProps'
 
 interface Props {
   chart: FilterChart
   series: Record<string, Series>
   brushSeries: Record<string, Series>
   fullBrushDomain: [Date, Date]
-  zoomHandler?: ZoomHandler
-  panHandler?: PanHandler
+  group?: ChartGroup
   settings: ComponentSettings
   startTime?: Date
   endTime?: Date
@@ -76,8 +74,8 @@ const xDomain = computed(
 
 const visibleDomain = defineModel<[Date, Date]>('domain')
 
-const zoomHandler = computed(() =>
-  props.chart.domain ? undefined : props.zoomHandler,
+const chartGroup = computed(() =>
+  props.chart.domain ? undefined : props.group,
 )
 
 const config = computed(() =>

@@ -9,8 +9,7 @@
         :series
         :brushSeries
         :fullBrushDomain
-        :zoomHandler="sharedZoomHandler"
-        :panHandler="sharedPanHandler"
+        :group="chartGroup"
         :settings
         :startTime
         :endTime
@@ -78,7 +77,7 @@ const collection = defineModel<Collection>('collection', {
 
 const emit = defineEmits<CollectionEmits>()
 
-const { sharedZoomHandler, sharedPanHandler } = useChartHandlers()
+const chartGroup = useChartHandlers()
 
 function removeChart(chart: Chart) {
   collection.value = {

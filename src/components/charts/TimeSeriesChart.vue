@@ -77,23 +77,24 @@ import {
   CurrentTime,
   DomainChangeEvent,
   isNumberDomain,
-  Margin,
+  Legend,
   ZoomHandler,
   toggleChartVisibility,
   CartesianAxes,
   MouseOver,
-  Visitor,
   MouseOverDirection,
-  ZoomMode,
+  WheelMode,
   ZoomEvent,
   ModifierKey,
   PanHandler,
 } from '@deltares/fews-web-oc-charts'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
 import ChartLegendOverlay from '@/components/charts/ChartLegendOverlay.vue'
-import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
-import type { ThresholdLine } from '@/lib/charts/types/ThresholdLine'
-import { Series } from '@/lib/timeseries/timeSeries'
+import type {
+  ChartWheelMode,
+  TimeSeriesChartExportOptions,
+  TimeSeriesChartProps,
+} from '@/lib/charts/types/TimeSeriesChartProps'
 import { extent } from 'd3'
 import {
   getHorizontalColorCodeTags,
@@ -101,29 +102,41 @@ import {
   getThresholdTag,
   type Tag,
 } from '@/lib/charts/tags'
-import { type ChartsSettings } from '@/lib/topology/componentSettings'
-import { getAxisOptions } from '@/lib/charts/axisOptions'
+import type { ChartMargin } from '@/lib/charts/types/TimeSeriesChartProps'
+import { getAxisOptions } from '@/lib/charts/v4/axisOptions'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { getV4ChartHandlers } from '@/services/useChartHandlers/v4'
 
-import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
+import {
+  clearChart,
+  redraw,
+  refreshChart,
+} from '@/lib/charts/v4/timeSeriesChart'
 import { getThresholdValues, isUniqueThreshold } from '@/lib/charts/thresholds'
+import { toV4AlertLineOptions } from '@/lib/charts/v4/thresholds'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 import { useI18n } from 'vue-i18n'
 
-interface Props {
-  config: ChartConfig
-  series: Record<string, Series>
-  highlightTime?: Date
+interface Props extends TimeSeriesChartProps {
   zoomHandler?: ZoomHandler
   panHandler?: PanHandler
-  verticalProfile?: boolean
-  forecastLegend?: string
-  settings: ChartsSettings['timeSeriesChart']
-  maximized?: boolean
 }
 
 const props = defineProps<Props>()
 const domain = defineModel<[Date, Date]>('domain')
+const v4Handlers = computed(() => getV4ChartHandlers(props.group))
+const zoomHandler = computed(
+  () =>
+    props.zoomHandler ??
+    (props.verticalProfile
+      ? v4Handlers.value?.sharedVerticalZoomHandler
+      : v4Handlers.value?.sharedZoomHandler),
+)
+const panHandler = computed(
+  () =>
+    props.panHandler ??
+    (props.verticalProfile ? undefined : v4Handlers.value?.sharedPanHandler),
+)
 
 const userSettingsStore = useUserSettingsStore()
 const emit = defineEmits<{
@@ -131,17 +144,29 @@ const emit = defineEmits<{
 }>()
 defineExpose({
   getSvgElement,
-  axisAccept,
+  exportImage,
 })
 
 const { locale } = useI18n()
 
-let thresholdLines!: ThresholdLine[]
+function toV4WheelMode(mode: ChartWheelMode): WheelMode {
+  switch (mode) {
+    case 'y':
+      return WheelMode.Y
+    case 'xy':
+      return WheelMode.XY
+    case 'none':
+      return WheelMode.NONE
+    default:
+      return WheelMode.X
+  }
+}
+
 let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
 let zoom!: ZoomHandler
 
-const margin = ref<Margin>({})
+const margin = ref<ChartMargin>({})
 const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
 const chartContainer = useTemplateRef('chartContainer')
@@ -183,10 +208,10 @@ onMounted(() => {
       : MouseOverDirection.Horizontal,
   })
 
-  const wheelMode = userSettingsStore.scrollZoomMode
+  const wheelMode = toV4WheelMode(userSettingsStore.scrollZoomMode)
   const scrollModifierKey = ModifierKey.Shift
-  if (props.zoomHandler) {
-    zoom = props.zoomHandler
+  if (zoomHandler.value) {
+    zoom = zoomHandler.value
     zoom.updateOptions({ wheelMode, scrollModifierKey })
   } else {
     zoom = new ZoomHandler(wheelMode, scrollModifierKey)
@@ -196,7 +221,7 @@ onMounted(() => {
 
   const currentTime = new CurrentTime({ x: { axisIndex: 0 } })
 
-  thresholdLinesVisitor = new AlertLines(thresholdLines)
+  thresholdLinesVisitor = new AlertLines([])
   attachAxisVisitors(mouseOver, currentTime)
   resize()
   onValueChange()
@@ -215,7 +240,8 @@ useResizeObserver(
 
 watch(
   () => userSettingsStore.scrollZoomMode,
-  (scrollZoomMode) => zoom?.updateOptions({ wheelMode: scrollZoomMode }),
+  (scrollZoomMode) =>
+    zoom?.updateOptions({ wheelMode: toV4WheelMode(scrollZoomMode) }),
 )
 
 const xTicksDisplay = computed(() =>
@@ -244,7 +270,7 @@ function onCrossValueChange(value: Date) {
 }
 
 function onZoom(event: ZoomEvent) {
-  zoomedY = zoomedY || event.mode === ZoomMode.Y || event.mode === ZoomMode.XY
+  zoomedY = zoomedY || event.mode === 'y' || event.mode === 'xy'
   resetAxes(!zoomedY)
 }
 
@@ -264,9 +290,9 @@ function setThresholdLines() {
   const yDomains = props.config.yAxis?.map((y) => y.defaultDomain)
 
   if (showThresholds.value) {
-    thresholdLinesVisitor.options = series
-      .flatMap((s) => s.thresholds ?? [])
-      .filter(isUniqueThreshold)
+    thresholdLinesVisitor.options = toV4AlertLineOptions(
+      series.flatMap((s) => s.thresholds ?? []).filter(isUniqueThreshold),
+    )
 
     const axisIndexMap = new Map<number, number[]>()
 
@@ -314,7 +340,14 @@ function setTags() {
   if (isHorizontalColorCode) {
     legendTags.value = getHorizontalColorCodeTags(series)
   } else {
-    legendTags.value = getSeriesTags(axis, series, props.forecastLegend)
+    legendTags.value = getSeriesTags(
+      (id) => {
+        const chart = axis.charts.find((chart) => chart.id === id)
+        return chart?.drawLegendSymbol(undefined, true) ?? undefined
+      },
+      series,
+      props.forecastLegend,
+    )
     const thresholdTag = getThresholdTag(props.config)
     if (thresholdTag) legendTags.value.push(thresholdTag)
   }
@@ -417,8 +450,13 @@ function getSvgElement() {
   return axis.svg.node()
 }
 
-function axisAccept(visitor: Visitor) {
+function exportImage({ legend, container }: TimeSeriesChartExportOptions) {
+  const visitor = new Legend(
+    legend.map(({ selector, label }) => ({ selector, label })),
+    container,
+  )
   axis?.accept(visitor)
+  return container.querySelector('svg') ?? undefined
 }
 
 const plotWeight = computed(() => {
@@ -436,8 +474,8 @@ function attachAxisVisitors(mouseOver: MouseOver, currentTime: CurrentTime) {
     axis.accept(axisTime.value)
   }
 
-  if (props.panHandler) {
-    axis.accept(props.panHandler)
+  if (panHandler.value) {
+    axis.accept(panHandler.value)
   }
 
   axis.accept(thresholdLinesVisitor)

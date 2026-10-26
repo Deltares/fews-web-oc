@@ -203,6 +203,24 @@
     "group": "Map"
   },
   {
+    "id": "charts.engine",
+    "type": "oneOfMultiple",
+    "label": "Chart engine",
+    "value": "v4",
+    "items": [
+      {
+        "value": "v4",
+        "title": "Version 4"
+      },
+      {
+        "value": "v5",
+        "title": "Version 5 (preview)"
+      }
+    ],
+    "group": "Charts",
+    "favorite": false
+  },
+  {
     "id": "charts.scrollZoomMode",
     "type": "oneOfMultiple",
     "label": "Scroll wheel zoom mode",

@@ -8,9 +8,13 @@ import type { Series } from '@/lib/timeseries/timeSeries'
 import { BrushHandler, CartesianAxes } from '@deltares/fews-web-oc-charts'
 import type { ChartsSettings } from '@/lib/topology/componentSettings'
 import { computed, nextTick, onMounted, useTemplateRef, watch } from 'vue'
-import type { Margin } from '@deltares/fews-web-oc-charts'
-import { getAxisOptions } from '@/lib/charts/axisOptions'
-import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
+import type { ChartMargin } from '@/lib/charts/types/TimeSeriesChartProps'
+import { getAxisOptions } from '@/lib/charts/v4/axisOptions'
+import {
+  clearChart,
+  redraw,
+  refreshChart,
+} from '@/lib/charts/v4/timeSeriesChart'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 import { getSubplotWithDomain } from '@/lib/display'
 import { useI18n } from 'vue-i18n'
@@ -20,7 +24,7 @@ interface Props {
   series: Record<string, Series>
   settings: ChartsSettings['timeSeriesChart']
   fullDomain: [Date, Date]
-  mainChartMargin?: Margin
+  mainChartMargin?: ChartMargin
 }
 
 const props = defineProps<Props>()

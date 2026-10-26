@@ -1,9 +1,12 @@
-import { WheelMode } from '@deltares/fews-web-oc-charts'
 import { defineStore } from 'pinia'
 import DefaultUserSettings from '@/assets/DefaultUserSettings.json'
 import { LayerKind } from '@/lib/streamlines'
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import type {
+  ChartEngine,
+  ChartWheelMode,
+} from '@/lib/charts/types/TimeSeriesChartProps'
 
 export interface UserSettingsWithIcon {
   value: string
@@ -46,6 +49,7 @@ export interface UserSettingsState {
   convertDatum: boolean
   useDisplayUnits: boolean
   preferredLayerKind: LayerKind | null
+  chartEngine: ChartEngine
 }
 
 const defaultUserSettings = DefaultUserSettings as UserSettingsItem[]
@@ -69,25 +73,28 @@ export const useUserSettingsStore = defineStore(
     const preferredLayerKind = ref<LayerKind | null>(null)
 
     const route = useRoute()
+    const chartEngine = computed<ChartEngine>(() =>
+      get('charts.engine')?.value === 'v5' ? 'v5' : 'v4',
+    )
 
     const listFavorite = computed(() =>
       items.value.filter((item) => item.favorite),
     )
-    const scrollZoomMode = computed<WheelMode>(() => {
+    const scrollZoomMode = computed<ChartWheelMode>(() => {
       const item = items.value.find(
         (item) => item.id === 'charts.scrollZoomMode',
       )
       switch (item?.value) {
         case 'x':
-          return WheelMode.X
+          return 'x'
         case 'y':
-          return WheelMode.Y
+          return 'y'
         case 'xy':
-          return WheelMode.XY
+          return 'xy'
         case 'off':
-          return WheelMode.NONE
+          return 'none'
         default:
-          return WheelMode.X
+          return 'x'
       }
     })
 
@@ -169,6 +176,7 @@ export const useUserSettingsStore = defineStore(
       convertDatum,
       useDisplayUnits,
       preferredLayerKind,
+      chartEngine,
       listByGroup,
       listFavorite,
       get,

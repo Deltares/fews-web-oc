@@ -1,14 +1,18 @@
 import { computed, defineComponent, h, ref } from 'vue'
-import TimeSeriesChart from './TimeSeriesChart.vue'
 import TimeSeriesChartBrush from './TimeSeriesChartBrush.vue'
 import type { Margin } from '@deltares/fews-web-oc-charts'
+import TimeSeriesChart from './TimeSeriesChartSwitch.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { SeriesUrlRequest } from '@/lib/timeseries/timeSeriesResource'
 import { getDefaultSettings } from '@/lib/topology/componentSettings'
+import { useUserSettingsStore } from '@/stores/userSettings'
+import { useRoute, useRouter } from 'vue-router'
 
 export const ThresholdSwitching = defineComponent({
   props: {
+    engine: { type: String, default: 'v4' },
+    queryEngine: String,
     withThresholds: { type: Boolean, default: false },
     dataReady: { type: Boolean, default: true },
     autoScaleY: { type: Boolean, default: false },
@@ -17,6 +21,24 @@ export const ThresholdSwitching = defineComponent({
     verticalProfile: { type: Boolean, default: false },
   },
   setup(props) {
+    const userSettings = useUserSettingsStore()
+    const route = useRoute()
+    const router = useRouter()
+    const chartEngineSetting = userSettings.get('charts.engine')
+    if (chartEngineSetting?.type === 'oneOfMultiple') {
+      userSettings.add({
+        ...chartEngineSetting,
+        value: props.engine,
+      })
+    }
+    const query = { ...route.query }
+    if (props.queryEngine) {
+      query['charts.engine'] = props.queryEngine
+    } else {
+      delete query['charts.engine']
+    }
+    void router.replace({ query })
+
     const start = new Date('2026-01-01T00:00:00Z')
     const end = new Date('2026-01-02T00:00:00Z')
     const series = computed<Record<string, Series>>(() => {
@@ -36,9 +58,11 @@ export const ThresholdSwitching = defineComponent({
       const result: ChartConfig = {
         id: 'threshold-switching',
         title: 'Threshold switching',
-        xAxis: [{ domain: [start, end] }],
+        xAxis: [{ kind: 'time', domain: [start, end] }],
         yAxis: [
-          props.autoScaleY ? { includeZero: false } : { defaultDomain: [0, 3] },
+          props.autoScaleY
+            ? { kind: 'value', includeZero: false }
+            : { kind: 'value', defaultDomain: [0, 3] },
         ],
         series: [
           {
@@ -75,7 +99,7 @@ export const ThresholdSwitching = defineComponent({
         result.series.push({
           ...result.series[0],
           type: 'marker',
-          marker: { id: 0, size: 9, skip: 1 },
+          marker: { shape: 'circle', size: 9, skip: 1 },
         })
       }
       return result

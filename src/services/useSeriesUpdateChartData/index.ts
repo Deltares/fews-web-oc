@@ -1,4 +1,4 @@
-import { updateChartData } from '@/lib/charts/timeSeriesChart'
+import { updateChartData } from '@/lib/charts/v4/timeSeriesChart'
 import { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { CartesianAxes } from '@deltares/fews-web-oc-charts'

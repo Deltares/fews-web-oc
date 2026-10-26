@@ -1,39 +1,16 @@
-import {
-  ModifierKey,
-  MouseButton,
-  PanHandler,
-  PanningDirection,
-  ZoomHandler,
-  ZoomMode,
-} from '@deltares/fews-web-oc-charts'
 import { inject, provide } from 'vue'
+import type { ChartGroup } from '@/lib/charts/types/TimeSeriesChartProps'
+import { createV4ChartGroup } from './v4'
 
 const CHART_HANDLERS_KEY = Symbol('chartHandlers')
 
-function getDefaultChartHandlers() {
-  const sharedZoomHandler = new ZoomHandler({
-    sharedZoomMode: ZoomMode.X,
-  })
-  const sharedVerticalZoomHandler = new ZoomHandler({
-    sharedZoomMode: ZoomMode.Y,
-  })
-  const sharedPanHandler = new PanHandler({
-    mouseButton: MouseButton.Left,
-    modifierKey: ModifierKey.Shift,
-    direction: PanningDirection.X,
-  })
-
-  return {
-    sharedZoomHandler,
-    sharedVerticalZoomHandler,
-    sharedPanHandler,
-  }
+export function provideChartHandlers(): ChartGroup {
+  const { group } = createV4ChartGroup()
+  provide(CHART_HANDLERS_KEY, group)
+  return group
 }
 
-export function provideChartHandlers() {
-  provide(CHART_HANDLERS_KEY, getDefaultChartHandlers())
-}
-
-export function useChartHandlers() {
-  return inject(CHART_HANDLERS_KEY, getDefaultChartHandlers())
+export function useChartHandlers(): ChartGroup {
+  const fallbackGroup = createV4ChartGroup().group
+  return inject(CHART_HANDLERS_KEY, fallbackGroup)
 }
