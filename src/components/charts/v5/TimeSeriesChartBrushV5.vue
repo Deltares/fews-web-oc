@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { brush, ModifierKey, subscribe } from '@deltares/fews-web-oc-charts'
+import { brush, ModifierKey } from '@deltares/fews-web-oc-charts'
 import { computed, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -20,7 +20,6 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import { useChartHandlers } from '@/services/useChartHandlers'
 import {
   initializeV5TimeScale,
-  updateBrushSelection,
   updateTimeScaleDomain,
 } from '@/services/useChartHandlers/v5'
 
@@ -45,7 +44,7 @@ const interaction = brush({
   mode: 'x',
   modifier: ModifierKey.None,
   persistent: true,
-  ...(sync ? { selection: sync.selection } : {}),
+  ...(sync ? { targets: { x: sync.timeScale } } : {}),
 })
 const stores = useSeriesStores(() => props.series)
 const chartTheme = computed(() => {
@@ -103,37 +102,7 @@ watch(
 watch(
   domain,
   (nextDomain) => {
-    if (!sync) return
-    updateBrushSelection(sync, nextDomain)
-    updateTimeScaleDomain(sync.timeScale, nextDomain)
-  },
-  { immediate: true },
-)
-
-watch(
-  plot,
-  (currentPlot, _previousPlot, onCleanup) => {
-    if (!currentPlot || !sync) return
-
-    const controller = new AbortController()
-    onCleanup(() => controller.abort())
-    subscribe(
-      sync.selection.selection,
-      (selection) => {
-        const range = selection?.ranges.find(({ axis }) => axis === 'x')?.range
-        if (
-          range &&
-          typeof range[0] === 'number' &&
-          typeof range[1] === 'number'
-        ) {
-          updateTimeScaleDomain(sync.timeScale, [
-            new Date(range[0]),
-            new Date(range[1]),
-          ])
-        }
-      },
-      { signal: controller.signal },
-    )
+    if (sync) updateTimeScaleDomain(sync.timeScale, nextDomain)
   },
   { immediate: true },
 )
