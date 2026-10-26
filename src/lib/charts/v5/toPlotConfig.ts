@@ -97,7 +97,7 @@ function buildPlotConfig(
     title: config.title,
     autoMargins: options.autoMargins ?? true,
     axisLayout: 'inset',
-    background: 'chart',
+    background: 'canvas',
     clipMarks: true,
     margins: getV5PlotMargins(settings, options),
     align: options.align,
