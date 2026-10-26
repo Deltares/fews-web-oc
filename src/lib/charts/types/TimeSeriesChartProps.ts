@@ -1,6 +1,7 @@
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ChartsSettings } from '@/lib/topology/componentSettings'
 import type {
+  AlignGroup,
   ScaleHandle,
   SharedPointer,
   SharedSelection,
@@ -14,6 +15,7 @@ export interface V5ChartGroup {
   timeScale: ScaleHandle
   brushTimeScale: ScaleHandle
   pointer: SharedPointer
+  align: AlignGroup
   selection: SharedSelection
   timeScaleInitialized: boolean
   brushTimeScaleInitialized: boolean

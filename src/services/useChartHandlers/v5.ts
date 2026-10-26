@@ -1,4 +1,5 @@
 import {
+  alignGroup,
   sharedPointer,
   sharedSelection,
   timeScale,
@@ -13,6 +14,7 @@ export function createV5ChartGroup(): V5ChartGroup {
     timeScale: timeScale({ defaultDomain: [0, 1], locale, timeZone }),
     brushTimeScale: timeScale({ defaultDomain: [0, 1], locale, timeZone }),
     pointer: sharedPointer({ by: 'x' }),
+    align: alignGroup(),
     selection: sharedSelection(),
     timeScaleInitialized: false,
     brushTimeScaleInitialized: false,

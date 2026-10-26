@@ -6,7 +6,6 @@
     :series
     :settings
     :full-domain="fullDomain"
-    :main-chart-margin="mainChartMargin"
     :group
   />
   <TimeSeriesChartBrushV4
