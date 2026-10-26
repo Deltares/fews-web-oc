@@ -81,11 +81,11 @@ export function getFilterFromLayerOptions(options: AnimatedRasterLayerOptions) {
     elevation: options.elevation ?? undefined,
     layerType: options.layerType,
     taskRunId: options.taskRunId,
+    useDisplayUnits: options.useDisplayUnits,
   }
 
   if (options.colorScaleRange) {
     filter.colorscalerange = options.colorScaleRange
-    filter.useDisplayUnits = options.useDisplayUnits
   }
 
   return filter
