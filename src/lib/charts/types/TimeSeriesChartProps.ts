@@ -14,11 +14,14 @@ export type ChartWheelMode = 'x' | 'y' | 'xy' | 'none'
 export interface V5ChartGroup {
   timeScale: ScaleHandle<'time'>
   brushTimeScale: ScaleHandle<'time'>
+  elevationScale: ScaleHandle<'linear'>
   pointer: SharedPointer
+  elevationPointer: SharedPointer
   align: AlignGroup
   selection: SharedSelection
   timeScaleInitialized: boolean
   brushTimeScaleInitialized: boolean
+  elevationScaleInitialized: boolean
 }
 
 export interface ChartGroup {

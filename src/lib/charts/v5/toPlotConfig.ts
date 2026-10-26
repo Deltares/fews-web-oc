@@ -8,16 +8,19 @@ import {
   degreesScale,
   handleCache,
   linearScale,
+  line,
   series as seriesMark,
   timeScale,
   type AxisHandle,
   type BandMark,
   type BarMark,
   type MarkerSymbol,
+  type LineMark,
   type HandleCache,
   type PlotConfig,
   type ScaleHandle,
   type SeriesMark,
+  type SeriesOptions,
   type SeriesStore,
   type ThemeMode,
   type TableInput,
@@ -39,6 +42,7 @@ export interface ToPlotConfigOptions {
   verticalProfile?: boolean
   plugins?: PlotConfig['plugins']
   sharedTimeScale?: ScaleHandle<'time'>
+  sharedElevationScale?: ScaleHandle<'linear'>
   align?: AlignGroup
   autoMargins?: boolean
   isBrush?: boolean
@@ -90,7 +94,11 @@ function buildPlotConfig(
   const directions: Record<string, 'x' | 'y'> = { x: 'x' }
 
   for (const { id, axis: yAxis } of yScales) {
-    scales[id] = createScale(id, yAxis, options, handles)
+    scales[id] =
+      (options.verticalProfile &&
+        id === 'y0' &&
+        options.sharedElevationScale) ||
+      createScale(id, yAxis, options, handles)
     directions[id] = 'y'
   }
 
@@ -108,7 +116,14 @@ function buildPlotConfig(
     scales,
     directions,
     axes: createAxes(xAxis, yScales, settings, options, handles),
-    marks: createMarks(config.series, stores, resources, yScales, handles),
+    marks: createMarks(
+      config.series,
+      stores,
+      resources,
+      yScales,
+      handles,
+      options.verticalProfile,
+    ),
     plugins: options.plugins,
   }
 }
@@ -262,8 +277,9 @@ function createMarks(
   resources: Record<string, Series>,
   yScales: YScale[],
   handles: HandleCache,
-): (BandMark | BarMark | SeriesMark)[] {
-  const marks: (BandMark | BarMark | SeriesMark)[] = []
+  verticalProfile = false,
+): (BandMark | BarMark | SeriesMark | LineMark)[] {
+  const marks: (BandMark | BarMark | SeriesMark | LineMark)[] = []
   const mergedMarkerIndices = new Set<number>()
 
   for (const [seriesIndex, item] of chartSeries.entries()) {
@@ -333,51 +349,86 @@ function createMarks(
     const resourceIds = item.dataResources
     for (const [index, resourceId] of resourceIds.entries()) {
       const store = stores[resourceId]
-      if (!store) continue
+      const resource = resources[resourceId]
+      if (verticalProfile ? !resource : !store) continue
 
       const isArea = item.type === 'area'
-      marks.push(
-        handles.use(`mark:${markId}:${index}`, seriesMark, store, {
-          id: `${markId}:${index}`,
-          x: 'x',
-          y: yScale,
-          label: item.visibleInLegend === false ? '' : item.name,
-          legendGroup:
-            item.visibleInLegend === false
-              ? undefined
-              : nonEmptyLabel(item.name),
-          visible: true,
-          line:
-            item.type === 'line' || item.type === 'rule'
-              ? {
-                  stroke: styleValue(item, 'stroke'),
-                  width: styleNumber(item, 'stroke-width', 1),
-                  strokeDasharray: styleValue(item, 'stroke-dasharray'),
-                  strokeLinecap:
-                    styleValue(item, 'stroke-linecap') === 'round'
-                      ? 'round'
-                      : 'butt',
-                  strokeLinejoin: 'round',
-                }
-              : false,
-          markers: markerItem
+      const options = {
+        id: `${markId}:${index}`,
+        x: 'x',
+        y: yScale,
+        label: item.visibleInLegend === false ? '' : item.name,
+        legendGroup:
+          item.visibleInLegend === false ? undefined : nonEmptyLabel(item.name),
+        visible: true,
+        line:
+          item.type === 'line' || item.type === 'rule'
             ? {
-                symbol: markerSymbol(markerItem.marker?.shape),
-                size: markerItem.marker?.size ?? 9,
-                fill: styleValue(markerItem, 'fill'),
-                stroke: styleValue(markerItem, 'stroke'),
-                strokeWidth: styleNumber(markerItem, 'stroke-width', 1),
+                stroke: styleValue(item, 'stroke'),
+                width: styleNumber(item, 'stroke-width', 1),
+                strokeDasharray: styleValue(item, 'stroke-dasharray'),
+                strokeLinecap:
+                  styleValue(item, 'stroke-linecap') === 'round'
+                    ? 'round'
+                    : 'butt',
+                strokeLinejoin: 'round',
               }
             : false,
-          area: isArea
-            ? {
-                to: 0,
-                fill: styleValue(item, 'fill'),
-                opacity: 1,
-              }
-            : false,
-        }),
-      )
+        markers: markerItem
+          ? {
+              symbol: markerSymbol(markerItem.marker?.shape),
+              size: markerItem.marker?.size ?? 9,
+              fill: styleValue(markerItem, 'fill'),
+              stroke: styleValue(markerItem, 'stroke'),
+              strokeWidth: styleNumber(markerItem, 'stroke-width', 1),
+            }
+          : false,
+        area: isArea
+          ? {
+              to: 0,
+              fill: styleValue(item, 'fill'),
+              opacity: 1,
+            }
+          : false,
+      } satisfies SeriesOptions
+      if (verticalProfile) {
+        // Profile values can reverse with elevation; SeriesStore requires sorted x.
+        const data = resource.data ?? []
+        marks.push(
+          line({
+            ...options,
+            xValues: data.map((event) =>
+              event.x !== null && Number.isFinite(Number(event.x))
+                ? Number(event.x)
+                : null,
+            ),
+            yValues: data.map((event) =>
+              event.y !== null &&
+              Number.isFinite(event.y) &&
+              isReliableData(event)
+                ? event.y
+                : null,
+            ),
+            line: options.line !== false,
+            stroke: options.line ? options.line.stroke : undefined,
+            strokeWidth: options.line ? options.line.width : undefined,
+            strokeDasharray: options.line
+              ? options.line.strokeDasharray
+              : undefined,
+            strokeLinecap: options.line
+              ? options.line.strokeLinecap
+              : undefined,
+            strokeLinejoin: options.line
+              ? options.line.strokeLinejoin
+              : undefined,
+            area: options.area || undefined,
+          }),
+        )
+      } else {
+        marks.push(
+          handles.use(`mark:${markId}:${index}`, seriesMark, store, options),
+        )
+      }
     }
   }
 

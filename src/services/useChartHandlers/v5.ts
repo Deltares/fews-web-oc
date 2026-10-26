@@ -1,10 +1,12 @@
 import {
   alignGroup,
+  linearScale,
   sharedPointer,
   sharedSelection,
   timeScale,
 } from '@deltares/fews-web-oc-charts'
 import type { V5ChartGroup } from '@/lib/charts/types/TimeSeriesChartProps'
+import type { ChartAxis } from '@/lib/charts/types/ChartAxis'
 
 export function createV5ChartGroup(): V5ChartGroup {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -13,12 +15,34 @@ export function createV5ChartGroup(): V5ChartGroup {
   return {
     timeScale: timeScale({ defaultDomain: [0, 1], locale, timeZone }),
     brushTimeScale: timeScale({ defaultDomain: [0, 1], locale, timeZone }),
+    elevationScale: linearScale({ defaultDomain: [0, 1], locale, timeZone }),
     pointer: sharedPointer({ by: 'x' }),
+    elevationPointer: sharedPointer({ by: 'y' }),
     align: alignGroup(),
     selection: sharedSelection(),
     timeScaleInitialized: false,
     brushTimeScaleInitialized: false,
+    elevationScaleInitialized: false,
   }
+}
+
+export function initializeV5ElevationScale(
+  group: V5ChartGroup | undefined,
+  axis: ChartAxis | undefined,
+): void {
+  if (!group || group.elevationScaleInitialized) return
+
+  group.elevationScale.update({
+    domain: axis?.domain
+      ? [Number(axis.domain[0]), Number(axis.domain[1])]
+      : undefined,
+    defaultDomain: axis?.defaultDomain ?? [0, 1],
+    includeZero: axis?.includeZero ?? false,
+    nice: axis?.nice ?? true,
+    reverse: axis?.reverse ?? false,
+    ...(axis?.locale ? { locale: axis.locale } : {}),
+  })
+  group.elevationScaleInitialized = true
 }
 
 export function initializeV5TimeScale(

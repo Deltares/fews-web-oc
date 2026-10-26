@@ -88,6 +88,7 @@ import { useSeriesStores } from '@/lib/charts/v5/useSeriesStores'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useChartHandlers } from '@/services/useChartHandlers'
 import {
+  initializeV5ElevationScale,
   initializeV5TimeScale,
   updateTimeScaleDomain,
 } from '@/services/useChartHandlers/v5'
@@ -129,13 +130,24 @@ function configuredDomain(): [Date, Date] | [number, number] | undefined {
   return [Number(values[0]), Number(values[1])]
 }
 
-if (!props.verticalProfile) {
-  initializeV5TimeScale(
-    chartGroup.v5,
-    'timeScale',
-    domain.value ?? configuredDomain(),
-  )
+function initializeSharedScale() {
+  if (props.verticalProfile) {
+    initializeV5ElevationScale(
+      chartGroup.v5,
+      props.config.yAxis?.find((axis) =>
+        ['left', 'right'].includes(axis.position ?? 'left'),
+      ),
+    )
+  } else {
+    initializeV5TimeScale(
+      chartGroup.v5,
+      'timeScale',
+      domain.value ?? configuredDomain(),
+    )
+  }
 }
+
+initializeSharedScale()
 
 const zoomInteraction = zoom({
   mode: 'auto',
@@ -150,8 +162,10 @@ const panInteraction = pan({
 })
 const crosshairInteraction = crosshair({
   mode: props.verticalProfile ? 'y' : 'x',
-  pointer: props.verticalProfile ? undefined : chartGroup.v5?.pointer,
-  labels: props.verticalProfile ? {} : { x: 'x' },
+  pointer: props.verticalProfile
+    ? chartGroup.v5?.elevationPointer
+    : chartGroup.v5?.pointer,
+  labels: props.verticalProfile ? { y: 'y0' } : { x: 'x' },
 })
 const crossSectionInteraction = crossSectionSelect(
   props.highlightTime?.getTime() ?? 0,
@@ -163,12 +177,12 @@ const crossSectionInteraction = crossSectionSelect(
   },
 )
 const tooltipInteraction = tooltip({
-  axis: 'x',
-  showX: false,
-  position: 'right',
+  axis: props.verticalProfile ? 'y' : 'x',
+  position: props.verticalProfile ? 'top' : 'right',
   crosshair: crosshairInteraction,
   formatValue: (_value, context) => context.defaultText,
-  formatUnit: ({ axis, mark }) => (axis === 'y' ? getUnitForMark(mark.id) : ''),
+  formatUnit: ({ axis, mark }) =>
+    axis === (props.verticalProfile ? 'x' : 'y') ? getUnitForMark(mark.id) : '',
 })
 const interactions = [
   zoomInteraction,
@@ -214,7 +228,9 @@ const chartContainerStyle = computed<CSSProperties>(() => {
   }
 })
 
-const stores = useSeriesStores(() => props.series)
+const stores = useSeriesStores(() =>
+  props.verticalProfile ? {} : props.series,
+)
 const chartTheme = computed(() => {
   const value = userSettings.get('ui.theme')?.value
   return value === 'light' || value === 'dark' ? value : 'auto'
@@ -235,6 +251,7 @@ const plotConfig = computed(() =>
       plugins: interactions,
       handles,
       sharedTimeScale: chartGroup.v5?.timeScale,
+      sharedElevationScale: chartGroup.v5?.elevationScale,
       align: props.verticalProfile ? undefined : chartGroup.v5?.align,
     },
     props.series,
@@ -246,6 +263,7 @@ watch(
   locale,
   (nextLocale) => {
     chartGroup.v5?.timeScale.update({ locale: nextLocale, timeZone })
+    chartGroup.v5?.elevationScale.update({ locale: nextLocale, timeZone })
   },
   { immediate: true },
 )
@@ -271,11 +289,18 @@ watch(
 watch(
   () => props.verticalProfile,
   (verticalProfile) => {
+    initializeSharedScale()
     crosshairInteraction.update({ mode: verticalProfile ? 'y' : 'x' })
     panInteraction.update({ mode: verticalProfile ? 'y' : 'x' })
     crosshairInteraction.update({
-      pointer: verticalProfile ? undefined : chartGroup.v5?.pointer,
-      labels: verticalProfile ? {} : { x: 'x' },
+      pointer: verticalProfile
+        ? chartGroup.v5?.elevationPointer
+        : chartGroup.v5?.pointer,
+      labels: verticalProfile ? { y: 'y0' } : { x: 'x' },
+    })
+    tooltipInteraction.update({
+      axis: verticalProfile ? 'y' : 'x',
+      position: verticalProfile ? 'top' : 'right',
     })
   },
 )
@@ -286,18 +311,7 @@ watch(domain, (nextDomain) => {
   }
 })
 
-watch(
-  () => props.config,
-  () => {
-    if (!props.verticalProfile) {
-      initializeV5TimeScale(
-        chartGroup.v5,
-        'timeScale',
-        domain.value ?? configuredDomain(),
-      )
-    }
-  },
-)
+watch(() => props.config, initializeSharedScale)
 
 watch(
   () => props.highlightTime,
@@ -345,6 +359,7 @@ watch(
       'domainchange',
       ({ scale, domain: nextDomain, explicit }) => {
         if (
+          props.verticalProfile ||
           scale !== 'x' ||
           !explicit ||
           typeof nextDomain[0] !== 'number' ||
