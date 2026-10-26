@@ -53,6 +53,75 @@ describe('getV5PlotMargins', () => {
     )
   })
 
+  describe('brush axes', () => {
+    it('shows only the x-axis with ticks and labels, without a grid', () => {
+      const config = toPlotConfig(
+        { id: 'test', title: 'Test', series: [] },
+        {},
+        defaultChartSettings.timeSeriesChart,
+        { isBrush: true, locale: 'nl' },
+      )
+
+      expect(config.axes).toHaveLength(1)
+      expect(config.axes?.[0].scale).toBe('x')
+      expect(config.axes?.[0].options.get().resolved).toMatchObject({
+        position: 'bottom',
+        tickCount: 6,
+        style: 'classic',
+        grid: false,
+        locale: 'nl',
+      })
+      expect(config.axes?.[0].options.get().resolved.format).toBeUndefined()
+    })
+
+    it('preserves the configured x-axis labels and position', () => {
+      const config = toPlotConfig(
+        {
+          id: 'test',
+          title: 'Test',
+          series: [],
+          xAxis: [
+            { kind: 'time', position: 'top', label: 'Time', unit: 'UTC' },
+          ],
+        },
+        {},
+        defaultChartSettings.timeSeriesChart,
+        { isBrush: true },
+      )
+
+      expect(config.axes?.[0].options.get().resolved).toMatchObject({
+        position: 'top',
+        label: 'Time',
+        unit: 'UTC',
+      })
+    })
+
+    it('respects disabled x-axis and tick settings', () => {
+      for (const enabled of [false, true]) {
+        const config = toPlotConfig(
+          { id: 'test', title: 'Test', series: [] },
+          {},
+          {
+            ...defaultChartSettings.timeSeriesChart,
+            xAxis: {
+              ...defaultChartSettings.timeSeriesChart.xAxis,
+              enabled,
+              xTicks: false,
+            },
+          },
+          { isBrush: true },
+        )
+
+        expect(config.axes).toHaveLength(enabled ? 1 : 0)
+        if (enabled) {
+          const options = config.axes?.[0].options.get().resolved
+          expect(options?.tickCount).toBe(1)
+          expect(options?.format?.(0)).toBe('')
+        }
+      }
+    })
+  })
+
   it('applies the v4 label, legend, and brush margin overrides in order', () => {
     const noYAxisLabel = {
       ...defaultChartSettings.timeSeriesChart,
