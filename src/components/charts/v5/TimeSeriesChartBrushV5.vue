@@ -9,10 +9,7 @@ import { useI18n } from 'vue-i18n'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ChartsSettings } from '@/lib/topology/componentSettings'
-import type {
-  ChartGroup,
-  ChartMargin,
-} from '@/lib/charts/types/TimeSeriesChartProps'
+import type { ChartGroup } from '@/lib/charts/types/TimeSeriesChartProps'
 import { toPlotConfig } from '@/lib/charts/v5/toPlotConfig'
 import { usePlot } from '@/lib/charts/v5/usePlot'
 import { useSeriesStores } from '@/lib/charts/v5/useSeriesStores'
@@ -28,7 +25,6 @@ interface Props {
   series: Record<string, Series>
   settings: ChartsSettings['timeSeriesChart']
   fullDomain: [Date, Date]
-  mainChartMargin?: ChartMargin
   group?: ChartGroup
 }
 
@@ -56,11 +52,6 @@ if (sync) {
   initializeV5TimeScale(sync, 'brushTimeScale', props.fullDomain)
 }
 
-// Only recompute the plot config when the main chart's horizontal margins
-// actually change; a new config during a drag aborts the brush gesture.
-const marginLeft = computed(() => props.mainChartMargin?.left)
-const marginRight = computed(() => props.mainChartMargin?.right)
-
 const plotConfig = computed(() =>
   toPlotConfig(
     props.config,
@@ -72,7 +63,7 @@ const plotConfig = computed(() =>
       theme: chartTheme.value,
       themeElement: chartContainer.value ?? undefined,
       sharedTimeScale: sync?.brushTimeScale,
-      margins: { left: marginLeft.value, right: marginRight.value },
+      align: sync?.align,
       autoMargins: false,
       isBrush: true,
       plugins: [interaction],
@@ -80,7 +71,7 @@ const plotConfig = computed(() =>
     props.series,
   ),
 )
-const plot = usePlot(chartContainer, plotConfig)
+usePlot(chartContainer, plotConfig)
 
 watch(
   locale,

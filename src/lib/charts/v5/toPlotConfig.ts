@@ -1,5 +1,6 @@
 import {
   axis,
+  type AlignGroup,
   band,
   bandScale,
   bar,
@@ -34,7 +35,7 @@ export interface ToPlotConfigOptions {
   verticalProfile?: boolean
   plugins?: PlotConfig['plugins']
   sharedTimeScale?: ScaleHandle
-  margins?: Partial<PlotConfig['margins']>
+  align?: AlignGroup
   autoMargins?: boolean
   isBrush?: boolean
 }
@@ -79,6 +80,7 @@ export function toPlotConfig(
     background: 'chart',
     clipMarks: true,
     margins: getV5PlotMargins(settings, options),
+    align: options.align,
     theme: options.theme ?? 'auto',
     themeElement: options.themeElement,
     scales,
@@ -92,10 +94,7 @@ export function toPlotConfig(
 export function getV5PlotMargins(
   settings:
     ChartsSettings['timeSeriesChart'] | ChartsSettings['verticalProfileChart'],
-  options: Pick<
-    ToPlotConfigOptions,
-    'verticalProfile' | 'isBrush' | 'margins'
-  > = {},
+  options: Pick<ToPlotConfigOptions, 'verticalProfile' | 'isBrush'> = {},
 ): NonNullable<PlotConfig['margins']> {
   const margins = {
     top: 25,
@@ -120,19 +119,7 @@ export function getV5PlotMargins(
     margins.bottom = 25
   }
 
-  return {
-    ...margins,
-    ...(options.margins?.top !== undefined ? { top: options.margins.top } : {}),
-    ...(options.margins?.right !== undefined
-      ? { right: options.margins.right }
-      : {}),
-    ...(options.margins?.bottom !== undefined
-      ? { bottom: options.margins.bottom }
-      : {}),
-    ...(options.margins?.left !== undefined
-      ? { left: options.margins.left }
-      : {}),
-  }
+  return margins
 }
 
 function getYScales(axes: ChartAxis[] = []): YScale[] {
