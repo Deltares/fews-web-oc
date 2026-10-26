@@ -299,6 +299,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { refDebounced } from '@vueuse/core'
 import { useSearchContext } from '@/stores/searchContext'
 import type { SearchItem } from '@/stores/searchContext'
+import { matchSearchTree } from '@/lib/search/tree'
 import HighlightMatch from '@/components/general/HighlightMatch.vue'
 import { getResourcesIconsUrl } from '@/lib/fews-config'
 import { useDisplay } from 'vuetify'
@@ -359,26 +360,7 @@ const searchQuery = computed(() => {
 
 const normalizedSearchQuery = computed(() => searchQuery.value.toLowerCase())
 
-/**
- * We only need to search the top-level SearchItems.
- *
- * The original implementation did:
- *
- *   filter -> isMatchingItem -> recursive traversal
- *   then hasMatchingDescendant -> recursive traversal again
- *   then collectOpenedDescendants -> recursive traversal again
- *   then collectVisibleItems -> recursive traversal again
- *
- * This combines that work.
- */
-interface MatchedRoot {
-  item: SearchItem
-  hasMatchingDescendant: boolean
-}
-
-const matchedRoots = computed<MatchedRoot[]>(() => {
-  const query = normalizedSearchQuery.value
-
+const treeMatches = computed(() => {
   let roots
   if (searchMode.value === 'location') {
     roots = searchContext.items.filter((item) => item.type === 'location')
@@ -388,65 +370,8 @@ const matchedRoots = computed<MatchedRoot[]>(() => {
     roots = searchContext.items
   }
 
-  if (!query) {
-    return roots.map((item) => ({
-      item,
-      hasMatchingDescendant: false,
-    }))
-  }
-
-  const result: MatchedRoot[] = []
-
-  for (const item of roots) {
-    const match = findMatch(item, query)
-
-    if (match.matches) {
-      result.push({
-        item,
-        hasMatchingDescendant: match.hasMatchingDescendant,
-      })
-    }
-  }
-
-  return result
+  return matchSearchTree(roots, normalizedSearchQuery.value)
 })
-
-interface MatchResult {
-  matches: boolean
-  hasMatchingDescendant: boolean
-}
-
-/**
- * Single recursive search.
- *
- * A node matches when:
- * - its label matches
- * - its location ID matches
- * - one of its descendants matches
- */
-function findMatch(item: SearchItem, query: string): MatchResult {
-  const ownMatch =
-    item.normalizedLabel.includes(query) ||
-    (item.type === 'location' && item.normalizedId.includes(query))
-
-  let descendantMatch = false
-
-  if (item.children?.length) {
-    for (const child of item.children) {
-      const result = findMatch(child, query)
-
-      if (result.matches) {
-        descendantMatch = true
-        break
-      }
-    }
-  }
-
-  return {
-    matches: ownMatch || descendantMatch,
-    hasMatchingDescendant: descendantMatch,
-  }
-}
 
 interface GroupRow {
   kind: 'group'
@@ -473,11 +398,11 @@ type VisibleRow = GroupRow | TreeRow
 const visibleRows = computed<VisibleRow[]>(() => {
   const rows: VisibleRow[] = []
   const query = normalizedSearchQuery.value
-  const topologyRoots = matchedRoots.value.filter(
-    ({ item }) => item.type === 'topology',
+  const topologyRoots = treeMatches.value.matchedRoots.filter(
+    (item) => item.type === 'topology',
   )
-  const locationRoots = matchedRoots.value.filter(
-    ({ item }) => item.type === 'location',
+  const locationRoots = treeMatches.value.matchedRoots.filter(
+    (item) => item.type === 'location',
   )
   appendGroup(rows, 'topology', 'Routes', topologyRoots, query)
   appendGroup(rows, 'location', 'Locations', locationRoots, query)
@@ -506,7 +431,7 @@ function appendGroup(
   rows: VisibleRow[],
   id: 'topology' | 'location',
   label: string,
-  roots: MatchedRoot[],
+  roots: SearchItem[],
   query: string,
 ): void {
   if (!roots.length) return
@@ -518,7 +443,7 @@ function appendGroup(
   })
 
   for (const root of roots) {
-    appendVisibleItem(rows, root.item, 0, query)
+    appendVisibleItem(rows, root, 0, query)
   }
 }
 
@@ -529,19 +454,12 @@ function appendVisibleItem(
   query: string,
   ancestorMatches = false,
 ): void {
-  const ownMatch =
-    !query ||
-    item.normalizedLabel.includes(query) ||
-    (item.type === 'location' && item.normalizedId.includes(query))
+  const match = treeMatches.value.matches.get(item)
+  const ownMatch = !query || match?.ownMatch === true
 
   // If an ancestor matched, everything below it is visible.
   // Otherwise, this item must either match or have a matching descendant.
-  if (
-    query &&
-    !ancestorMatches &&
-    !ownMatch &&
-    !findMatch(item, query).hasMatchingDescendant
-  ) {
+  if (query && !ancestorMatches && !ownMatch && !match?.hasMatchingDescendant) {
     return
   }
 
@@ -581,53 +499,7 @@ const searchResults = computed<SearchItem[]>(() =>
 const openedTreeIds = ref<Set<string>>(new Set())
 
 function getDefaultOpenedIds(): Set<string> {
-  const result = new Set<string>()
-
-  const query = normalizedSearchQuery.value
-
-  for (const { item } of matchedRoots.value) {
-    result.add(item.id)
-
-    if (!query) continue
-
-    openMatchingAncestors(item, query, result)
-  }
-
-  return result
-}
-
-/**
- * Opens only ancestors of matching nodes.
- *
- * Unlike the previous implementation, this doesn't first
- * calculate `hasMatchingDescendant()` and then traverse
- * everything again.
- */
-function openMatchingAncestors(
-  item: SearchItem,
-  query: string,
-  result: Set<string>,
-): boolean {
-  if (!item.children?.length) {
-    return false
-  }
-
-  let hasMatch = false
-
-  for (const child of item.children) {
-    const ownMatch =
-      child.normalizedLabel.includes(query) ||
-      (child.type === 'location' && child.normalizedId.includes(query))
-
-    const descendantMatch = openMatchingAncestors(child, query, result)
-
-    if (ownMatch || descendantMatch) {
-      hasMatch = true
-      result.add(item.id)
-    }
-  }
-
-  return hasMatch
+  return new Set(treeMatches.value.defaultOpenedIds)
 }
 
 function isSelected(item: SearchItem): boolean {

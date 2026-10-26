@@ -29,6 +29,12 @@ item; the search dialog normalizes the query once and uses the cached text
 for matching. Original labels and IDs remain unchanged for highlighting and
 navigation.
 
+For each query, `matchSearchTree` computes each node's own and descendant
+matches in one traversal, together with the default expanded ancestors.
+The dialog reuses those results when flattening visible rows; expanding or
+collapsing a branch does not rerun text matching. A matching parent still
+includes all children when expanded.
+
 The dialog height is applied to Vuetify's overlay content via the `height`
 prop. Its virtual list is the only scroll container and fills the remaining
 card space with a zero flex basis, keeping the rendered row count bounded
