@@ -1,5 +1,5 @@
 import { defineComponent, h, ref } from 'vue'
-import ImportStatusSummary from './ImportStatusSummary.vue'
+import ImportExportStatusSummary from './ImportExportStatusSummary.vue'
 import type { ImportExportStatusItem } from './statusTypes'
 import { useConfigStore } from '@/stores/config'
 import { configManager } from '@/services/application-config'
@@ -104,7 +104,7 @@ export const LogsEnabled = defineComponent(() => {
 
   return () =>
     h('div', [
-      h(ImportStatusSummary, {
+      h(ImportExportStatusSummary, {
         item: { ...baseItem, taskRunId: '  task-run-1  ' },
         expanded: expanded.value,
         'onUpdate:expanded': (value: boolean) => {
@@ -126,7 +126,7 @@ export const ManualOnlyLogs = defineComponent(() => {
   configureLogPanel(true, 'manual')
 
   return () =>
-    h(ImportStatusSummary, {
+    h(ImportExportStatusSummary, {
       item: { ...baseItem, taskRunId: 'task-run-3' },
       expanded: expanded.value,
       'onUpdate:expanded': (value: boolean) => {
@@ -143,7 +143,7 @@ export const LogsDisabled = defineComponent(() => {
 
   return () =>
     h('div', [
-      h(ImportStatusSummary, {
+      h(ImportExportStatusSummary, {
         item: { ...baseItem, taskRunId: 'task-run-2' },
         expanded: expanded.value,
         'onUpdate:expanded': (value: boolean) => {
@@ -165,7 +165,7 @@ export const OptionalFieldsMissing = defineComponent(() => {
   configureLogPanel(true, 'system')
 
   return () =>
-    h(ImportStatusSummary, {
+    h(ImportExportStatusSummary, {
       item: {
         ...baseItem,
         taskRunId: undefined,

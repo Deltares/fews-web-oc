@@ -22,7 +22,7 @@
     >
       <template #default="{ item }">
         <div class="my-1 mx-2">
-          <ImportStatusSummary
+          <ImportExportStatusSummary
             :item="item"
             v-model:expanded="expandedItems[item.dataFeed]"
             @open-side-panel="emit('openSidePanel', $event)"
@@ -41,7 +41,7 @@ import type {
   StatusResultFilter,
   StatusSource,
 } from './statusTypes'
-import ImportStatusSummary from './ImportStatusSummary.vue'
+import ImportExportStatusSummary from './ImportExportStatusSummary.vue'
 import type { SidePanelRequest } from '@/lib/sidepanel'
 import { useImportExportStatus } from './useImportExportStatus'
 
