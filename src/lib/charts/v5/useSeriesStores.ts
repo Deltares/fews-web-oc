@@ -22,15 +22,41 @@ export function useSeriesStores(
       const nextStores: Record<string, SeriesStore> = {}
 
       for (const { id, resource } of resources) {
-        const events = (resource.data ?? []).filter((event) => event.x !== null)
-        const x = events.map((event) => event.x as Date | number)
-        const y = events.map((event) =>
-          event.y !== null && isReliableData(event) ? event.y : null,
-        )
+        const x: (Date | number)[] = []
+        const y: (number | null)[] = []
+        for (const event of resource.data ?? []) {
+          if (event.x === null || !Number.isFinite(Number(event.x))) continue
+          x.push(event.x)
+          y.push(
+            event.y !== null &&
+              Number.isFinite(event.y) &&
+              isReliableData(event)
+              ? event.y
+              : null,
+          )
+        }
         const existing = stores.value[id]
 
         if (existing) {
-          existing.replace({ x, y })
+          // Replacement snapshots may include corrections, not just new points.
+          let preservesPrefix = x.length >= existing.length
+          for (
+            let index = 0;
+            preservesPrefix && index < existing.length;
+            index++
+          ) {
+            preservesPrefix =
+              Number(x[index]) === existing.xAt(index) &&
+              Object.is(y[index] ?? Number.NaN, existing.yAt(index))
+          }
+          if (!preservesPrefix) {
+            existing.replace({ x, y })
+          } else if (x.length > existing.length) {
+            existing.append({
+              x: x.slice(existing.length),
+              y: y.slice(existing.length),
+            })
+          }
           nextStores[id] = existing
         } else {
           nextStores[id] = markRaw(createSeries({ x, y }))
