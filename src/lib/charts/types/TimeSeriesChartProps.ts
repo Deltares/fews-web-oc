@@ -12,8 +12,8 @@ export type ChartEngine = 'v4' | 'v5'
 export type ChartWheelMode = 'x' | 'y' | 'xy' | 'none'
 
 export interface V5ChartGroup {
-  timeScale: ScaleHandle
-  brushTimeScale: ScaleHandle
+  timeScale: ScaleHandle<'time'>
+  brushTimeScale: ScaleHandle<'time'>
   pointer: SharedPointer
   align: AlignGroup
   selection: SharedSelection

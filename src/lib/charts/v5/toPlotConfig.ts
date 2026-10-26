@@ -34,7 +34,7 @@ export interface ToPlotConfigOptions {
   themeElement?: Element
   verticalProfile?: boolean
   plugins?: PlotConfig['plugins']
-  sharedTimeScale?: ScaleHandle
+  sharedTimeScale?: ScaleHandle<'time'>
   align?: AlignGroup
   autoMargins?: boolean
   isBrush?: boolean
@@ -142,14 +142,12 @@ function createScale(
   options: ToPlotConfigOptions,
   domain?: [Date, Date],
 ): ScaleHandle {
-  const scaleDomain: number[] | undefined = domain
-    ? domain.map((value) => value.getTime())
-    : axisConfig.domain?.map((value) =>
-        value instanceof Date ? value.getTime() : value,
-      )
+  const source = domain ?? axisConfig.domain
+  const scaleDomain: [number, number] | undefined = source
+    ? [Number(source[0]), Number(source[1])]
+    : undefined
   const defaultDomain = axisConfig.defaultDomain ?? [0, 1]
   const common = {
-    ...(scaleDomain ? { domain: scaleDomain } : {}),
     defaultDomain,
     includeZero: axisConfig.includeZero ?? false,
     nice: axisConfig.nice ?? true,
@@ -157,16 +155,23 @@ function createScale(
     locale: axisConfig.locale ?? options.locale ?? 'en',
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   }
+  const numeric = scaleDomain ? { ...common, domain: scaleDomain } : common
 
   switch (axisConfig.kind) {
     case 'time':
-      return timeScale(common)
+      return timeScale(numeric)
     case 'degrees':
-      return degreesScale(common)
+      return degreesScale(numeric)
     case 'band':
-      return bandScale(common)
+      return bandScale({
+        includeZero: common.includeZero,
+        nice: common.nice,
+        reverse: common.reverse,
+        locale: common.locale,
+        timeZone: common.timeZone,
+      })
     default:
-      return linearScale(common)
+      return linearScale(numeric)
   }
 }
 
