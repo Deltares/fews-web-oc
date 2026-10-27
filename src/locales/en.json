@@ -315,5 +315,9 @@
     "membersRange": "Members {range}",
     "previousNextMember": "previous/next member",
     "previousNextRow": "previous/next row"
+  },
+  "dynamicReport": {
+    "valueInputLabel": "Value at {time}",
+    "valueInputPlaceholder": "value"
   }
 }

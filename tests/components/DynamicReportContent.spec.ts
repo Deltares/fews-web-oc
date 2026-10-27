@@ -28,9 +28,7 @@ function getReport(component: Locator) {
     table,
     header: table.locator('th').first(),
     cell: table.locator('td').first(),
-    input: component.getByLabel(
-      'Value for time series 0 at 2026-10-27T06:00:00Z',
-    ),
+    input: component.getByLabel('Value at 2026-10-27T06:00:00Z'),
   }
 }
 
@@ -87,7 +85,7 @@ for (const story of ['WebOc', 'Isolated'] as const) {
       await input.fill('-0.5')
       await expect(component.getByTestId('last-edit')).toHaveText(
         JSON.stringify({
-          timeSeriesIndex: 0,
+          timeSeriesIndex: '0',
           time: '2026-10-27T06:00:00Z',
           value: '-0.5',
         }),

@@ -6,14 +6,15 @@ export interface DynamicReportNode {
   /** Element in the report the Vue component is rendered in */
   element: HTMLElement
   inputType: string
-  timeSeriesIndex: number
+  /** Id of the time series, a composed id, not a number */
+  timeSeriesIndex: string
   time: string
   /** Initial value, taken from the text content of the element */
   value: string
 }
 
 export interface DynamicReportEdit {
-  timeSeriesIndex: number
+  timeSeriesIndex: string
   time: string
   value: string
 }
@@ -39,8 +40,7 @@ export function findDynamicReportNodes(root: ParentNode): DynamicReportNode[] {
   const nodes: DynamicReportNode[] = []
   elements.forEach((element, index) => {
     const { inputType, timeSeriesIndex, time } = element.dataset
-    const parsedIndex = Number(timeSeriesIndex)
-    if (!inputType || !time || timeSeriesIndex === '' || isNaN(parsedIndex)) {
+    if (!inputType || !time || !timeSeriesIndex) {
       console.warn('Invalid dynamic report input element', element)
       return
     }
@@ -50,7 +50,7 @@ export function findDynamicReportNodes(root: ParentNode): DynamicReportNode[] {
       key: `${index}`,
       element,
       inputType,
-      timeSeriesIndex: parsedIndex,
+      timeSeriesIndex,
       time,
       value,
     })
