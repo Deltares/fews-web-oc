@@ -130,6 +130,7 @@ watch(locations, (newLocations) => {
 })
 
 // Edits are discarded when a new report is loaded
+// TODO: submit the edits to the FEWS web services
 const edits = ref(new Map<string, DynamicReportEdit>())
 watch(reportHtml, () => edits.value.clear())
 

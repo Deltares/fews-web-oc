@@ -66,6 +66,14 @@ for (const story of ['WebOc', 'Isolated'] as const) {
       await expect(outside).not.toHaveCSS('padding-left', '15px')
       // The story report has a style element with an unbalanced "}"
       await expect(outside).not.toHaveCSS('color', 'rgb(255, 0, 0)')
+
+      // The node styles are scoped to the report as well
+      const { input } = getReport(component)
+      await expect(input).toHaveCSS('border-radius', '4px')
+      await expect(component.getByTestId('outside-input')).not.toHaveCSS(
+        'border-radius',
+        '4px',
+      )
     })
 
     test('renders an editable input and emits edits', async ({ mount }) => {
