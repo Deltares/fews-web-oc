@@ -12,74 +12,84 @@
       </slot>
     </v-list-item>
   </v-toolbar>
-  <v-window v-model="currentLevel" data-testid="column-menu--window">
+  <v-window
+    v-model="currentLevel"
+    class="column-menu--window"
+    data-testid="column-menu--window"
+  >
     <v-window-item
       v-for="(item, i) in stack"
       v-bind:key="i"
       data-testid="column-menu--window-item"
     >
-      <template v-for="child in item.children" v-bind:key="child.id">
-        <v-list-item
-          v-if="child.children?.length"
-          @click="
-            (event) => {
-              onItemClick(event, child)
-            }
-          "
-          :class="getClass(child)"
-          data-testid="column-menu--item"
-        >
-          <template v-slot:prepend>
-            <ColumnItemIcon :item="child" />
-          </template>
-          <v-list-item-title>{{ child.name }}</v-list-item-title>
-          <template v-slot:append>
-            <v-icon v-if="child.children?.length">mdi-chevron-right</v-icon>
-            <v-icon v-else-if="child.appendIcon" small>{{
-              child.appendIcon
-            }}</v-icon>
-          </template>
-        </v-list-item>
-        <!-- LeafNode with external url-->
-        <v-list-item
-          v-else-if="child.href"
-          :href="child.href"
-          target="_blank"
-          :class="getClass(child)"
-          data-testid="column-menu--item"
-        >
-          <template v-slot:prepend>
-            <ColumnItemIcon :item="child" leaf />
-          </template>
-          <v-list-item-title>{{ child.name }}</v-list-item-title>
-          <template v-slot:append>
-            <v-icon size="xsmall">mdi-open-in-new</v-icon>
-          </template>
-        </v-list-item>
-        <!-- LeafNode -->
-        <v-list-item
-          v-else
-          :to="child.to"
-          :class="getClass(child)"
-          data-testid="column-menu--item"
-        >
-          <template v-slot:prepend>
-            <ColumnItemIcon :item="child" leaf />
-          </template>
-          <v-list-item-title>{{ child.name }}</v-list-item-title>
-          <template v-slot:append>
-            <v-icon v-if="child.appendIcon" small>{{
-              child.appendIcon
-            }}</v-icon>
-          </template>
-        </v-list-item>
-      </template>
+      <v-virtual-scroll
+        :items="item.children ?? []"
+        item-key="id"
+        height="100%"
+      >
+        <template #default="{ item: child }">
+          <v-list-item
+            v-if="child.children?.length"
+            @click="
+              (event) => {
+                onItemClick(event, child)
+              }
+            "
+            :class="getClass(child)"
+            data-testid="column-menu--item"
+          >
+            <template v-slot:prepend>
+              <ColumnItemIcon :item="child" />
+            </template>
+            <v-list-item-title>{{ child.name }}</v-list-item-title>
+            <template v-slot:append>
+              <v-icon v-if="child.children?.length">mdi-chevron-right</v-icon>
+              <v-icon v-else-if="child.appendIcon" small>{{
+                child.appendIcon
+              }}</v-icon>
+            </template>
+          </v-list-item>
+          <!-- LeafNode with external url-->
+          <v-list-item
+            v-else-if="child.href"
+            :href="child.href"
+            target="_blank"
+            :class="getClass(child)"
+            data-testid="column-menu--item"
+          >
+            <template v-slot:prepend>
+              <ColumnItemIcon :item="child" leaf />
+            </template>
+            <v-list-item-title>{{ child.name }}</v-list-item-title>
+            <template v-slot:append>
+              <v-icon size="xsmall">mdi-open-in-new</v-icon>
+            </template>
+          </v-list-item>
+          <!-- LeafNode -->
+          <v-list-item
+            v-else
+            :to="child.to"
+            :class="getClass(child)"
+            data-testid="column-menu--item"
+          >
+            <template v-slot:prepend>
+              <ColumnItemIcon :item="child" leaf />
+            </template>
+            <v-list-item-title>{{ child.name }}</v-list-item-title>
+            <template v-slot:append>
+              <v-icon v-if="child.appendIcon" small>{{
+                child.appendIcon
+              }}</v-icon>
+            </template>
+          </v-list-item>
+        </template>
+      </v-virtual-scroll>
     </v-window-item>
   </v-window>
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, nextTick, watch } from 'vue'
 import type { ColumnItem } from './ColumnItem'
 import ColumnItemIcon from '@/components/general/ColumnItemIcon.vue'
 import { useMenuItemsStack } from '../../services/useMenuItemsStack'
@@ -118,16 +128,27 @@ function getClass(child: ColumnItem): string {
   return child.id === active.value ? 'primary--text v-list-item--active' : ''
 }
 
-watch(stack, () => {
-  open.value = stack.value.map((item: ColumnItem) => item.id)
-})
+watch(
+  stack,
+  () => {
+    // When the active item is a leaf, show its parent level with the leaf
+    // highlighted, instead of an empty level for the leaf itself.
+    const last = stack.value.at(-1)
+    if (stack.value.length > 1 && !last?.children?.length) stack.value.pop()
+    open.value = stack.value.map((item: ColumnItem) => item.id)
+  },
+  { immediate: true },
+)
 
-function onTitleClick(): void {
-  const s = stack.value
-  if (s.length > 1) {
-    s.pop()
-  }
+async function onTitleClick(): Promise<void> {
+  const parentStack = stack.value.slice(0, -1)
+  if (parentStack.length === 0) return
+
+  // Clearing the active item rebuilds the stack from the root, so restore the
+  // parent level once that has happened.
   active.value = ''
+  await nextTick()
+  stack.value = parentStack
 }
 
 function onItemClick(event: Event, item: ColumnItem): void {
@@ -143,6 +164,17 @@ function onItemClick(event: Event, item: ColumnItem): void {
 </script>
 
 <style scoped>
+/* Give the virtual scrollers a bounded height to scroll in. */
+.column-menu--window {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.column-menu--window :deep(.v-window__container),
+.column-menu--window :deep(.v-window-item) {
+  height: 100%;
+}
+
 .alert-icon {
   position: absolute;
   top: -4px;

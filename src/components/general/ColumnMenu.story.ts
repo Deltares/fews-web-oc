@@ -80,3 +80,51 @@ export const Interactive = defineComponent(() => {
       },
     })
 })
+
+export const WithActiveLeaf = defineComponent(() => {
+  const active = ref('1.1')
+  const open = ref<string[]>([])
+  return () =>
+    h(ColumnMenu, {
+      items,
+      active: active.value,
+      'onUpdate:active': (v: string) => {
+        active.value = v
+      },
+      open: open.value,
+      'onUpdate:open': (v: string[]) => {
+        open.value = v
+      },
+    })
+})
+
+const deepItems: ColumnItem[] = [
+  {
+    id: 'a',
+    name: 'A',
+    children: [
+      {
+        id: 'a.b',
+        name: 'A.B',
+        children: [{ id: 'a.b.c', name: 'A.B.C' }],
+      },
+    ],
+  },
+]
+
+export const WithDeepActiveLeaf = defineComponent(() => {
+  const active = ref('a.b.c')
+  const open = ref<string[]>([])
+  return () =>
+    h(ColumnMenu, {
+      items: deepItems,
+      active: active.value,
+      'onUpdate:active': (v: string) => {
+        active.value = v
+      },
+      open: open.value,
+      'onUpdate:open': (v: string[]) => {
+        open.value = v
+      },
+    })
+})
