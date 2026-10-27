@@ -30,18 +30,12 @@ test.describe('ColumnMenu', () => {
   test('should open Item 1', async ({ mount }) => {
     const component = await mount('general/ColumnMenu/Interactive')
     await component.getByText('Item 1').click()
-    // Verify that both window items have their content available
+    await expect(component.getByTestId('column-menu--toolbar')).toHaveText(
+      'Item 1',
+    )
     await expect(
       component
         .getByTestId('column-menu--window-item')
-        .locator(':scope:first-child')
-        .getByTestId('column-menu--item'),
-    ).toHaveText(['Item 1', 'Item 2', 'Item 3'])
-
-    await expect(
-      component
-        .getByTestId('column-menu--window-item')
-        .locator(':scope.v-window-item--active')
         .getByTestId('column-menu--item'),
     ).toHaveText(['Item 1.1', 'Item 1.2'])
   })
@@ -67,7 +61,6 @@ test.describe('ColumnMenu', () => {
     await expect(
       component
         .getByTestId('column-menu--window-item')
-        .locator(':scope.v-window-item--active')
         .getByTestId('column-menu--item'),
     ).toHaveText(['Item 1', 'Item 2', 'Item 3'])
   })
@@ -89,7 +82,6 @@ test.describe('ColumnMenu', () => {
     await expect(
       component
         .getByTestId('column-menu--window-item')
-        .locator(':scope.v-window-item--active')
         .getByTestId('column-menu--item'),
     ).toHaveText(['A.B'])
   })
