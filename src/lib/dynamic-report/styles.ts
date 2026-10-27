@@ -18,9 +18,7 @@ async function createStyleSheet(
   style: DynamicReportStyle,
 ): Promise<CSSStyleSheet | undefined> {
   if (style.type === 'inline') {
-    const sheet = new CSSStyleSheet()
-    sheet.replaceSync(scopeCss(style.css))
-    return sheet
+    return createScopedStyleSheet(style.css)
   }
 
   const url = getResourcesStaticUrl(style.resource)
@@ -30,11 +28,23 @@ async function createStyleSheet(
     if (!response.ok) {
       throw new Error(`${response.status} ${response.statusText}`)
     }
-    const sheet = new CSSStyleSheet({ baseURL: url })
-    sheet.replaceSync(scopeCss(await response.text()))
-    return sheet
+    return createScopedStyleSheet(await response.text(), url)
   } catch (error) {
     console.error(`Failed to load dynamic report style sheet: ${url}`, error)
     return undefined
   }
+}
+
+/**
+ * Scope the CSS to the report container. The CSS is parsed on its own first
+ * and only the complete rules are scoped, so an unbalanced "}" cannot close
+ * the scope and style the rest of the WebOC.
+ */
+function createScopedStyleSheet(css: string, baseURL?: string): CSSStyleSheet {
+  const parsed = new CSSStyleSheet({ baseURL })
+  parsed.replaceSync(css)
+  const rules = Array.from(parsed.cssRules, (rule) => rule.cssText).join('\n')
+  const sheet = new CSSStyleSheet({ baseURL })
+  sheet.replaceSync(scopeCss(rules))
+  return sheet
 }

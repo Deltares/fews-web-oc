@@ -64,6 +64,8 @@ for (const story of ['WebOc', 'Isolated'] as const) {
       const outside = component.getByTestId('outside')
       await expect(outside).toHaveCSS('font-weight', '700')
       await expect(outside).not.toHaveCSS('padding-left', '15px')
+      // The story report has a style element with an unbalanced "}"
+      await expect(outside).not.toHaveCSS('color', 'rgb(255, 0, 0)')
     })
 
     test('renders an editable input and emits edits', async ({ mount }) => {

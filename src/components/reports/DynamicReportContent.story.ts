@@ -11,13 +11,19 @@ import timeSeriesValueInputCss from './dynamic/timeSeriesValueInput.css?inline'
 import reportHtml from '../../../tests/fixtures/dynamic-report/dynamic-report-desalination-plants.html?raw'
 
 // Make the water level of the first location editable
-const editableReportHtml = reportHtml.replace(
-  '<td class="number">-0.699</td>',
-  `<td class="number">
+const editableReportHtml = reportHtml
+  .replace(
+    '<td class="number">-0.699</td>',
+    `<td class="number">
     <span data-input-type="number" data-time-series-index="0"
           data-time="2026-10-27T06:00:00Z">-0.699</span>
   </td>`,
-)
+  )
+  // An unbalanced "}" should not close the scope of the report styles
+  .replace(
+    '</body>',
+    '<style>} [data-testid="outside"] { color: rgb(255, 0, 0); }</style>\n</body>',
+  )
 
 const isolatedReportHtml = editableReportHtml
   .replace('<head>', '<head>\n<meta name="weboc-styling" content="isolated" />')
