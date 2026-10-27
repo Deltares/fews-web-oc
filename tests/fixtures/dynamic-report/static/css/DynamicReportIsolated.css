@@ -1,0 +1,79 @@
+/*
+ * Styles for a dynamic report with isolated styling
+ * (<meta name="weboc-styling" content="isolated">), loaded from the FEWS
+ * static resources (WebResourceFiles/css/DynamicReportIsolated.css).
+ *
+ * The WebOC styles do not apply to an isolated report, so this style sheet
+ * defines its own font and colours. ":scope" is the report container, the
+ * WebOC adds the "dark" class to an ancestor of it in dark mode.
+ */
+
+:scope {
+  --report-text: rgb(33, 33, 33);
+  --report-surface: rgb(255, 255, 255);
+  --report-header: rgb(14, 40, 65);
+  --report-on-header: rgb(255, 255, 255);
+  --report-border: rgba(0, 0, 0, 0.12);
+  --report-hover: rgba(0, 0, 0, 0.04);
+
+  display: block;
+  padding: 8px;
+  color: var(--report-text);
+  background-color: var(--report-surface);
+  font:
+    14px/1.5 system-ui,
+    sans-serif;
+}
+
+.dark :scope {
+  --report-text: rgb(255, 255, 255);
+  --report-surface: rgb(33, 33, 33);
+  --report-header: rgb(40, 70, 95);
+  --report-on-header: rgb(255, 255, 255);
+  --report-border: rgba(255, 255, 255, 0.12);
+  --report-hover: rgba(255, 255, 255, 0.06);
+}
+
+.report-title {
+  text-align: center;
+  margin: 0 0 10px;
+  font-size: 1.25em;
+}
+
+.document-file-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.document-file-table thead {
+  background-color: var(--report-header);
+}
+
+.document-file-table th {
+  font-weight: 800;
+  color: var(--report-on-header);
+  text-align: center;
+  padding: 6px 15px;
+  white-space: nowrap;
+}
+
+.document-file-table th.number {
+  text-align: right;
+}
+
+/* Right aligned, use a fixed number of decimals per column to align the
+   decimal points */
+.document-file-table td.number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.document-file-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--report-border);
+}
+
+.document-file-table tbody tr:hover {
+  background-color: var(--report-hover);
+}
