@@ -20,6 +20,7 @@ import {
   type DynamicReportStyling,
   DYNAMIC_REPORT_SCOPE,
   sanitizeDynamicReport,
+  scopeCss,
 } from '@/lib/dynamic-report/sanitize'
 import { createDynamicReportStyleSheets } from '@/lib/dynamic-report/styles'
 import {
@@ -125,8 +126,10 @@ watch(
     // A newer report arrived while waiting
     if (currentRenderId !== renderId) return
 
+    // Scoped like the report styles, so the node CSS does not apply to the
+    // rest of the WebOC when it is adopted by the document
     const nodeSheet = new CSSStyleSheet()
-    nodeSheet.replaceSync(nodeCss)
+    nodeSheet.replaceSync(scopeCss(nodeCss))
     const { container, target } = createContainer(element, styling)
     setStyleSheets(target, [
       ...(styling === 'isolated' ? [isolatedSheet] : []),

@@ -56,6 +56,10 @@ function createStory(html: string) {
           h('table', { class: 'document-file-table' }, [
             h('thead', [h('tr', [h('th', { 'data-testid': 'outside' }, 'x')])]),
           ]),
+          h('input', {
+            class: 'time-series-value-input',
+            'data-testid': 'outside-input',
+          }),
           h(
             DynamicReportContent,
             { html, nodeCss: timeSeriesValueInputCss },
