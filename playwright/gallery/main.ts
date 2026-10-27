@@ -57,3 +57,10 @@ let app: App | undefined
   story.value = null
   props.value = {}
 }
+
+// Playwright sets navigator.webdriver, only show the picker when browsing by hand
+if (!navigator.webdriver) {
+  import('./picker').then(({ createStoryPicker }) =>
+    createStoryPicker(stories, id, (window as any).mount),
+  )
+}
