@@ -5,6 +5,9 @@ import vue from '@vitejs/plugin-vue'
 import vuetify from 'vite-plugin-vuetify'
 import { resolve, sep } from 'node:path'
 
+/** Outside the 517x range Vite falls back to when 5173 is in use */
+export const CT_SERVER_PORT = 6173
+
 /**
  * Serve the CSS files in tests/fixtures/dynamic-report/static as FEWS static
  * resources, for the DynamicReportContent stories.
@@ -19,7 +22,12 @@ function fewsStaticResources(): Plugin {
     name: 'fews-static-resources',
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
-        const path = decodeURIComponent(req.url?.split('?')[0] ?? '')
+        let path: string
+        try {
+          path = decodeURIComponent(req.url?.split('?')[0] ?? '')
+        } catch {
+          return next()
+        }
         if (!path.startsWith(prefix) || !path.endsWith('.css')) return next()
         const file = resolve(root, path.slice(prefix.length))
         // Do not serve files outside the fixtures folder
@@ -37,6 +45,14 @@ function fewsStaticResources(): Plugin {
 }
 
 export default defineConfig({
+  // Do not load the local .env files, e.g. an .env.development that enables
+  // authentication. The stories configure what they need themselves.
+  envDir: false,
+  server: {
+    port: CT_SERVER_PORT,
+    // Fail instead of moving to another port that Playwright does not know
+    strictPort: true,
+  },
   plugins: [
     fewsStaticResources(),
     vue({
