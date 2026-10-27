@@ -108,7 +108,10 @@
           id="web-oc-toolbar-target"
         ></div>
       </template>
-      <div id="web-oc-sidebar-target" class="d-flex flex-column flex-1-1"></div>
+      <div
+        id="web-oc-sidebar-target"
+        class="d-flex flex-column flex-1-1 h-100"
+      ></div>
       <template v-slot:append>
         <v-divider></v-divider>
         <v-list-item>
