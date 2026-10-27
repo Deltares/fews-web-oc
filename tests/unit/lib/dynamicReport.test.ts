@@ -107,7 +107,7 @@ describe('findDynamicReportNodes', () => {
   it('parses the data attributes and takes the text content as value', () => {
     const container = toContainer(
       `<table><tr><td>
-        <span data-input-type="number" data-time-series-index="2"
+        <span data-input-type="number" data-time-series-index="3f2b9c1e-7a4d:hourly"
               data-time="2026-10-27T06:00:00Z"> 12.3 </span>
       </td></tr></table>`,
     )
@@ -117,7 +117,7 @@ describe('findDynamicReportNodes', () => {
     expect(nodes[0]).toMatchObject({
       key: '0',
       inputType: 'number',
-      timeSeriesIndex: 2,
+      timeSeriesIndex: '3f2b9c1e-7a4d:hourly',
       time: '2026-10-27T06:00:00Z',
       value: '12.3',
     })
@@ -128,7 +128,7 @@ describe('findDynamicReportNodes', () => {
   it('skips elements with missing or invalid attributes', () => {
     const container = toContainer(
       `<span data-input-type="number" data-time="t">a</span>
-       <span data-input-type="number" data-time-series-index="x" data-time="t">b</span>
+       <span data-input-type="number" data-time-series-index="" data-time="t">b</span>
        <span data-input-type="number" data-time-series-index="0">c</span>`,
     )
     const nodes = findDynamicReportNodes(container)
@@ -140,6 +140,6 @@ describe('findDynamicReportNodes', () => {
 
 describe('getEditKey', () => {
   it('combines time series index and time', () => {
-    expect(getEditKey({ timeSeriesIndex: 1, time: 't' })).toBe('1|t')
+    expect(getEditKey({ timeSeriesIndex: 'a', time: 't' })).toBe('a|t')
   })
 })
