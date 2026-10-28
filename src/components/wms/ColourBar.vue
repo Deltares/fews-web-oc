@@ -4,7 +4,12 @@
     :class="isVisible ? 'invisible' : ''"
     class="legend_container"
   >
-    <svg ref="colourbarElement" class="map__colour-bar"></svg>
+    <svg
+      ref="colourbarElement"
+      class="map__colour-bar"
+      role="img"
+      aria-label="Colour bar legend"
+    ></svg>
   </div>
 </template>
 
@@ -40,7 +45,7 @@ onMounted(() => {
     group = svg
       .append('g')
       .attr('transform', 'translate(25, 25)')
-      .style('pointer-events', 'visiblePainted')
+      .attr('pointer-events', 'visiblePainted')
     updateColourBar()
   }
 })
@@ -69,6 +74,11 @@ function updateColourBar() {
 <style scoped>
 #legend .invisible {
   display: none;
+}
+
+.legend_container,
+.map__colour-bar {
+  pointer-events: none;
 }
 
 .map__colour-bar {
@@ -103,7 +113,6 @@ function updateColourBar() {
 }
 
 :deep(g) {
-  pointer-events: none;
   font-family: var(--primary-font);
 }
 

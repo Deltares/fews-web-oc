@@ -698,6 +698,7 @@ function onCoordinateMoved(lat: number, lng: number): void {
   z-index: 1000;
   bottom: v-bind('offsetBottomControls');
   left: 5px;
+  pointer-events: none;
 }
 
 .spatial-display {

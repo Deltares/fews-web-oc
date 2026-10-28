@@ -19,6 +19,7 @@ defineProps<Props>()
 
 <style scoped>
 .map__colour-legend {
+  pointer-events: auto;
   color: white;
   text-rendering: optimizeLegibility;
   text-shadow:
