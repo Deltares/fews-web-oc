@@ -30,16 +30,15 @@
                     size="xsmall"
                     @click.stop="toggleIcon(category.value)"
                   >
-                    <img
+                    <v-icon
                       v-if="category.thresholdIconName ?? category.iconName"
-                      :src="
-                        getResourcesIconsUrl(
+                      :icon="
+                        toResourceIcon(
                           category.thresholdIconName ?? category.iconName ?? '',
                         )
                       "
-                      :alt="category.iconLabel"
-                      width="16"
-                      height="16"
+                      :aria-label="category.iconLabel"
+                      size="16"
                     />
                     <svg
                       v-else
@@ -108,7 +107,7 @@ import { type Location } from '@deltares/fews-pi-requests'
 import ControlChip from '@/components/wms/ControlChip.vue'
 import SelectIcon from '@/components/general/SelectIcon.vue'
 import LocationsLegend from './LocationsLegend.vue'
-import { getResourcesIconsUrl } from '@/lib/fews-config'
+import { toResourceIcon } from '@/lib/icons'
 import { useI18n } from 'vue-i18n'
 import { useStorage } from '@vueuse/core'
 

@@ -1,5 +1,5 @@
 <template>
-  <v-avatar v-if="icon" tile :size="12" :image="getResourcesIconsUrl(icon)" />
+  <v-icon v-if="icon" :size="12" :icon="toResourceIcon(icon)" />
   <v-chip
     v-if="count"
     size="small"
@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts" setup>
-import { getResourcesIconsUrl } from '@/lib/fews-config'
+import { toResourceIcon } from '@/lib/icons'
 
 interface Props {
   icon?: string

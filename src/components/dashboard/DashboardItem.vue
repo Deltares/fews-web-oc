@@ -30,6 +30,7 @@ import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { configManager } from '@/services/application-config'
 import { useComponentSettings } from '@/services/useComponentSettings'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
+import { getTopologyNodeIcon } from '@/lib/topology/nodes'
 import { type Component, ref, shallowRef, watch } from 'vue'
 import type { RouteParamsGeneric } from 'vue-router'
 import type {
@@ -119,7 +120,9 @@ async function convertItemToComponentItem(
     actionParams,
   )
   const title = topologyNode?.name ?? componentTypeToTitleMap[componentName]
-  const icon = topologyNode?.iconId ?? componentTypeToIconMap[componentName]
+  const icon =
+    (topologyNode && getTopologyNodeIcon(topologyNode)) ??
+    componentTypeToIconMap[componentName]
   return {
     title,
     icon,

@@ -8,18 +8,14 @@
     @click="toggleAll(item.iconLabel)"
   >
     <template #prepend>
-      <v-img
+      <v-icon
         v-if="item.thresholdIconName ?? item.iconName"
-        :src="
-          getResourcesIconsUrl(item.thresholdIconName ?? item.iconName ?? '')
-        "
+        :icon="toResourceIcon(item.thresholdIconName ?? item.iconName ?? '')"
         class="mr-2 location-icon"
         :class="{
           'location-icon-selected': isLabelSelected(item.iconLabel),
         }"
-        width="16"
-        height="16"
-        contain
+        size="16"
       />
       <svg
         v-else
@@ -55,11 +51,11 @@
             'location-icon-selected': isSelected(category.value),
           }"
         >
-          <img
+          <v-icon
             v-if="category.thresholdIconName"
-            :src="getResourcesIconsUrl(category.thresholdIconName ?? '')"
-            :alt="`${item.iconLabel} - treshold`"
-            width="16"
+            :icon="toResourceIcon(category.thresholdIconName)"
+            :aria-label="`${item.iconLabel} - treshold`"
+            size="16"
           />
           <svg
             v-else-if="item.categories.length > 1"
@@ -104,7 +100,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { getResourcesIconsUrl } from '@/lib/fews-config'
+import { toResourceIcon } from '@/lib/icons'
 import { useI18n } from 'vue-i18n'
 
 type LegendItem = {
