@@ -142,3 +142,12 @@ watch(
   { immediate: true },
 )
 </script>
+
+<style scoped>
+.dynamic-report-root {
+  /* Keep the report inside its box: fixed positioned report content is
+     positioned and clipped relative to the root, so it cannot cover the
+     rest of the WebOC */
+  contain: layout paint;
+}
+</style>

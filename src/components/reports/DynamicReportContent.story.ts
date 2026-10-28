@@ -83,5 +83,24 @@ function createStory(html: string) {
   })
 }
 
+// A fixed positioned overlay should stay inside the report
+function withOverlay(html: string) {
+  return html.replace(
+    '</body>',
+    `<div class="report-overlay" data-testid="overlay"></div>
+<style>
+  .report-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background-color: rgba(255, 0, 0, 0.2);
+  }
+</style>
+</body>`,
+  )
+}
+
 export const WebOc = createStory(editableReportHtml)
 export const Isolated = createStory(isolatedReportHtml)
+export const WebOcOverlay = createStory(withOverlay(editableReportHtml))
+export const IsolatedOverlay = createStory(withOverlay(isolatedReportHtml))

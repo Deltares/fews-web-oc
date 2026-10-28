@@ -32,14 +32,24 @@ export interface SanitizedDynamicReport {
  * allowed by a strict style-src CSP, unlike inline <style> elements.
  */
 export function sanitizeDynamicReport(html: string): SanitizedDynamicReport {
-  const fragment = DOMPurify.sanitize(html, {
-    // Keep leading <style> elements, they would be dropped as head content
-    FORCE_BODY: true,
-    ADD_TAGS: ['style', 'link'],
+  // The styles and the styling option are read from an inert document, which
+  // does not load style sheets or run scripts. DOMPurify never returns
+  // <style> and <link> elements, so they cannot end up in the WebOC.
+  const document = new DOMParser().parseFromString(html, 'text/html')
+  const fragment = DOMPurify.sanitize(document.body, {
+    FORBID_TAGS: ['style', 'link'],
     RETURN_DOM_FRAGMENT: true,
   })
+  return {
+    fragment,
+    styles: getStyles(document),
+    styling: getStyling(document),
+  }
+}
+
+function getStyles(document: Document): DynamicReportStyle[] {
   const styles: DynamicReportStyle[] = []
-  fragment.querySelectorAll('style, link').forEach((element) => {
+  document.querySelectorAll('style, link').forEach((element) => {
     if (element instanceof HTMLStyleElement) {
       styles.push({ type: 'inline', css: element.textContent ?? '' })
     } else if (isStyleSheetLink(element)) {
@@ -53,15 +63,11 @@ export function sanitizeDynamicReport(html: string): SanitizedDynamicReport {
         )
       }
     }
-    element.remove()
   })
-  return { fragment, styles, styling: getStyling(html) }
+  return styles
 }
 
-function getStyling(html: string): DynamicReportStyling {
-  // Meta elements are removed by DOMPurify, read the option from an inert
-  // document instead
-  const document = new DOMParser().parseFromString(html, 'text/html')
+function getStyling(document: Document): DynamicReportStyling {
   const content = document
     .querySelector('meta[name="weboc-styling"]')
     ?.getAttribute('content')
