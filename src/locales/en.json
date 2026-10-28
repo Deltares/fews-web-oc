@@ -94,9 +94,116 @@
   },
   "userSettings": {
     "allSettings": "All settings",
+    "restoreDefaults": "Restore defaults",
+    "favorite": "Favorite",
     "settings": "Settings",
     "permissions": "Permissions",
-    "excluding-permissions-disallowed": "Simulating disabled permissions is not allowed by the server."
+    "excludingPermissionsDisallowed": "Simulating disabled permissions is not allowed by the server.",
+    "groups": {
+      "Units": "Units",
+      "Datum": "Datum",
+      "UI": "UI",
+      "Map": "Map",
+      "Charts": "Charts"
+    },
+    "items": {
+      "units": {
+        "displayUnits": {
+          "label": "Unit System",
+          "options": {
+            "system": "System",
+            "display": "Display"
+          }
+        }
+      },
+      "datum": {
+        "verticalDatum": {
+          "label": "Absolute vertical datum"
+        }
+      },
+      "ui": {
+        "theme": {
+          "label": "Theme",
+          "options": {
+            "auto": "Automatic",
+            "light": "Light",
+            "dark": "Dark"
+          }
+        },
+        "locale": {
+          "label": "Language",
+          "options": {
+            "system": "System",
+            "default": "Default",
+            "en": "English",
+            "de": "Deutsch"
+          }
+        },
+        "hierarchical-menu-style": {
+          "label": "Menu style",
+          "options": {
+            "auto": "Automatic",
+            "tree": "Tree",
+            "column": "Column"
+          }
+        },
+        "sidebar-style": {
+          "label": "Sidebar style",
+          "options": {
+            "minimal": "Minimal",
+            "full labels": "Full labels"
+          }
+        },
+        "scale": {
+          "label": "UI scale"
+        },
+        "map": {
+          "theme": {
+            "label": "Basemap",
+            "options": {
+              "automatic": "Automatic",
+              "light": "Light",
+              "dark": "Dark"
+            }
+          },
+          "showLocationNames": {
+            "label": "Show location names"
+          },
+          "showDataAvailability": {
+            "label": "Show data availability"
+          },
+          "navigationControl": {
+            "label": "Show navigation control"
+          },
+          "geolocationControl": {
+            "label": "Show your location"
+          },
+          "tools": {
+            "label": "Show map tools"
+          },
+          "data-download-tools": {
+            "label": "Show map data download tools"
+          },
+          "showCoordinates": {
+            "label": "Show mouse coordinates"
+          }
+        }
+      },
+      "charts": {
+        "scrollZoomMode": {
+          "label": "Scroll wheel zoom mode",
+          "options": {
+            "off": "Off",
+            "x": "Only X",
+            "y": "Only Y",
+            "xy": "Both X and Y"
+          }
+        },
+        "brush": {
+          "label": "Show brush chart"
+        }
+      }
+    }
   },
   "wms": {
     "layers": "Layers",

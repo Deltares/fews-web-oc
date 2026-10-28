@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, watchEffect } from 'vue'
+import { computed, onMounted, watch, watchEffect } from 'vue'
 import DefaultLayout from './layouts/DefaultLayout.vue'
 import EmptyLayout from './layouts/EmptyLayout.vue'
 import Alerts from '@/components/general/Alerts.vue'
@@ -39,6 +39,13 @@ import {
 } from './lib/basemap'
 import { MapLayerConfig } from '@deltares/fews-pi-requests'
 import { usePermissionsStore } from './stores/permissions'
+import { configManager } from './services/application-config'
+import {
+  i18n,
+  loadWebResourcesTranslations,
+  resolveLocaleSetting,
+  setI18nLanguage,
+} from './plugins/i18n'
 
 const route = useRoute()
 const configStore = useConfigStore()
@@ -52,6 +59,10 @@ useTaskRunMonitorStore()
 const permissionsStore = usePermissionsStore()
 // Initialise FEWS system time authority.
 useSystemTimeStore()
+
+onMounted(() => {
+  userSettingsStore.initializeWithWebResources()
+})
 
 const layoutComponent = computed(() => {
   if (globalThis.location.href.includes('/embed/')) {
@@ -126,6 +137,22 @@ watchEffect(() => {
     setTheme(themeSetting === 'dark')
   }
 })
+
+watch(
+  () => userSettingsStore.get('ui.locale')?.value,
+  async (localeSetting) => {
+    if (typeof localeSetting !== 'string') return
+    const locale = resolveLocaleSetting(
+      localeSetting,
+      configManager.getWithDefault('VITE_I18N_LOCALE', 'en-GB'),
+    )
+    if (locale === i18n.global.locale.value) return
+
+    await setI18nLanguage(i18n, locale)
+    await loadWebResourcesTranslations(locale)
+  },
+  { immediate: true },
+)
 
 function setTheme(setDark: boolean): void {
   changeTheme(setDark ? 'dark' : 'light')

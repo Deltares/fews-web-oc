@@ -32,6 +32,7 @@ See [Web OC Delft-FEWS configuration ](configuration/). This page includes infor
 - Web OC side panel
 - Other WEB OC functional components
 - Permissions
+- User settings and translations
 
 ## Web OC Application configuration
 

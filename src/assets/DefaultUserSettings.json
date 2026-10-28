@@ -50,6 +50,36 @@
     "group": "UI"
   },
   {
+    "id": "ui.locale",
+    "type": "oneOfMultiple",
+    "label": "Language",
+    "value": "default",
+    "disabled": true,
+    "items": [
+      {
+        "value": "system",
+        "title": "System",
+        "icon": "mdi-monitor"
+      },
+      {
+        "value": "default",
+        "title": "Default",
+        "icon": "mdi-translate"
+      },
+      {
+        "value": "en",
+        "title": "English",
+        "abbreviation": "en"
+      },
+      {
+        "value": "de",
+        "title": "Deutsch",
+        "abbreviation": "de"
+      }
+    ],
+    "group": "UI"
+  },
+  {
     "id": "ui.hierarchical-menu-style",
     "type": "oneOfMultiple",
     "label": "Menu style",

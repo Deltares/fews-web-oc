@@ -1,0 +1,425 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["settings"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "settings": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "units.displayUnits" },
+              "value": {
+                "anyOf": [
+                  { "type": "string", "const": "system" },
+                  { "type": "string", "const": "display" }
+                ],
+                "description": "Default value: system, display."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Unit System",
+            "description": "Override for the \"Unit System\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "datum.verticalDatum" },
+              "value": {
+                "type": "boolean",
+                "description": "Default value: true or false."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Absolute vertical datum",
+            "description": "Override for the \"Absolute vertical datum\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "ui.theme" },
+              "value": {
+                "anyOf": [
+                  { "type": "string", "const": "auto" },
+                  { "type": "string", "const": "light" },
+                  { "type": "string", "const": "dark" }
+                ],
+                "description": "Default value: auto, light, dark."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Theme",
+            "description": "Override for the \"Theme\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "ui.locale" },
+              "value": {
+                "anyOf": [
+                  { "type": "string", "const": "system" },
+                  { "type": "string", "const": "default" },
+                  { "type": "string", "const": "en" },
+                  { "type": "string", "const": "de" }
+                ],
+                "description": "Default value: system, default, en, de."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Language",
+            "description": "Override for the \"Language\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "ui.hierarchical-menu-style" },
+              "value": {
+                "anyOf": [
+                  { "type": "string", "const": "auto" },
+                  { "type": "string", "const": "tree" },
+                  { "type": "string", "const": "column" }
+                ],
+                "description": "Default value: auto, tree, column."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Menu style",
+            "description": "Override for the \"Menu style\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "ui.sidebar-style" },
+              "value": {
+                "anyOf": [
+                  { "type": "string", "const": "minimal" },
+                  { "type": "string", "const": "full labels" }
+                ],
+                "description": "Default value: minimal, full labels."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Sidebar style",
+            "description": "Override for the \"Sidebar style\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "ui.scale" },
+              "value": {
+                "anyOf": [
+                  { "type": "string", "const": "0.8" },
+                  { "type": "string", "const": "0.85" },
+                  { "type": "string", "const": "0.9" },
+                  { "type": "string", "const": "0.95" },
+                  { "type": "string", "const": "1" },
+                  { "type": "string", "const": "1.1" },
+                  { "type": "string", "const": "1.2" }
+                ],
+                "description": "Default value: 0.8, 0.85, 0.9, 0.95, 1, 1.1, 1.2."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "UI scale",
+            "description": "Override for the \"UI scale\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "ui.map.theme" },
+              "value": { "type": "string", "description": "Default value." },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Basemap",
+            "description": "Override for the \"Basemap\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "ui.map.showLocationNames" },
+              "value": {
+                "type": "boolean",
+                "description": "Default value: true or false."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Show location names",
+            "description": "Override for the \"Show location names\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "const": "ui.map.showDataAvailability"
+              },
+              "value": {
+                "type": "boolean",
+                "description": "Default value: true or false."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Show data availability",
+            "description": "Override for the \"Show data availability\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "ui.map.navigationControl" },
+              "value": {
+                "type": "boolean",
+                "description": "Default value: true or false."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Show navigation control",
+            "description": "Override for the \"Show navigation control\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "ui.map.geolocationControl" },
+              "value": {
+                "type": "boolean",
+                "description": "Default value: true or false."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Show your location",
+            "description": "Override for the \"Show your location\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "ui.map.tools" },
+              "value": {
+                "type": "boolean",
+                "description": "Default value: true or false."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Show map tools",
+            "description": "Override for the \"Show map tools\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "ui.map.data-download-tools" },
+              "value": {
+                "type": "boolean",
+                "description": "Default value: true or false."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Show map data download tools",
+            "description": "Override for the \"Show map data download tools\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "ui.map.showCoordinates" },
+              "value": {
+                "type": "boolean",
+                "description": "Default value: true or false."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Show mouse coordinates",
+            "description": "Override for the \"Show mouse coordinates\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "charts.scrollZoomMode" },
+              "value": {
+                "anyOf": [
+                  { "type": "string", "const": "off" },
+                  { "type": "string", "const": "x" },
+                  { "type": "string", "const": "y" },
+                  { "type": "string", "const": "xy" }
+                ],
+                "description": "Default value: off, x, y, xy."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Scroll wheel zoom mode",
+            "description": "Override for the \"Scroll wheel zoom mode\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "charts.brush" },
+              "value": {
+                "type": "boolean",
+                "description": "Default value: true or false."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Show brush chart",
+            "description": "Override for the \"Show brush chart\" user setting."
+          }
+        ]
+      },
+      "description": "Overrides of the WebOC default user settings."
+    }
+  },
+  "additionalProperties": false,
+  "title": "WebOC default user settings",
+  "description": "Overrides of the WebOC default user settings, placed in WebResourceFiles/default-user-settings.json."
+}

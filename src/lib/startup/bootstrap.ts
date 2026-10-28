@@ -2,7 +2,11 @@ import { toRef, type App as VueApp } from 'vue'
 import { configManager } from '../../services/application-config/index.js'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
 import router from '../../router/index.js'
-import { i18n, setI18nLanguage } from '../../plugins/i18n.js'
+import {
+  i18n,
+  setI18nLanguage,
+  loadWebResourcesTranslations,
+} from '../../plugins/i18n.js'
 import { loadApplicationConfig } from './config-loader.js'
 import { appendConfiguredHeadLinks } from './resource-links.js'
 import {
@@ -67,6 +71,7 @@ async function bootstrapApp(app: VueApp<Element>): Promise<void> {
 
   const locale = configManager.getWithDefault('VITE_I18N_LOCALE', 'en-GB')
   await setI18nLanguage(i18n, locale)
+  await loadWebResourcesTranslations(locale)
   app.use(i18n)
 
   // Provide Webservice context and notifications to remotes

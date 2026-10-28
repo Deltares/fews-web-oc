@@ -1,0 +1,463 @@
+import { describe, it, expect } from 'vitest'
+import {
+  deserializeUserSettings,
+  serializeUserSettings,
+  type UserSettingsOverride,
+} from '@/lib/user-settings/deserializeUserSettings'
+import {
+  type UserSettingsItem,
+  type UserSettingsItemBoolean,
+  type UserSettingsItemOneOf,
+} from '@/stores/userSettings'
+
+const defaultSettings: UserSettingsItem[] = [
+  {
+    id: 'ui.theme',
+    type: 'oneOfMultiple',
+    label: 'Theme',
+    value: 'auto',
+    favorite: false,
+    group: 'UI',
+    items: [
+      { value: 'auto', title: 'Automatic' },
+      { value: 'light', title: 'Light' },
+      { value: 'dark', title: 'Dark' },
+    ],
+  } as UserSettingsItemOneOf,
+  {
+    id: 'datum.verticalDatum',
+    type: 'boolean',
+    label: 'Absolute vertical datum',
+    value: true,
+    favorite: false,
+    group: 'Datum',
+  } as UserSettingsItemBoolean,
+  {
+    id: 'charts.scrollZoomMode',
+    type: 'oneOfMultiple',
+    label: 'Scroll wheel zoom mode',
+    value: 'x',
+    favorite: false,
+    group: 'Charts',
+    items: [
+      { value: 'off', title: 'Off' },
+      { value: 'x', title: 'Only X' },
+      { value: 'y', title: 'Only Y' },
+      { value: 'xy', title: 'Both X and Y' },
+    ],
+  } as UserSettingsItemOneOf,
+]
+
+function serialize(items: Partial<UserSettingsItem>[]): string {
+  return JSON.stringify({ items })
+}
+
+describe('deserializeUserSettings', () => {
+  it('returns defaults when no stored items match', () => {
+    const data = serialize([])
+    const result = deserializeUserSettings(data, defaultSettings)
+
+    expect(result).toHaveLength(3)
+    expect(result[0].value).toBe('auto')
+    expect(result[1].value).toBe(true)
+    expect(result[2].value).toBe('x')
+  })
+
+  it('restores stored value for oneOfMultiple', () => {
+    const data = serialize([{ id: 'ui.theme', value: 'dark', favorite: false }])
+    const result = deserializeUserSettings(data, defaultSettings)
+
+    expect((result[0] as UserSettingsItemOneOf).value).toBe('dark')
+  })
+
+  it('restores stored value for boolean', () => {
+    const data = serialize([
+      { id: 'datum.verticalDatum', value: false, favorite: false },
+    ])
+    const result = deserializeUserSettings(data, defaultSettings)
+
+    expect((result[1] as UserSettingsItemBoolean).value).toBe(false)
+  })
+
+  it('restores favorite flag', () => {
+    const data = serialize([{ id: 'ui.theme', value: 'auto', favorite: true }])
+    const result = deserializeUserSettings(data, defaultSettings)
+
+    expect(result[0].favorite).toBe(true)
+  })
+
+  it('keeps default value for settings not in stored data', () => {
+    const data = serialize([
+      { id: 'ui.theme', value: 'light', favorite: false },
+    ])
+    const result = deserializeUserSettings(data, defaultSettings)
+
+    expect(result[1].value).toBe(true)
+    expect(result[2].value).toBe('x')
+  })
+
+  it('does not mutate the original defaultSettings array', () => {
+    const original = defaultSettings.map((s) => ({ ...s }))
+    const data = serialize([{ id: 'ui.theme', value: 'dark', favorite: true }])
+    deserializeUserSettings(data, defaultSettings)
+
+    expect(defaultSettings[0].value).toBe(original[0].value)
+    expect(defaultSettings[0].favorite).toBe(original[0].favorite)
+  })
+
+  it('falls back by positional index when stored value no longer exists in items', () => {
+    const data = serialize([
+      {
+        id: 'ui.theme',
+        value: 'old-value',
+        favorite: false,
+        items: [
+          { value: 'some-other', title: 'Other' },
+          { value: 'old-value', title: 'Old' },
+        ],
+      },
+    ])
+    const result = deserializeUserSettings(data, defaultSettings)
+    const theme = result[0] as UserSettingsItemOneOf
+
+    expect(theme.value).toBe('light')
+    expect(theme.initialStorageValue).toBe('old-value')
+  })
+
+  it('leaves value unchanged when positional index is also out of range', () => {
+    const data = serialize([
+      {
+        id: 'ui.theme',
+        value: 'old-value',
+        favorite: false,
+        items: [
+          { value: 'a', title: 'A' },
+          { value: 'b', title: 'B' },
+          { value: 'c', title: 'C' },
+          { value: 'd', title: 'D' },
+          { value: 'e', title: 'E' },
+          { value: 'old-value', title: 'Old' },
+        ],
+      },
+    ])
+    const result = deserializeUserSettings(data, defaultSettings)
+    const theme = result[0] as UserSettingsItemOneOf
+
+    expect(theme.value).toBe('auto')
+    expect(theme.initialStorageValue).toBe('old-value')
+  })
+
+  it('handles missing items key in stored data gracefully', () => {
+    const data = JSON.stringify({})
+    const result = deserializeUserSettings(data, defaultSettings)
+
+    expect(result).toHaveLength(3)
+    expect(result[0].value).toBe('auto')
+  })
+
+  it('ignores stored entries that have no matching id in defaults', () => {
+    const data = serialize([
+      { id: 'unknown.setting', value: 'something', favorite: true },
+    ])
+    const result = deserializeUserSettings(data, defaultSettings)
+
+    expect(result).toHaveLength(3)
+  })
+
+  it('restores multiple settings in one call', () => {
+    const data = serialize([
+      { id: 'ui.theme', value: 'dark', favorite: true },
+      { id: 'datum.verticalDatum', value: false, favorite: false },
+      { id: 'charts.scrollZoomMode', value: 'xy', favorite: false },
+    ])
+    const result = deserializeUserSettings(data, defaultSettings)
+
+    expect(result[0].value).toBe('dark')
+    expect(result[0].favorite).toBe(true)
+    expect(result[1].value).toBe(false)
+    expect(result[2].value).toBe('xy')
+  })
+})
+
+describe('deserializeUserSettings – WebResources override tier', () => {
+  it('applies webresources value when localStorage has no stored entry', () => {
+    const data = serialize([])
+    const overrides: UserSettingsOverride[] = [
+      { id: 'ui.theme', value: 'dark' },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    expect(result[0].value).toBe('dark')
+  })
+
+  it('applies webresources favorite when localStorage has no stored entry', () => {
+    const data = serialize([])
+    const overrides: UserSettingsOverride[] = [
+      { id: 'ui.theme', favorite: true },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    expect(result[0].favorite).toBe(true)
+  })
+
+  it('applies disabled from webresources enabled:false', () => {
+    const data = serialize([])
+    const overrides: UserSettingsOverride[] = [
+      { id: 'charts.scrollZoomMode', enabled: false },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    expect(result[2].disabled).toBe(true)
+  })
+
+  it('sets disabled:false when webresources enabled:true', () => {
+    const data = serialize([])
+    const overrides: UserSettingsOverride[] = [
+      { id: 'ui.theme', enabled: true },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    expect(result[0].disabled).toBe(false)
+  })
+
+  it('does not set disabled when enabled is absent from override', () => {
+    const data = serialize([])
+    const overrides: UserSettingsOverride[] = [
+      { id: 'ui.theme', value: 'dark' },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    expect(result[0].disabled).toBeUndefined()
+  })
+
+  it('localStorage value wins over webresources value (priority tier 1 > 2)', () => {
+    const data = serialize([
+      { id: 'ui.theme', value: 'light', favorite: false },
+    ])
+    const overrides: UserSettingsOverride[] = [
+      { id: 'ui.theme', value: 'dark' },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    expect(result[0].value).toBe('light')
+  })
+
+  it('localStorage favorite wins over webresources favorite (priority tier 1 > 2)', () => {
+    const data = serialize([{ id: 'ui.theme', value: 'auto', favorite: false }])
+    const overrides: UserSettingsOverride[] = [
+      { id: 'ui.theme', favorite: true },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    expect(result[0].favorite).toBe(false)
+  })
+
+  it('ignores localStorage for settings disabled in webresources', () => {
+    const data = serialize([
+      { id: 'charts.scrollZoomMode', value: 'xy', favorite: true },
+    ])
+    const overrides: UserSettingsOverride[] = [
+      { id: 'charts.scrollZoomMode', enabled: false },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    expect(result[2].value).toBe('x')
+    expect(result[2].favorite).toBe(false)
+    expect(result[2].disabled).toBe(true)
+  })
+
+  it('webresources value wins over localStorage when the setting is disabled', () => {
+    const data = serialize([
+      { id: 'datum.verticalDatum', value: true, favorite: false },
+    ])
+    const overrides: UserSettingsOverride[] = [
+      { id: 'datum.verticalDatum', value: false, enabled: false },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    expect(result[1].value).toBe(false)
+    expect(result[1].disabled).toBe(true)
+  })
+
+  it('ignores a webresources value that is not a valid option', () => {
+    const data = serialize([])
+    const overrides: UserSettingsOverride[] = [
+      { id: 'ui.theme', value: 'automatic' },
+      { id: 'datum.verticalDatum', value: 'false' },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    expect(result[0].value).toBe('auto')
+    expect(result[1].value).toBe(true)
+  })
+
+  it('falls back to defaults for malformed stored data', () => {
+    for (const data of ['not json', 'null', '{}', '[]']) {
+      const result = deserializeUserSettings(data, defaultSettings)
+      expect(result.map((r) => r.value)).toEqual(['auto', true, 'x'])
+    }
+  })
+
+  it('webresources value wins over assets default when localStorage is empty', () => {
+    const data = serialize([])
+    const overrides: UserSettingsOverride[] = [
+      { id: 'datum.verticalDatum', value: false },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    expect(result[1].value).toBe(false)
+  })
+
+  it('applies overrides to multiple settings independently', () => {
+    const data = serialize([])
+    const overrides: UserSettingsOverride[] = [
+      { id: 'ui.theme', value: 'dark', favorite: true },
+      { id: 'charts.scrollZoomMode', enabled: false },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    expect(result[0].value).toBe('dark')
+    expect(result[0].favorite).toBe(true)
+    expect(result[2].disabled).toBe(true)
+    expect(result[1].value).toBe(true)
+  })
+
+  it('ignores overrides for unknown ids', () => {
+    const data = serialize([])
+    const overrides: UserSettingsOverride[] = [
+      { id: 'unknown.setting', value: 'something' },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    expect(result).toHaveLength(3)
+    expect(result[0].value).toBe('auto')
+  })
+
+  it('returns defaults unchanged when webResourcesOverrides is empty', () => {
+    const data = serialize([])
+    const result = deserializeUserSettings(data, defaultSettings, [])
+
+    expect(result[0].value).toBe('auto')
+    expect(result[1].value).toBe(true)
+    expect(result[2].value).toBe('x')
+  })
+
+  it('does not mutate defaults when webresources overrides are applied', () => {
+    const original = defaultSettings.map((s) => ({ ...s }))
+    const overrides: UserSettingsOverride[] = [
+      { id: 'ui.theme', value: 'dark', favorite: true },
+    ]
+    deserializeUserSettings(serialize([]), defaultSettings, overrides)
+
+    expect(defaultSettings[0].value).toBe(original[0].value)
+    expect(defaultSettings[0].favorite).toBe(original[0].favorite)
+  })
+})
+
+describe('serializeUserSettings', () => {
+  function parse(data: string) {
+    return JSON.parse(data).items
+  }
+
+  it('stores nothing when all settings equal the baseline', () => {
+    expect(
+      parse(serializeUserSettings(defaultSettings, defaultSettings)),
+    ).toEqual([])
+  })
+
+  it('stores only id and the changed fields', () => {
+    const items = defaultSettings.map((s) => ({ ...s }))
+    items[0].value = 'dark'
+    items[1].favorite = true
+
+    expect(parse(serializeUserSettings(items, defaultSettings))).toEqual([
+      { id: 'ui.theme', value: 'dark' },
+      { id: 'datum.verticalDatum', favorite: true },
+    ])
+  })
+
+  it('compares against the baseline with the FEWS config applied', () => {
+    const overrides: UserSettingsOverride[] = [
+      { id: 'ui.theme', value: 'dark' },
+    ]
+    const baseline = deserializeUserSettings('[]', defaultSettings, overrides)
+    const items = baseline.map((s) => ({ ...s }))
+
+    expect(parse(serializeUserSettings(items, baseline))).toEqual([])
+
+    items[0].value = 'auto'
+    expect(parse(serializeUserSettings(items, baseline))).toEqual([
+      { id: 'ui.theme', value: 'auto' },
+    ])
+  })
+
+  it('does not store settings disabled in the FEWS config', () => {
+    const items = defaultSettings.map((s) => ({ ...s }))
+    items[2].value = 'xy'
+    items[2].disabled = true
+
+    expect(parse(serializeUserSettings(items, defaultSettings))).toEqual([])
+  })
+
+  it('keeps the stored entry of a disabled setting', () => {
+    const items = defaultSettings.map((s) => ({ ...s }))
+    items[2].disabled = true
+    const previous = JSON.stringify({
+      items: [
+        { id: 'charts.scrollZoomMode', value: 'xy' },
+        { id: 'ui.theme', value: 'dark' },
+      ],
+    })
+
+    expect(
+      parse(serializeUserSettings(items, defaultSettings, previous)),
+    ).toEqual([{ id: 'charts.scrollZoomMode', value: 'xy' }])
+  })
+
+  it('keeps a stored value that is not yet available in the options', () => {
+    const items = defaultSettings.map((s) => ({ ...s }))
+    ;(items[0] as UserSettingsItemOneOf).initialStorageValue = 'custom'
+
+    expect(parse(serializeUserSettings(items, defaultSettings))).toEqual([
+      { id: 'ui.theme', value: 'custom' },
+    ])
+  })
+
+  it('round-trips through deserializeUserSettings', () => {
+    const items = defaultSettings.map((s) => ({ ...s }))
+    items[0].value = 'light'
+    items[0].favorite = true
+    items[1].value = false
+
+    const restored = deserializeUserSettings(
+      serializeUserSettings(items, defaultSettings),
+      defaultSettings,
+    )
+    expect(restored.map((r) => [r.value, r.favorite])).toEqual([
+      ['light', true],
+      [false, false],
+      ['x', false],
+    ])
+  })
+})
+
+describe('deserializeUserSettings – legacy full copies', () => {
+  it('only keeps fields that differ from the built-in default', () => {
+    const data = serialize(
+      defaultSettings.map((s) => ({
+        ...s,
+        value: s.id === 'datum.verticalDatum' ? false : s.value,
+      })),
+    )
+    const overrides: UserSettingsOverride[] = [
+      { id: 'ui.theme', value: 'dark', favorite: true },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    // Unchanged legacy values no longer block the FEWS config defaults.
+    expect(result[0].value).toBe('dark')
+    expect(result[0].favorite).toBe(true)
+    // A real user change is kept.
+    expect(result[1].value).toBe(false)
+  })
+})

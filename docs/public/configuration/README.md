@@ -282,6 +282,105 @@ Next to the Topology Display, three additional components can be configured in W
 
 **Help menu**: Drop-down menu available on the bottom left side of Web OC. See [WebOperatorClient.xml configuration](https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client).
 
+## User settings
+
+Web OC users can change their settings, such as theme, units and map options, via the *cog* icon in the top-right corner of the screen. **All settings** opens the full list. **Restore defaults** resets every setting to the defaults described below.
+
+### Default user settings
+
+The defaults for all users can be configured in `WebResourceFiles/default-user-settings.json`. For each setting, the configuration can:
+
+- set the default value,
+- hide the setting and fix its value for all users,
+- show a hidden setting, such as the language selection,
+- add the setting to the favorites in the user settings menu.
+
+Example:
+
+```json
+{
+  "$schema": "./default-user-settings.schema.json",
+  "settings": [
+    { "id": "ui.theme", "value": "dark" },
+    { "id": "units.displayUnits", "value": "system", "favorite": true },
+    { "id": "ui.locale", "value": "default", "enabled": true },
+    { "id": "charts.brush", "value": false, "enabled": false }
+  ]
+}
+```
+
+Each entry has the following properties. Only `id` is required.
+
+| Property | Description |
+| --- | --- |
+| `id` | Id of the setting, see the table below. |
+| `value` | Default value of the setting. |
+| `enabled` | `true` shows the setting to users. `false` hides it, and the configured `value` (or the Web OC default) applies to all users; values users chose earlier are ignored while the setting is hidden. When omitted, the Web OC default is used: all settings are shown, except the language selection. |
+| `favorite` | `true` shows the setting in the user settings menu (cog icon). Users can change this themselves. |
+
+A value chosen by a user takes precedence over the configured default. Web OC only stores the settings users changed themselves, so a change of a default in the configuration reaches all users who did not change that setting.
+
+Available settings:
+
+| Group | Id | Setting | Values | Web OC default |
+| --- | --- | --- | --- | --- |
+| Units | `units.displayUnits` | Unit System | `system`, `display` | `display` |
+| Datum | `datum.verticalDatum` | Absolute vertical datum | `true`, `false` | `true` |
+| UI | `ui.theme` | Theme | `auto`, `light`, `dark` | `auto` |
+| UI | `ui.locale` | Language | `system`, `default`, `en`, `de` | `default` (hidden) |
+| UI | `ui.hierarchical-menu-style` | Menu style | `auto`, `tree`, `column` | `auto` |
+| UI | `ui.sidebar-style` | Sidebar style | `minimal`, `full labels` | `full labels` |
+| UI | `ui.scale` | UI scale | `0.8`, `0.85`, `0.9`, `0.95`, `1`, `1.1`, `1.2` | `1` |
+| Map | `ui.map.theme` | Basemap | `automatic`, `light`, `dark` or a base map id | `automatic` |
+| Map | `ui.map.showLocationNames` | Show location names | `true`, `false` | `true` |
+| Map | `ui.map.showDataAvailability` | Show data availability | `true`, `false` | `false` |
+| Map | `ui.map.navigationControl` | Show navigation control | `true`, `false` | `false` |
+| Map | `ui.map.geolocationControl` | Show your location | `true`, `false` | `false` |
+| Map | `ui.map.tools` | Show map tools | `true`, `false` | `false` |
+| Map | `ui.map.data-download-tools` | Show map data download tools | `true`, `false` | `false` |
+| Map | `ui.map.showCoordinates` | Show mouse coordinates | `true`, `false` | `false` |
+| Charts | `charts.scrollZoomMode` | Scroll wheel zoom mode | `off`, `x`, `y`, `xy` | `x` |
+| Charts | `charts.brush` | Show brush chart | `true`, `false` | `false` |
+
+For `ui.locale`, `default` is the language set by `VITE_I18N_LOCALE` in the [application configuration](https://deltares.github.io/fews-web-oc/app_configuration/), and `system` is the language of the user's browser or operating system, if Web OC supports it.
+
+#### JSON schema
+
+The [JSON schema for default-user-settings.json](https://github.com/Deltares/fews-web-oc/blob/main/schemas/default-user-settings.schema.json) describes all settings and their allowed values. Download it to `WebResourceFiles/default-user-settings.schema.json` and refer to it with `"$schema": "./default-user-settings.schema.json"`, as in the example above. Editors like Visual Studio Code then validate the file, suggest setting ids and values, and show their descriptions. Use the schema that belongs to the Web OC version you deploy, as new versions can add settings.
+
+Web OC ignores invalid entries, such as an unknown id or a value that is not allowed, and lists them as a warning in the browser console (developer tools).
+
+### Translations
+
+Web OC includes translations in English and German. Texts, including the names of user settings and their options, can be changed or translated per language in `WebResourceFiles/locales/<language code>.json`, for example `locales/en.json` and `locales/de.json`. Only the texts in the file are replaced; all other texts keep the Web OC translation. Include only the texts you want to change, so that you keep receiving improvements of the other texts with new Web OC versions.
+
+Names of settings, options and groups are found under `userSettings`:
+
+- `userSettings.items.<id>.label`: name of a setting, where the dots of the id are nested objects,
+- `userSettings.items.<id>.options.<value>`: name of an option of a setting,
+- `userSettings.groups.<group>`: name of a group.
+
+Example `locales/de.json`:
+
+```json
+{
+  "userSettings": {
+    "groups": {
+      "UI": "Benutzeroberfläche"
+    },
+    "items": {
+      "charts": {
+        "brush": {
+          "label": "Übersichtsdiagramm anzeigen"
+        }
+      }
+    }
+  }
+}
+```
+
+Web OC loads the file of the language in use. Files that cannot be read are listed as a warning in the browser console.
+
 ## Known issues
 
 - The FewsWebServices _thinning_ [option](https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+PI+REST+Web+Service#FEWSPIRESTWebService-GETtimeseries) is used while retrieving data for Web OC time series graphs and tables. This function tries to keep the peaks and gaps and minimizes the number of time steps that have to be retrieved. Eventually, _thinning_ should not be used for time series tables. In future releases of Web OC _thinning_ will only be used for time series graphs.

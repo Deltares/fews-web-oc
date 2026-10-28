@@ -94,9 +94,116 @@
   },
   "userSettings": {
     "allSettings": "Alle Einstellungen",
+    "restoreDefaults": "Standardwerte wiederherstellen",
+    "favorite": "Favorit",
     "settings": "Einstellungen",
     "permissions": "Berechtigungen",
-    "excluding-permissions-disallowed": "Das Simulieren deaktivierter Berechtigungen ist auf dem Server nicht erlaubt."
+    "excludingPermissionsDisallowed": "Das Simulieren deaktivierter Berechtigungen ist auf dem Server nicht erlaubt.",
+    "groups": {
+      "Units": "Einheiten",
+      "Datum": "Datum",
+      "UI": "Oberfläche",
+      "Map": "Karte",
+      "Charts": "Diagramme"
+    },
+    "items": {
+      "units": {
+        "displayUnits": {
+          "label": "Einheitensystem",
+          "options": {
+            "system": "System",
+            "display": "Anzeige"
+          }
+        }
+      },
+      "datum": {
+        "verticalDatum": {
+          "label": "Absolutes vertikales Datum"
+        }
+      },
+      "ui": {
+        "theme": {
+          "label": "Design",
+          "options": {
+            "auto": "Automatisch",
+            "light": "Hell",
+            "dark": "Dunkel"
+          }
+        },
+        "locale": {
+          "label": "Sprache",
+          "options": {
+            "system": "System",
+            "default": "Standard",
+            "en": "English",
+            "de": "Deutsch"
+          }
+        },
+        "hierarchical-menu-style": {
+          "label": "Menüstil",
+          "options": {
+            "auto": "Automatisch",
+            "tree": "Baum",
+            "column": "Spalten"
+          }
+        },
+        "sidebar-style": {
+          "label": "Seitenleistenstil",
+          "options": {
+            "minimal": "Minimal",
+            "full labels": "Vollständige Beschriftungen"
+          }
+        },
+        "scale": {
+          "label": "Skalierung der Oberfläche"
+        },
+        "map": {
+          "theme": {
+            "label": "Basiskarte",
+            "options": {
+              "automatic": "Automatisch",
+              "light": "Hell",
+              "dark": "Dunkel"
+            }
+          },
+          "showLocationNames": {
+            "label": "Standortnamen anzeigen"
+          },
+          "showDataAvailability": {
+            "label": "Datenverfügbarkeit anzeigen"
+          },
+          "navigationControl": {
+            "label": "Navigationssteuerung anzeigen"
+          },
+          "geolocationControl": {
+            "label": "Eigenen Standort anzeigen"
+          },
+          "tools": {
+            "label": "Kartenwerkzeuge anzeigen"
+          },
+          "data-download-tools": {
+            "label": "Werkzeuge zum Herunterladen von Kartendaten anzeigen"
+          },
+          "showCoordinates": {
+            "label": "Mauskoordinaten anzeigen"
+          }
+        }
+      },
+      "charts": {
+        "scrollZoomMode": {
+          "label": "Scrollrad-Zoommodus",
+          "options": {
+            "off": "Aus",
+            "x": "Nur X",
+            "y": "Nur Y",
+            "xy": "X und Y"
+          }
+        },
+        "brush": {
+          "label": "Pinsel-Diagramm anzeigen"
+        }
+      }
+    }
   },
   "wms": {
     "layers": "Layer",
