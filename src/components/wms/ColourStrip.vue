@@ -1,10 +1,6 @@
 <template>
   <svg class="colourstrip">
-    <g
-      ref="groupRef"
-      style="pointer-events: 'visiblePainted'"
-      transform="translate(-1, 0)"
-    ></g>
+    <g ref="groupRef" transform="translate(-1, 0)"></g>
   </svg>
 </template>
 
@@ -53,9 +49,6 @@ function updateColourStrip() {
 .colourstrip {
   width: 200px;
   height: 10px;
-}
-
-:deep(g) {
   pointer-events: none;
 }
 </style>
