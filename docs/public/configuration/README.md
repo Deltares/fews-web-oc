@@ -110,6 +110,68 @@ The dynamic report module provides the ability to dynamically generate a report 
 The dynamic report can be linked to the topology using `<dynamicReportDisplayId>` in *Topology.xml*. Web OC displays a time slider to request the report for the selected time. 
 When `<selectedLocationVariable>` is configured in [DynamicReportDisplays.xml](https://publicwiki.deltares.nl/spaces/FEWSDOC/pages/352944402/37+Dynamic+Report+Displays+Web+OC+only), a location selection menu also becomes available.
 
+*Styling a dynamic report*
+
+Style the report template with CSS classes. Put the CSS rules in a `<style>` element in the template, or in a style sheet in the FEWS static resources (`WebResourceFiles`) that is linked with a relative path:
+
+```html
+<head>
+  <link rel="stylesheet" href="css/DynamicReport.css" />
+  <style>
+    .number {
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <table class="document-file-table">
+    <tr>
+      <td>Intake Plant A</td>
+      <td class="number">-0.699</td>
+    </tr>
+  </table>
+</body>
+```
+
+Do not use inline `style` attributes, such as `<td style="text-align: right">`. Some browsers block them when the [Content Security Policy](https://deltares.github.io/fews-web-oc/deployments/#content-security-policy-csp-headers) does not allow `'unsafe-inline'` in `style-src`. Classes work with any `style-src`. Style sheets that are not in the FEWS static resources, such as absolute URLs to other servers, are ignored.
+
+The report styles only apply to the report, they do not affect the rest of the Web OC.
+
+*Web OC and isolated styling*
+
+A report is shown with one of two stylings:
+
+- **Web OC styling** (default): the report is part of the Web OC page. The fonts, colours and other styles of the Web OC, including a configured `customStyleSheet`, also apply to the report. The report styles are added on top. Use this when the report should look like the rest of the Web OC.
+- **Isolated styling**: the styles of the Web OC do not apply to the report, only the report styles do. The report styles have to set the font, colours and so on themselves. Use this when the report has its own look, or when the Web OC styles get in the way.
+
+Select isolated styling with a `<meta>` element in the `<head>` of the template:
+
+```html
+<head>
+  <meta name="weboc-styling" content="isolated" />
+  <link rel="stylesheet" href="css/DynamicReportIsolated.css" />
+</head>
+```
+
+In the report styles, `:scope` is the element that contains the report, and the Web OC adds the `dark` class to an element around it in dark mode. This works in both stylings. Use it to set the colours of the report, for example with CSS variables:
+
+```css
+:scope {
+  --report-text: rgb(33, 33, 33);
+  --report-surface: rgb(255, 255, 255);
+  color: var(--report-text);
+  background-color: var(--report-surface);
+  font: 14px/1.5 system-ui, sans-serif;
+}
+
+.dark :scope {
+  --report-text: rgb(255, 255, 255);
+  --report-surface: rgb(33, 33, 33);
+}
+```
+
+With Web OC styling the report can also use the theme colours of the Web OC, such as `rgb(var(--v-theme-primary))` and `rgb(var(--v-theme-surface))`. These follow the Web OC theme, dark mode and the `customStyleSheet` automatically.
+
 ---
 
 **Embedded Browser**
