@@ -10,14 +10,14 @@
           :setting="setting"
           :model-value="setting.value"
           @update:modelValue="updateModelValue({ ...setting, value: $event })"
-          :aria-label="setting.label"
+          :aria-label="label(setting)"
         />
         <UserSettingsBoolean
           v-else-if="setting.type === 'boolean'"
           :setting="setting"
           :model-value="setting.value"
           @update:modelValue="updateModelValue({ ...setting, value: $event })"
-          :aria-label="setting.label"
+          :aria-label="label(setting)"
         />
       </template>
       <v-divider />
@@ -38,8 +38,10 @@ import UserSettingsBoolean from './UserSettingsBoolean.vue'
 import { UserSettingsItem, useUserSettingsStore } from '@/stores/userSettings'
 import UserSettingsDialog from './UserSettingsDialog.vue'
 import { useI18n } from 'vue-i18n'
+import { useUserSettingTranslation } from '@/services/useUserSettingTranslation'
 
 const { t } = useI18n()
+const { label } = useUserSettingTranslation()
 
 const store = useUserSettingsStore()
 

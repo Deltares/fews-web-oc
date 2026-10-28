@@ -11,14 +11,14 @@
         class="my-2 multi-line-toggle"
         v-model="modelValue"
         mandatory
-        :aria-label="setting.label"
+        :aria-label="settingLabel"
       >
         <v-btn
-          v-for="item of setting.items"
+          v-for="item of options"
           :key="item.value"
           :value="item.value"
           :disabled="item.disabled"
-          :aria-label="`${setting.label} ${item.title}`"
+          :aria-label="`${settingLabel} ${item.title}`"
           v-tooltip:top="item.title"
         >
           <v-icon v-if="item.icon">{{ item.icon }}</v-icon>
@@ -29,16 +29,16 @@
       <v-select
         v-else
         v-model="modelValue"
-        :items="setting.items"
+        :items="options"
         variant="solo-filled"
         density="compact"
-        :label="inline ? setting.label : undefined"
+        :label="inline ? settingLabel : undefined"
         item-title="title"
         item-value="value"
         item-props
         flat
         hide-details
-        :aria-label="setting.label"
+        :aria-label="settingLabel"
         :class="{ 'mt-2': !inline, inline }"
       >
         <template #selection="{ item }">
@@ -54,7 +54,7 @@
           <v-list-item
             v-bind="props"
             :disabled="item.disabled === true"
-            :aria-label="`${setting.label} ${item.title}`"
+            :aria-label="`${settingLabel} ${item.title}`"
             :prepend-icon="item.icon"
           >
             <template v-if="!item.icon && item.abbreviation" #prepend>
@@ -75,6 +75,7 @@
 
 <script setup lang="ts">
 import { type UserSettingsItemOneOf } from '@/stores/userSettings'
+import { useUserSettingTranslation } from '@/services/useUserSettingTranslation'
 import { computed } from 'vue'
 
 interface Props {
@@ -85,9 +86,20 @@ const props = defineProps<Props>()
 
 const modelValue = defineModel<string>({ required: true })
 
+const { label, optionTitle } = useUserSettingTranslation()
+
+const settingLabel = computed(() => label(props.setting))
+
+const options = computed(() =>
+  props.setting.items.map((item) => ({
+    ...item,
+    title: optionTitle(props.setting, item),
+  })),
+)
+
 const subtitle = computed(() => {
   if (props.inline) return
-  return props.setting.label
+  return settingLabel.value
 })
 </script>
 

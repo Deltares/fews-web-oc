@@ -5,7 +5,7 @@
     class="py-1"
     density="compact"
   >
-    <v-list-subheader>{{ group.title }}</v-list-subheader>
+    <v-list-subheader>{{ groupTitle(group) }}</v-list-subheader>
 
     <template v-for="setting in store.listByGroup(group.id)" :key="setting.id">
       <UserSettingsOneOfMultiple
@@ -13,7 +13,7 @@
         :setting="setting"
         :model-value="setting.value"
         @update:modelValue="onValueChange({ ...setting, value: $event })"
-        :aria-label="`${group} ${setting.label}`"
+        :aria-label="`${groupTitle(group)} ${label(setting)}`"
         inline
       >
         <template #append>
@@ -29,7 +29,7 @@
         :setting="setting"
         :model-value="setting.value"
         @update:modelValue="onValueChange({ ...setting, value: $event })"
-        :aria-label="`${group} ${setting.label}`"
+        :aria-label="`${groupTitle(group)} ${label(setting)}`"
         inline
       >
         <template #append>
@@ -48,9 +48,11 @@ import UserSettingsBoolean from './UserSettingsBoolean.vue'
 import UserSettingsOneOfMultiple from './UserSettingsOneOfMultiple.vue'
 import UserSettingsFavorite from './UserSettingsFavorite.vue'
 import { UserSettingsItem, useUserSettingsStore } from '@/stores/userSettings'
+import { useUserSettingTranslation } from '@/services/useUserSettingTranslation'
 import { computed } from 'vue'
 
 const store = useUserSettingsStore()
+const { label, groupTitle } = useUserSettingTranslation()
 
 const visibleGroups = computed(() =>
   store.groups.filter((group) => store.listByGroup(group.id).length > 0),

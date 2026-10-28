@@ -95,6 +95,7 @@
   "userSettings": {
     "allSettings": "All settings",
     "restoreDefaults": "Restore defaults",
+    "favorite": "Favorite",
     "settings": "Settings",
     "permissions": "Permissions",
     "excludingPermissionsDisallowed": "Simulating disabled permissions is not allowed by the server.",
