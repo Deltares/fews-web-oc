@@ -1,4 +1,20 @@
 /**
+ * Name of the Vuetify icon set that loads icons from the FEWS PI webservice.
+ */
+export const RESOURCE_ICON_SET = 'fews'
+
+/**
+ * Converts the name of an icon in the FEWS PI webservice icons resources
+ * (e.g. 'spatial.png') to an icon value that can be used by Vuetify icons.
+ *
+ * @param iconName - The name of the icon resource.
+ * @returns The icon value for the resource icon set.
+ */
+export function toResourceIcon(iconName: string) {
+  return `${RESOURCE_ICON_SET}:${iconName}`
+}
+
+/**
  * Checks if the given character is a digit (0-9).
  *
  * @param char - The character to check.

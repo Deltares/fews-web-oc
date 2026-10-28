@@ -1,7 +1,10 @@
 import { computed, ref, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import type { Location, TopologyNode } from '@deltares/fews-pi-requests'
-import { topologyNodeIsVisible } from '@/lib/topology/nodes'
+import {
+  getTopologyNodeIcon,
+  topologyNodeIsVisible,
+} from '@/lib/topology/nodes'
 
 export type SearchItemType =
   'user' | 'project' | 'document' | 'location' | 'topology'
@@ -119,7 +122,7 @@ export const useSearchContext = defineStore('searchContext', () => {
         label,
         normalizedLabel: label.toLowerCase(),
         normalizedId: id.toLowerCase(),
-        iconName: node.iconId,
+        iconName: getTopologyNodeIcon(node),
         type: 'topology',
         params: {
           ...(topologyId === undefined ? {} : { topologyId }),

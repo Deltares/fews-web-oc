@@ -140,14 +140,12 @@
                         {{ row.item.iconName }}
                       </v-icon>
 
-                      <img
+                      <v-icon
                         v-else-if="
                           row.item.type === 'location' && row.item.iconName
                         "
-                        :src="getResourcesIconsUrl(row.item.iconName)"
-                        width="16"
-                        height="16"
-                        alt=""
+                        :icon="toResourceIcon(row.item.iconName)"
+                        size="16"
                       />
 
                       <svg
@@ -301,7 +299,7 @@ import { useSearchContext } from '@/stores/searchContext'
 import type { SearchItem } from '@/stores/searchContext'
 import { matchSearchTree } from '@/lib/search/tree'
 import HighlightMatch from '@/components/general/HighlightMatch.vue'
-import { getResourcesIconsUrl } from '@/lib/fews-config'
+import { toResourceIcon } from '@/lib/icons'
 import { useDisplay } from 'vuetify'
 import { VVirtualScroll } from 'vuetify/components'
 

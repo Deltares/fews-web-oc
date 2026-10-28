@@ -1,5 +1,6 @@
 import type { ColumnItem } from '@/components/general/ColumnItem'
 import { isModuleFederationSupported } from '@weboc/module-federation'
+import { toResourceIcon } from '@/lib/icons'
 import type {
   TopologyNode,
   TopologyThresholdNode,
@@ -74,8 +75,10 @@ function getThresholdCount(
   return thresholds?.find((t) => t.id === node.id)?.filterLocationsCount
 }
 
-function getIcon(node: TopologyNode) {
-  return node.iconId
+export function getTopologyNodeIcon(node: TopologyNode) {
+  if (node.iconId) return node.iconId
+  if (node.icon) return toResourceIcon(node.icon)
+  return undefined
 }
 
 function getAppendIcon(node: TopologyNode) {
@@ -99,7 +102,7 @@ function getColumnItemFromTopologyNode(
   const result: ColumnItem = {
     id: node.id,
     name: node.name,
-    icon: getIcon(node),
+    icon: getTopologyNodeIcon(node),
     appendIcon: getAppendIcon(node),
     thresholdIcon: getThresholdIcon(node, thresholds),
     thresholdCount: showActiveTresholdsCount
