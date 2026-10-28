@@ -27,7 +27,15 @@
       </v-menu>
       <span class="mx-5">{{ selectedLocation?.name }}</span>
     </v-toolbar>
-    <ShadowFrame :htmlContent="reportHtml" />
+    <DynamicReportContent
+      :html="reportHtml"
+      :node-css="timeSeriesValueInputCss"
+      class="flex-1-1"
+    >
+      <template #node="{ node }">
+        <TimeSeriesValueInput :node="node" @change="onEdit" />
+      </template>
+    </DynamicReportContent>
     <DateTimeSlider
       v-if="dateTimeSliderEnabled && times?.length"
       v-model:selectedDate="selectedDateOfSlider"
@@ -58,7 +66,10 @@ import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
-import ShadowFrame from '@/components/general/ShadowFrame.vue'
+import DynamicReportContent from '@/components/reports/DynamicReportContent.vue'
+import TimeSeriesValueInput from '@/components/reports/dynamic/TimeSeriesValueInput.vue'
+import timeSeriesValueInputCss from '@/components/reports/dynamic/timeSeriesValueInput.css?inline'
+import { type DynamicReportEdit, getEditKey } from '@/lib/dynamic-report/nodes'
 import { useDynamicReport } from '@/services/useDynamicReport'
 import DateTimeSliderValues from '@/components/general/DateTimeSliderValues.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
@@ -117,6 +128,15 @@ watch(locations, (newLocations) => {
     selectedLocation.value = newLocations[0]
   }
 })
+
+// Edits are discarded when a new report is loaded
+// submit the edits to the FEWS web services
+const edits = ref(new Map<string, DynamicReportEdit>())
+watch(reportHtml, () => edits.value.clear())
+
+function onEdit(edit: DynamicReportEdit) {
+  edits.value.set(getEditKey(edit), edit)
+}
 
 const { mobile } = useDisplay()
 </script>

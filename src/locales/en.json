@@ -156,5 +156,9 @@
   "periodFilter": {
     "all": "All",
     "last": "Last {duration}"
+  },
+  "dynamicReport": {
+    "valueInputLabel": "Value at {time}",
+    "valueInputPlaceholder": "value"
   }
 }
