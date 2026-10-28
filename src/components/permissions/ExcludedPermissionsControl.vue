@@ -77,7 +77,7 @@ const hasExcludedPermissions = computed<boolean>(
 
 const subtitle = computed<string | undefined>(() =>
   !canExcludePermissions.value
-    ? t('userSettings.excluding-permissions-disallowed')
+    ? t('userSettings.excludingPermissionsDisallowed')
     : undefined,
 )
 
