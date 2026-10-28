@@ -48,6 +48,22 @@ describe('sanitizeDynamicReport', () => {
     expect(fragment.querySelector('p')?.textContent).toBe('x')
   })
 
+  it('never returns style and link elements, also when nested', () => {
+    const { fragment, styles } = sanitizeDynamicReport(
+      `<div><section>
+        <style>td { color: red; }</style>
+        <link rel="stylesheet" href="css/nested.css">
+        <link rel="preload" href="https://example.com/a.css">
+      </section><p>x</p></div>`,
+    )
+    expect(styles).toEqual([
+      { type: 'inline', css: 'td { color: red; }' },
+      { type: 'resource', resource: 'css/nested.css' },
+    ])
+    expect(fragment.querySelector('style, link')).toBeNull()
+    expect(fragment.querySelector('p')?.textContent).toBe('x')
+  })
+
   it('ignores style sheet links that are not FEWS static resources', () => {
     const { styles } = sanitizeDynamicReport(
       '<link rel="stylesheet" href="https://example.com/a.css">',

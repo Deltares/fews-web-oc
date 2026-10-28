@@ -160,3 +160,30 @@ test.describe('DynamicReportContent styling', () => {
     await expect(cell).toHaveCSS('color', 'rgb(33, 33, 33)')
   })
 })
+
+for (const story of ['WebOcOverlay', 'IsolatedOverlay'] as const) {
+  test(`${story}: fixed positioned report content stays inside the report`, async ({
+    mount,
+    page,
+  }) => {
+    await mockFewsWebServices(page)
+    const component = await mount(`reports/DynamicReportContent/${story}`)
+    const overlay = component.getByTestId('overlay')
+    await expect(overlay).toHaveCSS('position', 'fixed')
+
+    const root = await component.locator('.dynamic-report-root').boundingBox()
+    const box = await overlay.boundingBox()
+    expect(root).not.toBeNull()
+    expect(box).not.toBeNull()
+    expect(box!.y).toBeGreaterThanOrEqual(root!.y)
+    expect(box!.y + box!.height).toBeLessThanOrEqual(root!.y + root!.height)
+
+    // The overlay does not cover the content outside the report
+    const outside = await component.getByTestId('outside').boundingBox()
+    const testId = await page.evaluate(
+      ([x, y]) => document.elementFromPoint(x, y)?.getAttribute('data-testid'),
+      [outside!.x + outside!.width / 2, outside!.y + outside!.height / 2],
+    )
+    expect(testId).toBe('outside')
+  })
+}
