@@ -6,6 +6,7 @@ import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   deserializeUserSettings,
+  serializeUserSettings,
   type UserSettingsOverride,
 } from '@/lib/user-settings/deserializeUserSettings'
 import { fetchWebResourcesDefaultUserSettings } from '@/services/useDefaultUserSettings'
@@ -59,6 +60,9 @@ export interface UserSettingsState {
 const defaultUserSettings = DefaultUserSettings as UserSettingsItem[]
 const parameterGroupKey = 'units.parameterGroup.'
 const STORAGE_KEY = 'weboc-user-settings-v1.0.0'
+
+// Defaults with the FEWS config applied; only differences are persisted.
+let baselineItems = deserializeUserSettings('[]', defaultUserSettings)
 
 const defaultGroups: UserSettingsGroup[] = [
   { id: 'Units', title: 'Units', icon: 'mdi-ruler' },
@@ -126,6 +130,8 @@ export const useUserSettingsStore = defineStore(
     }
 
     function add(item: UserSettingsItem) {
+      // An explicit choice replaces a stored value that was not yet available.
+      if (item.type === 'oneOfMultiple') delete item.initialStorageValue
       const index = items.value.findIndex((i) => i.id === item.id)
       if (index === -1) {
         items.value.push(item)
@@ -154,6 +160,7 @@ export const useUserSettingsStore = defineStore(
         current.items.some((item) => item.value === current.initialStorageValue)
       ) {
         current.value = current.initialStorageValue
+        delete current.initialStorageValue
       }
     }
 
@@ -182,6 +189,11 @@ export const useUserSettingsStore = defineStore(
       const overrides = await fetchWebResourcesDefaultUserSettings()
       webResourcesOverrides.value = overrides
 
+      baselineItems = deserializeUserSettings(
+        '[]',
+        defaultUserSettings,
+        overrides,
+      )
       const rawData = globalThis.localStorage.getItem(STORAGE_KEY) ?? '{}'
       items.value = deserializeUserSettings(
         rawData,
@@ -257,12 +269,15 @@ export const useUserSettingsStore = defineStore(
           })
         },
         serializer: {
-          serialize: (context) => {
-            return JSON.stringify(context)
-          },
+          serialize: (state) =>
+            serializeUserSettings(
+              (state as Pick<UserSettingsState, 'items'>).items,
+              baselineItems,
+            ),
 
-          deserialize: (data) =>
-            deserializeUserSettings(data, defaultUserSettings),
+          deserialize: (data) => ({
+            items: deserializeUserSettings(data, defaultUserSettings),
+          }),
         },
       },
     ],

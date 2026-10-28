@@ -3,6 +3,7 @@ import {
   deserializeUserSettings,
   filterValidOverrides,
   isValidUserSettingsOverride,
+  serializeUserSettings,
   type UserSettingsOverride,
 } from '@/lib/user-settings/deserializeUserSettings'
 import {
@@ -452,5 +453,98 @@ describe('deserializeUserSettings – WebResources override tier', () => {
 
     expect(defaultSettings[0].value).toBe(original[0].value)
     expect(defaultSettings[0].favorite).toBe(original[0].favorite)
+  })
+})
+
+describe('serializeUserSettings', () => {
+  function parse(data: string) {
+    return JSON.parse(data).items
+  }
+
+  it('stores nothing when all settings equal the baseline', () => {
+    expect(
+      parse(serializeUserSettings(defaultSettings, defaultSettings)),
+    ).toEqual([])
+  })
+
+  it('stores only id and the changed fields', () => {
+    const items = defaultSettings.map((s) => ({ ...s }))
+    items[0].value = 'dark'
+    items[1].favorite = true
+
+    expect(parse(serializeUserSettings(items, defaultSettings))).toEqual([
+      { id: 'ui.theme', value: 'dark' },
+      { id: 'datum.verticalDatum', favorite: true },
+    ])
+  })
+
+  it('compares against the baseline with the FEWS config applied', () => {
+    const overrides: UserSettingsOverride[] = [
+      { id: 'ui.theme', value: 'dark' },
+    ]
+    const baseline = deserializeUserSettings('[]', defaultSettings, overrides)
+    const items = baseline.map((s) => ({ ...s }))
+
+    expect(parse(serializeUserSettings(items, baseline))).toEqual([])
+
+    items[0].value = 'auto'
+    expect(parse(serializeUserSettings(items, baseline))).toEqual([
+      { id: 'ui.theme', value: 'auto' },
+    ])
+  })
+
+  it('does not store settings disabled in the FEWS config', () => {
+    const items = defaultSettings.map((s) => ({ ...s }))
+    items[2].value = 'xy'
+    items[2].disabled = true
+
+    expect(parse(serializeUserSettings(items, defaultSettings))).toEqual([])
+  })
+
+  it('keeps a stored value that is not yet available in the options', () => {
+    const items = defaultSettings.map((s) => ({ ...s }))
+    ;(items[0] as UserSettingsItemOneOf).initialStorageValue = 'custom'
+
+    expect(parse(serializeUserSettings(items, defaultSettings))).toEqual([
+      { id: 'ui.theme', value: 'custom' },
+    ])
+  })
+
+  it('round-trips through deserializeUserSettings', () => {
+    const items = defaultSettings.map((s) => ({ ...s }))
+    items[0].value = 'light'
+    items[0].favorite = true
+    items[1].value = false
+
+    const restored = deserializeUserSettings(
+      serializeUserSettings(items, defaultSettings),
+      defaultSettings,
+    )
+    expect(restored.map((r) => [r.value, r.favorite])).toEqual([
+      ['light', true],
+      [false, false],
+      ['x', false],
+    ])
+  })
+})
+
+describe('deserializeUserSettings – legacy full copies', () => {
+  it('only keeps fields that differ from the built-in default', () => {
+    const data = serialize(
+      defaultSettings.map((s) => ({
+        ...s,
+        value: s.id === 'datum.verticalDatum' ? false : s.value,
+      })),
+    )
+    const overrides: UserSettingsOverride[] = [
+      { id: 'ui.theme', value: 'dark', favorite: true },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    // Unchanged legacy values no longer block the FEWS config defaults.
+    expect(result[0].value).toBe('dark')
+    expect(result[0].favorite).toBe(true)
+    // A real user change is kept.
+    expect(result[1].value).toBe(false)
   })
 })

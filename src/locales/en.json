@@ -157,5 +157,24 @@
   "periodFilter": {
     "all": "All",
     "last": "Last {duration}"
+  },
+  "settings": {
+    "charts": {
+      "brush": "Show brush chart",
+      "scrollZoomMode": {
+        "label": "Scroll wheel zoom mode",
+        "values": {
+          "off": "Off",
+          "x": "Only X",
+          "y": "Only Y",
+          "xy": "Both X and Y"
+        }
+      }
+    },
+    "ui": {
+      "map": {
+        "showCoordinates": "Show mouse coordinates"
+      }
+    }
   }
 }

@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 import { createPinia, setActivePinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import { createApp, nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useUserSettingsStore } from '@/stores/userSettings'
 
@@ -139,5 +141,83 @@ describe('userSettings store – restoreDefaults', () => {
     expect(store.get('ui.theme')?.favorite).toBeFalsy()
     expect(store.get('charts.scrollZoomMode')?.value).toBe('x')
     expect(store.get('charts.scrollZoomMode')?.disabled).toBeFalsy()
+  })
+})
+
+describe('userSettings store – persistence', () => {
+  function createStore() {
+    const pinia = createPinia()
+    pinia.use(piniaPluginPersistedstate)
+    // Pinia only applies plugins once installed in an app.
+    createApp({}).use(pinia)
+    setActivePinia(pinia)
+    return useUserSettingsStore()
+  }
+
+  function storedItems() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}').items
+  }
+
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('saves only the settings the user changed', async () => {
+    mockFewsConfigFile(defaultUserSettingsJson)
+    const store = createStore()
+    await store.initializeWithWebResources()
+    await nextTick()
+
+    expect(storedItems()).toEqual([])
+
+    const showCoordinates = store.get('ui.map.showCoordinates')!
+    store.add({ ...showCoordinates, value: true } as typeof showCoordinates)
+    const theme = store.get('ui.theme')!
+    store.add({ ...theme, favorite: false })
+    await nextTick()
+
+    expect(storedItems()).toEqual([
+      { id: 'ui.theme', favorite: false },
+      { id: 'ui.map.showCoordinates', value: true },
+    ])
+  })
+
+  it('restores saved changes when the store is created', () => {
+    storeLocalSettings([{ id: 'ui.map.showCoordinates', value: true }])
+    const store = createStore()
+
+    expect(store.get('ui.map.showCoordinates')?.value).toBe(true)
+  })
+
+  it('applies a changed FEWS config default to a returning user', async () => {
+    mockFewsConfigFile(defaultUserSettingsJson)
+    const firstVisit = createStore()
+    await firstVisit.initializeWithWebResources()
+    await nextTick()
+    expect(firstVisit.get('ui.theme')?.value).toBe('dark')
+
+    mockFewsConfigFile({
+      settings: [{ id: 'ui.theme', value: 'light' }],
+    })
+    const secondVisit = createStore()
+    await secondVisit.initializeWithWebResources()
+
+    expect(secondVisit.get('ui.theme')?.value).toBe('light')
+  })
+
+  it('clears saved changes on restoreDefaults', async () => {
+    mockFewsConfigFile(defaultUserSettingsJson)
+    storeLocalSettings([{ id: 'ui.map.showCoordinates', value: true }])
+    const store = createStore()
+    await store.initializeWithWebResources()
+
+    store.restoreDefaults()
+    await nextTick()
+
+    expect(storedItems()).toEqual([])
   })
 })

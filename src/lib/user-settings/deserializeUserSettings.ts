@@ -97,6 +97,64 @@ function resolveOneOfMultipleValue(
   item.initialStorageValue = storedItem.value as string
 }
 
+/** A user change as persisted in local storage. */
+export interface StoredUserSetting {
+  id: string
+  value?: UserSettingsItem['value']
+  favorite?: boolean
+}
+
+/**
+ * Serializes only what the user changed with respect to `baseline` (the
+ * built-in defaults with the FEWS config applied), so that later changes to
+ * the defaults still reach the user.
+ */
+export function serializeUserSettings(
+  items: UserSettingsItem[],
+  baseline: UserSettingsItem[],
+): string {
+  const changes: StoredUserSetting[] = []
+  for (const item of items) {
+    if (item.disabled) continue
+    const baseItem = baseline.find((b) => b.id === item.id)
+    if (baseItem === undefined) continue
+
+    // A stored value that is not available yet (e.g. a base map that is still
+    // loading) is kept until the option list has been updated.
+    const value =
+      item.type === 'oneOfMultiple'
+        ? (item.initialStorageValue ?? item.value)
+        : item.value
+
+    const change: StoredUserSetting = { id: item.id }
+    if (value !== baseItem.value) change.value = value
+    if (Boolean(item.favorite) !== Boolean(baseItem.favorite)) {
+      change.favorite = Boolean(item.favorite)
+    }
+    if (Object.keys(change).length > 1) changes.push(change)
+  }
+  return JSON.stringify({ items: changes })
+}
+
+/**
+ * Older versions stored a full copy of every setting. Keep only the fields
+ * that differ from the built-in default, as those are the user's changes.
+ */
+function toStoredUserSetting(
+  storedItem: Partial<UserSettingsItem>,
+  defaultItem: UserSettingsItem,
+): Partial<UserSettingsItem> {
+  const isLegacyCopy = 'type' in storedItem
+  if (!isLegacyCopy) return storedItem
+
+  const change: Partial<UserSettingsItem> = { ...storedItem }
+  if (storedItem.value === defaultItem.value) delete change.value
+  if (Boolean(storedItem.favorite) === Boolean(defaultItem.favorite)) {
+    delete change.favorite
+  }
+  return change
+}
+
 // The persisted state is serialized as `{ items: [...] }`.
 function parseStoredItems(data: string): Partial<UserSettingsItem>[] {
   try {
@@ -124,18 +182,21 @@ export function deserializeUserSettings(
 
   applyWebResourcesOverrides(newState, webResourcesOverrides)
 
-  for (const item of newState) {
+  for (const [index, item] of newState.entries()) {
     // Settings disabled in the FEWS config are not user-editable, so the
     // configured value takes precedence over the stored one.
     if (item.disabled) continue
 
-    const storedItem = storedItems.find((s) => s?.id === item.id)
-    if (storedItem === undefined) continue
+    const rawStoredItem = storedItems.find((s) => s?.id === item.id)
+    if (rawStoredItem === undefined) continue
+    const storedItem = toStoredUserSetting(rawStoredItem, defaults[index])
 
-    if (item.type === 'oneOfMultiple') {
-      resolveOneOfMultipleValue(item, storedItem)
-    } else if (storedItem.value !== undefined) {
-      item.value = storedItem.value as boolean
+    if (storedItem.value !== undefined) {
+      if (item.type === 'oneOfMultiple') {
+        resolveOneOfMultipleValue(item, storedItem)
+      } else {
+        item.value = storedItem.value as boolean
+      }
     }
 
     if (storedItem.favorite !== undefined) {
