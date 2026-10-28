@@ -91,7 +91,7 @@ function isStyleSheetLink(element: Element): boolean {
  * URLs and paths outside the static resources.
  */
 export function toStaticResourcePath(href: string): string | undefined {
-  const base = 'http://static.invalid/'
+  const base = 'https://static.invalid/'
   let url: URL
   try {
     url = new URL(href, base)
