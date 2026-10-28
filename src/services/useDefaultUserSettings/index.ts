@@ -7,7 +7,7 @@ import {
   DefaultUserSettingSchema,
   DefaultUserSettingsSchema,
 } from '@/schemas/default-user-settings.typebox'
-import { Value } from '@sinclair/typebox/value'
+import { Value } from 'typebox/value'
 
 const WEBRESOURCES_FILE = 'default-user-settings.json'
 
