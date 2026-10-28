@@ -94,6 +94,7 @@
   },
   "userSettings": {
     "allSettings": "Alle Einstellungen",
+    "restoreDefaults": "Standardwerte wiederherstellen",
     "settings": "Einstellungen",
     "permissions": "Berechtigungen",
     "excluding-permissions-disallowed": "Das Simulieren deaktivierter Berechtigungen ist auf dem Server nicht erlaubt."

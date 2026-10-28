@@ -353,17 +353,50 @@ describe('deserializeUserSettings – WebResources override tier', () => {
     expect(result[0].favorite).toBe(false)
   })
 
-  it('disabled from webresources is preserved even when localStorage has a value', () => {
+  it('ignores localStorage for settings disabled in webresources', () => {
     const data = serialize([
-      { id: 'charts.scrollZoomMode', value: 'xy', favorite: false },
+      { id: 'charts.scrollZoomMode', value: 'xy', favorite: true },
     ])
     const overrides: UserSettingsOverride[] = [
       { id: 'charts.scrollZoomMode', enabled: false },
     ]
     const result = deserializeUserSettings(data, defaultSettings, overrides)
 
-    expect(result[2].value).toBe('xy')
+    expect(result[2].value).toBe('x')
+    expect(result[2].favorite).toBe(false)
     expect(result[2].disabled).toBe(true)
+  })
+
+  it('webresources value wins over localStorage when the setting is disabled', () => {
+    const data = serialize([
+      { id: 'datum.verticalDatum', value: true, favorite: false },
+    ])
+    const overrides: UserSettingsOverride[] = [
+      { id: 'datum.verticalDatum', value: false, enabled: false },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    expect(result[1].value).toBe(false)
+    expect(result[1].disabled).toBe(true)
+  })
+
+  it('ignores a webresources value that is not a valid option', () => {
+    const data = serialize([])
+    const overrides: UserSettingsOverride[] = [
+      { id: 'ui.theme', value: 'automatic' },
+      { id: 'datum.verticalDatum', value: 'false' },
+    ]
+    const result = deserializeUserSettings(data, defaultSettings, overrides)
+
+    expect(result[0].value).toBe('auto')
+    expect(result[1].value).toBe(true)
+  })
+
+  it('falls back to defaults for malformed stored data', () => {
+    for (const data of ['not json', 'null', '{}', '[]']) {
+      const result = deserializeUserSettings(data, defaultSettings)
+      expect(result.map((r) => r.value)).toEqual(['auto', true, 'x'])
+    }
   })
 
   it('webresources value wins over assets default when localStorage is empty', () => {

@@ -42,6 +42,14 @@ export function filterValidOverrides(
   return overrides.filter(isValidUserSettingsOverride)
 }
 
+function isValidValueForItem(item: UserSettingsItem, value: unknown): boolean {
+  if (item.type === 'boolean') return typeof value === 'boolean'
+  return (
+    typeof value === 'string' &&
+    (item.items?.some((i) => i.value === value) ?? false)
+  )
+}
+
 function applyWebResourcesOverrides(
   state: UserSettingsItem[],
   overrides: UserSettingsOverride[],
@@ -51,7 +59,13 @@ function applyWebResourcesOverrides(
     if (override === undefined) continue
 
     if (override.value !== undefined) {
-      item.value = override.value as UserSettingsItem['value']
+      if (isValidValueForItem(item, override.value)) {
+        item.value = override.value as UserSettingsItem['value']
+      } else {
+        console.warn(
+          `Ignoring invalid default value ${JSON.stringify(override.value)} for user setting "${item.id}".`,
+        )
+      }
     }
     if (override.enabled !== undefined) {
       item.disabled = !override.enabled
@@ -83,25 +97,39 @@ function resolveOneOfMultipleValue(
   item.initialStorageValue = storedItem.value as string
 }
 
+// The persisted state is serialized as `{ items: [...] }`.
+function parseStoredItems(data: string): Partial<UserSettingsItem>[] {
+  try {
+    const parsed: unknown = JSON.parse(data)
+    const items = Array.isArray(parsed)
+      ? parsed
+      : (parsed as { items?: unknown } | null)?.items
+    return Array.isArray(items) ? items : []
+  } catch {
+    console.warn(
+      'Failed to parse user settings from local storage, using defaults.',
+    )
+    return []
+  }
+}
+
 export function deserializeUserSettings(
   data: string,
   defaults: UserSettingsItem[],
   webResourcesOverrides: UserSettingsOverride[] = [],
 ): UserSettingsItem[] {
-  let storedItems: Partial<UserSettingsItem>[] = []
-  try {
-    storedItems =
-      JSON.parse(data) as Partial<UserSettingsItem>[] ?? []
-  } catch {
-    console.warn('Failed to parse user settings from local storage, using defaults.')
-  }
+  const storedItems = parseStoredItems(data)
 
   const newState: UserSettingsItem[] = defaults.map((item) => ({ ...item }))
 
   applyWebResourcesOverrides(newState, webResourcesOverrides)
 
   for (const item of newState) {
-    const storedItem = storedItems.find((s) => s.id === item.id)
+    // Settings disabled in the FEWS config are not user-editable, so the
+    // configured value takes precedence over the stored one.
+    if (item.disabled) continue
+
+    const storedItem = storedItems.find((s) => s?.id === item.id)
     if (storedItem === undefined) continue
 
     if (item.type === 'oneOfMultiple') {

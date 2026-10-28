@@ -80,8 +80,13 @@ export const useUserSettingsStore = defineStore(
 
     const route = useRoute()
 
+    // Settings disabled in the FEWS config are hidden from the user.
+    const visibleItems = computed(() =>
+      items.value.filter((item) => !item.disabled),
+    )
+
     const listFavorite = computed(() =>
-      items.value.filter((item) => item.favorite),
+      visibleItems.value.filter((item) => item.favorite),
     )
     const scrollZoomMode = computed<WheelMode>(() => {
       const item = items.value.find(
@@ -102,13 +107,13 @@ export const useUserSettingsStore = defineStore(
     })
 
     function listByGroup(group: string) {
-      return items.value.filter((item) => item.group === group)
+      return visibleItems.value.filter((item) => item.group === group)
     }
 
     function get(id: string) {
       if (route.query[id]) {
         const item = items.value.find((item) => item.id === id)
-        if (item) {
+        if (item && !item.disabled) {
           if (item.type === 'boolean') {
             return { ...item, value: route.query[id] === 'true' }
           } else {
@@ -183,7 +188,30 @@ export const useUserSettingsStore = defineStore(
         defaultUserSettings,
         overrides,
       )
+      applySpecialActions()
+    }
 
+    function restoreDefaults(): void {
+      const restored = deserializeUserSettings(
+        '[]',
+        defaultUserSettings,
+        webResourcesOverrides.value,
+      )
+      // Keep option lists that were updated at runtime (e.g. base maps).
+      for (const item of restored) {
+        const current = items.value.find((i) => i.id === item.id)
+        if (
+          item.type === 'oneOfMultiple' &&
+          current?.type === 'oneOfMultiple'
+        ) {
+          item.items = current.items
+        }
+      }
+      items.value = restored
+      applySpecialActions()
+    }
+
+    function applySpecialActions(): void {
       const specialActionIds = ['units.displayUnits', 'datum.verticalDatum']
       for (const id of specialActionIds) {
         const item = items.value.find((i) => i.id === id)
@@ -205,6 +233,7 @@ export const useUserSettingsStore = defineStore(
       add,
       updateSettingItems,
       initializeWithWebResources,
+      restoreDefaults,
     }
   },
   {

@@ -1,6 +1,6 @@
 <template>
   <v-list
-    v-for="group in store.groups"
+    v-for="group in visibleGroups"
     :key="group.id"
     class="py-1"
     density="compact"
@@ -48,8 +48,13 @@ import UserSettingsBoolean from './UserSettingsBoolean.vue'
 import UserSettingsOneOfMultiple from './UserSettingsOneOfMultiple.vue'
 import UserSettingsFavorite from './UserSettingsFavorite.vue'
 import { UserSettingsItem, useUserSettingsStore } from '@/stores/userSettings'
+import { computed } from 'vue'
 
 const store = useUserSettingsStore()
+
+const visibleGroups = computed(() =>
+  store.groups.filter((group) => store.listByGroup(group.id).length > 0),
+)
 
 const onValueChange = (item: UserSettingsItem) => {
   store.add(item)
