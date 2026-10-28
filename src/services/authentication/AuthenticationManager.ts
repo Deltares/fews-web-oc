@@ -6,14 +6,16 @@ export class AuthenticationManager {
   userManager!: UserManager
   private user: User | null = null
   private userReady: Promise<void> | null = null
+  private userLoaded: Promise<void> | null = null
 
-  init(settings: UserManagerSettings): void {
+  init(settings: UserManagerSettings): Promise<void> {
     this.userReady = this.initializeUser(settings)
+    return this.userReady
   }
 
   private async initializeUser(settings: UserManagerSettings): Promise<void> {
     this.userManager = new UserManager(settings)
-    const userLoaded = new Promise<void>((resolve) => {
+    this.userLoaded = new Promise<void>((resolve) => {
       this.userManager.events.addUserLoaded((user) => {
         this.user = user
         if (this.user) resolve()
@@ -22,8 +24,6 @@ export class AuthenticationManager {
 
     const storedUser = await this.userManager.getUser()
     this.user = this.user ?? storedUser
-    if (this.user) return
-    await userLoaded
   }
 
   public async getUser(): Promise<User | null> {
@@ -32,6 +32,7 @@ export class AuthenticationManager {
       return null
     }
     await this.userReady
+    if (!this.user) await this.userLoaded
     await this.checkExpired(this.user)
     return this.user
   }

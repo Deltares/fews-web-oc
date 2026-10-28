@@ -26,22 +26,30 @@ body {
 }
 
 .error-card {
+  --card-padding-top: 34px;
+  --card-padding-inline: 28px;
+  --card-radius: 18px;
+
   width: min(720px, 100%);
   text-align: center;
   background: var(--error-panel);
   border: 1px solid var(--error-border);
-  border-radius: 18px;
-  padding: 34px 28px 30px;
+  border-radius: var(--card-radius);
+  padding: var(--card-padding-top) var(--card-padding-inline) 30px;
   box-shadow:
     0 26px 46px -30px rgba(23, 32, 51, 0.5),
     0 12px 20px -14px rgba(23, 32, 51, 0.22);
   animation: fade-in-up 300ms ease-out;
 }
 
-.error-icon {
-  font-size: 40px;
-  line-height: 1;
-  margin-bottom: 6px;
+.error-illustration {
+  display: block;
+  width: calc(100% + 2 * var(--card-padding-inline));
+  height: auto;
+  margin: calc(-1 * var(--card-padding-top))
+    calc(-1 * var(--card-padding-inline)) 24px;
+  border-radius: calc(var(--card-radius) - 1px) calc(var(--card-radius) - 1px) 0
+    0;
 }
 
 h1 {
@@ -53,6 +61,37 @@ h1 {
 .subtitle {
   margin: 14px 0 8px;
   color: var(--error-muted);
+}
+
+.technical-details {
+  margin-top: 24px;
+  text-align: left;
+}
+
+.technical-details summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.copy-btn {
+  margin: 12px 0;
+  padding: 8px 12px;
+  border: 1px solid var(--error-border);
+  border-radius: 8px;
+  background: var(--error-panel);
+  color: var(--error-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.copy-btn:focus-visible {
+  outline: 3px solid #f0bcae;
+  outline-offset: 2px;
+}
+
+.technical-details summary:focus-visible {
+  outline: 3px solid #f0bcae;
+  outline-offset: 2px;
 }
 
 .troubleshooting {
@@ -141,6 +180,32 @@ p {
   outline-offset: 2px;
 }
 
+.weboc-build-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--error-border);
+  text-align: left;
+}
+
+.weboc-build-details {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.weboc-build-chip {
+  padding: 4px 8px;
+  border: 1px solid var(--error-border);
+  border-radius: 999px;
+  color: var(--error-muted);
+  font-size: 0.8rem;
+}
+
 @keyframes fade-in-up {
   from {
     opacity: 0;
@@ -158,8 +223,11 @@ p {
   }
 
   .error-card {
-    padding: 26px 18px 22px;
-    border-radius: 14px;
+    --card-padding-top: 26px;
+    --card-padding-inline: 18px;
+    --card-radius: 14px;
+
+    padding-bottom: 22px;
   }
 
   .error-message {
@@ -168,5 +236,14 @@ p {
 
   .retry-btn {
     width: 100%;
+  }
+
+  .weboc-build-info {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .weboc-build-details {
+    justify-content: flex-start;
   }
 }

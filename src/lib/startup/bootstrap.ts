@@ -5,7 +5,11 @@ import router from '../../router/index.js'
 import { i18n, setI18nLanguage } from '../../plugins/i18n.js'
 import { loadApplicationConfig } from './config-loader.js'
 import { appendConfiguredHeadLinks } from './resource-links.js'
-import { handleStartupError } from './startup-error.js'
+import {
+  handleStartupError,
+  runStartupStage,
+  StartupError,
+} from './startup-error.js'
 import moduleFederationPlugin from '@/plugins/moduleFederation'
 import { useAlertsStore } from '@/stores/alerts.js'
 import {
@@ -27,20 +31,32 @@ export {
 export { handleStartupError, logConfigLoadReason } from './startup-error.js'
 
 async function bootstrapApp(app: VueApp<Element>): Promise<void> {
-  const data = await loadApplicationConfig()
-  configManager.update(data)
+  const data = await runStartupStage(
+    'application-config',
+    'Load application configuration',
+    loadApplicationConfig,
+  )
+  await runStartupStage(
+    'application-config',
+    'Apply application configuration',
+    () => configManager.update(data),
+  )
 
   if (!configManager.get('VITE_FEWS_WEBSERVICES_URL')) {
-    throw new Error(
+    throw new StartupError(
       'Missing required configuration: VITE_FEWS_WEBSERVICES_URL. ' +
         'Set it in app-config.json or the build environment.',
+      'application-config',
+      'Validate application configuration',
     )
   }
 
   appendConfiguredHeadLinks()
 
   if (configManager.authenticationIsEnabled) {
-    authenticationManager.init(configManager.getUserManagerSettings())
+    await runStartupStage('authentication', 'Initialize authentication', () =>
+      authenticationManager.init(configManager.getUserManagerSettings()),
+    )
   }
 
   if (!configManager.authenticationIsEnabled) {
@@ -74,10 +90,15 @@ async function bootstrapApp(app: VueApp<Element>): Promise<void> {
 
   const mfManifestUrl = configManager.get('VITE_FEWS_WEBOC_MF_MANIFEST_URL')
   if (mfManifestUrl) {
-    const registry = await initializeModuleFederation({
-      manifestUrl: mfManifestUrl,
-      baseUrl,
-    })
+    const registry = await runStartupStage(
+      'microfrontends',
+      'Initialize application modules',
+      () =>
+        initializeModuleFederation({
+          manifestUrl: mfManifestUrl,
+          baseUrl,
+        }),
+    )
 
     if (registry) app.use(moduleFederationPlugin, registry)
   } else {

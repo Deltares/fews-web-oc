@@ -1,28 +1,81 @@
-import { BASE_URL, CONFIG_ERROR_STORAGE_KEY } from './startup-constants.js'
+import {
+  BASE_URL,
+  CONFIG_ERROR_STORAGE_KEY,
+  CONFIG_ERROR_SOURCE_STORAGE_KEY,
+  CONFIG_ERROR_CONTEXT_STORAGE_KEY,
+} from './startup-constants.js'
+import { redactDiagnosticText } from './diagnostics.js'
+
+export type StartupErrorCategory =
+  | 'application-config'
+  | 'fews-pi'
+  | 'authentication'
+  | 'microfrontends'
+  | 'unexpected'
+
+export class StartupError extends Error {
+  constructor(
+    message: string,
+    public readonly category: StartupErrorCategory,
+    public readonly stage: string,
+    cause?: unknown,
+    public readonly status?: number,
+  ) {
+    super(message, { cause })
+    this.name = 'StartupError'
+  }
+}
+
+function getHttpStatus(error: unknown): number | undefined {
+  if (typeof error !== 'object' || error === null) return
+  if ('status' in error && typeof error.status === 'number') return error.status
+  if (
+    'response' in error &&
+    typeof error.response === 'object' &&
+    error.response !== null &&
+    'status' in error.response &&
+    typeof error.response.status === 'number'
+  )
+    return error.response.status
+}
+
+export async function runStartupStage<T>(
+  category: StartupErrorCategory,
+  stage: string,
+  action: () => T | Promise<T>,
+): Promise<T> {
+  try {
+    return await action()
+  } catch (cause) {
+    if (cause instanceof StartupError) throw cause
+    throw new StartupError(
+      cause instanceof Error ? cause.message : String(cause),
+      category,
+      stage,
+      cause,
+      getHttpStatus(cause),
+    )
+  }
+}
+
+export class FewsConfigLoadError extends StartupError {
+  constructor(cause: unknown, stage = 'Load FEWS WebOC configuration') {
+    const detail = cause instanceof Error ? cause.message : String(cause)
+    const status = getHttpStatus(cause)
+    super(
+      `Failed to load configuration from FEWS PI: ${detail}`,
+      status === 401 || status === 403 ? 'authentication' : 'fews-pi',
+      stage,
+      cause,
+      status,
+    )
+    this.name = 'FewsConfigLoadError'
+  }
+}
 
 export function logConfigLoadReason(configError: Error): void {
-  if (configError instanceof SyntaxError) {
-    console.error('Reason: Invalid JSON syntax in app-config.json')
-    return
-  }
-
-  if (configError instanceof TypeError) {
-    console.error('Reason: Network failure while loading app-config.json')
-    return
-  }
-
-  if (configError.message.includes('Failed to load app-config.json')) {
-    console.error(
-      'Reason: Config file missing or server returned non-200 status',
-    )
-    return
-  }
-
-  if (
-    configError.message.includes('Invalid app-config.json') ||
-    configError.message.includes('Invalid JSON in app-config.json')
-  ) {
-    console.error('Reason: Invalid app-config.json content')
+  if (configError instanceof StartupError) {
+    console.error(`Reason: ${configError.stage} (${configError.category})`)
     return
   }
 
@@ -42,9 +95,29 @@ export function handleStartupError(err: unknown): void {
   const redirectDelayMs = import.meta.env.DEV ? 3000 : 1000
   console.error(`Redirecting to config-error page in ${redirectDelayMs} ms...`)
 
-  sessionStorage.setItem(
-    CONFIG_ERROR_STORAGE_KEY,
+  const message = redactDiagnosticText(
     configError.message || String(configError),
+  )
+  sessionStorage.setItem(CONFIG_ERROR_STORAGE_KEY, message)
+  sessionStorage.setItem(
+    CONFIG_ERROR_SOURCE_STORAGE_KEY,
+    configError instanceof StartupError ? configError.category : 'unexpected',
+  )
+  sessionStorage.setItem(
+    CONFIG_ERROR_CONTEXT_STORAGE_KEY,
+    JSON.stringify({
+      category:
+        configError instanceof StartupError
+          ? configError.category
+          : 'unexpected',
+      stage:
+        configError instanceof StartupError
+          ? configError.stage
+          : 'Application startup',
+      message,
+      status:
+        configError instanceof StartupError ? configError.status : undefined,
+    }),
   )
 
   globalThis.setTimeout(() => {

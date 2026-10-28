@@ -15,6 +15,7 @@ import { authenticationManager } from '../services/authentication/Authentication
 import { useConfigStore } from '../stores/config.ts'
 import { hasDefaultPath, type WebOcComponent } from '@/lib/fews-config/types.ts'
 import { loadCustomStyleSheet } from '@/services/useCustomStyleSheet/index.ts'
+import { handleStartupError } from '@/lib/startup/startup-error.js'
 
 const SystemMonitorDisplayView = () =>
   import('../views/SystemMonitorDisplayView.vue')
@@ -453,7 +454,12 @@ router.beforeEach(async (to) => {
   }
 
   if (!routesAreInitialized) {
-    await addDynamicRoutes()
+    try {
+      await addDynamicRoutes()
+    } catch (error) {
+      handleStartupError(error)
+      return false
+    }
     routesAreInitialized = true
     if (redirect) {
       return redirect
