@@ -657,9 +657,7 @@ function toggleTreeItem(item: SearchItem): void {
 // Keep keyboard focus in the search input and the keyboard selection in sync
 // with the clicked row, so shortcuts like Enter keep working after a click.
 function setSelectedItem(item: SearchItem): void {
-  const index = searchResults.value.findIndex(
-    (result) => result.id === item.id,
-  )
+  const index = searchResults.value.findIndex((result) => result.id === item.id)
   if (index >= 0) {
     selectedIndex.value = index
   }
