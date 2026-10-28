@@ -148,33 +148,49 @@ function mergeMessages(
 
 /**
  * Fetches locale-specific translations from FEWS WebResources and merges them
- * into the active vue-i18n messages. Falls back silently if unavailable.
+ * into the active vue-i18n messages.
  *
- * The file is expected at: <FEWS WebResources>/locales/<locale>.json
+ * The file is expected at: <FEWS WebResources>/locales/<language code>.json
+ * It is optional, so a missing file is ignored; an unreadable one is reported.
  */
 export async function loadWebResourcesTranslations(
   locale: string,
 ): Promise<void> {
   const languageCode = locale.split('-')[0]
   const url = getResourcesStaticUrl(`locales/${languageCode}.json`)
-  //ASK: if it should be in a folder or root directory
+
+  let remoteMessages: unknown
   try {
     // FEWS sends no Cache-Control header; revalidate so config edits apply.
     const response = await fetch(url, { cache: 'no-cache' })
     if (!response.ok) return
     const contentType = response.headers.get('Content-Type') ?? ''
     if (contentType.includes('text/html')) return
-    const remoteMessages = await response.json()
-    if (typeof remoteMessages !== 'object' || remoteMessages === null) return
-    const existing = i18n.global.getLocaleMessage(locale) as Record<
-      string,
-      unknown
-    >
-    const merged = mergeMessages(existing, remoteMessages)
-    i18n.global.setLocaleMessage(locale, merged)
-  } catch {
-    // Silently ignore – web resources translations are optional
+    remoteMessages = await response.json()
+  } catch (error) {
+    console.warn(`[i18n] could not load translations from ${url}:`, error)
+    return
   }
+
+  if (
+    typeof remoteMessages !== 'object' ||
+    remoteMessages === null ||
+    Array.isArray(remoteMessages)
+  ) {
+    console.warn(
+      `[i18n] ignoring translations from ${url}: expected a JSON object.`,
+    )
+    return
+  }
+
+  const existing = i18n.global.getLocaleMessage(locale) as Record<
+    string,
+    unknown
+  >
+  i18n.global.setLocaleMessage(
+    locale,
+    mergeMessages(existing, remoteMessages as Record<string, unknown>),
+  )
 }
 
 export const i18n = createI18n({
