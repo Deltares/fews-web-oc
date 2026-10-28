@@ -22,7 +22,7 @@
           v-tooltip:top="item.title"
         >
           <v-icon v-if="item.icon">{{ item.icon }}</v-icon>
-          <span v-else>{{ item.title }}</span>
+          <span v-else>{{ item.abbreviation ?? item.title }}</span>
         </v-btn>
       </v-btn-toggle>
 
@@ -45,6 +45,9 @@
           <v-icon class="me-2" size="small" v-if="item.icon">
             {{ item.icon }}
           </v-icon>
+          <span v-else-if="item.abbreviation" class="abbreviation me-2">
+            {{ item.abbreviation }}
+          </span>
           {{ item.title }}
         </template>
         <template #item="{ item, props }">
@@ -53,7 +56,13 @@
             :disabled="item.disabled === true"
             :aria-label="`${setting.label} ${item.title}`"
             :prepend-icon="item.icon"
-          />
+          >
+            <template v-if="!item.icon && item.abbreviation" #prepend>
+              <span class="abbreviation list-abbreviation">
+                {{ item.abbreviation }}
+              </span>
+            </template>
+          </v-list-item>
         </template>
       </v-select>
     </v-list-item-action>
@@ -94,6 +103,19 @@ const subtitle = computed(() => {
 
 :deep(.v-btn-group--density-compact.v-btn-group) {
   height: unset;
+}
+
+/* Takes the place and size of an icon. */
+.abbreviation {
+  display: inline-block;
+  min-width: 24px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Matches the gap Vuetify adds after a prepended icon. */
+.list-abbreviation {
+  margin-inline-end: 32px;
 }
 
 :deep(.inline.v-select .v-field__input) {

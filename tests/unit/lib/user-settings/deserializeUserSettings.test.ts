@@ -501,6 +501,21 @@ describe('serializeUserSettings', () => {
     expect(parse(serializeUserSettings(items, defaultSettings))).toEqual([])
   })
 
+  it('keeps the stored entry of a disabled setting', () => {
+    const items = defaultSettings.map((s) => ({ ...s }))
+    items[2].disabled = true
+    const previous = JSON.stringify({
+      items: [
+        { id: 'charts.scrollZoomMode', value: 'xy' },
+        { id: 'ui.theme', value: 'dark' },
+      ],
+    })
+
+    expect(
+      parse(serializeUserSettings(items, defaultSettings, previous)),
+    ).toEqual([{ id: 'charts.scrollZoomMode', value: 'xy' }])
+  })
+
   it('keeps a stored value that is not yet available in the options', () => {
     const items = defaultSettings.map((s) => ({ ...s }))
     ;(items[0] as UserSettingsItemOneOf).initialStorageValue = 'custom'

@@ -222,6 +222,9 @@
                     },
                     "icon": {
                       "type": "string"
+                    },
+                    "abbreviation": {
+                      "type": "string"
                     }
                   }
                 }
@@ -306,6 +309,9 @@
                     },
                     "icon": {
                       "type": "string"
+                    },
+                    "abbreviation": {
+                      "type": "string"
                     }
                   }
                 }
@@ -373,6 +379,9 @@
                       "type": "boolean"
                     },
                     "icon": {
+                      "type": "string"
+                    },
+                    "abbreviation": {
                       "type": "string"
                     }
                   }
@@ -445,6 +454,9 @@
                       "type": "boolean"
                     },
                     "icon": {
+                      "type": "string"
+                    },
+                    "abbreviation": {
                       "type": "string"
                     }
                   }
@@ -694,6 +706,9 @@
                         },
                         "icon": {
                           "type": "string"
+                        },
+                        "abbreviation": {
+                          "type": "string"
                         }
                       }
                     }
@@ -778,6 +793,9 @@
                         },
                         "icon": {
                           "type": "string"
+                        },
+                        "abbreviation": {
+                          "type": "string"
                         }
                       }
                     }
@@ -845,6 +863,9 @@
                           "type": "boolean"
                         },
                         "icon": {
+                          "type": "string"
+                        },
+                        "abbreviation": {
                           "type": "string"
                         }
                       }
@@ -917,6 +938,9 @@
                           "type": "boolean"
                         },
                         "icon": {
+                          "type": "string"
+                        },
+                        "abbreviation": {
                           "type": "string"
                         }
                       }

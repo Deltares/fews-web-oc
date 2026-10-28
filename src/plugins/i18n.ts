@@ -56,6 +56,32 @@ const appLocales: Record<string, LocaleModule> = {
   de: () => import('@/locales/de.json'),
 }
 
+// Locale used for each supported language code, e.g. for date formats.
+const languageLocales: Record<string, string> = {
+  en: 'en-GB',
+  de: 'de',
+}
+
+/**
+ * Resolves the `ui.locale` user setting to a locale: `default` is the
+ * application locale (VITE_I18N_LOCALE), `system` the first supported
+ * OS/browser language, otherwise a two-letter language code.
+ */
+export function resolveLocaleSetting(
+  setting: string,
+  defaultLocale: string,
+  preferredLanguages: readonly string[] = globalThis.navigator?.languages ?? [],
+): string {
+  if (setting === 'system') {
+    for (const language of preferredLanguages) {
+      const locale = languageLocales[language.split('-')[0].toLowerCase()]
+      if (locale) return locale
+    }
+    return defaultLocale
+  }
+  return languageLocales[setting] ?? defaultLocale
+}
+
 export async function loadLocale(locale: string) {
   const messages: Record<string, any> = {}
 
@@ -133,7 +159,8 @@ export async function loadWebResourcesTranslations(
   const url = getResourcesStaticUrl(`locales/${languageCode}.json`)
   //ASK: if it should be in a folder or root directory
   try {
-    const response = await fetch(url)
+    // FEWS sends no Cache-Control header; revalidate so config edits apply.
+    const response = await fetch(url, { cache: 'no-cache' })
     if (!response.ok) return
     const contentType = response.headers.get('Content-Type') ?? ''
     if (contentType.includes('text/html')) return

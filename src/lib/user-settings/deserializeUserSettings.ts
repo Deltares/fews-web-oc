@@ -108,14 +108,24 @@ export interface StoredUserSetting {
  * Serializes only what the user changed with respect to `baseline` (the
  * built-in defaults with the FEWS config applied), so that later changes to
  * the defaults still reach the user.
+ *
+ * Disabled settings are not user-editable, but their previously stored entry
+ * (`previousData`) is kept: the FEWS config may enable them once it has been
+ * loaded, or in a later version.
  */
 export function serializeUserSettings(
   items: UserSettingsItem[],
   baseline: UserSettingsItem[],
+  previousData: string | null = null,
 ): string {
+  const previousItems = previousData ? parseStoredItems(previousData) : []
   const changes: StoredUserSetting[] = []
   for (const item of items) {
-    if (item.disabled) continue
+    if (item.disabled) {
+      const previous = previousItems.find((p) => p?.id === item.id)
+      if (previous !== undefined) changes.push(previous as StoredUserSetting)
+      continue
+    }
     const baseItem = baseline.find((b) => b.id === item.id)
     if (baseItem === undefined) continue
 

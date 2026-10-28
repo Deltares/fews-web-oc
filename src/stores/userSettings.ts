@@ -19,6 +19,8 @@ export interface UserSettingsWithIcon {
   title: string
   disabled?: boolean
   icon?: string
+  /** Short text shown instead of an icon, e.g. a language code. */
+  abbreviation?: string
 }
 
 interface UserSettingsItemBase {
@@ -219,6 +221,8 @@ export const useUserSettingsStore = defineStore(
           item.items = current.items
         }
       }
+      // Also drop stored choices for settings that are currently disabled.
+      globalThis.localStorage.removeItem(STORAGE_KEY)
       items.value = restored
       applySpecialActions()
     }
@@ -273,6 +277,7 @@ export const useUserSettingsStore = defineStore(
             serializeUserSettings(
               (state as Pick<UserSettingsState, 'items'>).items,
               baselineItems,
+              globalThis.localStorage.getItem(STORAGE_KEY),
             ),
 
           deserialize: (data) => ({

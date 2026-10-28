@@ -61,6 +61,7 @@ describe('userSettings store – restoreDefaults', () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       'http://example.test/default-user-settings.json',
+      { cache: 'no-cache' },
     )
     expect(store.get('ui.theme')?.value).toBe('light')
     expect(store.get('ui.map.showCoordinates')?.value).toBe(true)
@@ -219,5 +220,90 @@ describe('userSettings store – persistence', () => {
     await nextTick()
 
     expect(storedItems()).toEqual([])
+  })
+})
+
+describe('userSettings store – locale setting', () => {
+  function uiSettingIds(store: ReturnType<typeof useUserSettingsStore>) {
+    return store.listByGroup('UI').map((item) => item.id)
+  }
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('is hidden and ignores stored values by default', async () => {
+    mockFewsConfigFile({ settings: [] })
+    storeLocalSettings([{ id: 'ui.locale', value: 'de' }])
+
+    const store = useUserSettingsStore()
+    await store.initializeWithWebResources()
+
+    expect(uiSettingIds(store)).not.toContain('ui.locale')
+    expect(store.get('ui.locale')?.value).toBe('default')
+  })
+
+  it('becomes visible and user-editable when enabled in the FEWS config', async () => {
+    mockFewsConfigFile({ settings: [{ id: 'ui.locale', enabled: true }] })
+    storeLocalSettings([{ id: 'ui.locale', value: 'de' }])
+
+    const store = useUserSettingsStore()
+    await store.initializeWithWebResources()
+
+    expect(uiSettingIds(store)).toContain('ui.locale')
+    expect(store.get('ui.locale')?.value).toBe('de')
+  })
+
+  it('can be fixed to a language by the FEWS config while hidden', async () => {
+    mockFewsConfigFile({ settings: [{ id: 'ui.locale', value: 'de' }] })
+
+    const store = useUserSettingsStore()
+    await store.initializeWithWebResources()
+
+    expect(uiSettingIds(store)).not.toContain('ui.locale')
+    expect(store.get('ui.locale')?.value).toBe('de')
+  })
+})
+
+describe('userSettings store – settings enabled by the FEWS config', () => {
+  function createStore() {
+    const pinia = createPinia()
+    pinia.use(piniaPluginPersistedstate)
+    // Pinia only applies plugins once installed in an app.
+    createApp({}).use(pinia)
+    setActivePinia(pinia)
+    return useUserSettingsStore()
+  }
+
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('keeps the saved choice when settings change before the config is loaded', async () => {
+    mockFewsConfigFile({
+      settings: [{ id: 'ui.locale', value: 'default', enabled: true }],
+    })
+    storeLocalSettings([{ id: 'ui.locale', value: 'de' }])
+
+    const store = createStore()
+    // e.g. base maps arriving from the map layer config
+    store.updateSettingItems('ui.map.theme', [
+      { value: 'automatic', title: 'Automatic' },
+    ])
+    await nextTick()
+
+    await store.initializeWithWebResources()
+
+    expect(store.get('ui.locale')?.disabled).toBe(false)
+    expect(store.get('ui.locale')?.value).toBe('de')
   })
 })

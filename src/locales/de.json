@@ -129,6 +129,15 @@
             "dark": "Dunkel"
           }
         },
+        "locale": {
+          "label": "Sprache",
+          "options": {
+            "system": "System",
+            "default": "Standard",
+            "en": "English",
+            "de": "Deutsch"
+          }
+        },
         "hierarchical-menu-style": {
           "label": "Menüstil",
           "options": {

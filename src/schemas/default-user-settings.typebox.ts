@@ -29,6 +29,7 @@ const DefaultUserSettingItemSchema = Type.Object(
     title: Type.String(),
     disabled: Type.Optional(Type.Boolean()),
     icon: Type.Optional(Type.String()),
+    abbreviation: Type.Optional(Type.String()),
   },
   { additionalProperties: false },
 )

@@ -32,7 +32,8 @@ export async function fetchWebResourcesDefaultUserSettings(): Promise<
 > {
   try {
     const url = getResourcesStaticUrl(WEBRESOURCES_FILE)
-    const response = await fetch(url)
+    // FEWS sends no Cache-Control header; revalidate so config edits apply.
+    const response = await fetch(url, { cache: 'no-cache' })
     if (!response.ok) return []
 
     const json: unknown = await response.json()
