@@ -1,5 +1,5 @@
 <template>
-  <svg class="colourstrip">
+  <svg class="colourstrip" aria-hidden="true">
     <g ref="groupRef" transform="translate(-1, 0)"></g>
   </svg>
 </template>

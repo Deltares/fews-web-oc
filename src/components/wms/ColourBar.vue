@@ -4,7 +4,12 @@
     :class="isVisible ? 'invisible' : ''"
     class="legend_container"
   >
-    <svg ref="colourbarElement" class="map__colour-bar"></svg>
+    <svg
+      ref="colourbarElement"
+      class="map__colour-bar"
+      role="img"
+      aria-label="Colour bar legend"
+    ></svg>
   </div>
 </template>
 
