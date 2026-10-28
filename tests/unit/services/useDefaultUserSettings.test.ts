@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { fetchWebResourcesDefaultUserSettings } from '../../../src/services/useDefaultUserSettings'
+import {
+  fetchWebResourcesDefaultUserSettings,
+  validateDefaultUserSettings,
+} from '../../../src/services/useDefaultUserSettings'
 
 vi.mock('@/lib/fews-config', () => ({
   getResourcesStaticUrl: (resource: string) =>
@@ -117,5 +120,57 @@ describe('fetchWebResourcesDefaultUserSettings', () => {
     const result = await fetchWebResourcesDefaultUserSettings()
 
     expect(result).toHaveLength(0)
+  })
+})
+
+describe('validateDefaultUserSettings', () => {
+  it('accepts an object with settings and a bare array', () => {
+    const settings = [{ id: 'ui.theme', value: 'dark' }]
+
+    expect(validateDefaultUserSettings({ settings })).toEqual({
+      overrides: settings,
+      errors: [],
+    })
+    expect(validateDefaultUserSettings(settings).overrides).toEqual(settings)
+  })
+
+  it('keeps valid entries and describes each invalid one', () => {
+    const { overrides, errors } = validateDefaultUserSettings({
+      $schema: './default-user-settings.schema.json',
+      settings: [
+        { id: 'ui.theme', value: 'automatic' },
+        { id: 'datum.verticalDatum', value: 'false', favorite: 1 },
+        { id: 'ui.map.showCoordinate', value: true },
+        { value: true },
+        { id: 'ui.theme', label: 'Theme' },
+        { id: 'charts.brush', enabled: false },
+      ],
+    })
+
+    expect(overrides).toEqual([{ id: 'charts.brush', enabled: false }])
+    expect(errors).toEqual([
+      'settings[0] (ui.theme): "value" must be one of "auto", "light", "dark", got "automatic"',
+      'settings[1] (datum.verticalDatum): "value" must be true or false, got "false"; "favorite" must be true or false, got 1',
+      'settings[2]: unknown setting id "ui.map.showCoordinate"',
+      'settings[3]: "id" is missing',
+      'settings[4] (ui.theme): unknown property "label"',
+    ])
+  })
+
+  it('reports unknown top-level properties but still uses the settings', () => {
+    const { overrides, errors } = validateDefaultUserSettings({
+      settings: [{ id: 'ui.theme', value: 'dark' }],
+      default: true,
+    })
+
+    expect(overrides).toHaveLength(1)
+    expect(errors).toEqual(['unknown property "default" ignored'])
+  })
+
+  it('rejects a payload without settings', () => {
+    expect(validateDefaultUserSettings({ unsupported: true })).toEqual({
+      overrides: [],
+      errors: ['expected an array or an object with a "settings" array'],
+    })
   })
 })

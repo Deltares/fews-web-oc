@@ -1,180 +1,90 @@
-import { Type, type Static } from 'typebox'
+import { Type, type Static, type TSchema } from 'typebox'
+// Relative import with attribute, so `npm run compile-schemas` can run in Node.
+import userSettingDefinitions from '../assets/DefaultUserSettings.json' with { type: 'json' }
 
-export const DefaultUserSettingValueSchema = Type.Union([
-  Type.String(),
-  Type.Boolean(),
-])
+interface UserSettingDefinition {
+  id: string
+  type: 'boolean' | 'oneOfMultiple'
+  label: string
+  items?: { value: string }[]
+}
 
-const ScrollZoomModeValueSchema = Type.Union([
-  Type.Literal('off'),
-  Type.Literal('x'),
-  Type.Literal('y'),
-  Type.Literal('xy'),
-])
+// Options of these settings are replaced at runtime, e.g. base maps from the
+// FEWS map layer config, so any value is allowed.
+const runtimeOptionSettings = new Set(['ui.map.theme'])
 
-const DisplayUnitsValueSchema = Type.Union([
-  Type.Literal('system'),
-  Type.Literal('display'),
-])
+function valueSchema(definition: UserSettingDefinition): TSchema {
+  if (definition.type === 'boolean') {
+    return Type.Boolean({ description: 'Default value: true or false.' })
+  }
+  const values = definition.items?.map((item) => item.value) ?? []
+  if (runtimeOptionSettings.has(definition.id) || values.length === 0) {
+    return Type.String({ description: 'Default value.' })
+  }
+  return Type.Union(
+    values.map((value) => Type.Literal(value)),
+    { description: `Default value: ${values.join(', ')}.` },
+  )
+}
 
-const HierarchicalMenuStyleValueSchema = Type.Union([
-  Type.Literal('auto'),
-  Type.Literal('tree'),
-  Type.Literal('column'),
-])
+function overrideSchema(definition: UserSettingDefinition) {
+  return Type.Object(
+    {
+      id: Type.Literal(definition.id),
+      value: Type.Optional(valueSchema(definition)),
+      enabled: Type.Optional(
+        Type.Boolean({
+          description:
+            'Whether users can see and change the setting. When false, the configured value applies to everyone.',
+        }),
+      ),
+      favorite: Type.Optional(
+        Type.Boolean({
+          description: 'Show the setting in the user settings menu by default.',
+        }),
+      ),
+    },
+    {
+      additionalProperties: false,
+      title: definition.label,
+      description: `Override for the "${definition.label}" user setting.`,
+    },
+  )
+}
 
-const DefaultUserSettingItemSchema = Type.Object(
-  {
-    value: Type.String(),
-    title: Type.String(),
-    disabled: Type.Optional(Type.Boolean()),
-    icon: Type.Optional(Type.String()),
-    abbreviation: Type.Optional(Type.String()),
-  },
-  { additionalProperties: false },
+const definitions = userSettingDefinitions as UserSettingDefinition[]
+
+/** Override schema for each built-in user setting, by setting id. */
+export const DefaultUserSettingSchemas = Object.fromEntries(
+  definitions.map((definition) => [definition.id, overrideSchema(definition)]),
 )
 
-const DefaultUserSettingOverrideSchema = Type.Object(
-  {
-    id: Type.String({ minLength: 1 }),
-    value: Type.Optional(DefaultUserSettingValueSchema),
-    enabled: Type.Optional(Type.Boolean()),
-    favorite: Type.Optional(Type.Boolean()),
-  },
-  { additionalProperties: false },
+export const DefaultUserSettingSchema = Type.Union(
+  Object.values(DefaultUserSettingSchemas),
 )
 
-const DefaultUserSettingHierarchicalMenuStyleOverrideSchema = Type.Object(
-  {
-    id: Type.Literal('ui.hierarchical-menu-style'),
-    value: Type.Optional(HierarchicalMenuStyleValueSchema),
-    enabled: Type.Optional(Type.Boolean()),
-    favorite: Type.Optional(Type.Boolean()),
-  },
-  { additionalProperties: false },
-)
-
-const DefaultUserSettingDisplayUnitsOverrideSchema = Type.Object(
-  {
-    id: Type.Literal('units.displayUnits'),
-    value: Type.Optional(DisplayUnitsValueSchema),
-    enabled: Type.Optional(Type.Boolean()),
-    favorite: Type.Optional(Type.Boolean()),
-  },
-  { additionalProperties: false },
-)
-
-const DefaultUserSettingScrollZoomModeOverrideSchema = Type.Object(
-  {
-    id: Type.Literal('charts.scrollZoomMode'),
-    value: Type.Optional(ScrollZoomModeValueSchema),
-    enabled: Type.Optional(Type.Boolean()),
-    favorite: Type.Optional(Type.Boolean()),
-  },
-  { additionalProperties: false },
-)
-
-const DefaultUserSettingGroupSchema = Type.Union([
-  Type.Literal('Charts'),
-  Type.Literal('Units'),
-  Type.Literal('Map'),
-  Type.Literal('UI'),
-  Type.Literal('Datum'),
-])
-
-const DefaultUserSettingBooleanSchema = Type.Object(
-  {
-    id: Type.String({ minLength: 1 }),
-    type: Type.Literal('boolean'),
-    label: Type.String({ minLength: 1 }),
-    value: Type.Boolean(),
-    group: DefaultUserSettingGroupSchema,
-    enabled: Type.Optional(Type.Boolean()),
-    favorite: Type.Optional(Type.Boolean()),
-  },
-  { additionalProperties: false },
-)
-
-const DefaultUserSettingOneOfMultipleSchema = Type.Object(
-  {
-    id: Type.String({ minLength: 1 }),
-    type: Type.Literal('oneOfMultiple'),
-    label: Type.String({ minLength: 1 }),
-    value: Type.String(),
-    items: Type.Array(DefaultUserSettingItemSchema, { minItems: 1 }),
-    group: DefaultUserSettingGroupSchema,
-    enabled: Type.Optional(Type.Boolean()),
-    favorite: Type.Optional(Type.Boolean()),
-  },
-  { additionalProperties: false },
-)
-
-const DefaultUserSettingHierarchicalMenuStyleSchema = Type.Object(
-  {
-    id: Type.Literal('ui.hierarchical-menu-style'),
-    type: Type.Literal('oneOfMultiple'),
-    label: Type.String({ minLength: 1 }),
-    value: HierarchicalMenuStyleValueSchema,
-    items: Type.Array(DefaultUserSettingItemSchema, { minItems: 1 }),
-    group: Type.Literal('UI'),
-    enabled: Type.Optional(Type.Boolean()),
-    favorite: Type.Optional(Type.Boolean()),
-  },
-  { additionalProperties: false },
-)
-
-const DefaultUserSettingDisplayUnitsSchema = Type.Object(
-  {
-    id: Type.Literal('units.displayUnits'),
-    type: Type.Literal('oneOfMultiple'),
-    label: Type.String({ minLength: 1 }),
-    value: DisplayUnitsValueSchema,
-    items: Type.Array(DefaultUserSettingItemSchema, { minItems: 1 }),
-    group: Type.Literal('Units'),
-    enabled: Type.Optional(Type.Boolean()),
-    favorite: Type.Optional(Type.Boolean()),
-  },
-  { additionalProperties: false },
-)
-
-const DefaultUserSettingScrollZoomModeSchema = Type.Object(
-  {
-    id: Type.Literal('charts.scrollZoomMode'),
-    type: Type.Literal('oneOfMultiple'),
-    label: Type.String({ minLength: 1 }),
-    value: ScrollZoomModeValueSchema,
-    items: Type.Array(DefaultUserSettingItemSchema, { minItems: 1 }),
-    group: Type.Literal('Charts'),
-    enabled: Type.Optional(Type.Boolean()),
-    favorite: Type.Optional(Type.Boolean()),
-  },
-  { additionalProperties: false },
-)
-
-export const DefaultUserSettingSchema = Type.Union([
-  DefaultUserSettingOverrideSchema,
-  DefaultUserSettingDisplayUnitsOverrideSchema,
-  DefaultUserSettingHierarchicalMenuStyleOverrideSchema,
-  DefaultUserSettingScrollZoomModeOverrideSchema,
-  DefaultUserSettingBooleanSchema,
-  DefaultUserSettingOneOfMultipleSchema,
-  DefaultUserSettingDisplayUnitsSchema,
-  DefaultUserSettingHierarchicalMenuStyleSchema,
-  DefaultUserSettingScrollZoomModeSchema,
-])
-
-export const DefaultUserSettingsObjectSchema = Type.Object(
+/**
+ * Schema of `WebResourceFiles/default-user-settings.json` in the FEWS config,
+ * compiled to `schemas/default-user-settings.schema.json`. WebOC also accepts
+ * a bare array of overrides.
+ */
+export const DefaultUserSettingsSchema = Type.Object(
   {
     $schema: Type.Optional(Type.String()),
-    settings: Type.Array(DefaultUserSettingSchema),
+    settings: Type.Array(DefaultUserSettingSchema, {
+      description: 'Overrides of the WebOC default user settings.',
+    }),
   },
-  { additionalProperties: false },
+  {
+    additionalProperties: false,
+    title: 'WebOC default user settings',
+    description:
+      'Overrides of the WebOC default user settings, placed in WebResourceFiles/default-user-settings.json.',
+  },
 )
 
-export const DefaultUserSettingsSchema = Type.Union([
-  Type.Array(DefaultUserSettingSchema),
-  DefaultUserSettingsObjectSchema,
-])
-
-export type DefaultUserSetting = Static<typeof DefaultUserSettingSchema>
-export type DefaultUserSettings = Static<typeof DefaultUserSettingsSchema>
+// The union is built from a runtime list, so derive the entry type from one
+// override schema: { id: string, value?: unknown, enabled?, favorite? }.
+export type DefaultUserSetting = Static<ReturnType<typeof overrideSchema>>
+export type DefaultUserSettings =
+  DefaultUserSetting[] | { $schema?: string; settings: DefaultUserSetting[] }

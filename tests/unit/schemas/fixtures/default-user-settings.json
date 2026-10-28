@@ -1,0 +1,21 @@
+{
+  "$schema": "./default-user-settings.schema.json",
+  "settings": [
+    {
+      "id": "ui.locale",
+      "enabled": true
+    },
+    {
+      "id": "ui.sidebar-style",
+      "enabled": false
+    },
+    {
+      "id": "ui.map.showDataAvailability",
+      "favorite": true
+    },
+    {
+      "id": "charts.scrollZoomMode",
+      "value": "xy"
+    }
+  ]
+}

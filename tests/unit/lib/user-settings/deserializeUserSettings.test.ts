@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
   deserializeUserSettings,
-  filterValidOverrides,
-  isValidUserSettingsOverride,
   serializeUserSettings,
   type UserSettingsOverride,
 } from '@/lib/user-settings/deserializeUserSettings'
@@ -178,106 +176,6 @@ describe('deserializeUserSettings', () => {
     expect(result[0].favorite).toBe(true)
     expect(result[1].value).toBe(false)
     expect(result[2].value).toBe('xy')
-  })
-})
-
-describe('isValidUserSettingsOverride', () => {
-  it('accepts an override with only id', () => {
-    expect(isValidUserSettingsOverride({ id: 'ui.theme' })).toBe(true)
-  })
-
-  it('accepts a fully populated override', () => {
-    expect(
-      isValidUserSettingsOverride({
-        id: 'ui.theme',
-        value: 'dark',
-        enabled: false,
-        favorite: true,
-      }),
-    ).toBe(true)
-  })
-
-  it('accepts an override with value only', () => {
-    expect(
-      isValidUserSettingsOverride({ id: 'ui.theme', value: 'light' }),
-    ).toBe(true)
-  })
-
-  it('accepts an override with enabled only', () => {
-    expect(
-      isValidUserSettingsOverride({ id: 'ui.theme', enabled: false }),
-    ).toBe(true)
-  })
-
-  it('accepts an override with favorite only', () => {
-    expect(
-      isValidUserSettingsOverride({ id: 'ui.theme', favorite: true }),
-    ).toBe(true)
-  })
-
-  it('rejects null', () => {
-    expect(isValidUserSettingsOverride(null)).toBe(false)
-  })
-
-  it('rejects a string', () => {
-    expect(isValidUserSettingsOverride('ui.theme')).toBe(false)
-  })
-
-  it('rejects an object without id', () => {
-    expect(isValidUserSettingsOverride({ value: 'dark' })).toBe(false)
-  })
-
-  it('rejects an object with an empty id', () => {
-    expect(isValidUserSettingsOverride({ id: '' })).toBe(false)
-  })
-
-  it('rejects an object with a numeric id', () => {
-    expect(isValidUserSettingsOverride({ id: 42 })).toBe(false)
-  })
-
-  it('rejects an override with an unknown key', () => {
-    expect(
-      isValidUserSettingsOverride({ id: 'ui.theme', label: 'Theme' }),
-    ).toBe(false)
-  })
-
-  it('rejects an override where enabled is not boolean', () => {
-    expect(
-      isValidUserSettingsOverride({ id: 'ui.theme', enabled: 'yes' }),
-    ).toBe(false)
-  })
-
-  it('rejects an override where favorite is not boolean', () => {
-    expect(isValidUserSettingsOverride({ id: 'ui.theme', favorite: 1 })).toBe(
-      false,
-    )
-  })
-})
-
-describe('filterValidOverrides', () => {
-  it('returns only valid entries from a mixed array', () => {
-    const input: unknown[] = [
-      { id: 'ui.theme', value: 'dark' },
-      null,
-      { value: 'missing-id' },
-      { id: 'charts.scrollZoomMode', enabled: false },
-    ]
-    const result = filterValidOverrides(input)
-    expect(result).toHaveLength(2)
-    expect(result[0].id).toBe('ui.theme')
-    expect(result[1].id).toBe('charts.scrollZoomMode')
-  })
-
-  it('returns empty array when all entries are invalid', () => {
-    expect(filterValidOverrides([null, undefined, 'bad', 42])).toHaveLength(0)
-  })
-
-  it('returns all entries when all are valid', () => {
-    const input: UserSettingsOverride[] = [
-      { id: 'a', value: 1 },
-      { id: 'b', enabled: true },
-    ]
-    expect(filterValidOverrides(input)).toHaveLength(2)
   })
 })
 

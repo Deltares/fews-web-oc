@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { format, resolveConfig } from 'prettier'
 
 import { DefaultUserSettingsSchema } from '../src/schemas/default-user-settings.typebox.ts'
 
@@ -20,10 +21,12 @@ const jsonSchemaOutput = {
 
 mkdirSync(dirname(schemaOutputPath), { recursive: true })
 
-writeFileSync(
-  schemaOutputPath,
-  `${JSON.stringify(jsonSchemaOutput, null, 2)}\n`,
-  'utf8',
-)
+// Format like the rest of the repository, so `npm run lint` passes.
+const formatted = await format(JSON.stringify(jsonSchemaOutput), {
+  ...(await resolveConfig(schemaOutputPath)),
+  filepath: schemaOutputPath,
+})
+
+writeFileSync(schemaOutputPath, formatted, 'utf8')
 
 console.log(`Schema written to ${schemaOutputPath}`)

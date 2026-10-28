@@ -3,44 +3,10 @@ import type {
   UserSettingsItemOneOf,
   UserSettingsWithIcon,
 } from '@/stores/userSettings'
+import type { DefaultUserSetting } from '@/schemas/default-user-settings.typebox'
 
-export interface UserSettingsOverride {
-  id: string
-  value?: unknown
-  enabled?: boolean
-  favorite?: boolean
-}
-
-const ALLOWED_OVERRIDE_KEYS = new Set<string>([
-  'id',
-  'value',
-  'enabled',
-  'favorite',
-])
-
-export function isValidUserSettingsOverride(
-  override: unknown,
-): override is UserSettingsOverride {
-  if (typeof override !== 'object' || override === null) return false
-  const obj = override as Record<string, unknown>
-
-  if (typeof obj.id !== 'string' || obj.id.length === 0) return false
-
-  for (const key of Object.keys(obj)) {
-    if (!ALLOWED_OVERRIDE_KEYS.has(key)) return false
-  }
-
-  if ('enabled' in obj && typeof obj.enabled !== 'boolean') return false
-  if ('favorite' in obj && typeof obj.favorite !== 'boolean') return false
-
-  return true
-}
-
-export function filterValidOverrides(
-  overrides: unknown[],
-): UserSettingsOverride[] {
-  return overrides.filter(isValidUserSettingsOverride)
-}
+/** An entry of the FEWS config `default-user-settings.json`. */
+export type UserSettingsOverride = DefaultUserSetting
 
 function isValidValueForItem(item: UserSettingsItem, value: unknown): boolean {
   if (item.type === 'boolean') return typeof value === 'boolean'
@@ -104,6 +70,26 @@ export interface StoredUserSetting {
   favorite?: boolean
 }
 
+/** Returns the user's changes to `item` with respect to `baseItem`, if any. */
+function diffFromBaseline(
+  item: UserSettingsItem,
+  baseItem: UserSettingsItem,
+): StoredUserSetting | undefined {
+  // A stored value that is not available yet (e.g. a base map that is still
+  // loading) is kept until the option list has been updated.
+  const value =
+    item.type === 'oneOfMultiple'
+      ? (item.initialStorageValue ?? item.value)
+      : item.value
+
+  const change: StoredUserSetting = { id: item.id }
+  if (value !== baseItem.value) change.value = value
+  if (Boolean(item.favorite) !== Boolean(baseItem.favorite)) {
+    change.favorite = Boolean(item.favorite)
+  }
+  return Object.keys(change).length > 1 ? change : undefined
+}
+
 /**
  * Serializes only what the user changed with respect to `baseline` (the
  * built-in defaults with the FEWS config applied), so that later changes to
@@ -129,19 +115,8 @@ export function serializeUserSettings(
     const baseItem = baseline.find((b) => b.id === item.id)
     if (baseItem === undefined) continue
 
-    // A stored value that is not available yet (e.g. a base map that is still
-    // loading) is kept until the option list has been updated.
-    const value =
-      item.type === 'oneOfMultiple'
-        ? (item.initialStorageValue ?? item.value)
-        : item.value
-
-    const change: StoredUserSetting = { id: item.id }
-    if (value !== baseItem.value) change.value = value
-    if (Boolean(item.favorite) !== Boolean(baseItem.favorite)) {
-      change.favorite = Boolean(item.favorite)
-    }
-    if (Object.keys(change).length > 1) changes.push(change)
+    const change = diffFromBaseline(item, baseItem)
+    if (change !== undefined) changes.push(change)
   }
   return JSON.stringify({ items: changes })
 }
