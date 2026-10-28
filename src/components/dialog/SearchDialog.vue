@@ -117,7 +117,9 @@
                     :aria-label="
                       isTreeItemExpanded(row.item) ? 'Collapse' : 'Expand'
                     "
-                    @click.stop="toggleTreeItem(row.item)"
+                    tabindex="-1"
+                    @mousedown.prevent
+                    @click.stop="onToggleTreeItemClick(row.item)"
                   >
                     <v-icon size="18">
                       {{
@@ -133,8 +135,9 @@
                   <button
                     type="button"
                     class="search-dialog__select-button"
+                    tabindex="-1"
+                    @mousedown.prevent
                     @click.stop="selectTreeItem(row.item)"
-                    @keydown.enter.stop
                   >
                     <!-- icon -->
                     <span class="search-dialog__icon">
@@ -651,7 +654,25 @@ function toggleTreeItem(item: SearchItem): void {
   openedTreeIds.value = next
 }
 
+// Keep keyboard focus in the search input and the keyboard selection in sync
+// with the clicked row, so shortcuts like Enter keep working after a click.
+function setSelectedItem(item: SearchItem): void {
+  const index = searchResults.value.findIndex(
+    (result) => result.id === item.id,
+  )
+  if (index >= 0) {
+    selectedIndex.value = index
+  }
+  searchInput.value?.focus()
+}
+
+function onToggleTreeItemClick(item: SearchItem): void {
+  setSelectedItem(item)
+  toggleTreeItem(item)
+}
+
 function selectTreeItem(item: SearchItem): void {
+  setSelectedItem(item)
   selectItem(item)
 }
 
