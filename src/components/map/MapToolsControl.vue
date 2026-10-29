@@ -1,7 +1,8 @@
 <template></template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
+import { useBaseMap } from '@/services/useBaseMap'
 import { useMap } from '@/services/useMap'
 import { useMapIsDark } from '@/services/useMapIsDark'
 import { useUserSettingsStore } from '@/stores/userSettings'
@@ -18,6 +19,10 @@ import { GeoJSONStoreFeatures } from 'terra-draw'
 const { map } = useMap()
 const settings = useUserSettingsStore()
 const isDark = useMapIsDark()
+const { mapStyle } = useBaseMap()
+const isEnabled = computed(
+  () => settings.get('ui.map.measuringTools')?.value === true,
+)
 const features = useStorage<GeoJSONStoreFeatures[]>(
   'weboc-map-features-v1.0.0',
   [],
@@ -89,7 +94,7 @@ const removeControl = () => {
 
 onMounted(() => {
   watch(
-    () => settings.get('ui.map.measuringTools')?.value ?? false,
+    isEnabled,
     (enabled) => {
       if (!map) {
         console.warn('Map is not available')
@@ -105,17 +110,39 @@ onMounted(() => {
   )
 })
 
-// Rebuild the control so the paint styles follow the base map theme; the
-// drawn features are restored from session storage. A theme change usually
-// comes with a base map change, so wait until the new style has loaded.
-watch(isDark, () => {
-  if (!map || !measureControl) return
+let isRebuildPending = false
+
+// Rebuilds the control once the map is idle, i.e. when a new style has loaded.
+// The drawn features are restored from session storage.
+function rebuildControlWhenIdle() {
+  if (!map || isRebuildPending) return
+  isRebuildPending = true
   map.once('idle', () => {
-    if (!measureControl) return
+    isRebuildPending = false
+    if (!isEnabled.value) return
     removeControl()
     addControl()
   })
   map.triggerRepaint()
+}
+
+// A new base map style drops the TerraDraw layers and sources, after which the
+// control can no longer be removed cleanly. Therefore remove it synchronously,
+// before the map component applies the new style.
+watch(
+  mapStyle,
+  () => {
+    if (!measureControl) return
+    removeControl()
+    rebuildControlWhenIdle()
+  },
+  { flush: 'sync' },
+)
+
+// Rebuild the control so the paint styles follow the base map theme.
+watch(isDark, () => {
+  if (!measureControl) return
+  rebuildControlWhenIdle()
 })
 
 onBeforeUnmount(() => {
