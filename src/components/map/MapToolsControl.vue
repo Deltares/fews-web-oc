@@ -49,6 +49,8 @@ const addControl = () => {
   map.addControl(measureControl, 'top-right')
 
   const terraDrawInstance = measureControl.getTerraDrawInstance()
+  if (!terraDrawInstance) return
+
   terraDrawInstance.on('finish', (e) => {
     features.value = terraDrawInstance.getSnapshot()
   })
