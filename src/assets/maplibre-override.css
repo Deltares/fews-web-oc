@@ -4,6 +4,12 @@
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
+.map--dark .maplibregl-ctrl-scale {
+  color: #fff;
+  background-color: hsla(0, 0%, 0%, 0.6);
+  border-color: #fff;
+}
+
 .maplibregl-ctrl-group button {
   color: currentColor;
   height: 32px;

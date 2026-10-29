@@ -58,7 +58,7 @@ import {
 } from 'maplibre-gl'
 import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue'
 import { addLocationIconsToMap } from '@/lib/location-icons'
-import { useDark } from '@/services/useDark'
+import { useMapIsDark } from '@/services/useMapIsDark'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import {
   mapIds,
@@ -75,7 +75,7 @@ import {
 type LocationWithIconLable = Location & { iconLabel?: string }
 
 const userSettings = useUserSettingsStore()
-const isDark = useDark()
+const isDark = useMapIsDark()
 const { map } = useMap()
 
 interface Props {

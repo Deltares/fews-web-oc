@@ -178,8 +178,8 @@
           "geolocationControl": {
             "label": "Eigenen Standort anzeigen"
           },
-          "tools": {
-            "label": "Kartenwerkzeuge anzeigen"
+          "measuringTools": {
+            "label": "Messwerkzeuge anzeigen"
           },
           "data-download-tools": {
             "label": "Werkzeuge zum Herunterladen von Kartendaten anzeigen"
