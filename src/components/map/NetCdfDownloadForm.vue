@@ -156,6 +156,8 @@ import { configManager } from '@/services/application-config'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles'
 import {
   fromDisplayDateTimeInputValue,
+  getDisplayTimeZone,
+  SYSTEM_TIME_ZONE,
   toDisplayDateTimeInputValue,
 } from '@/lib/date/timeZone'
 import CopyUrlLink from '@/components/share/CopyUrlLink.vue'
@@ -251,6 +253,24 @@ watch(
   },
   { immediate: true },
 )
+
+// Keep the entered times on a change of the display time zone
+watch(getDisplayTimeZone, (_, oldTimeZone) => {
+  startTimeInput.value = convertInputValue(startTimeInput.value, oldTimeZone)
+  endTimeInput.value = convertInputValue(endTimeInput.value, oldTimeZone)
+})
+
+function convertInputValue(
+  value: string,
+  oldTimeZone: string | undefined,
+): string {
+  const date = fromDisplayDateTimeInputValue(
+    value,
+    oldTimeZone ?? SYSTEM_TIME_ZONE,
+  )
+  if (Number.isNaN(date.getTime())) return value
+  return toDisplayDateTimeInputValue(date)
+}
 
 const canDownload = computed(() => {
   const basicRequirements =

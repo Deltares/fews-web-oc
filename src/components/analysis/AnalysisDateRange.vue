@@ -12,7 +12,7 @@
       <v-card-text>
         <div class="d-flex ga-2">
           <v-date-input
-            v-model="settings.startTime"
+            v-model="startPickerDate"
             label="Start Date"
             variant="outlined"
             hide-details
@@ -22,7 +22,7 @@
             :disabled="settings.liveUpdate.enabled"
           />
           <v-date-input
-            v-model="settings.endTime"
+            v-model="endPickerDate"
             label="End Date"
             variant="outlined"
             hide-details
@@ -74,7 +74,11 @@
 </template>
 
 <script setup lang="ts">
-import { getDisplayTimeZone } from '@/lib/date/timeZone'
+import {
+  fromWallClockDate,
+  getDisplayTimeZone,
+  toWallClockDate,
+} from '@/lib/date/timeZone'
 import SelectIcon from '@/components/general/SelectIcon.vue'
 import type { CollectionSettings } from '@/lib/analysis'
 import { useI18n } from 'vue-i18n'
@@ -90,6 +94,22 @@ const props = defineProps<Props>()
 const settings = defineModel<CollectionSettings>('settings', { required: true })
 
 const { locale } = useI18n()
+
+// The date inputs work in local time, so they get the dates in the display
+// time zone as local dates
+const startPickerDate = computed<Date>({
+  get: () => toWallClockDate(settings.value.startTime),
+  set: (date) => {
+    if (date) settings.value.startTime = fromWallClockDate(date)
+  },
+})
+
+const endPickerDate = computed<Date>({
+  get: () => toWallClockDate(settings.value.endTime),
+  set: (date) => {
+    if (date) settings.value.endTime = fromWallClockDate(date)
+  },
+})
 
 const rangeFormatter = computed(() => {
   return new Intl.DateTimeFormat(locale.value, {

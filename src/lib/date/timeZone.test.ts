@@ -112,6 +112,14 @@ describe('datetime-local input values', () => {
     )
   })
 
+  test('are parsed in a given time zone', () => {
+    setDisplayTimeZone('Asia/Tokyo')
+
+    expect(fromDisplayDateTimeInputValue('2026-01-01T09:00', 'UTC')).toEqual(
+      new Date('2026-01-01T09:00:00Z'),
+    )
+  })
+
   test('parse an invalid value as an invalid date', () => {
     expect(fromDisplayDateTimeInputValue('').getTime()).toBeNaN()
   })

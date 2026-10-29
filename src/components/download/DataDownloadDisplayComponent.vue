@@ -171,7 +171,7 @@ import {
   TopologyNode,
 } from '@deltares/fews-pi-requests'
 import { DateTime, type DateTimeMaybeValid } from 'luxon'
-import { toWallClockDate } from '@/lib/date/timeZone'
+import { getDisplayTimeZone, toWallClockDate } from '@/lib/date/timeZone'
 import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.ts'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
@@ -319,6 +319,14 @@ watch(startDate, (newValue) => {
 
 watch(endDate, (newValue) => {
   endDateString.value = DateTime.fromJSDate(newValue).toFormat(DATE_FMT)
+})
+
+// Show the selected dates in the new display time zone on a change
+watch(getDisplayTimeZone, () => {
+  startDateString.value = DateTime.fromJSDate(startDate.value).toFormat(
+    DATE_FMT,
+  )
+  endDateString.value = DateTime.fromJSDate(endDate.value).toFormat(DATE_FMT)
 })
 
 // The date pickers work in local time, so they get the date in the display

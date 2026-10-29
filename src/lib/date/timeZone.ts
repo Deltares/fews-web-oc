@@ -84,10 +84,15 @@ export function toDisplayDateTimeInputValue(
 
 /**
  * Parses the value of an `<input type="datetime-local">` as date and time in
- * the display time zone. Returns an invalid date for an invalid value.
+ * the display time zone, or in `timeZone` if given, e.g. the previous display
+ * time zone, with `system` for the browser's time zone. Returns an invalid
+ * date for an invalid value.
  */
-export function fromDisplayDateTimeInputValue(value: string): Date {
-  const zone = getDisplayTimeZone() ?? SYSTEM_TIME_ZONE
+export function fromDisplayDateTimeInputValue(
+  value: string,
+  timeZone = getDisplayTimeZone(),
+): Date {
+  const zone = timeZone ?? SYSTEM_TIME_ZONE
   return DateTime.fromISO(value, { zone }).toJSDate()
 }
 

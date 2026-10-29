@@ -81,6 +81,7 @@ import { useDisplay } from 'vuetify'
 import { CLOCK_TICK_MS, useSystemTimeStore } from '@/stores/systemTime'
 import { useConfigStore } from '@/stores/config'
 import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
+import { fromWallClockDate } from '@/lib/date/timeZone'
 
 const { t } = useI18n()
 const { d } = useDisplayDateFormat()
@@ -103,6 +104,7 @@ const intervalItems = computed(() => {
   return presets?.map(periodPresetToIntervalItem) ?? []
 })
 
+// Wall-clock dates of the date pickers, which work in local time.
 const customStartDate = ref<Date>()
 const customEndDate = ref<Date>()
 const syncPulseActive = ref(false)
@@ -129,8 +131,10 @@ const runningDotStyle = computed(() => ({
 
 watchEffect(() => {
   if (isCustomInterval.value && dateOrderIsCorrect.value) {
-    store.startTime = customStartDate.value
-    store.endTime = customEndDate.value
+    store.startTime =
+      customStartDate.value && fromWallClockDate(customStartDate.value)
+    store.endTime =
+      customEndDate.value && fromWallClockDate(customEndDate.value)
   }
 })
 
