@@ -94,7 +94,7 @@ function updateColourBar() {
 }
 
 .map__colour-bar :deep(text) {
-  fill: v-bind('textColor') !important;
+  fill: v-bind('textColor');
   text-rendering: optimizeLegibility;
   text-shadow:
     -1px 0 1px rgba(v-bind('shadowRgb'), 0.6),

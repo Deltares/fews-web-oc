@@ -11,7 +11,7 @@ import type { Map } from 'maplibre-gl'
 export function isDarkColor(value: unknown): boolean | undefined {
   if (typeof value === 'string') {
     const color = lab(value)
-    if (isNaN(color.l)) return undefined
+    if (Number.isNaN(color.l)) return undefined
     return color.l < 50
   }
 
