@@ -2,23 +2,13 @@ import {
   TerraDrawCircleMode,
   TerraDrawFreehandMode,
   TerraDrawLineStringMode,
-  TerraDrawPointMode,
   TerraDrawPolygonMode,
   TerraDrawRectangleMode,
 } from 'terra-draw'
 import { SymbolLayerSpecification } from 'maplibre-gl'
 
-export function getModeOtions(isDark: boolean = false) {
+export function getModeOptions(isDark: boolean = false) {
   return {
-    point: new TerraDrawPointMode({
-      editable: true,
-      styles: {
-        pointColor: isDark ? '#000000' : '#FFFFFF',
-        pointWidth: 5,
-        pointOutlineColor: isDark ? '#999999' : '#666666',
-        pointOutlineWidth: 1,
-      },
-    }),
     linestring: new TerraDrawLineStringMode({
       editable: true,
       styles: {
@@ -75,58 +65,39 @@ export function getModeOtions(isDark: boolean = false) {
   }
 }
 
-export function getPointLayerLabelSpec(isDark: boolean = false) {
-  const specification: SymbolLayerSpecification = {
-    id: '{prefix}-point-label',
-    type: 'symbol',
-    source: '{prefix}-point',
-    filter: [
-      'all',
-      ['==', '$type', 'Point'],
-      ['any', ['==', 'mode', 'point'], ['==', 'mode', 'marker']],
+type LabelLayout = NonNullable<SymbolLayerSpecification['layout']>
+
+// Layout shared by all measurement labels, extended with the label text
+function getLabelLayout(layout: LabelLayout): LabelLayout {
+  return {
+    'symbol-placement': 'point',
+    'text-size': [
+      'interpolate',
+      ['linear'],
+      ['zoom'],
+      5,
+      10,
+      10,
+      12.0,
+      13,
+      14.0,
+      14,
+      16.0,
+      18,
+      18.0,
     ],
-    layout: {
-      'text-field': [
-        'case',
-        ['all', ['has', 'elevation'], ['>', ['get', 'elevation'], 0]],
-        [
-          'concat',
-          'Alt. ',
-          ['to-string', ['floor', ['get', 'elevation']]],
-          ' ',
-          ['get', 'elevationUnit'],
-        ],
-        '',
-      ],
-      'symbol-placement': 'point',
-      'text-size': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        5,
-        10,
-        10,
-        12.0,
-        13,
-        14.0,
-        14,
-        16.0,
-        18,
-        18.0,
-      ],
-      'text-overlap': 'always',
-      'text-variable-anchor': ['left', 'right', 'top', 'bottom'],
-      'text-radial-offset': 0.5,
-      'text-justify': 'center',
-      'text-letter-spacing': 0.05,
-    },
-    paint: {
-      'text-halo-color': isDark ? '#232E3D' : '#F7F7F7',
-      'text-halo-width': 1,
-      'text-color': isDark ? '#F7F7F7' : '#232E3D',
-    },
+    'text-overlap': 'always',
+    'text-letter-spacing': 0.05,
+    ...layout,
   }
-  return specification
+}
+
+function getLabelPaint(isDark: boolean): SymbolLayerSpecification['paint'] {
+  return {
+    'text-halo-color': isDark ? '#232E3D' : '#F7F7F7',
+    'text-halo-width': 1,
+    'text-color': isDark ? '#F7F7F7' : '#232E3D',
+  }
 }
 
 export function getLineLayerLabelSpec(isDark: boolean = false) {
@@ -135,7 +106,7 @@ export function getLineLayerLabelSpec(isDark: boolean = false) {
     type: 'symbol',
     source: '{prefix}-line-source',
     filter: ['==', '$type', 'Point'],
-    layout: {
+    layout: getLabelLayout({
       'text-field': [
         'concat',
         ['to-string', ['get', 'distance']],
@@ -167,33 +138,11 @@ export function getLineLayerLabelSpec(isDark: boolean = false) {
           '',
         ],
       ],
-      'symbol-placement': 'point',
-      'text-size': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        5,
-        10,
-        10,
-        12.0,
-        13,
-        14.0,
-        14,
-        16.0,
-        18,
-        18.0,
-      ],
-      'text-overlap': 'always',
       'text-variable-anchor': ['left', 'right', 'top', 'bottom'],
       'text-radial-offset': 0.5,
       'text-justify': 'center',
-      'text-letter-spacing': 0.05,
-    },
-    paint: {
-      'text-halo-color': isDark ? '#232E3D' : '#F7F7F7',
-      'text-halo-width': 1,
-      'text-color': isDark ? '#F7F7F7' : '#232E3D',
-    },
+    }),
+    paint: getLabelPaint(isDark),
   }
   return specification
 }
@@ -204,37 +153,15 @@ export function getPolygonLayerSpec(isDark: boolean = false) {
     type: 'symbol',
     source: '{prefix}-polygon-source',
     filter: ['==', '$type', 'Point'],
-    layout: {
+    layout: getLabelLayout({
       'text-field': [
         'concat',
         ['to-string', ['get', 'area']],
         ' ',
         ['get', 'unit'],
       ],
-      'symbol-placement': 'point',
-      'text-size': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        5,
-        10,
-        10,
-        12.0,
-        13,
-        14.0,
-        14,
-        16.0,
-        18,
-        18.0,
-      ],
-      'text-overlap': 'always',
-      'text-letter-spacing': 0.05,
-    },
-    paint: {
-      'text-halo-color': isDark ? '#232E3D' : '#F7F7F7',
-      'text-halo-width': 1,
-      'text-color': isDark ? '#F7F7F7' : '#232E3D',
-    },
+    }),
+    paint: getLabelPaint(isDark),
   }
   return specification
 }

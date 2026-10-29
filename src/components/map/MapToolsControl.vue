@@ -9,8 +9,7 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import { MaplibreMeasureControl } from '@watergis/maplibre-gl-terradraw'
 import {
   getLineLayerLabelSpec,
-  getModeOtions,
-  getPointLayerLabelSpec,
+  getModeOptions,
   getPolygonLayerSpec,
 } from '@/lib/map/terraDraw'
 import { useStorage } from '@vueuse/core'
@@ -53,8 +52,7 @@ const addControl = (mode?: string) => {
       'download',
     ],
     open: true,
-    modeOptions: getModeOtions(isDark.value),
-    pointLayerLabelSpec: getPointLayerLabelSpec(isDark.value),
+    modeOptions: getModeOptions(isDark.value),
     lineLayerLabelSpec: getLineLayerLabelSpec(isDark.value),
     polygonLayerSpec: getPolygonLayerSpec(isDark.value),
   })
