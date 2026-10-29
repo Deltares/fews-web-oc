@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { select, type Selection } from 'd3'
 import {
   ColourBar,
@@ -22,6 +22,7 @@ import {
   ColourMap,
   AxisPosition,
 } from '@deltares/fews-web-oc-charts'
+import { useMapIsDark } from '@/services/useMapIsDark'
 
 interface Props {
   colourMap?: ColourMap
@@ -34,6 +35,10 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const colourbarElement = ref<SVGElement>()
+
+const isDark = useMapIsDark()
+const textColor = computed(() => (isDark.value ? '#fff' : '#000'))
+const shadowRgb = computed(() => (isDark.value ? '0, 0, 0' : '255, 255, 255'))
 
 const isVisible = ref<boolean>(true)
 
@@ -89,27 +94,27 @@ function updateColourBar() {
 }
 
 .map__colour-bar :deep(text) {
-  fill: white !important;
+  fill: v-bind('textColor');
   text-rendering: optimizeLegibility;
   text-shadow:
-    -1px 0 1px rgba(0, 0, 0, 0.6),
-    1px 0 1px rgba(0, 0, 0, 0.6),
-    0 1px 1px rgba(0, 0, 0, 0.6),
-    0 -1px 1px rgba(0, 0, 0, 0.6);
+    -1px 0 1px rgba(v-bind('shadowRgb'), 0.6),
+    1px 0 1px rgba(v-bind('shadowRgb'), 0.6),
+    0 1px 1px rgba(v-bind('shadowRgb'), 0.6),
+    0 -1px 1px rgba(v-bind('shadowRgb'), 0.6);
 }
 
 .map__colour-bar :deep(.axis .tick line) {
-  stroke: white;
+  stroke: v-bind('textColor');
   stroke-width: 1px;
-  filter: drop-shadow(-1px 0 0.5px rgba(0, 0, 0, 0.3))
-    drop-shadow(1px 0 0.5px rgba(0, 0, 0, 0.3))
-    drop-shadow(0 1px 0.5px rgba(0, 0, 0, 0.3))
-    drop-shadow(0 -1px 0.5px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(-1px 0 0.5px rgba(v-bind('shadowRgb'), 0.3))
+    drop-shadow(1px 0 0.5px rgba(v-bind('shadowRgb'), 0.3))
+    drop-shadow(0 1px 0.5px rgba(v-bind('shadowRgb'), 0.3))
+    drop-shadow(0 -1px 0.5px rgba(v-bind('shadowRgb'), 0.3));
   shape-rendering: crispEdges;
 }
 
 .map__colour-bar :deep(.grid) {
-  stroke: white;
+  stroke: v-bind('textColor');
 }
 
 :deep(g) {

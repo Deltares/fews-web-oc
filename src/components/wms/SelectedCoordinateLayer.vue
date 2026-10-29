@@ -153,7 +153,7 @@ onUnmounted(() => {
   --coordinate-tooltip-color-secondary: #fff;
 }
 
-.dark {
+.map--dark {
   --coordinate-tooltip-color-primary: #fff;
   --coordinate-tooltip-color-secondary: #000;
 }

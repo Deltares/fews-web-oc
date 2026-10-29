@@ -5,6 +5,7 @@ import { onBeforeUnmount, watch, onBeforeMount } from 'vue'
 import { TerraDraw, TerraDrawRectangleMode } from 'terra-draw'
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter'
 import { useMap } from '@/services/useMap'
+import { useMapIsDark } from '@/services/useMapIsDark'
 import { BoundingBox } from '@/services/useBoundingBox'
 import { Position, Feature, Polygon } from 'geojson'
 
@@ -15,17 +16,25 @@ const modelValue = defineModel<BoundingBox | null>({ default: null })
 
 const { map } = useMap()
 if (!map) throw new Error('Map is not available to draw rectangle on.')
+const isDark = useMapIsDark()
 
 const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({ map })
 mapLibreAdapter.setDraggability(false)
 mapLibreAdapter.setDoubleClickToZoom(false)
-const rectangleMode = new TerraDrawRectangleMode({
-  styles: {
-    fillColor: '#c2bebe',
-    outlineColor: '#626262',
+function getRectangleStyles(dark: boolean) {
+  return {
+    fillColor: dark ? '#626262' : '#c2bebe',
+    outlineColor: dark ? '#c2bebe' : '#626262',
     outlineWidth: 2,
     fillOpacity: 0.4,
-  },
+  } as const
+}
+
+const rectangleMode = new TerraDrawRectangleMode({
+  styles: getRectangleStyles(isDark.value),
+})
+watch(isDark, (dark) => {
+  rectangleMode.updateOptions({ styles: getRectangleStyles(dark) })
 })
 
 const draw = new TerraDraw({

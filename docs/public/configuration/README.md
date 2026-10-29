@@ -336,7 +336,7 @@ Available settings:
 | Map | `ui.map.showDataAvailability` | Show data availability | `true`, `false` | `false` |
 | Map | `ui.map.navigationControl` | Show navigation control | `true`, `false` | `false` |
 | Map | `ui.map.geolocationControl` | Show your location | `true`, `false` | `false` |
-| Map | `ui.map.tools` | Show map tools | `true`, `false` | `false` |
+| Map | `ui.map.measuringTools` | Show measuring tools | `true`, `false` | `false` |
 | Map | `ui.map.data-download-tools` | Show map data download tools | `true`, `false` | `false` |
 | Map | `ui.map.showCoordinates` | Show mouse coordinates | `true`, `false` | `false` |
 | Charts | `charts.scrollZoomMode` | Scroll wheel zoom mode | `off`, `x`, `y`, `xy` | `x` |

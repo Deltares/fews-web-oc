@@ -20,6 +20,7 @@
   >
     <SyncMap />
     <MaintainLayerOrder />
+    <MapTheme />
     <!-- Fade duration is set to 100ms instead of 0ms to avoid flickering -->
     <mgl-attribution-control position="top-right" :compact="true" />
     <mgl-navigation-control
@@ -67,6 +68,7 @@ import { transformStyle } from '@/lib/map'
 import { getRequestHeaders } from '@/lib/requests/transformRequest'
 import { useLayerOrder } from '@/services/useLayerOrder'
 import CoordinatesDisplay from '@/components/map/CoordinatesDisplay.vue'
+import MapTheme from '@/components/map/MapTheme.vue'
 
 interface Props {
   bounds?: LngLatBounds

@@ -49,6 +49,12 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .coordinates {
+  color: #000;
   background: hsla(0, 0%, 100%, 0.75);
+}
+
+:global(.map--dark) .coordinates {
+  color: #fff;
+  background: hsla(0, 0%, 0%, 0.6);
 }
 </style>
