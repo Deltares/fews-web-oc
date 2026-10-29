@@ -6,6 +6,7 @@ import { useBaseMap } from '@/services/useBaseMap'
 import { useMap } from '@/services/useMap'
 import { useMapIsDark } from '@/services/useMapIsDark'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { useAlertsStore } from '@/stores/alerts'
 import { MaplibreMeasureControl } from '@watergis/maplibre-gl-terradraw'
 import {
   getLineLayerLabelSpec,
@@ -14,9 +15,12 @@ import {
 } from '@/lib/map/terraDraw'
 import { useStorage } from '@vueuse/core'
 import { GeoJSONStoreFeatures } from 'terra-draw'
+import { useI18n } from 'vue-i18n'
 
 const { map } = useMap()
 const settings = useUserSettingsStore()
+const alertsStore = useAlertsStore()
+const { t } = useI18n()
 const isDark = useMapIsDark()
 const { mapStyle } = useBaseMap()
 const isEnabled = computed(
@@ -84,8 +88,14 @@ const addControl = (mode?: string) => {
       }
       control.recalc()
     } catch (error) {
-      // Keep the stored features, so they are not lost by a failed restore
+      // Remove the stored features, so the restore does not fail repeatedly
       console.warn('Failed to restore measured features', error)
+      features.value = []
+      terraDrawInstance.clear()
+      alertsStore.addAlert({
+        type: 'warning',
+        message: t('wms.measureRestoreFailed'),
+      })
     }
     const activeMode =
       mode ?? (features.value.length > 0 ? 'select' : undefined)

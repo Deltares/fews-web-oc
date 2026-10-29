@@ -207,6 +207,7 @@
   },
   "wms": {
     "layers": "Layers",
+    "measureRestoreFailed": "The measured features could not be restored and have been removed.",
     "noDataLayer": "No data layer available",
     "overlays": "Overlays",
     "selectLayers": "Select layers",

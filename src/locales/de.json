@@ -207,6 +207,7 @@
   },
   "wms": {
     "layers": "Layer",
+    "measureRestoreFailed": "Die Messungen konnten nicht wiederhergestellt werden und wurden entfernt.",
     "noDataLayer": "Kein Datenlayer verfügbar",
     "overlays": "Layerauswahl",
     "selectLayers": "Layerauswahl",
