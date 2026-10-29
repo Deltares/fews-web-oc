@@ -25,6 +25,7 @@ import DownloadDisclaimerDialog from '@/components/download/DownloadDisclaimerDi
 import { useRoute } from 'vue-router'
 import { useConfigStore } from '@/stores/config.ts'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
+import { setDisplayTimeZone, SYSTEM_TIME_ZONE } from '@/lib/date/timeZone'
 import { useUserSettingsStore } from './stores/userSettings'
 import { useTheme } from 'vuetify'
 import { useDark, usePreferredDark } from '@vueuse/core'
@@ -153,6 +154,13 @@ watch(
   },
   { immediate: true },
 )
+
+watchEffect(() => {
+  const timeZoneSetting = userSettingsStore.get('ui.timeZone')?.value
+  setDisplayTimeZone(
+    typeof timeZoneSetting === 'string' ? timeZoneSetting : SYSTEM_TIME_ZONE,
+  )
+})
 
 function setTheme(setDark: boolean): void {
   changeTheme(setDark ? 'dark' : 'light')
