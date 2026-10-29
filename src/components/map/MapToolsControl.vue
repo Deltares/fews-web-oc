@@ -66,6 +66,26 @@ onMounted(() => {
   )
 })
 
+watch(
+  () => settings.get('ui.map.measuringTools')?.value ?? false,
+  (enabled) => {
+    if (!map) {
+      console.warn('Map is not available')
+      return
+    }
+
+    if (enabled) {
+      if (!measureControl) {
+        addControl()
+      }
+    } else {
+      if (measureControl) {
+        removeControl()
+      }
+    }
+  },
+)
+
 onBeforeUnmount(() => {
   if (measureControl) {
     removeControl()
