@@ -154,6 +154,8 @@ let snapshotDragStartClientX = 0
 let snapshotDragStartScrollLeft = 0
 let snapshotDragDistance = 0
 let snapshotWheelRemainderPx = 0
+let snapshotZoomRemainderPx = 0
+let snapshotGestureScale = 1
 const SNAPSHOT_DRAG_CLICK_THRESHOLD_PX = 4
 let snapshotResizeObserver: ResizeObserver | undefined
 const snapshotImageFetches = new Map<string, Promise<void>>()
@@ -166,6 +168,13 @@ const SNAPSHOT_FRAME_GAP = 0
 const SNAPSHOT_FRAME_STRIDE = SNAPSHOT_FRAME_WIDTH + SNAPSHOT_FRAME_GAP
 const SNAPSHOT_OVERSCAN = 6
 const WHEEL_DELTA_LINE_PX = 16
+// Wheel distance per zoom step, a mouse wheel notch gives one step while
+// trackpads, which send many small deltas, need a longer swipe
+const ZOOM_STEP_WHEEL_PX = 40
+// Pinch distance per zoom step, pinches give small wheel deltas
+const ZOOM_STEP_PINCH_PX = 10
+// Safari pinch scale factor per zoom step
+const ZOOM_STEP_GESTURE_SCALE = 1.25
 const MS_PER_MINUTE = 60 * 1000
 const SNAPSHOT_INTERVAL_MINUTES_OPTIONS = [
   1, 2, 5, 10, 15, 30, 60, 120, 180, 360, 720, 1440,
@@ -430,7 +439,16 @@ function onSnapshotWheel(event: WheelEvent): void {
   const viewport = snapshotViewport.value
   if (!viewport) return
 
+  // Trackpad pinches arrive as ctrl + wheel, zoom instead of the whole page
+  if (event.ctrlKey) {
+    event.preventDefault()
+    snapshotWheelRemainderPx = 0
+    zoomSnapshots(event.deltaY, ZOOM_STEP_PINCH_PX)
+    return
+  }
+
   if (!event.shiftKey) {
+    snapshotZoomRemainderPx = 0
     const wheelDelta =
       Math.abs(event.deltaX) > Math.abs(event.deltaY)
         ? event.deltaX
@@ -463,22 +481,59 @@ function onSnapshotWheel(event: WheelEvent): void {
   }
 
   snapshotWheelRemainderPx = 0
-
-  if (event.deltaY === 0) return
+  // Zoom with shift + wheel. macOS turns vertical scrolling into horizontal
+  // scrolling while shift is held, so use the dominant axis.
+  const zoomDelta =
+    Math.abs(event.deltaY) >= Math.abs(event.deltaX)
+      ? event.deltaY
+      : event.deltaX
+  if (zoomDelta === 0) return
   event.preventDefault()
+  zoomSnapshots(
+    getWheelDeltaPx(event, zoomDelta, viewport.clientWidth),
+    ZOOM_STEP_WHEEL_PX,
+  )
+}
+
+/**
+ * Zooms one interval step once the accumulated delta reaches the step size.
+ * A positive delta zooms out, a negative delta zooms in.
+ */
+function zoomSnapshots(deltaPx: number, stepPx: number): void {
+  snapshotZoomRemainderPx += deltaPx
+  if (Math.abs(snapshotZoomRemainderPx) < stepPx) return
+  const zoomOut = snapshotZoomRemainderPx > 0
+  snapshotZoomRemainderPx = 0
 
   // If all frames are already visible, do not allow further zooming out.
-  if (event.deltaY > 0 && allSnapshotFramesFitInViewport.value) return
+  if (zoomOut && allSnapshotFramesFitInViewport.value) return
 
   const maxIntervalIndex = snapshotIntervalOptionsMs.value.length - 1
+  snapshotIntervalIndex.value = zoomOut
+    ? Math.min(snapshotIntervalIndex.value + 1, maxIntervalIndex)
+    : Math.max(snapshotIntervalIndex.value - 1, 0)
+}
 
-  if (event.deltaY > 0) {
-    snapshotIntervalIndex.value = Math.min(
-      snapshotIntervalIndex.value + 1,
-      maxIntervalIndex,
-    )
-  } else {
-    snapshotIntervalIndex.value = Math.max(snapshotIntervalIndex.value - 1, 0)
+// Safari reports trackpad pinches as gesture events instead of ctrl + wheel
+interface SafariGestureEvent extends UIEvent {
+  scale: number
+}
+
+function onSnapshotGestureStart(event: Event): void {
+  event.preventDefault()
+  snapshotGestureScale = 1
+}
+
+function onSnapshotGestureChange(event: Event): void {
+  event.preventDefault()
+  const { scale } = event as SafariGestureEvent
+  const ratio = scale / snapshotGestureScale
+  if (ratio >= ZOOM_STEP_GESTURE_SCALE) {
+    snapshotGestureScale = scale
+    zoomSnapshots(-ZOOM_STEP_PINCH_PX, ZOOM_STEP_PINCH_PX)
+  } else if (ratio <= 1 / ZOOM_STEP_GESTURE_SCALE) {
+    snapshotGestureScale = scale
+    zoomSnapshots(ZOOM_STEP_PINCH_PX, ZOOM_STEP_PINCH_PX)
   }
 }
 
@@ -792,6 +847,14 @@ onMounted(() => {
   })
   if (snapshotViewport.value) {
     snapshotResizeObserver.observe(snapshotViewport.value)
+    snapshotViewport.value.addEventListener(
+      'gesturestart',
+      onSnapshotGestureStart,
+    )
+    snapshotViewport.value.addEventListener(
+      'gesturechange',
+      onSnapshotGestureChange,
+    )
   }
   updateSnapshotViewportMetrics()
   centerSnapshotAroundSelectedTime()
@@ -802,6 +865,14 @@ onUnmounted(() => {
   snapshotActiveImageUrls = new Set()
   snapshotResizeObserver?.disconnect()
   snapshotResizeObserver = undefined
+  snapshotViewport.value?.removeEventListener(
+    'gesturestart',
+    onSnapshotGestureStart,
+  )
+  snapshotViewport.value?.removeEventListener(
+    'gesturechange',
+    onSnapshotGestureChange,
+  )
   revokeUnusedSnapshotImageUrls(new Set())
 })
 </script>
