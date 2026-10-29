@@ -33,6 +33,7 @@
               <v-date-input
                 v-model="customStartDate"
                 :label="t('common.start')"
+                @update:model-value="onCustomDateUpdate"
                 density="compact"
                 variant="solo-filled"
                 flat
@@ -45,6 +46,7 @@
               <v-date-input
                 v-model="customEndDate"
                 :label="t('common.end')"
+                @update:model-value="onCustomDateUpdate"
                 density="compact"
                 variant="solo-filled"
                 flat
@@ -81,7 +83,12 @@ import { useDisplay } from 'vuetify'
 import { CLOCK_TICK_MS, useSystemTimeStore } from '@/stores/systemTime'
 import { useConfigStore } from '@/stores/config'
 import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
-import { fromWallClockDate } from '@/lib/date/timeZone'
+import {
+  fromWallClockDate,
+  getDisplayTimeZone,
+  toDisplayDateTime,
+  toWallClockDate,
+} from '@/lib/date/timeZone'
 
 const { t } = useI18n()
 const { d } = useDisplayDateFormat()
@@ -96,7 +103,7 @@ const dateOrderIsCorrect = computed(
   () =>
     !customStartDate.value ||
     !customEndDate.value ||
-    customStartDate.value < customEndDate.value,
+    customStartDate.value <= customEndDate.value,
 )
 
 const intervalItems = computed(() => {
@@ -104,9 +111,10 @@ const intervalItems = computed(() => {
   return presets?.map(periodPresetToIntervalItem) ?? []
 })
 
-// Wall-clock dates of the date pickers, which work in local time.
-const customStartDate = ref<Date>()
-const customEndDate = ref<Date>()
+// Days of the date pickers as wall-clock dates, as the pickers work in local
+// time. The end day is included in the period.
+const customStartDate = ref<Date | null>()
+const customEndDate = ref<Date | null>()
 const syncPulseActive = ref(false)
 let syncPulseTimeout: ReturnType<typeof setTimeout> | undefined
 
@@ -129,19 +137,37 @@ const runningDotStyle = computed(() => ({
   animationDuration: `${CLOCK_TICK_MS}ms`,
 }))
 
+// Apply the custom period once both days are picked, in the display time zone
 watchEffect(() => {
-  if (isCustomInterval.value && dateOrderIsCorrect.value) {
-    store.startTime =
-      customStartDate.value && fromWallClockDate(customStartDate.value)
-    store.endTime =
-      customEndDate.value && fromWallClockDate(customEndDate.value)
-  }
+  if (!isCustomInterval.value || !dateOrderIsCorrect.value) return
+  if (!customStartDate.value || !customEndDate.value) return
+  store.startTime = fromWallClockDate(customStartDate.value)
+  store.endTime = toDisplayDateTime(fromWallClockDate(customEndDate.value))
+    .endOf('day')
+    .toJSDate()
 })
 
-watch([customStartDate, customEndDate], () => {
+// Show the days of the default or preset period, empty for the default
+watch(
+  () => [store.startTime, store.endTime, getDisplayTimeZone()],
+  () => {
+    if (isCustomInterval.value) return
+    customStartDate.value = store.startTime && toPickerDay(store.startTime)
+    // A period ending at midnight does not include the day it ends on
+    customEndDate.value =
+      store.endTime && toPickerDay(new Date(store.endTime.getTime() - 1))
+  },
+  { immediate: true },
+)
+
+function toPickerDay(date: Date): Date {
+  return toWallClockDate(toDisplayDateTime(date).startOf('day').toJSDate())
+}
+
+function onCustomDateUpdate() {
   store.selectedInterval = 'custom'
   form.value?.validate()
-})
+}
 
 watch(
   () => store.lastSyncedAt?.getTime(),
