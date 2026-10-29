@@ -157,6 +157,44 @@ describe('validateDefaultUserSettings', () => {
     ])
   })
 
+  it('accepts configured time zones', () => {
+    const settings = [
+      {
+        id: 'ui.timeZone',
+        value: 'Europe/Amsterdam',
+        items: [{ value: 'UTC' }, { value: 'Europe/Amsterdam' }],
+      },
+    ]
+
+    expect(validateDefaultUserSettings({ settings })).toEqual({
+      overrides: settings,
+      errors: [],
+    })
+  })
+
+  it('leaves out unknown time zones', () => {
+    const { overrides, errors } = validateDefaultUserSettings({
+      settings: [
+        {
+          id: 'ui.timeZone',
+          value: 'Mars/Olympus_Mons',
+          items: [{ value: 'system' }, { value: 'Europe/Amsterdm' }],
+        },
+        { id: 'ui.timeZone', items: [{ value: 'CEST' }] },
+      ],
+    })
+
+    expect(overrides).toEqual([
+      { id: 'ui.timeZone', items: [{ value: 'system' }] },
+      { id: 'ui.timeZone' },
+    ])
+    expect(errors).toEqual([
+      'settings[0] (ui.timeZone): unknown time zone "Europe/Amsterdm" ignored',
+      'settings[0] (ui.timeZone): unknown time zone "Mars/Olympus_Mons" ignored',
+      'settings[1] (ui.timeZone): unknown time zone "CEST" ignored',
+    ])
+  })
+
   it('reports unknown top-level properties but still uses the settings', () => {
     const { overrides, errors } = validateDefaultUserSettings({
       settings: [{ id: 'ui.theme', value: 'dark' }],

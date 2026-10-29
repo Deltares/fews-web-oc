@@ -139,6 +139,13 @@
             "de": "Deutsch"
           }
         },
+        "timeZone": {
+          "label": "Zeitzone",
+          "options": {
+            "system": "System",
+            "UTC": "UTC"
+          }
+        },
         "hierarchical-menu-style": {
           "label": "Menüstil",
           "options": {

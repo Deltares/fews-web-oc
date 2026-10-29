@@ -1,10 +1,12 @@
 import { getResourcesStaticUrl } from '@/lib/fews-config'
+import { isValidTimeZone } from '@/lib/date/timeZone'
 import type { UserSettingsOverride } from '@/lib/user-settings/deserializeUserSettings'
 import { DefaultUserSettingSchemas } from '@/schemas/default-user-settings.typebox'
 import { Value } from 'typebox/value'
 import type { TSchema } from 'typebox'
 
 const WEBRESOURCES_FILE = 'default-user-settings.json'
+const TIME_ZONE_SETTING_ID = 'ui.timeZone'
 
 export interface DefaultUserSettingsValidation {
   overrides: UserSettingsOverride[]
@@ -60,6 +62,31 @@ function describeErrors(
 }
 
 /**
+ * The schema allows any string as time zone, so leave out the options and the
+ * default value that the browser does not know as time zone.
+ */
+function removeInvalidTimeZones(override: UserSettingsOverride): string[] {
+  const errors: string[] = []
+  if (override.items !== undefined) {
+    const items = override.items.filter((item) => {
+      const valid = isValidTimeZone(item.value)
+      if (!valid) errors.push(`unknown time zone "${item.value}" ignored`)
+      return valid
+    })
+    if (items.length > 0) {
+      override.items = items
+    } else {
+      delete override.items
+    }
+  }
+  if (typeof override.value === 'string' && !isValidTimeZone(override.value)) {
+    errors.push(`unknown time zone "${override.value}" ignored`)
+    delete override.value
+  }
+  return errors
+}
+
+/**
  * Validates the contents of `default-user-settings.json`: an array of
  * overrides, or an object with a `settings` array. Invalid entries are left
  * out and described in `errors`.
@@ -102,7 +129,14 @@ export function validateDefaultUserSettings(
       errors.push(`settings[${index}] (${id}): ${entryErrors.join('; ')}`)
       return
     }
-    overrides.push(entry as UserSettingsOverride)
+    const override = entry as UserSettingsOverride
+    if (id === TIME_ZONE_SETTING_ID) {
+      const timeZoneErrors = removeInvalidTimeZones(override)
+      for (const error of timeZoneErrors) {
+        errors.push(`settings[${index}] (${id}): ${error}`)
+      }
+    }
+    overrides.push(override)
   })
 
   return { overrides, errors }

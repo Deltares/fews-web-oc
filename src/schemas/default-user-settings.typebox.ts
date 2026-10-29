@@ -13,17 +13,68 @@ interface UserSettingDefinition {
 // FEWS map layer config, so any value is allowed.
 const runtimeOptionSettings = new Set(['ui.map.theme'])
 
+// Options of these settings can be any value, e.g. IANA time zones, so the
+// FEWS config can add options that are not built in.
+const openOptionSettings = new Set(['ui.timeZone'])
+
+function optionValueSchema(
+  definition: UserSettingDefinition,
+  description: string,
+): TSchema {
+  const values = definition.items?.map((item) => item.value) ?? []
+  if (
+    runtimeOptionSettings.has(definition.id) ||
+    openOptionSettings.has(definition.id) ||
+    values.length === 0
+  ) {
+    return Type.String({ description: `${description}.` })
+  }
+  return Type.Union(
+    values.map((value) => Type.Literal(value)),
+    { description: `${description}: ${values.join(', ')}.` },
+  )
+}
+
 function valueSchema(definition: UserSettingDefinition): TSchema {
   if (definition.type === 'boolean') {
     return Type.Boolean({ description: 'Default value: true or false.' })
   }
-  const values = definition.items?.map((item) => item.value) ?? []
-  if (runtimeOptionSettings.has(definition.id) || values.length === 0) {
-    return Type.String({ description: 'Default value.' })
-  }
-  return Type.Union(
-    values.map((value) => Type.Literal(value)),
-    { description: `Default value: ${values.join(', ')}.` },
+  return optionValueSchema(definition, 'Default value')
+}
+
+function itemsSchema(definition: UserSettingDefinition) {
+  return Type.Array(
+    Type.Object(
+      {
+        value: optionValueSchema(definition, 'Value of the option'),
+        title: Type.Optional(
+          Type.String({
+            description:
+              'Name of the option. Defaults to the built-in name, or the value.',
+          }),
+        ),
+        icon: Type.Optional(
+          Type.String({ description: 'Material Design icon, e.g. mdi-earth.' }),
+        ),
+        abbreviation: Type.Optional(
+          Type.String({ description: 'Short text shown instead of an icon.' }),
+        ),
+      },
+      { additionalProperties: false },
+    ),
+    {
+      minItems: 1,
+      description:
+        'Options users can choose from, replacing the built-in options. The default value must be one of them; when omitted, the first option is the default.',
+    },
+  )
+}
+
+/** Whether the FEWS config can replace the options of the setting. */
+function hasConfigurableItems(definition: UserSettingDefinition): boolean {
+  return (
+    definition.type === 'oneOfMultiple' &&
+    !runtimeOptionSettings.has(definition.id)
   )
 }
 
@@ -43,6 +94,9 @@ function overrideSchema(definition: UserSettingDefinition) {
           description: 'Show the setting in the user settings menu by default.',
         }),
       ),
+      ...(hasConfigurableItems(definition)
+        ? { items: Type.Optional(itemsSchema(definition)) }
+        : {}),
     },
     {
       additionalProperties: false,
@@ -83,8 +137,19 @@ export const DefaultUserSettingsSchema = Type.Object(
   },
 )
 
+/** An option of a setting in the FEWS config, see `itemsSchema`. */
+export interface DefaultUserSettingOption {
+  value: string
+  title?: string
+  icon?: string
+  abbreviation?: string
+}
+
 // The union is built from a runtime list, so derive the entry type from one
 // override schema: { id: string, value?: unknown, enabled?, favorite? }.
-export type DefaultUserSetting = Static<ReturnType<typeof overrideSchema>>
+export type DefaultUserSetting = Omit<
+  Static<ReturnType<typeof overrideSchema>>,
+  'items'
+> & { items?: DefaultUserSettingOption[] }
 export type DefaultUserSettings =
   DefaultUserSetting[] | { $schema?: string; settings: DefaultUserSetting[] }

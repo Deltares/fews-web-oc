@@ -27,6 +27,37 @@
               "favorite": {
                 "type": "boolean",
                 "description": "Show the setting in the user settings menu by default."
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["value"],
+                  "properties": {
+                    "value": {
+                      "anyOf": [
+                        { "type": "string", "const": "system" },
+                        { "type": "string", "const": "display" }
+                      ],
+                      "description": "Value of the option: system, display."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Name of the option. Defaults to the built-in name, or the value."
+                    },
+                    "icon": {
+                      "type": "string",
+                      "description": "Material Design icon, e.g. mdi-earth."
+                    },
+                    "abbreviation": {
+                      "type": "string",
+                      "description": "Short text shown instead of an icon."
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "description": "Options users can choose from, replacing the built-in options. The default value must be one of them; when omitted, the first option is the default."
               }
             },
             "additionalProperties": false,
@@ -75,6 +106,38 @@
               "favorite": {
                 "type": "boolean",
                 "description": "Show the setting in the user settings menu by default."
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["value"],
+                  "properties": {
+                    "value": {
+                      "anyOf": [
+                        { "type": "string", "const": "auto" },
+                        { "type": "string", "const": "light" },
+                        { "type": "string", "const": "dark" }
+                      ],
+                      "description": "Value of the option: auto, light, dark."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Name of the option. Defaults to the built-in name, or the value."
+                    },
+                    "icon": {
+                      "type": "string",
+                      "description": "Material Design icon, e.g. mdi-earth."
+                    },
+                    "abbreviation": {
+                      "type": "string",
+                      "description": "Short text shown instead of an icon."
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "description": "Options users can choose from, replacing the built-in options. The default value must be one of them; when omitted, the first option is the default."
               }
             },
             "additionalProperties": false,
@@ -102,11 +165,91 @@
               "favorite": {
                 "type": "boolean",
                 "description": "Show the setting in the user settings menu by default."
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["value"],
+                  "properties": {
+                    "value": {
+                      "anyOf": [
+                        { "type": "string", "const": "system" },
+                        { "type": "string", "const": "default" },
+                        { "type": "string", "const": "en" },
+                        { "type": "string", "const": "de" }
+                      ],
+                      "description": "Value of the option: system, default, en, de."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Name of the option. Defaults to the built-in name, or the value."
+                    },
+                    "icon": {
+                      "type": "string",
+                      "description": "Material Design icon, e.g. mdi-earth."
+                    },
+                    "abbreviation": {
+                      "type": "string",
+                      "description": "Short text shown instead of an icon."
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "description": "Options users can choose from, replacing the built-in options. The default value must be one of them; when omitted, the first option is the default."
               }
             },
             "additionalProperties": false,
             "title": "Language",
             "description": "Override for the \"Language\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "ui.timeZone" },
+              "value": { "type": "string", "description": "Default value." },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["value"],
+                  "properties": {
+                    "value": {
+                      "type": "string",
+                      "description": "Value of the option."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Name of the option. Defaults to the built-in name, or the value."
+                    },
+                    "icon": {
+                      "type": "string",
+                      "description": "Material Design icon, e.g. mdi-earth."
+                    },
+                    "abbreviation": {
+                      "type": "string",
+                      "description": "Short text shown instead of an icon."
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "description": "Options users can choose from, replacing the built-in options. The default value must be one of them; when omitted, the first option is the default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Time zone",
+            "description": "Override for the \"Time zone\" user setting."
           },
           {
             "type": "object",
@@ -128,6 +271,38 @@
               "favorite": {
                 "type": "boolean",
                 "description": "Show the setting in the user settings menu by default."
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["value"],
+                  "properties": {
+                    "value": {
+                      "anyOf": [
+                        { "type": "string", "const": "auto" },
+                        { "type": "string", "const": "tree" },
+                        { "type": "string", "const": "column" }
+                      ],
+                      "description": "Value of the option: auto, tree, column."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Name of the option. Defaults to the built-in name, or the value."
+                    },
+                    "icon": {
+                      "type": "string",
+                      "description": "Material Design icon, e.g. mdi-earth."
+                    },
+                    "abbreviation": {
+                      "type": "string",
+                      "description": "Short text shown instead of an icon."
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "description": "Options users can choose from, replacing the built-in options. The default value must be one of them; when omitted, the first option is the default."
               }
             },
             "additionalProperties": false,
@@ -153,6 +328,37 @@
               "favorite": {
                 "type": "boolean",
                 "description": "Show the setting in the user settings menu by default."
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["value"],
+                  "properties": {
+                    "value": {
+                      "anyOf": [
+                        { "type": "string", "const": "minimal" },
+                        { "type": "string", "const": "full labels" }
+                      ],
+                      "description": "Value of the option: minimal, full labels."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Name of the option. Defaults to the built-in name, or the value."
+                    },
+                    "icon": {
+                      "type": "string",
+                      "description": "Material Design icon, e.g. mdi-earth."
+                    },
+                    "abbreviation": {
+                      "type": "string",
+                      "description": "Short text shown instead of an icon."
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "description": "Options users can choose from, replacing the built-in options. The default value must be one of them; when omitted, the first option is the default."
               }
             },
             "additionalProperties": false,
@@ -183,6 +389,42 @@
               "favorite": {
                 "type": "boolean",
                 "description": "Show the setting in the user settings menu by default."
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["value"],
+                  "properties": {
+                    "value": {
+                      "anyOf": [
+                        { "type": "string", "const": "0.8" },
+                        { "type": "string", "const": "0.85" },
+                        { "type": "string", "const": "0.9" },
+                        { "type": "string", "const": "0.95" },
+                        { "type": "string", "const": "1" },
+                        { "type": "string", "const": "1.1" },
+                        { "type": "string", "const": "1.2" }
+                      ],
+                      "description": "Value of the option: 0.8, 0.85, 0.9, 0.95, 1, 1.1, 1.2."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Name of the option. Defaults to the built-in name, or the value."
+                    },
+                    "icon": {
+                      "type": "string",
+                      "description": "Material Design icon, e.g. mdi-earth."
+                    },
+                    "abbreviation": {
+                      "type": "string",
+                      "description": "Short text shown instead of an icon."
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "description": "Options users can choose from, replacing the built-in options. The default value must be one of them; when omitted, the first option is the default."
               }
             },
             "additionalProperties": false,
@@ -386,6 +628,39 @@
               "favorite": {
                 "type": "boolean",
                 "description": "Show the setting in the user settings menu by default."
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["value"],
+                  "properties": {
+                    "value": {
+                      "anyOf": [
+                        { "type": "string", "const": "off" },
+                        { "type": "string", "const": "x" },
+                        { "type": "string", "const": "y" },
+                        { "type": "string", "const": "xy" }
+                      ],
+                      "description": "Value of the option: off, x, y, xy."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Name of the option. Defaults to the built-in name, or the value."
+                    },
+                    "icon": {
+                      "type": "string",
+                      "description": "Material Design icon, e.g. mdi-earth."
+                    },
+                    "abbreviation": {
+                      "type": "string",
+                      "description": "Short text shown instead of an icon."
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "description": "Options users can choose from, replacing the built-in options. The default value must be one of them; when omitted, the first option is the default."
               }
             },
             "additionalProperties": false,
