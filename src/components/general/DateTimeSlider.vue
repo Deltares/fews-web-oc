@@ -1,53 +1,39 @@
 <template>
   <div class="datetime-slider" aria-labelledby="date time slider">
-    <div
-      ref="sliderContainer"
-      class="slider-container"
-      :dark="isDark ? 'light' : 'dark'"
-    >
-      <v-theme-provider :with-background="false">
-        <v-slider
-          class="datetime-slider__track"
-          :class="{ 'datetime-slider__track--hover': isHovering }"
-          :model-value="dateIndex"
-          :min="0"
-          :max="maxIndex"
-          :step="1"
-          :ticks="tickValues"
-          tick-size="4"
-          indent-details
-          show-ticks="always"
-          show-thumb-label="active"
-          :thumb-label="!hideLabel"
-          thumb-size="14"
-          thumb-color="primary"
-          hide-details
-          density="compact"
-          rounded="0"
-          height="0"
-          @update:model-value="onSliderInput"
-          @mouseenter="onSliderMouseEnter"
-          @mouseleave="onSliderMouseLeave"
-        >
-          <template #thumb-label="{ modelValue }">
-            <span class="datetime-slider__thumb-label">
-              {{ getDateLabel(modelValue) }}
-            </span>
-          </template>
-          <template #tick-label="{ tick }">
-            <span
-              v-if="markLabels[tick.value]"
-              class="datetime-slider__tick-label"
-            >
-              {{ markLabels[tick.value] }}
-            </span>
-          </template>
-        </v-slider>
-
-        <div class="datetime-slider__below-track">
-          <slot name="below-track"></slot>
-        </div>
-      </v-theme-provider>
+    <div ref="sliderContainer" class="slider-container">
+      <v-slider
+        class="datetime-slider__track"
+        :model-value="dateIndex"
+        :min="0"
+        :max="maxIndex"
+        :step="1"
+        :ticks="tickValues"
+        show-ticks="always"
+        thumb-label="hover"
+        thumb-size="14"
+        track-size="4"
+        tick-size="4"
+        hide-details
+        elevation="0"
+        :ripple="false"
+        @update:model-value="onSliderInput"
+      >
+        <template #thumb-label="{ modelValue }">
+          <v-theme-provider with-background class="datetime-slider__tooltip">
+            {{ getDateLabel(modelValue) }}
+          </v-theme-provider>
+        </template>
+        <template #tick-label="{ tick }">
+          <v-theme-provider
+            v-if="markLabels[tick.value]"
+            with-background
+            class="datetime-slider__tooltip"
+          >
+            {{ markLabels[tick.value] }}
+          </v-theme-provider>
+        </template>
+      </v-slider>
+      <slot name="below-track"></slot>
     </div>
     <div class="datetime-slider__actions">
       <slot name="prepend"></slot>
@@ -136,7 +122,6 @@ import { useI18n } from 'vue-i18n'
 
 import { findDateIndex } from '@/lib/utils/dates'
 import { systemTimeAuthority } from '@/services/system-time'
-import { useDark } from '@/services/useDark'
 
 interface Properties {
   selectedDate?: Date
@@ -165,8 +150,6 @@ const showSnapshotFrames = defineModel<boolean>('showSnapshotFrames', {
   default: false,
 })
 
-const isDark = useDark()
-
 // Step size when playing an animation, and when clicking the previous and next frame buttons.
 const playIncrement = 1
 const stepIncrement = 1
@@ -184,9 +167,6 @@ const dragGestureStartY = ref(0)
 const isTrackingDragGesture = ref(false)
 
 const DRAG_UP_THRESHOLD_PX = 24
-
-const hideLabel = ref(true)
-const isHovering = ref(false)
 
 const markLabels = computed<Record<number, string>>(() => {
   const dayMarks: Record<number, string> = {}
@@ -300,16 +280,6 @@ const nowTrackingTooltip = computed(() => {
   }
   return t('timeControl.followCurrentTime')
 })
-
-function onSliderMouseEnter(): void {
-  hideLabel.value = false
-  isHovering.value = true
-}
-
-function onSliderMouseLeave(): void {
-  hideLabel.value = true
-  isHovering.value = false
-}
 
 function toggleFollowNow(): void {
   doFollowNow.value = !doFollowNow.value
@@ -498,8 +468,7 @@ onUnmounted(() => {
 <style scoped>
 .slider-container {
   position: relative;
-  margin: -8px 0px;
-  padding: 0px 5px;
+  padding: 0px 10px;
 }
 
 .datetime-slider__actions {
@@ -527,32 +496,153 @@ onUnmounted(() => {
   gap: 10px;
 }
 
-.datetime-slider__track :deep(.v-slider-track__tick-label) {
+/* Styled after the vue-slider antd theme, using the Vuetify theme colours */
+.datetime-slider__track {
+  --datetime-slider-rail: color-mix(
+    in srgb,
+    rgb(var(--v-theme-on-surface)) 16%,
+    rgb(var(--v-theme-surface))
+  );
+  --datetime-slider-rail-hover: color-mix(
+    in srgb,
+    rgb(var(--v-theme-on-surface)) 24%,
+    rgb(var(--v-theme-surface))
+  );
+  --datetime-slider-mark: color-mix(
+    in srgb,
+    rgb(var(--v-theme-on-surface)) 30%,
+    rgb(var(--v-theme-surface))
+  );
+  --datetime-slider-primary: rgb(var(--v-theme-primary));
+}
+
+.v-theme--light .datetime-slider__track {
+  --datetime-slider-rail: rgb(var(--v-theme-surface));
+  --datetime-slider-rail-hover: color-mix(
+    in srgb,
+    rgb(var(--v-theme-on-surface)) 8%,
+    rgb(var(--v-theme-surface))
+  );
+}
+
+.datetime-slider__track:hover {
+  --datetime-slider-rail: var(--datetime-slider-rail-hover);
+}
+
+/* The track spans the full width, so it lines up with the below-track slot */
+.datetime-slider__track :deep(.v-input__control) {
+  min-height: 18px;
+  margin: 0;
+}
+
+/* Vuetify insets the first and last tick, put them at the track ends */
+.datetime-slider__track :deep(.v-slider-track__tick--first) {
+  margin-inline-start: 0;
+}
+
+.datetime-slider__track :deep(.v-slider-track__tick--last) {
+  margin-inline-start: 100%;
+}
+
+.datetime-slider__track :deep(.v-slider-track) {
+  border-radius: 15px;
+}
+
+.datetime-slider__track :deep(.v-slider-track__background) {
+  background-color: var(--datetime-slider-rail);
+  opacity: 1;
+  transition: background-color 0.3s;
+}
+
+.datetime-slider__track :deep(.v-slider-track__fill) {
+  background-color: var(--datetime-slider-primary);
+}
+
+.datetime-slider__track :deep(.v-slider-track__tick) {
+  border-radius: 50%;
+  background-color: rgb(var(--v-theme-surface));
+  box-shadow: 0 0 0 2px var(--datetime-slider-mark);
+}
+
+/* Larger hover area around the small tick dots */
+.datetime-slider__track :deep(.v-slider-track__tick::after) {
+  content: '';
   position: absolute;
-  top: -40px;
+  inset: -6px;
+}
+
+.datetime-slider__track :deep(.v-slider-track__tick--filled) {
+  box-shadow: 0 0 0 2px var(--datetime-slider-primary);
+}
+
+.datetime-slider__track :deep(.v-slider-thumb__surface) {
+  box-sizing: border-box;
+  background-color: rgb(var(--v-theme-surface));
+  border: 2px solid var(--datetime-slider-primary);
+  transition: box-shadow 0.3s;
+}
+
+.datetime-slider__track :deep(.v-slider-thumb__surface::before),
+.datetime-slider__track :deep(.v-slider-thumb__surface::after) {
+  display: none;
+}
+
+.datetime-slider__track
+  :deep(.v-slider-thumb--focused .v-slider-thumb__surface) {
+  box-shadow: 0 0 0 5px rgba(var(--v-theme-primary), 0.2);
+}
+
+.datetime-slider__track :deep(.v-slider-thumb__label) {
+  bottom: calc(var(--v-slider-thumb-size) / 2 + 8px);
+  height: auto;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.datetime-slider__track
+  :deep(.v-slider-thumb__label > .v-slider-thumb__label-wedge) {
+  display: none;
+}
+
+/* Same style as the map control chips (ControlChip.vue) */
+.datetime-slider__tooltip {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 5px;
+  font-size: 0.825rem;
+  white-space: nowrap;
+  color: rgb(var(--v-theme-on-surface));
+  backdrop-filter: blur(5px);
+  background-color: rgba(var(--v-theme-surface), 0.8);
+  /* Tint of the tonal v-chip underlay */
+  background-image: linear-gradient(
+    rgba(var(--v-theme-on-surface), var(--v-activated-opacity)),
+    rgba(var(--v-theme-on-surface), var(--v-activated-opacity))
+  );
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.datetime-slider__track :deep(.v-slider-track__tick-label) {
+  bottom: 100%;
+  left: 50%;
+  margin: 0 0 20px 0;
   transform: translateX(-50%);
   opacity: 0;
-  transition: opacity 0.2s ease-in-out;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s;
 }
 
-.datetime-slider__track--hover :deep(.v-slider-track__tick-label) {
+/* Hovering any dot shows the labels of all dots */
+.datetime-slider__track
+  :deep(
+    .v-slider-track__ticks:has(.v-slider-track__tick:hover)
+      .v-slider-track__tick-label
+  ) {
   opacity: 1;
-}
-
-.datetime-slider__below-track {
-  margin-top: -18px;
-  margin-right: 8px;
-  margin-left: 8px;
-  margin-bottom: 8px;
-}
-
-.datetime-slider__tick-label {
-  color: white;
-  font-size: 0.75rem;
-  white-space: nowrap;
-}
-
-.datetime-slider__thumb-label {
-  white-space: nowrap;
+  visibility: visible;
 }
 </style>

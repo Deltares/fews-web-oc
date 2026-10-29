@@ -1,54 +1,70 @@
 <template>
-  <v-theme-provider :theme="isDark ? 'light' : 'dark'">
-    <div class="elevation-slider-container">
-      <span
-        v-if="props.unit"
-        class="elevation-slider__tick-label elevation-slider__unit-label"
-      >
-        [{{ props.unit }}]
-      </span>
-      <v-slider
-        ref="sliderComponent"
-        class="elevation-slider"
-        :model-value="sliderModelValue"
-        :max="sliderMax"
-        :min="sliderMin"
-        :step="sliderStep"
-        :ticks="sliderTicks"
-        direction="vertical"
-        show-ticks="always"
-        :thumb-label="false"
-        thumb-color="primary"
-        thumb-size="16px"
-        track-size="6px"
-        tick-size="3px"
-        height="200px"
-        hide-details
-        no-keyboard
-        elevation="0"
-        rounded
-        density="compact"
-        @update:model-value="onSliderInput"
-        @keydown="onSliderKeydown"
-      >
-        <template #tick-label="{ tick }">
-          <span
-            v-if="shouldShowTickLabel(tick.value)"
-            class="elevation-slider__tick-label"
+  <div class="elevation-slider">
+    <v-slider
+      ref="sliderComponent"
+      class="elevation-slider__slider"
+      :model-value="sliderModelValue"
+      :max="sliderMax"
+      :min="sliderMin"
+      :step="sliderStep"
+      :ticks="sliderTicks"
+      direction="vertical"
+      show-ticks="always"
+      thumb-label="always"
+      thumb-size="14"
+      track-size="4"
+      tick-size="4"
+      height="200px"
+      hide-details
+      no-keyboard
+      elevation="0"
+      :ripple="false"
+      @update:model-value="onSliderInput"
+      @keydown="onSliderKeydown"
+    >
+      <template #thumb-label>
+        <v-theme-provider
+          with-background
+          class="elevation-slider__tooltip"
+          @mousedown.stop
+          @touchstart.stop
+          @pointerdown.stop
+        >
+          <label class="d-none" for="elevation-slider-tooltip-input">
+            Elevation
+          </label>
+          <input
+            id="elevation-slider-tooltip-input"
+            ref="tooltipInput"
+            v-if="isEditing"
+            v-model.number="editValue"
+            @blur="acceptEdit"
+            @keydown.stop="onKeydown"
+            type="number"
+            class="elevation-slider__tooltip-input"
+          />
+          <button
+            v-else
+            type="button"
+            class="elevation-slider__edit-button"
+            @click="activateEdit"
+            @keydown.enter.stop.prevent="activateEdit"
+            @keydown.space.stop.prevent="activateEdit"
           >
-            {{ formatTickLabel(tick.value) }}
-          </span>
-        </template>
-      </v-slider>
-    </div>
-  </v-theme-provider>
+            {{ Math.round(currentValue) }}
+          </button>
+          {{ props.unit }}
+        </v-theme-provider>
+      </template>
+      <template #tick-label></template>
+    </v-slider>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, watchEffect } from 'vue'
+import { computed, nextTick, ref, watch, watchEffect } from 'vue'
 import { scaleLinear } from 'd3-scale'
 import { clamp, floatPrecision } from '@/lib/utils/math'
-import { useDark } from '@/services/useDark'
 
 interface Props {
   modelValue?: number
@@ -69,8 +85,11 @@ const emit = defineEmits(['update:modelValue'])
 const currentValue = ref(
   clamp(props.modelValue, props.minValue, props.maxValue),
 )
+const editValue = ref(0)
+const isEditing = ref(false)
 
-const isDark = useDark()
+const tooltipInput = ref<HTMLInputElement>()
+const sliderComponent = ref<{ focus: () => void }>()
 
 const numberOfMarks = 8
 const marks = ref<number[]>([])
@@ -92,10 +111,6 @@ const valueToPos = computed(() =>
   scaleLinear<number, number>()
     .domain((props.ticks ?? []).map((v) => Number(v)))
     .range(positions.value),
-)
-
-const tickLabels = computed<Record<number, string>>(() =>
-  Object.fromEntries((props.ticks ?? []).map((v, i) => [i, String(v)])),
 )
 
 const activeTicks = computed(() =>
@@ -153,6 +168,7 @@ const syncSliderPosFromValue = (nextValue: number) => {
 const onInputChange = (value: number) => {
   const nextValue = clamp(value, props.minValue, props.maxValue)
   currentValue.value = nextValue
+  syncSliderPosFromValue(nextValue)
   emit('update:modelValue', nextValue)
 }
 
@@ -165,33 +181,12 @@ const onSliderInput = (input: number) => {
   onInputChange(input)
 }
 
-const resolveTickValue = (tickValue: number) => {
-  if (!hasProvidedTicks.value) return tickValue
-  const ticks = props.ticks ?? []
-  const index = clamp(Math.round(tickValue), 0, Math.max(ticks.length - 1, 0))
-  return ticks[index] ?? tickValue
-}
-
-const isRoundNumber = (value: number) => Number.isInteger(value)
-
-const shouldShowTickLabel = (tickValue: number) => {
-  if (hasProvidedTicks.value) return true
-  const value = resolveTickValue(tickValue)
-  const isBoundary = value === props.minValue || value === props.maxValue
-  return !isBoundary || isRoundNumber(value)
-}
-
-const formatTickLabel = (tickValue: number) => {
-  if (hasProvidedTicks.value) {
-    const index = clamp(
-      Math.round(tickValue),
-      0,
-      Math.max((props.ticks?.length ?? 1) - 1, 0),
-    )
-    return tickLabels.value[index] ?? String(resolveTickValue(tickValue))
+const onKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter') {
+    acceptEdit()
+  } else if (e.key === 'Escape') {
+    closeTooltip()
   }
-  const value = resolveTickValue(tickValue)
-  return isRoundNumber(value) ? value : Number(value.toFixed(2))
 }
 
 function onSliderKeydown(e: KeyboardEvent) {
@@ -218,7 +213,32 @@ function onSliderKeydown(e: KeyboardEvent) {
         onInputChange(ticks[0])
       }
       break
+    case 'Enter':
+      e.preventDefault()
+      activateEdit()
+      break
   }
+}
+
+const activateEdit = () => {
+  isEditing.value = true
+  editValue.value = Math.round(currentValue.value)
+  nextTick(() => {
+    tooltipInput.value?.focus()
+    tooltipInput.value?.select()
+  })
+}
+
+const closeTooltip = () => {
+  if (!isEditing.value) return
+  isEditing.value = false
+  sliderComponent.value?.focus()
+}
+
+const acceptEdit = () => {
+  if (!isEditing.value) return
+  onInputChange(editValue.value)
+  closeTooltip()
 }
 
 const onValueChange = () => {
@@ -251,46 +271,162 @@ watchEffect(() => {
 </script>
 
 <style scoped>
-.elevation-slider__thumb-label {
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
-  font-family: var(--font-primary);
-  white-space: nowrap;
-}
-
-.elevation-slider-container {
+.elevation-slider {
   z-index: 2000;
   position: absolute;
-  right: 25px;
-  bottom: 100px;
+  right: 5px;
+  bottom: 115px;
+  padding: 7px;
+}
+
+.elevation-slider__slider {
+  margin: 0;
+}
+
+/* Styled after the vue-slider antd theme, using the Vuetify theme colours */
+.elevation-slider__slider {
+  --elevation-slider-rail: color-mix(
+    in srgb,
+    rgb(var(--v-theme-on-surface)) 8%,
+    rgb(var(--v-theme-surface))
+  );
+  --elevation-slider-rail-hover: color-mix(
+    in srgb,
+    rgb(var(--v-theme-on-surface)) 16%,
+    rgb(var(--v-theme-surface))
+  );
+  --elevation-slider-process: color-mix(
+    in srgb,
+    rgb(var(--v-theme-primary)) 50%,
+    rgb(var(--v-theme-surface))
+  );
+  --elevation-slider-process-hover: color-mix(
+    in srgb,
+    rgb(var(--v-theme-primary)) 75%,
+    rgb(var(--v-theme-surface))
+  );
+  --elevation-slider-active: rgb(var(--v-theme-primary));
+}
+
+.elevation-slider__slider:hover {
+  --elevation-slider-rail: var(--elevation-slider-rail-hover);
+  --elevation-slider-process: var(--elevation-slider-process-hover);
+}
+
+.elevation-slider__slider :deep(.v-input__control) {
+  min-height: 200px;
+}
+
+.elevation-slider__slider :deep(.v-slider-track) {
+  border-radius: 15px;
+}
+
+.elevation-slider__slider :deep(.v-slider-track__background) {
+  background-color: var(--elevation-slider-rail);
+  opacity: 1;
+  transition: background-color 0.3s;
+}
+
+.elevation-slider__slider :deep(.v-slider-track__fill) {
+  background-color: var(--elevation-slider-process);
+  transition: background-color 0.3s;
+}
+
+.elevation-slider__slider :deep(.v-slider-track__tick) {
+  border-radius: 50%;
+  background-color: rgb(var(--v-theme-surface));
+  box-shadow: 0 0 0 2px var(--elevation-slider-rail);
+}
+
+.elevation-slider__slider :deep(.v-slider-track__tick--filled) {
+  box-shadow: 0 0 0 2px var(--elevation-slider-process);
+}
+
+.elevation-slider__slider :deep(.v-slider-thumb__surface) {
+  box-sizing: border-box;
+  background-color: rgb(var(--v-theme-surface));
+  border: 2px solid var(--elevation-slider-process);
+  transition:
+    box-shadow 0.3s,
+    border-color 0.3s;
+}
+
+.elevation-slider__slider :deep(.v-slider-thumb__surface::before),
+.elevation-slider__slider :deep(.v-slider-thumb__surface::after) {
+  display: none;
+}
+
+.elevation-slider__slider :deep(.v-slider-thumb:hover .v-slider-thumb__surface),
+.elevation-slider__slider
+  :deep(.v-slider-thumb--focused .v-slider-thumb__surface) {
+  border-color: var(--elevation-slider-active);
+}
+
+.elevation-slider__slider
+  :deep(.v-slider-thumb--focused .v-slider-thumb__surface) {
+  box-shadow: 0 0 0 5px rgba(var(--v-theme-primary), 0.2);
+}
+
+/* Tooltip on the left of the thumb */
+.elevation-slider__slider :deep(.v-slider-thumb__label) {
+  top: 0;
+  left: auto;
+  right: calc(var(--v-slider-thumb-size) + 8px);
+  transform: translateY(-50%);
+  height: auto;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.elevation-slider__slider
+  :deep(.v-slider-thumb__label > .v-slider-thumb__label-wedge) {
+  display: none;
+}
+
+/* Same style as the map control chips (ControlChip.vue) */
+.elevation-slider__tooltip {
+  gap: 4px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-}
-
-.elevation-slider {
-  position: relative;
-}
-
-.elevation-slider :deep(.v-slider-track__fill) {
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 5px;
+  font-size: 0.825rem;
+  white-space: nowrap;
+  color: rgb(var(--v-theme-on-surface));
   backdrop-filter: blur(5px);
-  opacity: 0.8;
-}
-
-.elevation-slider__unit-label {
-  padding-left: 50px;
-  margin-bottom: 0px;
-}
-
-.elevation-slider__tick-label {
-  color: white;
+  background-color: rgba(var(--v-theme-surface), 0.8);
+  /* Tint of the tonal v-chip underlay */
+  background-image: linear-gradient(
+    rgba(var(--v-theme-on-surface), var(--v-activated-opacity)),
+    rgba(var(--v-theme-on-surface), var(--v-activated-opacity))
+  );
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
   font-family: var(--font-primary);
-  font-size: 0.9rem;
-  text-shadow:
-    -1px 0 1px rgba(0, 0, 0, 0.6),
-    1px 0 1px rgba(0, 0, 0, 0.6),
-    0 1px 1px rgba(0, 0, 0, 0.6),
-    0 -1px 1px rgba(0, 0, 0, 0.6);
+  cursor: default;
+}
+
+/* Vuetify hides every input inside the slider container */
+.elevation-slider__slider .elevation-slider__tooltip-input {
+  display: inline-block;
+  width: 50px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  outline: none;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+}
+
+.elevation-slider__edit-button {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
 }
 </style>
