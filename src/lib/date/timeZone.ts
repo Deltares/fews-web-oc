@@ -68,3 +68,60 @@ export function toDisplayLocaleString(
     timeZone: getDisplayTimeZone(),
   })
 }
+
+/**
+ * Formats `date` in the display time zone as value of an
+ * `<input type="datetime-local">`: `yyyy-MM-ddTHH:mm`, or with seconds.
+ */
+export function toDisplayDateTimeInputValue(
+  date: Date,
+  withSeconds = false,
+): string {
+  return toDisplayDateTime(date).toFormat(
+    withSeconds ? "yyyy-MM-dd'T'HH:mm:ss" : "yyyy-MM-dd'T'HH:mm",
+  )
+}
+
+/**
+ * Parses the value of an `<input type="datetime-local">` as date and time in
+ * the display time zone. Returns an invalid date for an invalid value.
+ */
+export function fromDisplayDateTimeInputValue(value: string): Date {
+  const zone = getDisplayTimeZone() ?? SYSTEM_TIME_ZONE
+  return DateTime.fromISO(value, { zone }).toJSDate()
+}
+
+/**
+ * Returns a date whose local date and time, e.g. `getHours()`, are the date
+ * and time of `date` in the display time zone. For components that work in
+ * local time, such as Vuetify date pickers.
+ */
+export function toWallClockDate(date: Date): Date {
+  const dateTime = toDisplayDateTime(date)
+  return new Date(
+    dateTime.year,
+    dateTime.month - 1,
+    dateTime.day,
+    dateTime.hour,
+    dateTime.minute,
+    dateTime.second,
+    dateTime.millisecond,
+  )
+}
+
+/** The inverse of `toWallClockDate`. */
+export function fromWallClockDate(wallClockDate: Date): Date {
+  const zone = getDisplayTimeZone() ?? SYSTEM_TIME_ZONE
+  return DateTime.fromObject(
+    {
+      year: wallClockDate.getFullYear(),
+      month: wallClockDate.getMonth() + 1,
+      day: wallClockDate.getDate(),
+      hour: wallClockDate.getHours(),
+      minute: wallClockDate.getMinutes(),
+      second: wallClockDate.getSeconds(),
+      millisecond: wallClockDate.getMilliseconds(),
+    },
+    { zone },
+  ).toJSDate()
+}

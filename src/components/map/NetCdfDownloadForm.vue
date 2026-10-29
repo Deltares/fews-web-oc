@@ -154,7 +154,10 @@ import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { configManager } from '@/services/application-config'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles'
-import { convertDateToDateTimeString } from '@/lib/date'
+import {
+  fromDisplayDateTimeInputValue,
+  toDisplayDateTimeInputValue,
+} from '@/lib/date/timeZone'
 import CopyUrlLink from '@/components/share/CopyUrlLink.vue'
 import DrawBoundingBoxControl from './DrawBoundingBoxControl.vue'
 import type { BoundingBox } from '@/services/useBoundingBox'
@@ -236,12 +239,12 @@ watch(
   () => [props.defaultStartTime, props.defaultEndTime],
   () => {
     if (props.defaultStartTime && props.defaultStartTime !== null) {
-      startTimeInput.value = convertDateToDateTimeString(
+      startTimeInput.value = toDisplayDateTimeInputValue(
         new Date(props.defaultStartTime),
       )
     }
     if (props.defaultEndTime && props.defaultEndTime !== null) {
-      endTimeInput.value = convertDateToDateTimeString(
+      endTimeInput.value = toDisplayDateTimeInputValue(
         new Date(props.defaultEndTime),
       )
     }
@@ -295,8 +298,12 @@ const url = computed(() => {
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const piProvider = new PiWebserviceProvider(baseUrl)
 
-  const startTime = new Date(startTimeInput.value).toISOString()
-  const endTime = new Date(endTimeInput.value).toISOString()
+  const startTime = fromDisplayDateTimeInputValue(
+    startTimeInput.value,
+  ).toISOString()
+  const endTime = fromDisplayDateTimeInputValue(
+    endTimeInput.value,
+  ).toISOString()
 
   // Build the filter for the grid timeseries request
   const filter: NetCdfFilter = {
@@ -331,8 +338,12 @@ async function download() {
   try {
     const headers = await getRequestHeaders()
 
-    const startTime = new Date(startTimeInput.value).toISOString()
-    const endTime = new Date(endTimeInput.value).toISOString()
+    const startTime = fromDisplayDateTimeInputValue(
+      startTimeInput.value,
+    ).toISOString()
+    const endTime = fromDisplayDateTimeInputValue(
+      endTimeInput.value,
+    ).toISOString()
 
     await downloadFileAttachment(
       url.value,

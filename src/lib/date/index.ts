@@ -1,21 +1,20 @@
 import { DateTime, Duration, DurationLikeObject } from 'luxon'
-import { getDisplayTimeZone, toDisplayDateTime } from './timeZone'
+import {
+  getDisplayTimeZone,
+  toDisplayDateTime,
+  toDisplayDateTimeInputValue,
+} from './timeZone'
 
 type DateInput = Date | string | number | undefined | null
 
 /**
- * Converts a date to a string in the format 'YYYY-MM-DDTHH:MM'.
+ * Converts a date to a string in the format 'YYYY-MM-DDTHH:MM:SS', in the
+ * display time zone.
  * @param date - The date to convert.
- * @returns The date as a string in the format 'YYYY-MM-DDTHH:MM'.
+ * @returns The date as a string in the format 'YYYY-MM-DDTHH:MM:SS'.
  */
 export function toISOString(date: Date) {
-  const years = date.getFullYear()
-  const months = String(date.getMonth() + 1).padStart(2, '0')
-  const days = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  const seconds = String(date.getSeconds()).padStart(2, '0')
-  return `${years}-${months}-${days}T${hours}:${minutes}:${seconds}`
+  return toDisplayDateTimeInputValue(date, true)
 }
 
 /**
@@ -93,16 +92,6 @@ export function convertJSDateToFewsPiParameter(date: Date): string {
 }
 export function convertTimestampToFewsPiParameter(timestamp: number): string {
   return convertJSDateToFewsPiParameter(new Date(timestamp))
-}
-
-/**
- * Convert date to date time string for datetime-local input.
- *
- * @param date - The date to convert.
- * @returns The date as a string in the format 'YYYY-MM-DDTHH:MM'.
- */
-export function convertDateToDateTimeString(date: Date): string {
-  return date.toISOString().slice(0, 16)
 }
 
 export function toHumanReadableDate(date: DateInput): string {

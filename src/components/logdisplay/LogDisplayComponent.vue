@@ -173,6 +173,11 @@ import { configManager } from '@/services/application-config'
 import { refDebounced } from '@vueuse/core'
 import { useCurrentUser } from '@/services/useCurrentUser'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
+import {
+  fromWallClockDate,
+  toDisplayDateTime,
+  toWallClockDate,
+} from '@/lib/date/timeZone'
 import NewLogMessage from './NewLogMessage.vue'
 import { useTaskRuns } from '@/services/useTaskRuns'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
@@ -196,10 +201,15 @@ const selectedLogTypes = ref<LogType | null>(null)
 
 const daysBack = ref<number>(2)
 const DAY_IN_MS = 1000 * 60 * 60 * 24
+// The date input works in local time, so it gets the date and time in the
+// display time zone as local date
+const endDate = ref<Date>(toWallClockDate(new Date()))
 const startDate = computed(
-  () => new Date(endDate.value.getTime() - daysBack.value * DAY_IN_MS),
+  () =>
+    new Date(
+      fromWallClockDate(endDate.value).getTime() - daysBack.value * DAY_IN_MS,
+    ),
 )
-const endDate = ref<Date>(new Date())
 
 const expandedItems = ref<Record<string, boolean>>({})
 watch(
@@ -215,8 +225,10 @@ const { workflows } = useAvailableWorkflowsStore()
 const baseFilters = computed(() => {
   const startTime = convertJSDateToFewsPiParameter(startDate.value)
   // Set endTime to 23:59:59 of the endDate
-  endDate.value.setHours(23, 59, 59, 999)
-  const endTime = convertJSDateToFewsPiParameter(endDate.value)
+  const endOfDay = toDisplayDateTime(fromWallClockDate(endDate.value))
+    .endOf('day')
+    .toJSDate()
+  const endTime = convertJSDateToFewsPiParameter(endOfDay)
   return {
     logDisplayId: props.logDisplay.id,
     maxCount: maxCount.value,
@@ -273,7 +285,7 @@ const disseminations = computed(
 
 async function refreshLogs() {
   // Set endDate to now + 5 seconds to ensure the backend will return the latest logs
-  endDate.value = new Date(Date.now() + 5000)
+  endDate.value = toWallClockDate(new Date(Date.now() + 5000))
 }
 
 const {

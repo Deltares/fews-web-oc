@@ -2,12 +2,16 @@ import { afterEach, describe, expect, test } from 'vitest'
 import { DateTime, Settings } from 'luxon'
 import { effect } from 'vue'
 import {
+  fromDisplayDateTimeInputValue,
+  fromWallClockDate,
   getDisplayTimeZone,
   isValidTimeZone,
   setDisplayTimeZone,
   SYSTEM_TIME_ZONE,
   toDisplayDateTime,
+  toDisplayDateTimeInputValue,
   toDisplayLocaleString,
+  toWallClockDate,
 } from './timeZone'
 
 afterEach(() => {
@@ -93,5 +97,47 @@ describe('toDisplayLocaleString', () => {
     expect(
       toDisplayLocaleString(date, { hour: 'numeric', hourCycle: 'h23' }),
     ).toMatch(/9/)
+  })
+})
+
+describe('datetime-local input values', () => {
+  test('are formatted and parsed in the display time zone', () => {
+    setDisplayTimeZone('Asia/Tokyo')
+    const date = new Date('2026-01-01T00:00:30Z')
+
+    expect(toDisplayDateTimeInputValue(date)).toBe('2026-01-01T09:00')
+    expect(toDisplayDateTimeInputValue(date, true)).toBe('2026-01-01T09:00:30')
+    expect(fromDisplayDateTimeInputValue('2026-01-01T09:00')).toEqual(
+      new Date('2026-01-01T00:00:00Z'),
+    )
+  })
+
+  test('parse an invalid value as an invalid date', () => {
+    expect(fromDisplayDateTimeInputValue('').getTime()).toBeNaN()
+  })
+})
+
+describe('wall clock dates', () => {
+  test('have the local date and time of the display time zone', () => {
+    setDisplayTimeZone('America/New_York')
+    const date = new Date('2026-01-01T03:04:05Z')
+    const wallClock = toWallClockDate(date)
+
+    expect([
+      wallClock.getFullYear(),
+      wallClock.getMonth(),
+      wallClock.getDate(),
+      wallClock.getHours(),
+      wallClock.getMinutes(),
+      wallClock.getSeconds(),
+    ]).toEqual([2025, 11, 31, 22, 4, 5])
+    expect(fromWallClockDate(wallClock)).toEqual(date)
+  })
+
+  test('are the date itself for the system time zone', () => {
+    const date = new Date('2026-01-01T03:04:05Z')
+
+    expect(toWallClockDate(date)).toEqual(date)
+    expect(fromWallClockDate(date)).toEqual(date)
   })
 })
