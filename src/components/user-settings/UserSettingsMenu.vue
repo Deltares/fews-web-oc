@@ -1,5 +1,11 @@
 <template>
-  <v-menu left bottom :close-on-content-click="false" class="menu">
+  <v-menu
+    v-model="menu"
+    left
+    bottom
+    :close-on-content-click="false"
+    class="menu"
+  >
     <template #activator="{ props }">
       <v-btn v-bind="props" icon="mdi-cog" aria-label="User Settings" />
     </template>
@@ -21,18 +27,20 @@
         />
       </template>
       <v-divider />
-      <UserSettingsDialog>
-        <template #activator="{ props }">
-          <v-btn v-bind="props" variant="text" class="w-100 justify-start">
-            {{ t('userSettings.allSettings') }} ...
-          </v-btn>
-        </template>
-      </UserSettingsDialog>
+      <v-btn
+        variant="text"
+        class="w-100 justify-start"
+        @click="openAllSettings"
+      >
+        {{ t('userSettings.allSettings') }} ...
+      </v-btn>
     </v-list>
   </v-menu>
+  <UserSettingsDialog v-model="dialog" />
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import UserSettingsOneOfMultiple from './UserSettingsOneOfMultiple.vue'
 import UserSettingsBoolean from './UserSettingsBoolean.vue'
 import { UserSettingsItem, useUserSettingsStore } from '@/stores/userSettings'
@@ -44,9 +52,16 @@ const { t } = useI18n()
 const { label } = useUserSettingTranslation()
 
 const store = useUserSettingsStore()
+const menu = ref(false)
+const dialog = ref(false)
 
 function updateModelValue(setting: UserSettingsItem) {
   store.add(setting)
+}
+
+function openAllSettings() {
+  menu.value = false
+  dialog.value = true
 }
 </script>
 

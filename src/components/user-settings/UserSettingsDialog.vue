@@ -6,9 +6,6 @@
     :max-width="mobile ? undefined : '600'"
     :transition="mobile ? 'dialog-bottom-transition' : undefined"
   >
-    <template #activator="{ props }">
-      <slot name="activator" :props="props"></slot>
-    </template>
     <v-card class="d-flex flex-column">
       <v-toolbar :title="t('userSettings.settings')" density="compact">
         <v-btn
@@ -38,7 +35,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import UserSettings from './UserSettings.vue'
 import { useDisplay } from 'vuetify'
 import { useI18n } from 'vue-i18n'
@@ -48,5 +44,5 @@ const { t } = useI18n()
 const store = useUserSettingsStore()
 
 const { mobile } = useDisplay()
-const dialog = ref(false)
+const dialog = defineModel<boolean>({ default: false })
 </script>
