@@ -218,22 +218,16 @@ function onSliderKeydown(e: KeyboardEvent) {
     case 'ArrowRight':
     case 'ArrowUp':
       e.preventDefault()
-      newValue = ticks.find((value) => value > currentValue.value)
-      if (newValue !== undefined) {
-        onInputChange(newValue)
-      } else if (ticks.length > 0) {
-        onInputChange(ticks[ticks.length - 1])
-      }
+      newValue =
+        ticks.find((value) => value > currentValue.value) ?? ticks.at(-1)
+      if (newValue !== undefined) onInputChange(newValue)
       break
     case 'ArrowLeft':
     case 'ArrowDown':
       e.preventDefault()
-      newValue = ticks.findLast((value) => value < currentValue.value)
-      if (newValue !== undefined) {
-        onInputChange(newValue)
-      } else if (ticks.length > 0) {
-        onInputChange(ticks[0])
-      }
+      newValue =
+        ticks.findLast((value) => value < currentValue.value) ?? ticks.at(0)
+      if (newValue !== undefined) onInputChange(newValue)
       break
     case 'Enter':
       e.preventDefault()

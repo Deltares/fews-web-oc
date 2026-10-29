@@ -41,8 +41,9 @@ export function getEquallySpacedSliderTicks(
   width: number,
   minSpacing: number,
 ): SliderTick[] {
-  if (dates.length === 0) return []
-  const scale = scaleTime().domain([dates[0], dates[dates.length - 1]])
+  const lastDate = dates.at(-1)
+  if (lastDate === undefined) return []
+  const scale = scaleTime().domain([dates[0], lastDate])
   const pixelsPerIndex = width / Math.max(dates.length - 1, 1)
   const fits = (ticks: SliderTick[]) =>
     ticks.every(
