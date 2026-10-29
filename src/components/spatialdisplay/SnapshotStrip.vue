@@ -128,6 +128,7 @@ import { toDisplayDateTime, toDisplayLocaleString } from '@/lib/date/timeZone'
 import { configManager } from '@/services/application-config'
 import { convertBoundingBoxToLngLatBounds } from '@/services/useWms'
 import { getFilterFromLayerOptions } from '@/lib/map'
+import { type DateBoundaryUnit, getDateBoundaryUnit } from '@/lib/date'
 
 interface Props {
   times?: Date[]
@@ -420,16 +421,23 @@ function formatSnapshotTime(time: Date): string {
   return toDisplayLocaleString(time, { hour: '2-digit', minute: '2-digit' })
 }
 
+const snapshotChipFormats: Record<DateBoundaryUnit, string> = {
+  second: ':ss',
+  minute: 'HH:mm',
+  hour: 'HH:mm',
+  day: 'dd LLL',
+  month: 'LLL',
+  year: 'yyyy',
+}
+
 function formatSnapshotChip(time: Date): string {
-  const dateTime = toDisplayDateTime(time)
-  if (dateTime.millisecond) return formatInDisplayTimeZone(time, '.SSS')
-  if (dateTime.second) return formatInDisplayTimeZone(time, ':ss')
-  if (dateTime.minute || dateTime.hour) {
-    return formatInDisplayTimeZone(time, 'HH:mm')
+  if (toDisplayDateTime(time).millisecond) {
+    return formatInDisplayTimeZone(time, '.SSS')
   }
-  if (dateTime.day !== 1) return formatSnapshotDay(time)
-  if (dateTime.month !== 1) return formatInDisplayTimeZone(time, 'LLL')
-  return formatInDisplayTimeZone(time, 'yyyy')
+  return formatInDisplayTimeZone(
+    time,
+    snapshotChipFormats[getDateBoundaryUnit(time)],
+  )
 }
 
 function onSnapshotScroll(): void {
@@ -747,12 +755,11 @@ function revokeUnusedSnapshotImageUrls(activeUrls: Set<string>): void {
 function getAlignedTimeOnOrBefore(
   date: Date,
   intervalMs: number,
-  originMs?: number,
+  originMs: number,
 ): Date {
-  const refMs = originMs ?? new Date(date).setHours(0, 0, 0, 0)
-  const elapsedMs = date.getTime() - refMs
+  const elapsedMs = date.getTime() - originMs
   const steps = Math.floor(elapsedMs / intervalMs)
-  return new Date(refMs + steps * intervalMs)
+  return new Date(originMs + steps * intervalMs)
 }
 
 function getMaxSelectableScrollLeft(viewport: HTMLElement): number {
