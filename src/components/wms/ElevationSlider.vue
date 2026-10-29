@@ -1,5 +1,5 @@
 <template>
-  <div class="elevation-slider">
+  <div ref="rootElement" class="elevation-slider">
     <v-slider
       ref="sliderComponent"
       class="elevation-slider__slider"
@@ -35,12 +35,12 @@
           <div v-if="isEditing" class="elevation-slider__tooltip-field">
             <input
               ref="tooltipInput"
-              v-model.number="editValue"
+              v-model="editValue"
               aria-label="Elevation"
               class="elevation-slider__tooltip-input"
               type="text"
               inputmode="decimal"
-              @blur="acceptEdit"
+              @blur="onEditBlur"
               @keydown.stop="onKeydown"
             />
             <!-- Prevent mousedown so the input keeps focus -->
@@ -104,12 +104,11 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const emit = defineEmits(['update:modelValue'])
 
-const currentValue = ref(
-  clamp(props.modelValue, props.minValue, props.maxValue),
-)
-const editValue = ref<number | string>(0)
+const currentValue = ref(props.modelValue)
+const editValue = ref('')
 const isEditing = ref(false)
 
+const rootElement = ref<HTMLElement>()
 const tooltipInput = ref<HTMLInputElement>()
 const sliderComponent = ref<{ focus: () => void }>()
 
@@ -117,26 +116,17 @@ const numberOfMarks = 8
 const marks = ref<number[]>([])
 const sliderPos = ref(0)
 
-const hasProvidedTicks = computed(
-  () => Array.isArray(props.ticks) && props.ticks.length > 0,
+// Sort ascending so the lowest tick is at the bottom, as in min/max mode
+const sortedTicks = computed(() =>
+  [...(props.ticks ?? [])].map(Number).sort((a, b) => a - b),
 )
 
-const positions = computed(() => (props.ticks ?? []).map((_, i) => i))
+const hasProvidedTicks = computed(() => sortedTicks.value.length > 0)
 
-const posToValue = computed(() =>
-  scaleLinear<number, number>()
-    .domain(positions.value)
-    .range((props.ticks ?? []).map((v) => Number(v))),
-)
-
-const valueToPos = computed(() =>
-  scaleLinear<number, number>()
-    .domain((props.ticks ?? []).map((v) => Number(v)))
-    .range(positions.value),
-)
+const positions = computed(() => sortedTicks.value.map((_, i) => i))
 
 const activeTicks = computed(() =>
-  hasProvidedTicks.value ? (props.ticks ?? []) : marks.value,
+  hasProvidedTicks.value ? sortedTicks.value : marks.value,
 )
 
 const sliderModelValue = computed(() =>
@@ -146,9 +136,7 @@ const sliderModelValue = computed(() =>
 const sliderMin = computed(() => (hasProvidedTicks.value ? 0 : props.minValue))
 
 const sliderMax = computed(() =>
-  hasProvidedTicks.value
-    ? Math.max((props.ticks?.length ?? 1) - 1, 0)
-    : props.maxValue,
+  hasProvidedTicks.value ? sortedTicks.value.length - 1 : props.maxValue,
 )
 
 const interval = computed(() => {
@@ -161,34 +149,28 @@ const sliderTicks = computed(() =>
   hasProvidedTicks.value ? positions.value : marks.value,
 )
 
-const mapPositionToValue = (position: number) => {
-  const ticks = props.ticks ?? []
-  if (ticks.length === 0) return currentValue.value
-  const clampedPos = clamp(Math.round(position), 0, ticks.length - 1)
-  const mapped = posToValue.value(clampedPos)
-  return Number.isFinite(mapped) ? mapped : ticks[clampedPos]
-}
-
-const syncSliderPosFromValue = (nextValue: number) => {
-  const ticks = props.ticks ?? []
-  if (!hasProvidedTicks.value || ticks.length === 0) return
-  const mappedPos = valueToPos.value(nextValue)
-  if (Number.isFinite(mappedPos)) {
-    sliderPos.value = clamp(Math.round(mappedPos), 0, ticks.length - 1)
-    return
-  }
-  const nearestIndex = ticks.reduce(
+const nearestTickIndex = (value: number) => {
+  const ticks = sortedTicks.value
+  return ticks.reduce(
     (bestIndex, tick, index) =>
-      Math.abs(tick - nextValue) < Math.abs(ticks[bestIndex] - nextValue)
+      Math.abs(tick - value) < Math.abs(ticks[bestIndex] - value)
         ? index
         : bestIndex,
     0,
   )
-  sliderPos.value = nearestIndex
+}
+
+const syncSliderPosFromValue = (value: number) => {
+  if (!hasProvidedTicks.value) return
+  sliderPos.value = nearestTickIndex(value)
 }
 
 const onInputChange = (value: number) => {
-  const nextValue = clamp(value, props.minValue, props.maxValue)
+  let nextValue = clamp(value, props.minValue, props.maxValue)
+  // With ticks only the tick values are valid elevations
+  if (hasProvidedTicks.value) {
+    nextValue = sortedTicks.value[nearestTickIndex(nextValue)]
+  }
   currentValue.value = nextValue
   syncSliderPosFromValue(nextValue)
   emit('update:modelValue', nextValue)
@@ -196,11 +178,18 @@ const onInputChange = (value: number) => {
 
 const onSliderInput = (input: number) => {
   if (hasProvidedTicks.value) {
-    sliderPos.value = clamp(Math.round(input), sliderMin.value, sliderMax.value)
-    onInputChange(mapPositionToValue(sliderPos.value))
+    onInputChange(sortedTicks.value[input])
     return
   }
   onInputChange(input)
+}
+
+// Accept both '.' and ',' as decimal separator, reject anything else
+const parseEditValue = (): number | undefined => {
+  const text = editValue.value.trim().replace(',', '.')
+  if (text === '') return undefined
+  const value = Number(text)
+  return Number.isFinite(value) ? value : undefined
 }
 
 const onKeydown = (e: KeyboardEvent) => {
@@ -215,15 +204,10 @@ const onKeydown = (e: KeyboardEvent) => {
 }
 
 const stepEditValue = (direction: 1 | -1) => {
-  const value =
-    typeof editValue.value === 'number' && Number.isFinite(editValue.value)
-      ? editValue.value
-      : Math.round(currentValue.value)
-  const lower = Math.min(props.minValue, props.maxValue)
-  const upper = Math.max(props.minValue, props.maxValue)
+  const value = parseEditValue() ?? Math.round(currentValue.value)
   // Round to avoid floating point noise when stepping from decimal values
   const next = Math.round((value + direction) * 1e6) / 1e6
-  editValue.value = clamp(next, lower, upper)
+  editValue.value = String(clamp(next, props.minValue, props.maxValue))
 }
 
 function onSliderKeydown(e: KeyboardEvent) {
@@ -259,25 +243,35 @@ function onSliderKeydown(e: KeyboardEvent) {
 
 const activateEdit = () => {
   isEditing.value = true
-  editValue.value = Math.round(currentValue.value)
+  editValue.value = String(Math.round(currentValue.value))
   nextTick(() => {
     tooltipInput.value?.focus()
     tooltipInput.value?.select()
   })
 }
 
-const closeTooltip = () => {
+const closeTooltip = (refocusSlider = true) => {
   if (!isEditing.value) return
   isEditing.value = false
-  sliderComponent.value?.focus()
+  if (refocusSlider) sliderComponent.value?.focus()
+}
+
+const commitEdit = () => {
+  const value = parseEditValue()
+  if (value !== undefined) onInputChange(value)
 }
 
 const acceptEdit = () => {
   if (!isEditing.value) return
-  if (typeof editValue.value === 'number' && Number.isFinite(editValue.value)) {
-    onInputChange(editValue.value)
-  }
+  commitEdit()
   closeTooltip()
+}
+
+// Focus moved elsewhere, so commit without pulling focus back to the slider
+const onEditBlur = () => {
+  if (!isEditing.value) return
+  commitEdit()
+  closeTooltip(false)
 }
 
 const onValueChange = () => {
@@ -287,13 +281,17 @@ const onValueChange = () => {
 
 watch(() => props.modelValue, onValueChange, { immediate: true })
 
-watch(
-  () => props.ticks,
-  () => {
-    syncSliderPosFromValue(currentValue.value)
-  },
-  { immediate: true },
-)
+watch(sortedTicks, () => syncSliderPosFromValue(currentValue.value))
+
+// In ticks mode the slider value is a tick index, so expose the elevation
+// to assistive technology through aria-valuetext
+watchEffect(() => {
+  const thumb = rootElement.value?.querySelector('.v-slider-thumb')
+  thumb?.setAttribute(
+    'aria-valuetext',
+    `${Math.round(currentValue.value)} ${props.unit}`.trim(),
+  )
+})
 
 watchEffect(() => {
   if (hasProvidedTicks.value) {
