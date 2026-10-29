@@ -1,12 +1,20 @@
 <template>
-  <v-list class="interval-list" density="compact">
-    <v-list-item :active="0 === selectedIndex" @click="onSelectInterval(0)">
+  <v-list class="interval-list" density="compact" prepend-gap="12">
+    <v-list-item
+      :active="0 === selectedIndex"
+      prepend-icon="mdi-clock-outline"
+      @click="onSelectInterval(0)"
+    >
       {{ $t('common.default') }}
       <template v-slot:append="{ isActive }">
         <v-icon v-show="isActive" small> mdi-check </v-icon>
       </template>
     </v-list-item>
-    <v-list-item :active="1 === selectedIndex" @click="onSelectInterval(1)">
+    <v-list-item
+      :active="1 === selectedIndex"
+      prepend-icon="mdi-calendar-range"
+      @click="onSelectInterval(1)"
+    >
       {{ $t('common.custom') }}
       <template v-slot:append="{ isActive }">
         <v-icon v-show="isActive" small> mdi-check </v-icon>
@@ -19,6 +27,7 @@
         v-for="(item, index) in props.items"
         :key="index"
         :active="index === selectedIndex - 2"
+        prepend-icon="mdi-update"
         @click="onSelectInterval(index + 2)"
       >
         {{ item.label }}

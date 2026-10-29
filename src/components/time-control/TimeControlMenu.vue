@@ -3,17 +3,30 @@
     <template v-slot:activator="{ props, isActive }">
       <div class="icon-group" v-bind="props">
         <div class="icon-group__underlay"></div>
-        <span
-          class="systemtime-status systemtime-status--running"
-          aria-label="System time mode"
+        <v-tooltip
+          :text="runningWindowTooltip"
+          :disabled="!runningWindowTooltip"
         >
-          <v-icon class="systemtime-status__icon">mdi-clock-outline</v-icon>
-          <span
-            class="systemtime-status__dot"
-            :class="{ 'systemtime-status__dot--pulse': syncPulseActive }"
-            :style="runningDotStyle"
-          ></span>
-        </span>
+          <template #activator="{ props: tooltipProps }">
+            <span
+              v-bind="tooltipProps"
+              class="systemtime-status systemtime-status--running"
+              :aria-label="runningWindowTooltip ?? 'System time mode'"
+            >
+              <v-icon
+                class="systemtime-status__icon"
+                :icon="
+                  runningWindowTooltip ? 'mdi-update' : 'mdi-clock-outline'
+                "
+              />
+              <span
+                class="systemtime-status__dot"
+                :class="{ 'systemtime-status__dot--pulse': syncPulseActive }"
+                :style="runningDotStyle"
+              ></span>
+            </span>
+          </template>
+        </v-tooltip>
         <span class="icon-group__label">
           {{ systemTimeLabel }}
         </span>
@@ -131,6 +144,17 @@ const systemTimeLabel = computed(() => {
   return mobile.value
     ? d(store.systemTime, 'timeControl__mobile')
     : d(store.systemTime, 'timeControl')
+})
+
+// Describes the preset period, which moves with the system time
+const runningWindowTooltip = computed(() => {
+  const interval = store.selectedInterval
+  if (typeof interval !== 'object') return undefined
+  const label =
+    'label' in interval && typeof interval.label === 'string'
+      ? interval.label
+      : t('timeControl.runningWindow')
+  return `${label}: ${t('timeControl.runningWindowHint')}`
 })
 
 const runningDotStyle = computed(() => ({

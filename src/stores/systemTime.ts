@@ -4,7 +4,7 @@ import {
   systemTimeAuthority,
   SystemTimeSyncSnapshot,
 } from '@/services/system-time'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 export const CLOCK_TICK_MS = 1000
 const RESYNC_INTERVAL_MS = 60_000
@@ -19,6 +19,10 @@ export const useSystemTimeStore = defineStore('systemTime', () => {
   const startTime = ref<Date>()
   const endTime = ref<Date>()
   const selectedInterval = ref<Interval>('default')
+  // A preset period is a running window, which moves with the system time
+  const isRunningWindow = computed(
+    () => typeof selectedInterval.value === 'object',
+  )
 
   async function syncFromBackend() {
     syncError.value = undefined
@@ -62,19 +66,28 @@ export const useSystemTimeStore = defineStore('systemTime', () => {
     resyncTimer = undefined
   }
 
+  function updateRunningWindow() {
+    if (typeof selectedInterval.value !== 'object') return
+    const [newStartTime, newEndTime] = intervalToDateRange(
+      selectedInterval.value,
+      systemTime.value,
+    )
+    startTime.value = newStartTime
+    endTime.value = newEndTime
+  }
+
   watch(selectedInterval, () => {
     if (selectedInterval.value === 'default') {
       startTime.value = undefined
       endTime.value = undefined
-    } else if (selectedInterval.value !== 'custom') {
-      const [newStartTime, newEndTime] = intervalToDateRange(
-        selectedInterval.value,
-        systemTime.value,
-      )
-      startTime.value = newStartTime
-      endTime.value = newEndTime
+    } else {
+      updateRunningWindow()
     }
   })
+
+  // Move the running window on each sync, not every clock tick, as a new
+  // period reloads the data
+  watch(lastSyncedAt, updateRunningWindow)
 
   void startClock()
 
@@ -85,5 +98,6 @@ export const useSystemTimeStore = defineStore('systemTime', () => {
     startTime,
     endTime,
     selectedInterval,
+    isRunningWindow,
   }
 })

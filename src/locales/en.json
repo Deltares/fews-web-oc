@@ -41,6 +41,8 @@
     "followCurrentTime": "Follow current time",
     "followSpecifiedTime": "Follow specified time",
     "periodPresets": "Period presets",
+    "runningWindow": "Running window",
+    "runningWindowHint": "Moves with the system time",
     "startDateBeforeEndDate": "Start date must be on or before end date",
     "trackingCurrentTime": "Following current time",
     "trackingSpecifiedTime": "Following specified time"

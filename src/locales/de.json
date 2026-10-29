@@ -41,6 +41,8 @@
     "followCurrentTime": "Aktuelle Zeit verfolgen",
     "followSpecifiedTime": "Angegebene Zeit verfolgen",
     "periodPresets": "Zeitraum-Voreinstellungen",
+    "runningWindow": "Laufendes Zeitfenster",
+    "runningWindowHint": "Bewegt sich mit der Systemzeit",
     "startDateBeforeEndDate": "Startdatum darf nicht nach dem Enddatum liegen",
     "trackingCurrentTime": "Aktuelle Zeit wird verfolgt",
     "trackingSpecifiedTime": "Angegebene Zeit wird verfolgt"
