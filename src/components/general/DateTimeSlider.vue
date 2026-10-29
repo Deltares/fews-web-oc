@@ -498,16 +498,31 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* A parent can round the bottom corners with --datetime-slider-corner-radius,
+   e.g. to follow the rounded corners of the window. The top corners are
+   rounded up to 15px. The content is inset to stay clear of the corners. */
+.datetime-slider {
+  --_corner-radius: var(--datetime-slider-corner-radius, 0px);
+  --_top-corner-radius: min(var(--_corner-radius), 15px);
+  --datetime-slider-inline-padding: max(
+    10px,
+    calc(var(--_corner-radius) * 0.35),
+    calc(var(--_top-corner-radius) - 1px)
+  );
+  border-radius: var(--_top-corner-radius) var(--_top-corner-radius)
+    var(--_corner-radius) var(--_corner-radius);
+}
+
 .slider-container {
   position: relative;
-  padding: 0px 10px;
+  padding: 0px var(--datetime-slider-inline-padding);
 }
 
 .datetime-slider__actions {
   display: flex;
   flex-direction: row;
   height: 32px;
-  padding: 0px 10px 6px;
+  padding: 0px var(--datetime-slider-inline-padding) 6px;
 }
 
 .datetime-slider__datefield {

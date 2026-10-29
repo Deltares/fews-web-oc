@@ -95,3 +95,61 @@ test('has a white thumb in the dark theme', async ({ mount }) => {
     'rgb(255, 255, 255)',
   )
 })
+
+// Checks that a circle fits inside a box with rounded corners
+function fitsInRoundedBox(
+  circle: { x: number; y: number; r: number },
+  box: { x: number; y: number; width: number; height: number },
+  radius: { top: number; bottom: number },
+) {
+  const { x, y, r } = circle
+  const left = box.x
+  const right = box.x + box.width
+  const top = box.y
+  const bottom = box.y + box.height
+  if (x - r < left || x + r > right || y - r < top || y + r > bottom)
+    return false
+  const corners = [
+    { cx: left + radius.top, cy: top + radius.top, R: radius.top },
+    { cx: right - radius.top, cy: top + radius.top, R: radius.top },
+    { cx: left + radius.bottom, cy: bottom - radius.bottom, R: radius.bottom },
+    { cx: right - radius.bottom, cy: bottom - radius.bottom, R: radius.bottom },
+  ]
+  return corners.every(({ cx, cy, R }) => {
+    const inCornerX = cx < left + R + 0.01 ? x < cx : x > cx
+    const inCornerY = cy < top + R + 0.01 ? y < cy : y > cy
+    if (!inCornerX || !inCornerY) return true
+    return Math.hypot(x - cx, y - cy) + r <= R
+  })
+}
+
+for (const { story, top, bottom } of [
+  { story: 'FloatingDesktop', top: 15, bottom: 15 },
+  { story: 'FloatingPhone', top: 15, bottom: 50 },
+]) {
+  test(`${story}: buttons and thumb stay inside the rounded corners`, async ({
+    mount,
+  }) => {
+    const component = await mount(`general/DateTimeSlider/${story}`)
+    const panel = component.getByTestId('floating-panel')
+    const box = (await panel.boundingBox())!
+
+    const targets = [
+      ...(await panel.locator('.v-btn').all()),
+      panel.locator('.v-slider-thumb__surface'),
+    ]
+    expect(targets.length).toBeGreaterThan(3)
+    for (const target of targets) {
+      const b = (await target.boundingBox())!
+      const circle = {
+        x: b.x + b.width / 2,
+        y: b.y + b.height / 2,
+        r: Math.max(b.width, b.height) / 2,
+      }
+      expect(
+        fitsInRoundedBox(circle, box, { top, bottom }),
+        `${await target.evaluate((el) => el.className)} at ${JSON.stringify(circle)}`,
+      ).toBe(true)
+    }
+  })
+}

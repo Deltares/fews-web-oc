@@ -32,3 +32,24 @@ export const Narrow = story(360)
 export const NarrowFromNoon = story(360, noonDates)
 export const WideDark = () =>
   h(VThemeProvider, { theme: 'dark', withBackground: true }, story(1000))
+
+// Floating panel as in the spatial display, with the thumb at the start so it
+// sits in the rounded corner
+const floating = (width: number, cornerRadius: number, phone: boolean) => () =>
+  h('div', { style: `padding: 120px 5px 5px; width: ${width}px` }, [
+    h(DateTimeSlider, {
+      dates,
+      selectedDate: dates[0],
+      doFollowNow: false,
+      hideSpeedControls: phone,
+      'data-testid': 'floating-panel',
+      style: {
+        '--datetime-slider-corner-radius': `${cornerRadius}px`,
+        backgroundColor: 'rgba(var(--v-theme-surface), 0.8)',
+        boxShadow: '0 0 5px rgba(0, 0, 0, 0.5)',
+      },
+    }),
+  ])
+
+export const FloatingDesktop = floating(1000, 15, false)
+export const FloatingPhone = floating(390, 50, true)
