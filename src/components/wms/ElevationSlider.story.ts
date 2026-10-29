@@ -1,4 +1,5 @@
 import { defineComponent, h, ref, type PropType } from 'vue'
+import { VThemeProvider } from 'vuetify/components'
 import ElevationSlider from './ElevationSlider.vue'
 
 const ElevationSliderStory = defineComponent({
@@ -41,3 +42,8 @@ export const DescendingTicks = () =>
     maxValue: 0,
     ticks: [0, -5, -10, -50],
   })
+
+export const MinMaxDark = () =>
+  h(VThemeProvider, { theme: 'dark', withBackground: true }, () =>
+    h(ElevationSliderStory, { initialValue: -10, minValue: -50, maxValue: 0 }),
+  )

@@ -9,6 +9,7 @@
  *   --web-oc-slider-fill-hover    filled part when hovering the slider
  *   --web-oc-slider-mark          outline of unfilled ticks, defaults to rail
  *   --web-oc-slider-thumb-active  thumb border when hovered or focused
+ *   --web-oc-slider-thumb         thumb background, white in the dark theme
  */
 .web-oc-slider {
   --web-oc-slider-rail: color-mix(
@@ -17,8 +18,14 @@
     rgb(var(--v-theme-surface))
   );
   --web-oc-slider-fill: rgb(var(--v-theme-primary));
+  --web-oc-slider-thumb: rgb(var(--v-theme-surface));
   --_web-oc-slider-rail: var(--web-oc-slider-rail);
   --_web-oc-slider-fill: var(--web-oc-slider-fill);
+}
+
+/* Vuetify sets the theme class on the slider itself */
+.web-oc-slider.v-theme--dark {
+  --web-oc-slider-thumb: #fff;
 }
 
 .web-oc-slider:hover {
@@ -59,7 +66,7 @@
 
 .web-oc-slider .v-slider-thumb__surface {
   box-sizing: border-box;
-  background-color: rgb(var(--v-theme-surface));
+  background-color: var(--web-oc-slider-thumb);
   border: 2px solid var(--_web-oc-slider-fill);
   transition:
     box-shadow 0.3s,

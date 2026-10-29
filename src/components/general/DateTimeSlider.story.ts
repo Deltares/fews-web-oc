@@ -1,4 +1,5 @@
 import { h } from 'vue'
+import { VThemeProvider } from 'vuetify/components'
 import DateTimeSlider from './DateTimeSlider.vue'
 
 // Hourly dates over two weeks
@@ -29,3 +30,5 @@ export const ExtraWide = story(2000)
 export const Wide = story(1000)
 export const Narrow = story(360)
 export const NarrowFromNoon = story(360, noonDates)
+export const WideDark = () =>
+  h(VThemeProvider, { theme: 'dark', withBackground: true }, story(1000))

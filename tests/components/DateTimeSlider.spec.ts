@@ -87,3 +87,11 @@ test('shows the thumb label on keyboard focus', async ({ mount, page }) => {
   await page.keyboard.press('ArrowRight')
   await expect(label).toBeVisible()
 })
+
+test('has a white thumb in the dark theme', async ({ mount }) => {
+  const component = await mount('general/DateTimeSlider/WideDark')
+  await expect(component.locator('.v-slider-thumb__surface')).toHaveCSS(
+    'background-color',
+    'rgb(255, 255, 255)',
+  )
+})

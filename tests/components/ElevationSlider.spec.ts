@@ -126,4 +126,12 @@ test.describe('ElevationSlider', () => {
     await thumb.press('ArrowDown')
     await expect(thumb).toHaveAttribute('aria-valuetext', '-50 m')
   })
+
+  test('has a white thumb in the dark theme', async ({ mount }) => {
+    const component = await mount('wms/ElevationSlider/MinMaxDark')
+    await expect(component.locator('.v-slider-thumb__surface')).toHaveCSS(
+      'background-color',
+      'rgb(255, 255, 255)',
+    )
+  })
 })

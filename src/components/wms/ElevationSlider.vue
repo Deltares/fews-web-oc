@@ -401,9 +401,12 @@ watchEffect(() => {
   line-height: 20px;
 }
 
+/* Inset in the field, like the spin buttons of a number input */
 .elevation-slider__tooltip-steppers {
   display: flex;
   flex-direction: column;
+  gap: 1px;
+  padding: 2px;
 }
 
 .elevation-slider__tooltip-steppers > button {
@@ -411,10 +414,11 @@ watchEffect(() => {
   flex: 1 1 0;
   align-items: center;
   justify-content: center;
-  width: 16px;
+  width: 14px;
   padding: 0;
   overflow: hidden;
   border: 0;
+  border-radius: 2px;
   color: inherit;
   background: transparent;
   cursor: pointer;
