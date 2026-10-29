@@ -1,42 +1,53 @@
 <template>
   <div class="datetime-slider" aria-labelledby="date time slider">
-    <div ref="sliderContainer" class="slider-container">
-      <vue-slider
-        v-model="dateIndex"
-        :marks="marks"
-        :hide-label="hideLabel"
-        :duration="0"
-        step="1"
-        :tooltipFormatter="dateString"
-        silent
-        :max="maxIndex"
-        @change="stopFollowNow"
-      >
-        <template v-slot:step="{ active, style, activeStyle }">
-          <div
-            :class="[
-              'vue-slider-mark-step',
-              { 'vue-slider-mark-step-active': active },
-            ]"
-            :style="active ? activeStyle : style"
-            @mouseover="hideLabel = false"
-            @mouseleave="hideLabel = true"
-            @focus="hideLabel = false"
-            @blur="hideLabel = true"
-          ></div>
-        </template>
-        <template v-slot:label="{ label }">
-          <span
-            :class="[
-              'vue-slider-mark-label',
-              'vue-slider-dot-tooltip-inner',
-              'custom-label',
-            ]"
-            >{{ label }}</span
-          >
-        </template>
-      </vue-slider>
-      <slot name="below-track"></slot>
+    <div
+      ref="sliderContainer"
+      class="slider-container"
+      :dark="isDark ? 'light' : 'dark'"
+    >
+      <v-theme-provider :with-background="false">
+        <v-slider
+          class="datetime-slider__track"
+          :class="{ 'datetime-slider__track--hover': isHovering }"
+          :model-value="dateIndex"
+          :min="0"
+          :max="maxIndex"
+          :step="1"
+          :ticks="tickValues"
+          tick-size="4"
+          indent-details
+          show-ticks="always"
+          show-thumb-label="active"
+          :thumb-label="!hideLabel"
+          thumb-size="14"
+          thumb-color="primary"
+          hide-details
+          density="compact"
+          rounded="0"
+          height="0"
+          @update:model-value="onSliderInput"
+          @mouseenter="onSliderMouseEnter"
+          @mouseleave="onSliderMouseLeave"
+        >
+          <template #thumb-label="{ modelValue }">
+            <span class="datetime-slider__thumb-label">
+              {{ getDateLabel(modelValue) }}
+            </span>
+          </template>
+          <template #tick-label="{ tick }">
+            <span
+              v-if="markLabels[tick.value]"
+              class="datetime-slider__tick-label"
+            >
+              {{ markLabels[tick.value] }}
+            </span>
+          </template>
+        </v-slider>
+
+        <div class="datetime-slider__below-track">
+          <slot name="below-track"></slot>
+        </div>
+      </v-theme-provider>
     </div>
     <div class="datetime-slider__actions">
       <slot name="prepend"></slot>
@@ -125,9 +136,7 @@ import { useI18n } from 'vue-i18n'
 
 import { findDateIndex } from '@/lib/utils/dates'
 import { systemTimeAuthority } from '@/services/system-time'
-
-import VueSlider from 'vue-slider-component'
-import 'vue-slider-component/theme/antd.css'
+import { useDark } from '@/services/useDark'
 
 interface Properties {
   selectedDate?: Date
@@ -156,6 +165,8 @@ const showSnapshotFrames = defineModel<boolean>('showSnapshotFrames', {
   default: false,
 })
 
+const isDark = useDark()
+
 // Step size when playing an animation, and when clicking the previous and next frame buttons.
 const playIncrement = 1
 const stepIncrement = 1
@@ -175,11 +186,12 @@ const isTrackingDragGesture = ref(false)
 const DRAG_UP_THRESHOLD_PX = 24
 
 const hideLabel = ref(true)
+const isHovering = ref(false)
 
-const marks = computed(() => {
-  const dayMarks: Record<string, any> = {}
+const markLabels = computed<Record<number, string>>(() => {
+  const dayMarks: Record<number, string> = {}
   const dateScale = scaleTime().domain(props.dates)
-  const ticks = dateScale.ticks(5)
+  const ticks = dateScale.ticks(8)
   let tickIndex = 0
   for (const index in props.dates) {
     const date = DateTime.fromJSDate(props.dates[index])
@@ -188,17 +200,19 @@ const marks = computed(() => {
       date.toMillis() >= ticks[tickIndex].getTime()
     ) {
       tickIndex++
-      dayMarks[index] = {
-        label: date.toJSDate().toLocaleString(undefined, {
-          year: 'numeric',
-          month: 'numeric',
-          day: 'numeric',
-        }),
-      }
+      dayMarks[Number(index)] = date.toJSDate().toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+      })
     }
   }
   return dayMarks
 })
+
+const tickValues = computed(() =>
+  Object.keys(markLabels.value).map((index) => Number(index)),
+)
 
 // Synchronise selectedDate property and local index variable.
 watch(dateIndex, (index) => {
@@ -266,6 +280,12 @@ const dateString = computed(() =>
     : '',
 )
 
+function getDateLabel(modelValue: number | string | undefined): string {
+  const index =
+    typeof modelValue === 'number' ? Math.round(modelValue) : dateIndex.value
+  return props.dates[index]?.toLocaleString() ?? ''
+}
+
 // Tooltip text for now-tracking control depending on if we use Date.now() or specified time
 const nowTrackingTooltip = computed(() => {
   if (doFollowNow.value) {
@@ -280,6 +300,16 @@ const nowTrackingTooltip = computed(() => {
   }
   return t('timeControl.followCurrentTime')
 })
+
+function onSliderMouseEnter(): void {
+  hideLabel.value = false
+  isHovering.value = true
+}
+
+function onSliderMouseLeave(): void {
+  hideLabel.value = true
+  isHovering.value = false
+}
 
 function toggleFollowNow(): void {
   doFollowNow.value = !doFollowNow.value
@@ -319,11 +349,7 @@ function setDateToNow(): void {
 
 function isSliderGestureElement(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false
-  return Boolean(
-    target.closest(
-      '.vue-slider-dot-handle, .vue-slider-dot, .vue-slider-process, .vue-slider-rail, .vue-slider',
-    ),
-  )
+  return Boolean(target.closest('.v-slider-thumb, .v-slider-track, .v-slider'))
 }
 
 function onPointerDown(event: PointerEvent): void {
@@ -348,6 +374,11 @@ function stopDragGestureTracking(): void {
 
 function onPointerUp(): void {
   stopDragGestureTracking()
+}
+
+function onSliderInput(value: number): void {
+  dateIndex.value = Math.min(Math.max(Math.round(value), 0), maxIndex.value)
+  stopFollowNow()
 }
 
 function togglePlay(): void {
@@ -467,12 +498,14 @@ onUnmounted(() => {
 <style scoped>
 .slider-container {
   position: relative;
-  padding: 0px 10px;
+  margin: -8px 0px;
+  padding: 0px 5px;
 }
 
 .datetime-slider__actions {
   display: flex;
   flex-direction: row;
+  height: 32px;
   padding: 0px 10px 6px;
 }
 
@@ -494,9 +527,32 @@ onUnmounted(() => {
   gap: 10px;
 }
 
-.vue-slider-mark-label.custom-label {
+.datetime-slider__track :deep(.v-slider-track__tick-label) {
   position: absolute;
-  top: -25px;
-  transform: translate(-50%, -100%);
+  top: -40px;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.datetime-slider__track--hover :deep(.v-slider-track__tick-label) {
+  opacity: 1;
+}
+
+.datetime-slider__below-track {
+  margin-top: -18px;
+  margin-right: 8px;
+  margin-left: 8px;
+  margin-bottom: 8px;
+}
+
+.datetime-slider__tick-label {
+  color: white;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.datetime-slider__thumb-label {
+  white-space: nowrap;
 }
 </style>
