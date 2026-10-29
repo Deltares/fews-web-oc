@@ -176,6 +176,7 @@
 </template>
 
 <script setup lang="ts">
+import { toDisplayLocaleString } from '@/lib/date/timeZone'
 import {
   axisBottom,
   axisLeft,
@@ -260,7 +261,7 @@ function getDuration(entry: SharedRequestHistoryEntry): string {
 }
 
 function formatTimestamp(timestamp: number): string {
-  return new Date(timestamp).toLocaleString()
+  return toDisplayLocaleString(timestamp)
 }
 
 interface RequestChartPoint {

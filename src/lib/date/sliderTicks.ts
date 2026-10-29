@@ -1,9 +1,11 @@
-import { scaleTime } from 'd3-scale'
+import { scaleTime, scaleUtc } from 'd3-scale'
+import { DateTime } from 'luxon'
+import { getDisplayTimeZone } from './timeZone'
 
 export interface SliderTick {
   /** Index of the first date at or after the tick. */
   index: number
-  /** The d3 tick, aligned to a calendar boundary in local time. */
+  /** The d3 tick, aligned to a calendar boundary in the display time zone. */
   tick: Date
 }
 
@@ -26,6 +28,30 @@ function ticksToIndices(dates: Date[], ticks: Date[]): SliderTick[] {
 }
 
 /**
+ * Returns a function that generates d3 ticks between two dates, aligned to
+ * calendar boundaries in the display time zone. d3 only supports local time
+ * and UTC, so for another time zone the ticks are generated in UTC for dates
+ * shifted by the offset of that time zone.
+ */
+function zonedTicks(start: Date, end: Date): (count: number) => Date[] {
+  const zone = getDisplayTimeZone()
+  if (zone === undefined) {
+    const scale = scaleTime().domain([start, end])
+    return (count) => scale.ticks(count)
+  }
+
+  const toWallClock = (date: Date) =>
+    new Date(
+      date.getTime() + DateTime.fromJSDate(date, { zone }).offset * 60_000,
+    )
+  const fromWallClock = (date: Date) =>
+    DateTime.fromISO(date.toISOString().slice(0, -1), { zone }).toJSDate()
+
+  const scale = scaleUtc().domain([toWallClock(start), toWallClock(end)])
+  return (count) => scale.ticks(count).map(fromWallClock)
+}
+
+/**
  * Selects ticks for a slider that places dates by index. All ticks use the
  * same d3 time interval, the finest one for which neighbouring ticks are at
  * least minSpacing apart, so they are equally spaced in time. Only a daylight
@@ -43,7 +69,7 @@ export function getEquallySpacedSliderTicks(
 ): SliderTick[] {
   const lastDate = dates.at(-1)
   if (lastDate === undefined) return []
-  const scale = scaleTime().domain([dates[0], lastDate])
+  const ticksFor = zonedTicks(dates[0], lastDate)
   const pixelsPerIndex = width / Math.max(dates.length - 1, 1)
   const fits = (ticks: SliderTick[]) =>
     ticks.every(
@@ -56,7 +82,7 @@ export function getEquallySpacedSliderTicks(
   // whose ticks fit
   let ticks: SliderTick[] = []
   for (let count = Math.ceil(width / minSpacing) + 1; count >= 1; count--) {
-    ticks = ticksToIndices(dates, scale.ticks(count))
+    ticks = ticksToIndices(dates, ticksFor(count))
     if (fits(ticks)) return ticks
   }
   // Even the coarsest interval does not fit, show only the first tick

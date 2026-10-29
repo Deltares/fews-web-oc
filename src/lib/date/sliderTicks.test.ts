@@ -1,5 +1,11 @@
-import { describe, expect, test } from 'vitest'
+import { afterEach, describe, expect, test } from 'vitest'
+import { DateTime } from 'luxon'
 import { getEquallySpacedSliderTicks } from './sliderTicks'
+import { setDisplayTimeZone, SYSTEM_TIME_ZONE } from './timeZone'
+
+afterEach(() => {
+  setDisplayTimeZone(SYSTEM_TIME_ZONE)
+})
 
 // Local dates, as d3 time scales use local time
 const hourly = (start: Date, hours: number) =>
@@ -73,5 +79,43 @@ describe('getEquallySpacedSliderTicks', () => {
 
   test('returns no ticks without dates', () => {
     expect(getEquallySpacedSliderTicks([], 1000, 100)).toEqual([])
+  })
+})
+
+describe('getEquallySpacedSliderTicks in a display time zone', () => {
+  test.each(['UTC', 'Asia/Tokyo', 'America/St_Johns'])(
+    'ticks are aligned to day boundaries in %s',
+    (zone) => {
+      setDisplayTimeZone(zone)
+      const dates = hourly(new Date('2025-01-01T03:00:00Z'), 4 * 24)
+      const ticks = getEquallySpacedSliderTicks(dates, 1000, 100)
+
+      const hours = ticks.map(
+        ({ tick }) => DateTime.fromJSDate(tick, { zone }).hour,
+      )
+      expect(hours).toContain(0)
+      const step = 24 / new Set(hours).size
+      for (const hour of hours) expect(hour % step).toBe(0)
+      for (const { tick } of ticks) {
+        expect(DateTime.fromJSDate(tick, { zone }).minute).toBe(0)
+      }
+    },
+  )
+
+  test('ticks span a daylight saving time transition', () => {
+    setDisplayTimeZone('Europe/Amsterdam')
+    // Clocks go forward at 2025-03-30T01:00:00Z
+    const dates = hourly(new Date('2025-03-28T00:00:00Z'), 5 * 24)
+    const ticks = getEquallySpacedSliderTicks(dates, 1000, 100)
+
+    const midnights = ticks
+      .map(({ tick }) =>
+        DateTime.fromJSDate(tick, { zone: 'Europe/Amsterdam' }),
+      )
+      .filter((dateTime) => dateTime.hour === 0)
+      .map((dateTime) => dateTime.toISODate())
+    expect(midnights).toEqual(
+      expect.arrayContaining(['2025-03-30', '2025-03-31']),
+    )
   })
 })

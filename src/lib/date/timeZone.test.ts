@@ -6,6 +6,8 @@ import {
   isValidTimeZone,
   setDisplayTimeZone,
   SYSTEM_TIME_ZONE,
+  toDisplayDateTime,
+  toDisplayLocaleString,
 } from './timeZone'
 
 afterEach(() => {
@@ -59,5 +61,37 @@ describe('setDisplayTimeZone', () => {
     setDisplayTimeZone('UTC')
 
     expect(seen).toEqual([undefined, 'UTC'])
+  })
+})
+
+describe('toDisplayDateTime', () => {
+  test('returns the date in the display time zone', () => {
+    setDisplayTimeZone('America/New_York')
+    const date = new Date('2026-01-01T03:00:00Z')
+
+    expect(toDisplayDateTime(date).toISO()).toBe(
+      '2025-12-31T22:00:00.000-05:00',
+    )
+    expect(toDisplayDateTime(date.getTime()).day).toBe(31)
+  })
+})
+
+describe('toDisplayLocaleString', () => {
+  test('formats in the display time zone', () => {
+    setDisplayTimeZone('Asia/Tokyo')
+    const date = new Date('2026-01-01T00:00:00Z')
+
+    expect(
+      toDisplayLocaleString(date, { hour: '2-digit', hourCycle: 'h23' }),
+    ).toBe(
+      date.toLocaleString(undefined, {
+        hour: '2-digit',
+        hourCycle: 'h23',
+        timeZone: 'Asia/Tokyo',
+      }),
+    )
+    expect(
+      toDisplayLocaleString(date, { hour: 'numeric', hourCycle: 'h23' }),
+    ).toMatch(/9/)
   })
 })

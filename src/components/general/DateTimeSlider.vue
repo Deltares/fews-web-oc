@@ -29,7 +29,9 @@
             with-background
             class="web-oc-slider-chip web-oc-slider-chip--arrow-down"
           >
-            {{ dates[modelValue]?.toLocaleString() }}
+            {{
+              dates[modelValue] ? toDisplayLocaleString(dates[modelValue]) : ''
+            }}
           </v-theme-provider>
         </template>
         <template #tick-label="{ tick }">
@@ -129,6 +131,7 @@ import { useElementSize } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 
 import { toMultiScaleDateLabel } from '@/lib/date'
+import { toDisplayLocaleString } from '@/lib/date/timeZone'
 import { getEquallySpacedSliderTicks } from '@/lib/date/sliderTicks'
 import { findDateIndex } from '@/lib/utils/dates'
 import { systemTimeAuthority } from '@/services/system-time'
@@ -263,7 +266,7 @@ const playButtonColor = computed(() =>
 
 const dateString = computed(() =>
   props.dates[dateIndex.value]
-    ? props.dates[dateIndex.value].toLocaleString()
+    ? toDisplayLocaleString(props.dates[dateIndex.value])
     : '',
 )
 

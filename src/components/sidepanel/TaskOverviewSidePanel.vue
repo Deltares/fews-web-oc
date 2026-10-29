@@ -65,6 +65,7 @@
 </template>
 
 <script setup lang="ts">
+import { toDisplayLocaleString } from '@/lib/date/timeZone'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -197,7 +198,7 @@ function getTaskSectionIcon(label: string) {
 const lastUpdatedString = computed<string>(() => {
   const lastUpdated = lastUpdatedTimestamp.value
   if (lastUpdated === null) return '—'
-  return new Date(lastUpdated).toLocaleString()
+  return toDisplayLocaleString(lastUpdated)
 })
 </script>
 

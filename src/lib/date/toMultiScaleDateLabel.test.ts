@@ -1,5 +1,10 @@
-import { describe, expect, test } from 'vitest'
+import { afterEach, describe, expect, test } from 'vitest'
 import { getDateBoundaryUnit, toMultiScaleDateLabel } from '.'
+import { setDisplayTimeZone, SYSTEM_TIME_ZONE } from './timeZone'
+
+afterEach(() => {
+  setDisplayTimeZone(SYSTEM_TIME_ZONE)
+})
 
 describe('toMultiScaleDateLabel', () => {
   // Local dates, as d3 time scales use local time
@@ -40,5 +45,21 @@ describe('getDateBoundaryUnit', () => {
     [new Date(2025, 2, 6, 0, 0, 0, 500), 'second'],
   ])('%s is a %s boundary', (date, expected) => {
     expect(getDateBoundaryUnit(date)).toBe(expected)
+  })
+})
+
+describe('in a display time zone', () => {
+  test.each([
+    ['UTC', '2025-03-06T00:00:00Z', 'day', '6 Mar'],
+    ['UTC', '2025-03-01T00:00:00Z', 'month', 'Mar'],
+    ['Asia/Tokyo', '2025-03-05T15:00:00Z', 'day', '6 Mar'],
+    ['Asia/Tokyo', '2025-03-06T00:00:00Z', 'hour', '09:00'],
+    ['America/New_York', '2025-01-01T05:00:00Z', 'year', '2025'],
+  ])('in %s, %s is a %s boundary', (timeZone, iso, unit, label) => {
+    setDisplayTimeZone(timeZone)
+    const date = new Date(iso)
+
+    expect(getDateBoundaryUnit(date)).toBe(unit)
+    expect(toMultiScaleDateLabel(date, date, 'en-GB')).toBe(label)
   })
 })

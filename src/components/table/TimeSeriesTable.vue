@@ -409,7 +409,7 @@ import {
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { findDateIndex } from '@/lib/utils/dates'
 import type { PaginatedTimeSeriesPageUpdate } from '@/services/useTimeSeries'
-import { useI18n } from 'vue-i18n'
+import { useDisplayDateFormat } from '@/services/useDisplayDateFormat'
 
 interface Props {
   config: ChartConfig
@@ -432,7 +432,7 @@ const emit = defineEmits(['change', 'update:isEditing', 'load-more-data'])
 
 const store = useFewsPropertiesStore()
 const configStore = useConfigStore()
-const { d } = useI18n()
+const { d } = useDisplayDateFormat()
 const theme = useTheme()
 const flagColorResolver = shallowRef(createFlagColorResolver())
 

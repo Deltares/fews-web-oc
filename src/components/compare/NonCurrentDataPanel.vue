@@ -60,6 +60,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import { toDisplayLocaleString } from '@/lib/date/timeZone'
 import { computed, ref, watch } from 'vue'
 
 import { RelativePeriod } from '@/lib/period'
@@ -174,7 +175,7 @@ function formatSectionLabel(label: string) {
 const lastUpdatedString = computed<string>(() => {
   const lastUpdated = lastUpdatedTimestamp.value
   if (lastUpdated === null) return '—'
-  return new Date(lastUpdated).toLocaleString()
+  return toDisplayLocaleString(lastUpdated)
 })
 </script>
 

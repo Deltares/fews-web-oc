@@ -75,13 +75,15 @@ import { ref, computed, watchEffect, watch } from 'vue'
 import IntervalSelector from './IntervalSelector.vue'
 import type { VForm } from 'vuetify/components'
 import { useI18n } from 'vue-i18n'
+import { useDisplayDateFormat } from '@/services/useDisplayDateFormat'
 import { useDisplay } from 'vuetify'
 
 import { CLOCK_TICK_MS, useSystemTimeStore } from '@/stores/systemTime'
 import { useConfigStore } from '@/stores/config'
 import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
 
-const { t, d } = useI18n()
+const { t } = useI18n()
+const { d } = useDisplayDateFormat()
 
 const store = useSystemTimeStore()
 const configStore = useConfigStore()

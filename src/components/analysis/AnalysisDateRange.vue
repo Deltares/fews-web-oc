@@ -74,6 +74,7 @@
 </template>
 
 <script setup lang="ts">
+import { getDisplayTimeZone } from '@/lib/date/timeZone'
 import SelectIcon from '@/components/general/SelectIcon.vue'
 import type { CollectionSettings } from '@/lib/analysis'
 import { useI18n } from 'vue-i18n'
@@ -95,6 +96,7 @@ const rangeFormatter = computed(() => {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
+    timeZone: getDisplayTimeZone(),
   })
 })
 

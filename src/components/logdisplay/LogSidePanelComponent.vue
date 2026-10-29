@@ -97,6 +97,7 @@
 </template>
 
 <script setup lang="ts">
+import { toDisplayLocaleString } from '@/lib/date/timeZone'
 import { computed, nextTick, ref } from 'vue'
 import LogItem from '@/components/logdisplay/LogItem.vue'
 import LogLevelFilter from '@/components/logdisplay/LogLevelFilter.vue'
@@ -273,7 +274,7 @@ function handleFilterMouseEnter() {
 const lastUpdatedString = computed<string>(() => {
   const lastUpdated = lastUpdatedTimestamp.value
   if (lastUpdated === null) return '—'
-  return new Date(lastUpdated).toLocaleString()
+  return toDisplayLocaleString(lastUpdated)
 })
 </script>
 
