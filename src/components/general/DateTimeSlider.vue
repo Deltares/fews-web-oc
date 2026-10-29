@@ -235,9 +235,7 @@ const markLabels = computed<Record<number, string>>(() => {
   return marks
 })
 
-const tickValues = computed(() =>
-  Object.keys(markLabels.value).map((index) => Number(index)),
-)
+const tickValues = computed(() => Object.keys(markLabels.value).map(Number))
 
 // Synchronise selectedDate property and local index variable.
 watch(dateIndex, (index) => {

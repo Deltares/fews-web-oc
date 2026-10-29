@@ -317,12 +317,9 @@ watchEffect(() => {
   padding: 7px;
 }
 
-.elevation-slider__slider {
-  margin: 0;
-}
-
 /* Colours for the shared slider style (assets/slider.css) */
 .elevation-slider__slider {
+  margin: 0;
   --web-oc-slider-rail: color-mix(
     in srgb,
     rgb(var(--v-theme-on-surface)) 8%,
