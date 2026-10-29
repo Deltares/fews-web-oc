@@ -2,6 +2,13 @@
   <v-card class="home-card">
     <v-card-title class="d-flex align-center">
       {{ configStore.general.title ?? 'Delft-FEWS Web OC' }}
+      <v-spacer />
+      <QrCode
+        :value="webOcUrl"
+        :size="64"
+        :dark="isDark"
+        class="ml-4 flex-shrink-0"
+      />
     </v-card-title>
     <v-card-text class="pa-0">
       <v-alert
@@ -89,7 +96,11 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 import ExcludedPermissionsControl from '@/components/permissions/ExcludedPermissionsControl.vue'
 import MicroFrontendOverview from '@/components/microfrontend/MicroFrontendOverview.vue'
+import QrCode from '@/components/general/QrCode.vue'
+import { useDark } from '@/services/useDark'
 
+const isDark = useDark()
+const webOcUrl = `${globalThis.location.origin}${import.meta.env.BASE_URL}`
 const webServiceUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const version = ref(packageVersion)
