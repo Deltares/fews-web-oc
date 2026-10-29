@@ -102,7 +102,11 @@ import {
   type Tag,
 } from '@/lib/charts/tags'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
-import { getAxisOptions } from '@/lib/charts/axisOptions'
+import {
+  getAxisOptions,
+  getAxisTimeZone,
+  setAxisTimeZone,
+} from '@/lib/charts/axisOptions'
 import { useUserSettingsStore } from '@/stores/userSettings'
 
 import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
@@ -158,6 +162,7 @@ onMounted(() => {
   const axisOptions = getAxisOptions(props.config, props.settings, {
     isVerticalProfile: props.verticalProfile,
     locale: locale.value,
+    timeZone: getAxisTimeZone(),
   })
   axis = new CartesianAxes(
     chartContainer.value,
@@ -212,6 +217,10 @@ useResizeObserver(
   brushContainer,
   ([entry]) => (brushContainerHeight.value = entry.contentRect.height),
 )
+
+watch(getAxisTimeZone, (timeZone) => {
+  if (axis && !props.verticalProfile) setAxisTimeZone(axis, timeZone)
+})
 
 watch(
   () => userSettingsStore.scrollZoomMode,
