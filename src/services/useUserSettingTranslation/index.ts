@@ -15,6 +15,7 @@ const groupsKey = 'userSettings.groups'
  * `userSettings.items.charts.scrollZoomMode.options.xy`. Without a translation
  * the text from the setting definition (English) is used, e.g. for option
  * values containing dots (`ui.scale`) or options added at runtime (base maps).
+ * Option titles set in the FEWS config are used as is.
  */
 export function useUserSettingTranslation() {
   const { t, te } = useI18n()
@@ -29,8 +30,9 @@ export function useUserSettingTranslation() {
 
   function optionTitle(
     item: Pick<UserSettingsItem, 'id'>,
-    option: Pick<UserSettingsWithIcon, 'value' | 'title'>,
+    option: Pick<UserSettingsWithIcon, 'value' | 'title' | 'configuredTitle'>,
   ): string {
+    if (option.configuredTitle) return option.title
     return translate(
       `${itemsKey}.${item.id}.options.${option.value}`,
       option.title,

@@ -383,9 +383,9 @@ describe('deserializeUserSettings – WebResources options override', () => {
     const [result] = deserializeUserSettings('[]', defaults, overrides)
 
     expect((result as UserSettingsItemOneOf).items).toEqual([
-      { value: 'UTC', title: 'UTC', icon: 'mdi-earth' },
-      { value: 'Europe/Amsterdam', title: 'Amsterdam' },
-      { value: 'Asia/Tokyo', title: 'Asia/Tokyo' },
+      { value: 'UTC', title: 'UTC', icon: 'mdi-earth', configuredTitle: false },
+      { value: 'Europe/Amsterdam', title: 'Amsterdam', configuredTitle: true },
+      { value: 'Asia/Tokyo', title: 'Asia/Tokyo', configuredTitle: false },
     ])
   })
 

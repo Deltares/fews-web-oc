@@ -36,6 +36,7 @@ function applyItemsOverride(
       ...builtIn,
       ...overrideItem,
       title: overrideItem.title ?? builtIn?.title ?? overrideItem.value,
+      configuredTitle: overrideItem.title !== undefined,
     }
   })
   if (!item.items.some((i) => i.value === item.value)) {
