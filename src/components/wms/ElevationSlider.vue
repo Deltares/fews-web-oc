@@ -30,19 +30,41 @@
           @touchstart.stop
           @pointerdown.stop
         >
-          <label class="d-none" for="elevation-slider-tooltip-input">
-            Elevation
-          </label>
-          <input
-            id="elevation-slider-tooltip-input"
-            ref="tooltipInput"
-            v-if="isEditing"
-            v-model.number="editValue"
-            @blur="acceptEdit"
-            @keydown.stop="onKeydown"
-            type="number"
-            class="elevation-slider__tooltip-input"
-          />
+          <!-- Text input with the same style as TableCellEdit, a number input
+               shows spin buttons and Edge may use a comma as decimal separator -->
+          <div v-if="isEditing" class="elevation-slider__tooltip-field">
+            <input
+              ref="tooltipInput"
+              v-model.number="editValue"
+              aria-label="Elevation"
+              class="elevation-slider__tooltip-input"
+              type="text"
+              inputmode="decimal"
+              @blur="acceptEdit"
+              @keydown.stop="onKeydown"
+            />
+            <!-- Prevent mousedown so the input keeps focus -->
+            <div class="elevation-slider__tooltip-steppers">
+              <button
+                type="button"
+                tabindex="-1"
+                aria-label="Increase elevation"
+                @mousedown.prevent
+                @click="stepEditValue(1)"
+              >
+                <v-icon icon="mdi-chevron-up" size="12" />
+              </button>
+              <button
+                type="button"
+                tabindex="-1"
+                aria-label="Decrease elevation"
+                @mousedown.prevent
+                @click="stepEditValue(-1)"
+              >
+                <v-icon icon="mdi-chevron-down" size="12" />
+              </button>
+            </div>
+          </div>
           <button
             v-else
             type="button"
@@ -85,7 +107,7 @@ const emit = defineEmits(['update:modelValue'])
 const currentValue = ref(
   clamp(props.modelValue, props.minValue, props.maxValue),
 )
-const editValue = ref(0)
+const editValue = ref<number | string>(0)
 const isEditing = ref(false)
 
 const tooltipInput = ref<HTMLInputElement>()
@@ -186,7 +208,22 @@ const onKeydown = (e: KeyboardEvent) => {
     acceptEdit()
   } else if (e.key === 'Escape') {
     closeTooltip()
+  } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    e.preventDefault()
+    stepEditValue(e.key === 'ArrowUp' ? 1 : -1)
   }
+}
+
+const stepEditValue = (direction: 1 | -1) => {
+  const value =
+    typeof editValue.value === 'number' && Number.isFinite(editValue.value)
+      ? editValue.value
+      : Math.round(currentValue.value)
+  const lower = Math.min(props.minValue, props.maxValue)
+  const upper = Math.max(props.minValue, props.maxValue)
+  // Round to avoid floating point noise when stepping from decimal values
+  const next = Math.round((value + direction) * 1e6) / 1e6
+  editValue.value = clamp(next, lower, upper)
 }
 
 function onSliderKeydown(e: KeyboardEvent) {
@@ -237,7 +274,9 @@ const closeTooltip = () => {
 
 const acceptEdit = () => {
   if (!isEditing.value) return
-  onInputChange(editValue.value)
+  if (typeof editValue.value === 'number' && Number.isFinite(editValue.value)) {
+    onInputChange(editValue.value)
+  }
   closeTooltip()
 }
 
@@ -313,7 +352,7 @@ watchEffect(() => {
   --elevation-slider-process: var(--elevation-slider-process-hover);
 }
 
-.elevation-slider__slider :deep(.v-input__control) {
+.elevation-slider__slider > :deep(.v-input__control) {
   min-height: 200px;
 }
 
@@ -407,18 +446,64 @@ watchEffect(() => {
   cursor: default;
 }
 
-/* Vuetify hides every input inside the slider container */
+/* Same style as the TableCellEdit inputs */
+.elevation-slider__tooltip-field {
+  display: flex;
+  align-items: stretch;
+  box-sizing: border-box;
+  height: 24px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 4px;
+  background-color: rgb(var(--v-theme-surface));
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+.elevation-slider__tooltip-field:hover:not(:focus-within) {
+  border-color: rgba(var(--v-theme-on-surface), 0.6);
+}
+
+.elevation-slider__tooltip-field:focus-within {
+  border-color: transparent;
+  outline: 1px solid rgb(var(--v-theme-primary));
+  outline-offset: -1px;
+}
+
 .elevation-slider__slider .elevation-slider__tooltip-input {
-  display: inline-block;
-  width: 50px;
-  margin: 0;
-  padding: 0;
+  /* Vuetify hides every input inside the slider container */
+  display: block;
+  width: 6ch;
+  padding: 0px 2px;
   border: 0;
-  border-bottom: 1px solid currentColor;
   outline: none;
-  color: inherit;
+  color: currentColor;
   background: transparent;
   font: inherit;
+  line-height: 20px;
+}
+
+.elevation-slider__tooltip-steppers {
+  display: flex;
+  flex-direction: column;
+}
+
+.elevation-slider__tooltip-steppers > button {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.elevation-slider__tooltip-steppers > button:hover {
+  background-color: rgba(var(--v-theme-on-surface), var(--v-hover-opacity));
 }
 
 .elevation-slider__edit-button {
