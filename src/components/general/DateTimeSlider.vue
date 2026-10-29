@@ -9,7 +9,7 @@
       <v-slider
         class="datetime-slider__track"
         :class="{ 'datetime-slider__track--keyboard': isKeyboardActive }"
-        :model-value="dateIndex"
+        v-model="dateIndex"
         :min="0"
         :max="maxIndex"
         :step="1"
@@ -22,14 +22,14 @@
         hide-details
         elevation="0"
         :ripple="false"
-        @update:model-value="onSliderInput"
+        @update:model-value="stopFollowNow"
       >
         <template #thumb-label="{ modelValue }">
           <v-theme-provider
             with-background
             class="datetime-slider__tooltip datetime-slider__tooltip--arrow"
           >
-            {{ getDateLabel(modelValue) }}
+            {{ dates[modelValue]?.toLocaleString() }}
           </v-theme-provider>
         </template>
         <template #tick-label="{ tick }">
@@ -304,12 +304,6 @@ const dateString = computed(() =>
     : '',
 )
 
-function getDateLabel(modelValue: number | string | undefined): string {
-  const index =
-    typeof modelValue === 'number' ? Math.round(modelValue) : dateIndex.value
-  return props.dates[index]?.toLocaleString() ?? ''
-}
-
 // Tooltip text for now-tracking control depending on if we use Date.now() or specified time
 const nowTrackingTooltip = computed(() => {
   if (doFollowNow.value) {
@@ -388,11 +382,6 @@ function stopDragGestureTracking(): void {
 
 function onPointerUp(): void {
   stopDragGestureTracking()
-}
-
-function onSliderInput(value: number): void {
-  dateIndex.value = Math.min(Math.max(Math.round(value), 0), maxIndex.value)
-  stopFollowNow()
 }
 
 function togglePlay(): void {
