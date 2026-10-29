@@ -706,15 +706,29 @@ function onCoordinateMoved(lat: number, lng: number): void {
 }
 
 .spatial-display__slider {
+  /* Browsers round the corners of the window, and phone screens even more.
+     The bottom corners follow that radius, so the gap stays the same width. */
+  --window-corner-radius: 20px;
+  --slider-inset: 5px;
+  --datetime-slider-corner-radius: calc(
+    var(--window-corner-radius) - var(--slider-inset)
+  );
   position: absolute;
-  bottom: 5px;
-  left: 5px;
-  right: 5px;
+  bottom: var(--slider-inset);
+  left: var(--slider-inset);
+  right: var(--slider-inset);
   z-index: 1000;
-  border-radius: 5px;
   backdrop-filter: blur(5px);
   background-color: rgba(var(--v-theme-surface), 0.8);
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Phones, in portrait and landscape */
+@media (pointer: coarse) and (max-width: 600px),
+  (pointer: coarse) and (max-height: 600px) {
+  .spatial-display__slider {
+    --window-corner-radius: 55px;
+  }
 }
 
 .mapcomponent__controls-container {

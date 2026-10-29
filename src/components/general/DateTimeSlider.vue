@@ -1,41 +1,47 @@
 <template>
   <div class="datetime-slider" aria-labelledby="date time slider">
-    <div ref="sliderContainer" class="slider-container">
-      <vue-slider
+    <div
+      ref="sliderContainer"
+      class="slider-container"
+      @keydown="isKeyboardActive = true"
+      @pointerdown="isKeyboardActive = false"
+    >
+      <v-slider
+        class="web-oc-slider datetime-slider__track"
+        :class="{ 'datetime-slider__track--keyboard': isKeyboardActive }"
         v-model="dateIndex"
-        :marks="marks"
-        :hide-label="hideLabel"
-        :duration="0"
-        step="1"
-        :tooltipFormatter="dateString"
-        silent
+        :min="0"
         :max="maxIndex"
-        @change="stopFollowNow"
+        :step="1"
+        :ticks="tickValues"
+        show-ticks="always"
+        thumb-label="always"
+        thumb-size="14"
+        track-size="4"
+        tick-size="4"
+        hide-details
+        elevation="0"
+        :ripple="false"
+        @update:model-value="stopFollowNow"
       >
-        <template v-slot:step="{ active, style, activeStyle }">
-          <div
-            :class="[
-              'vue-slider-mark-step',
-              { 'vue-slider-mark-step-active': active },
-            ]"
-            :style="active ? activeStyle : style"
-            @mouseover="hideLabel = false"
-            @mouseleave="hideLabel = true"
-            @focus="hideLabel = false"
-            @blur="hideLabel = true"
-          ></div>
-        </template>
-        <template v-slot:label="{ label }">
-          <span
-            :class="[
-              'vue-slider-mark-label',
-              'vue-slider-dot-tooltip-inner',
-              'custom-label',
-            ]"
-            >{{ label }}</span
+        <template #thumb-label="{ modelValue }">
+          <v-theme-provider
+            with-background
+            class="web-oc-slider-chip web-oc-slider-chip--arrow-down"
           >
+            {{ dates[modelValue]?.toLocaleString() }}
+          </v-theme-provider>
         </template>
-      </vue-slider>
+        <template #tick-label="{ tick }">
+          <v-theme-provider
+            v-if="markLabels[tick.value]"
+            with-background
+            class="web-oc-slider-chip"
+          >
+            {{ markLabels[tick.value] }}
+          </v-theme-provider>
+        </template>
+      </v-slider>
       <slot name="below-track"></slot>
     </div>
     <div class="datetime-slider__actions">
@@ -119,15 +125,14 @@ import {
   watch,
   type WatchHandle,
 } from 'vue'
-import { scaleTime } from 'd3-scale'
-import { DateTime } from 'luxon'
+import { useElementSize } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 
+import { toMultiScaleDateLabel } from '@/lib/date'
+import { getEquallySpacedSliderTicks } from '@/lib/date/sliderTicks'
 import { findDateIndex } from '@/lib/utils/dates'
 import { systemTimeAuthority } from '@/services/system-time'
-
-import VueSlider from 'vue-slider-component'
-import 'vue-slider-component/theme/antd.css'
+import '@/assets/slider.css'
 
 interface Properties {
   selectedDate?: Date
@@ -173,32 +178,28 @@ const dragGestureStartY = ref(0)
 const isTrackingDragGesture = ref(false)
 
 const DRAG_UP_THRESHOLD_PX = 24
+// Roughly the width of a date label, so that labels shown together do not overlap
+const MIN_MARK_LABEL_SPACING_PX = 100
 
-const hideLabel = ref(true)
+const { width: sliderWidth } = useElementSize(sliderContainer)
+// Show the thumb label while the slider is operated with the keyboard
+const isKeyboardActive = ref(false)
 
-const marks = computed(() => {
-  const dayMarks: Record<string, any> = {}
-  const dateScale = scaleTime().domain(props.dates)
-  const ticks = dateScale.ticks(5)
-  let tickIndex = 0
-  for (const index in props.dates) {
-    const date = DateTime.fromJSDate(props.dates[index])
-    if (
-      tickIndex < ticks.length &&
-      date.toMillis() >= ticks[tickIndex].getTime()
-    ) {
-      tickIndex++
-      dayMarks[index] = {
-        label: date.toJSDate().toLocaleString(undefined, {
-          year: 'numeric',
-          month: 'numeric',
-          day: 'numeric',
-        }),
-      }
-    }
-  }
-  return dayMarks
+const markLabels = computed<Record<number, string>>(() => {
+  const ticks = getEquallySpacedSliderTicks(
+    props.dates,
+    sliderWidth.value,
+    MIN_MARK_LABEL_SPACING_PX,
+  )
+  return Object.fromEntries(
+    ticks.map(({ index, tick }) => [
+      index,
+      toMultiScaleDateLabel(props.dates[index], tick),
+    ]),
+  )
 })
+
+const tickValues = computed(() => Object.keys(markLabels.value).map(Number))
 
 // Synchronise selectedDate property and local index variable.
 watch(dateIndex, (index) => {
@@ -319,11 +320,7 @@ function setDateToNow(): void {
 
 function isSliderGestureElement(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false
-  return Boolean(
-    target.closest(
-      '.vue-slider-dot-handle, .vue-slider-dot, .vue-slider-process, .vue-slider-rail, .vue-slider',
-    ),
-  )
+  return Boolean(target.closest('.v-slider-thumb, .v-slider-track, .v-slider'))
 }
 
 function onPointerDown(event: PointerEvent): void {
@@ -465,15 +462,31 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* A parent can round the bottom corners with --datetime-slider-corner-radius,
+   e.g. to follow the rounded corners of the window. The top corners are
+   rounded up to 15px. The content is inset to stay clear of the corners. */
+.datetime-slider {
+  --_corner-radius: var(--datetime-slider-corner-radius, 0px);
+  --_top-corner-radius: min(var(--_corner-radius), 15px);
+  --datetime-slider-inline-padding: max(
+    10px,
+    calc(var(--_corner-radius) * 0.35),
+    calc(var(--_top-corner-radius) - 1px)
+  );
+  border-radius: var(--_top-corner-radius) var(--_top-corner-radius)
+    var(--_corner-radius) var(--_corner-radius);
+}
+
 .slider-container {
   position: relative;
-  padding: 0px 10px;
+  padding: 0px var(--datetime-slider-inline-padding);
 }
 
 .datetime-slider__actions {
   display: flex;
   flex-direction: row;
-  padding: 0px 10px 6px;
+  height: 32px;
+  padding: 0px var(--datetime-slider-inline-padding) 6px;
 }
 
 .datetime-slider__datefield {
@@ -494,9 +507,96 @@ onUnmounted(() => {
   gap: 10px;
 }
 
-.vue-slider-mark-label.custom-label {
+/* Colours for the shared slider style (assets/slider.css) */
+.datetime-slider__track {
+  --web-oc-slider-rail-hover: color-mix(
+    in srgb,
+    rgb(var(--v-theme-on-surface)) 24%,
+    rgb(var(--v-theme-surface))
+  );
+  --web-oc-slider-mark: color-mix(
+    in srgb,
+    rgb(var(--v-theme-on-surface)) 30%,
+    rgb(var(--v-theme-surface))
+  );
+}
+
+.v-theme--light .datetime-slider__track {
+  --web-oc-slider-rail: rgb(var(--v-theme-surface));
+  --web-oc-slider-rail-hover: color-mix(
+    in srgb,
+    rgb(var(--v-theme-on-surface)) 8%,
+    rgb(var(--v-theme-surface))
+  );
+}
+
+/* The track spans the full width, so it lines up with the below-track slot */
+.datetime-slider__track :deep(.v-input__control) {
+  min-height: 18px;
+  margin: 0;
+}
+
+/* Vuetify insets the first and last tick, put them at the track ends */
+.datetime-slider__track :deep(.v-slider-track__tick--first) {
+  margin-inline-start: 0;
+}
+
+.datetime-slider__track :deep(.v-slider-track__tick--last) {
+  margin-inline-start: 100%;
+}
+
+/* Larger hover area around the small tick dots */
+.datetime-slider__track :deep(.v-slider-track__tick::after) {
+  content: '';
   position: absolute;
-  top: -25px;
-  transform: translate(-50%, -100%);
+  inset: -6px;
+}
+
+/* Tooltip above the thumb, with the arrow tip touching the thumb */
+.datetime-slider__track :deep(.v-slider-thumb__label) {
+  bottom: 6px;
+}
+
+/* Vuetify's hover mode hides the label when the pointer leaves the thumb
+   during a drag, so show it on hover, while dragging and on keyboard use.
+   :focus-visible is not used, Vuetify focuses the thumb on mouse presses too */
+.datetime-slider__track :deep(.v-slider-thumb__label-container) {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s,
+    visibility 0.2s;
+}
+
+.datetime-slider__track
+  :deep(.v-slider-thumb:hover .v-slider-thumb__label-container),
+.datetime-slider__track
+  :deep(.v-slider-thumb--pressed .v-slider-thumb__label-container),
+.datetime-slider__track--keyboard
+  :deep(.v-slider-thumb--focused .v-slider-thumb__label-container) {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Same height above the track as the thumb label */
+.datetime-slider__track :deep(.v-slider-track__tick-label) {
+  bottom: 100%;
+  left: 50%;
+  margin: 0 0 11px 0;
+  transform: translateX(-50%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+/* Hovering any dot shows the labels of all dots */
+.datetime-slider__track
+  :deep(
+    .v-slider-track__ticks:has(.v-slider-track__tick:hover)
+      .v-slider-track__tick-label
+  ) {
+  opacity: 1;
+  visibility: visible;
 }
 </style>
