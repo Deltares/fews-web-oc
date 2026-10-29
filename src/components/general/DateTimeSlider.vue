@@ -1,15 +1,21 @@
 <template>
   <div class="datetime-slider" aria-labelledby="date time slider">
-    <div ref="sliderContainer" class="slider-container">
+    <div
+      ref="sliderContainer"
+      class="slider-container"
+      @keydown="isKeyboardActive = true"
+      @pointerdown="isKeyboardActive = false"
+    >
       <v-slider
         class="datetime-slider__track"
+        :class="{ 'datetime-slider__track--keyboard': isKeyboardActive }"
         :model-value="dateIndex"
         :min="0"
         :max="maxIndex"
         :step="1"
         :ticks="tickValues"
         show-ticks="always"
-        thumb-label="hover"
+        thumb-label="always"
         thumb-size="14"
         track-size="4"
         tick-size="4"
@@ -120,6 +126,7 @@ import {
   type WatchHandle,
 } from 'vue'
 import { scaleTime } from 'd3-scale'
+import { useElementSize } from '@vueuse/core'
 import { DateTime } from 'luxon'
 import { useI18n } from 'vue-i18n'
 
@@ -170,12 +177,19 @@ const dragGestureStartY = ref(0)
 const isTrackingDragGesture = ref(false)
 
 const DRAG_UP_THRESHOLD_PX = 24
+// Roughly the width of a date label, so that labels shown together do not overlap
+const MIN_MARK_LABEL_SPACING_PX = 100
+
+const { width: sliderWidth } = useElementSize(sliderContainer)
+// Show the thumb label while the slider is operated with the keyboard
+const isKeyboardActive = ref(false)
 
 const markLabels = computed<Record<number, string>>(() => {
   const dayMarks: Record<number, string> = {}
   const dateScale = scaleTime().domain(props.dates)
   const ticks = dateScale.ticks(8)
   let tickIndex = 0
+  let lastMarkPosition = -Infinity
   for (const index in props.dates) {
     const date = DateTime.fromJSDate(props.dates[index])
     if (
@@ -183,6 +197,12 @@ const markLabels = computed<Record<number, string>>(() => {
       date.toMillis() >= ticks[tickIndex].getTime()
     ) {
       tickIndex++
+      // Marks are placed by index, so skip those too close to the previous one
+      const position =
+        (Number(index) / Math.max(props.dates.length - 1, 1)) *
+        sliderWidth.value
+      if (position - lastMarkPosition < MIN_MARK_LABEL_SPACING_PX) continue
+      lastMarkPosition = position
       dayMarks[Number(index)] = date.toJSDate().toLocaleString(undefined, {
         year: 'numeric',
         month: 'numeric',
@@ -607,6 +627,27 @@ onUnmounted(() => {
 .datetime-slider__track
   :deep(.v-slider-thumb__label > .v-slider-thumb__label-wedge) {
   display: none;
+}
+
+/* Vuetify's hover mode hides the label when the pointer leaves the thumb
+   during a drag, so show it on hover, while dragging and on keyboard use.
+   :focus-visible is not used, Vuetify focuses the thumb on mouse presses too */
+.datetime-slider__track :deep(.v-slider-thumb__label-container) {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s,
+    visibility 0.2s;
+}
+
+.datetime-slider__track
+  :deep(.v-slider-thumb:hover .v-slider-thumb__label-container),
+.datetime-slider__track
+  :deep(.v-slider-thumb--pressed .v-slider-thumb__label-container),
+.datetime-slider__track--keyboard
+  :deep(.v-slider-thumb--focused .v-slider-thumb__label-container) {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Same style as the map control chips (ControlChip.vue) */
