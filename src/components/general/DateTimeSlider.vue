@@ -19,7 +19,10 @@
         @update:model-value="onSliderInput"
       >
         <template #thumb-label="{ modelValue }">
-          <v-theme-provider with-background class="datetime-slider__tooltip">
+          <v-theme-provider
+            with-background
+            class="datetime-slider__tooltip datetime-slider__tooltip--arrow"
+          >
             {{ getDateLabel(modelValue) }}
           </v-theme-provider>
         </template>
@@ -592,8 +595,9 @@ onUnmounted(() => {
   box-shadow: 0 0 0 5px rgba(var(--v-theme-primary), 0.2);
 }
 
+/* Tooltip above the thumb, with the arrow tip touching the thumb */
 .datetime-slider__track :deep(.v-slider-thumb__label) {
-  bottom: calc(var(--v-slider-thumb-size) / 2 + 8px);
+  bottom: 6px;
   height: auto;
   min-width: 0;
   padding: 0;
@@ -623,6 +627,27 @@ onUnmounted(() => {
     rgba(var(--v-theme-on-surface), var(--v-activated-opacity))
   );
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Arrow pointing to the thumb, drawn outside the chip so the translucent
+   backgrounds do not overlap */
+.datetime-slider__tooltip--arrow {
+  position: relative;
+}
+
+.datetime-slider__tooltip--arrow::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 12px;
+  height: 6px;
+  transform: translateX(-50%);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  backdrop-filter: inherit;
+  background-color: inherit;
+  background-image: inherit;
+  pointer-events: none;
 }
 
 .datetime-slider__track :deep(.v-slider-track__tick-label) {

@@ -404,11 +404,11 @@ watchEffect(() => {
   box-shadow: 0 0 0 5px rgba(var(--v-theme-primary), 0.2);
 }
 
-/* Tooltip on the left of the thumb */
+/* Tooltip on the left of the thumb, with the arrow tip touching the thumb */
 .elevation-slider__slider :deep(.v-slider-thumb__label) {
   top: 0;
   left: auto;
-  right: calc(var(--v-slider-thumb-size) + 8px);
+  right: calc(var(--v-slider-thumb-size) + 6px);
   transform: translateY(-50%);
   height: auto;
   min-width: 0;
@@ -442,6 +442,24 @@ watchEffect(() => {
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
   font-family: var(--font-primary);
   cursor: default;
+  position: relative;
+}
+
+/* Arrow pointing to the thumb, drawn outside the chip so the translucent
+   backgrounds do not overlap */
+.elevation-slider__tooltip::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 6px;
+  height: 12px;
+  transform: translateY(-50%);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  backdrop-filter: inherit;
+  background-color: inherit;
+  background-image: inherit;
+  pointer-events: none;
 }
 
 /* Same style as the TableCellEdit inputs */
