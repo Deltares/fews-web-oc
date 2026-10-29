@@ -1,5 +1,6 @@
 <template>
   <v-list class="interval-list" density="compact" prepend-gap="12">
+    <v-list-subheader>{{ $t('timeControl.period') }}</v-list-subheader>
     <v-list-item
       :active="0 === selectedIndex"
       prepend-icon="mdi-clock-outline"

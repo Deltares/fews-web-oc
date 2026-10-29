@@ -38,49 +38,115 @@
       </div>
     </template>
 
-    <v-card :style="{ width: '90vw', maxWidth: '500px' }">
+    <v-card class="time-control-card" :width="mobile ? undefined : 640">
       <v-row no-gutters>
-        <v-col>
-          <v-form ref="form">
-            <div class="pa-4">
-              <v-date-input
-                v-model="customStartDate"
-                :label="t('common.start')"
-                @update:model-value="onCustomDateUpdate"
-                density="compact"
-                variant="solo-filled"
-                flat
-                :rules="[
-                  () =>
-                    dateOrderIsCorrect ||
-                    t('timeControl.startDateBeforeEndDate'),
-                ]"
-              />
-              <v-date-input
-                v-model="customEndDate"
-                :label="t('common.end')"
-                @update:model-value="onCustomDateUpdate"
-                density="compact"
-                variant="solo-filled"
-                flat
-                :rules="[
-                  () =>
-                    dateOrderIsCorrect ||
-                    t('timeControl.endDateAfterStartDate'),
-                ]"
-              />
-            </div>
-          </v-form>
-        </v-col>
-        <v-col>
+        <v-col cols="12" sm="5" :class="smAndUp ? 'border-e' : 'border-b'">
           <interval-selector
-            ref="intervalSelector"
             v-model="store.selectedInterval"
             :items="intervalItems"
             :now="store.systemTime"
           />
         </v-col>
+        <v-col cols="12" sm="7">
+          <div class="px-4 pt-3">
+            <div class="text-body-2 text-medium-emphasis">
+              {{ t('timeControl.selectedPeriod') }}
+            </div>
+            <div class="text-body-2">{{ periodLabel }}</div>
+            <div
+              v-if="!isCustomInterval"
+              class="text-caption text-medium-emphasis"
+            >
+              {{ t('timeControl.pickCustomPeriod') }}
+            </div>
+          </div>
+          <v-date-picker
+            :model-value="pickerDays"
+            @update:model-value="onPickerUpdate"
+            multiple="range"
+            hide-header
+            show-adjacent-months
+            weeks-in-month="dynamic"
+            control-height="40"
+            width="100%"
+            class="compact-date-picker"
+            :aria-label="t('timeControl.period')"
+          />
+        </v-col>
       </v-row>
+
+      <v-divider />
+
+      <div class="pa-4 time-control-info">
+        <div class="d-flex flex-wrap align-baseline gc-3 text-body-1">
+          <span>{{ systemTimeDetails.date }}</span>
+          <span>
+            <span class="running-clock">{{ systemTimeDetails.time }}</span>
+            <span class="text-medium-emphasis ms-1">
+              {{ systemTimeDetails.timeZone }}
+            </span>
+          </span>
+        </div>
+
+        <v-select
+          v-if="timeZoneSetting"
+          :model-value="timeZoneSetting.value"
+          @update:model-value="onTimeZoneUpdate"
+          :items="timeZoneOptions"
+          :label="t('timeControl.timeZone')"
+          :disabled="timeZoneSetting.disabled"
+          item-title="title"
+          item-value="value"
+          prepend-inner-icon="mdi-earth"
+          variant="solo-filled"
+          density="compact"
+          flat
+          item-props
+          hide-details
+        />
+        <div class="text-caption text-medium-emphasis">
+          {{ timeZoneDetails.offset }} · {{ timeZoneDetails.longName }}
+        </div>
+
+        <div
+          v-if="browserTimeZoneDetails"
+          class="time-control-info__row text-caption text-medium-emphasis"
+        >
+          <v-icon size="small" icon="mdi-web" />
+          <span>
+            {{ t('timeControl.browserTimeZone') }}:
+            {{ browserTimeZoneDetails.name }}
+            ({{ browserTimeZoneDetails.offset }})
+          </span>
+        </div>
+        <div
+          v-if="store.syncError"
+          class="time-control-info__row text-caption text-warning"
+        >
+          <v-icon size="small" icon="mdi-sync-alert" />
+          <span>{{ t('timeControl.syncFailed') }}: {{ store.syncError }}</span>
+        </div>
+        <div
+          v-else-if="lastSyncedLabel"
+          class="time-control-info__row text-caption text-medium-emphasis"
+        >
+          <v-icon size="small" icon="mdi-sync" />
+          <span>{{
+            t('timeControl.lastSynced', { time: lastSyncedLabel })
+          }}</span>
+          <v-tooltip :text="t('timeControl.syncHint')" max-width="320">
+            <template #activator="{ props: tooltipProps }">
+              <v-icon
+                v-bind="tooltipProps"
+                size="small"
+                icon="mdi-information-outline"
+                :aria-label="t('timeControl.syncHint')"
+                tabindex="0"
+              />
+            </template>
+          </v-tooltip>
+        </div>
+      </div>
     </v-card>
   </v-menu>
 </template>
@@ -88,46 +154,44 @@
 <script setup lang="ts">
 import { ref, computed, watchEffect, watch } from 'vue'
 import IntervalSelector from './IntervalSelector.vue'
-import type { VForm } from 'vuetify/components'
 import { useI18n } from 'vue-i18n'
 import { useDisplayDateFormat } from '@/services/useDisplayDateFormat'
 import { useDisplay } from 'vuetify'
 
 import { CLOCK_TICK_MS, useSystemTimeStore } from '@/stores/systemTime'
 import { useConfigStore } from '@/stores/config'
+import {
+  type UserSettingsItemOneOf,
+  useUserSettingsStore,
+} from '@/stores/userSettings'
+import { useUserSettingTranslation } from '@/services/useUserSettingTranslation'
 import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
+import { DateTime } from 'luxon'
 import {
   fromWallClockDate,
   getDisplayTimeZone,
+  SYSTEM_TIME_ZONE,
   toDisplayDateTime,
   toWallClockDate,
 } from '@/lib/date/timeZone'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { d } = useDisplayDateFormat()
 
 const store = useSystemTimeStore()
 const configStore = useConfigStore()
-const { mobile } = useDisplay()
-
-const form = ref<VForm>()
-
-const dateOrderIsCorrect = computed(
-  () =>
-    !customStartDate.value ||
-    !customEndDate.value ||
-    customStartDate.value <= customEndDate.value,
-)
+const userSettings = useUserSettingsStore()
+const { optionTitle } = useUserSettingTranslation()
+const { mobile, smAndUp } = useDisplay()
 
 const intervalItems = computed(() => {
   const presets = configStore.general.timeSettings?.viewPeriodPresets
   return presets?.map(periodPresetToIntervalItem) ?? []
 })
 
-// Days of the date pickers as wall-clock dates, as the pickers work in local
-// time. The end day is included in the period.
-const customStartDate = ref<Date | null>()
-const customEndDate = ref<Date | null>()
+// First and last day of the period in the date picker, as wall-clock dates,
+// as the picker works in local time. The last day is included in the period.
+const pickerDays = ref<Date[]>([])
 const syncPulseActive = ref(false)
 let syncPulseTimeout: ReturnType<typeof setTimeout> | undefined
 
@@ -146,6 +210,91 @@ const systemTimeLabel = computed(() => {
     : d(store.systemTime, 'timeControl')
 })
 
+const systemTimeDetails = computed(() => {
+  const dateTime = toDisplayDateTime(store.systemTime).setLocale(locale.value)
+  return {
+    date: dateTime.toLocaleString(DateTime.DATE_HUGE),
+    time: dateTime.toLocaleString(DateTime.TIME_WITH_SECONDS),
+    timeZone: dateTime.offsetNameShort ?? '',
+  }
+})
+
+function getTimeZoneDetails(dateTime: DateTime) {
+  return {
+    name: dateTime.zoneName ?? '',
+    longName: dateTime.offsetNameLong ?? '',
+    offset: `UTC${dateTime.toFormat('ZZ')}`,
+  }
+}
+
+const timeZoneDetails = computed(() =>
+  getTimeZoneDetails(
+    toDisplayDateTime(store.systemTime).setLocale(locale.value),
+  ),
+)
+
+const timeZoneSetting = computed(() => {
+  const setting = userSettings.get('ui.timeZone')
+  return setting?.type === 'oneOfMultiple' ? setting : undefined
+})
+
+const timeZoneOptions = computed(() => {
+  const setting = timeZoneSetting.value
+  if (!setting) return []
+  return setting.items.map((item) => {
+    const isSystem = item.value === SYSTEM_TIME_ZONE
+    const dateTime = DateTime.fromJSDate(store.systemTime, {
+      zone: item.value,
+    }).setLocale(locale.value)
+    const title = optionTitle(setting, item)
+    const details = dateTime.isValid ? getTimeZoneDetails(dateTime) : undefined
+    return {
+      value: item.value,
+      disabled: item.disabled,
+      title: isSystem && details ? `${title} (${details.name})` : title,
+      subtitle: details ? `${details.offset} · ${details.longName}` : '',
+    }
+  })
+})
+
+function onTimeZoneUpdate(value: unknown) {
+  if (typeof value !== 'string') return
+  const setting = userSettings.items.find(
+    (item): item is UserSettingsItemOneOf => item.id === 'ui.timeZone',
+  )
+  if (setting) userSettings.add({ ...setting, value })
+}
+
+const periodLabel = computed(() => {
+  const { startTime, endTime } = store
+  if (store.selectedInterval === 'default' || (!startTime && !endTime)) {
+    return t('timeControl.defaultPeriod')
+  }
+  const format = (date: Date) =>
+    toDisplayDateTime(date)
+      .setLocale(locale.value)
+      .toLocaleString(
+        isCustomInterval.value ? DateTime.DATE_MED : DateTime.DATETIME_MED,
+      )
+  return `${startTime ? format(startTime) : '…'} – ${endTime ? format(endTime) : '…'}`
+})
+
+// The browser time zone, when dates are displayed in another time zone
+const browserTimeZoneDetails = computed(() => {
+  const dateTime = DateTime.fromJSDate(store.systemTime, {
+    zone: 'system',
+  }).setLocale(locale.value)
+  if (dateTime.zoneName === timeZoneDetails.value.name) return undefined
+  return getTimeZoneDetails(dateTime)
+})
+
+const lastSyncedLabel = computed(() => {
+  if (!store.lastSyncedAt) return undefined
+  return toDisplayDateTime(store.lastSyncedAt)
+    .setLocale(locale.value)
+    .toLocaleString(DateTime.TIME_WITH_SECONDS)
+})
+
 // Describes the preset period, which moves with the system time
 const runningWindowTooltip = computed(() => {
   const interval = store.selectedInterval
@@ -161,25 +310,33 @@ const runningDotStyle = computed(() => ({
   animationDuration: `${CLOCK_TICK_MS}ms`,
 }))
 
-// Apply the custom period once both days are picked, in the display time zone
+// Apply the custom period in the display time zone. A single picked day is a
+// period of one day, until a second day is picked.
 watchEffect(() => {
-  if (!isCustomInterval.value || !dateOrderIsCorrect.value) return
-  if (!customStartDate.value || !customEndDate.value) return
-  store.startTime = fromWallClockDate(customStartDate.value)
-  store.endTime = toDisplayDateTime(fromWallClockDate(customEndDate.value))
+  if (!isCustomInterval.value) return
+  const firstDay = pickerDays.value[0]
+  const lastDay = pickerDays.value.at(-1)
+  if (!firstDay || !lastDay) return
+  store.startTime = fromWallClockDate(firstDay)
+  store.endTime = toDisplayDateTime(fromWallClockDate(lastDay))
     .endOf('day')
     .toJSDate()
 })
 
-// Show the days of the default or preset period, empty for the default
+// Show the days of the default or preset period, none for the default
 watch(
   () => [store.startTime, store.endTime, getDisplayTimeZone()],
   () => {
     if (isCustomInterval.value) return
-    customStartDate.value = store.startTime && toPickerDay(store.startTime)
-    // A period ending at midnight does not include the day it ends on
-    customEndDate.value =
-      store.endTime && toPickerDay(new Date(store.endTime.getTime() - 1))
+    const { startTime, endTime } = store
+    pickerDays.value =
+      startTime && endTime
+        ? [
+            toPickerDay(startTime),
+            // A period ending at midnight does not include the day it ends on
+            toPickerDay(new Date(endTime.getTime() - 1)),
+          ]
+        : []
   },
   { immediate: true },
 )
@@ -188,9 +345,11 @@ function toPickerDay(date: Date): Date {
   return toWallClockDate(toDisplayDateTime(date).startOf('day').toJSDate())
 }
 
-function onCustomDateUpdate() {
+function onPickerUpdate(days: unknown) {
+  // Picking the first day again clears the selection, keep that day instead
+  if (!Array.isArray(days) || days.length === 0) return
   store.selectedInterval = 'custom'
-  form.value?.validate()
+  pickerDays.value = days
 }
 
 watch(
@@ -293,6 +452,48 @@ watch(
 .icon-group__label {
   line-height: 40px;
   padding-left: 4px;
+}
+
+.time-control-card {
+  max-width: calc(100vw - 16px);
+  max-height: calc(100dvh - 72px);
+  overflow-y: auto;
+}
+
+.compact-date-picker :deep(.v-date-picker-month) {
+  padding-bottom: 4px;
+}
+
+.compact-date-picker :deep(.v-date-picker-month__day) {
+  height: 32px;
+  padding: 1px;
+}
+
+.compact-date-picker :deep(.v-date-picker-month__day .v-btn) {
+  --v-btn-height: 20px;
+  width: 30px;
+  height: 30px;
+}
+
+.running-clock {
+  font-variant-numeric: tabular-nums;
+}
+
+.time-control-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.time-control-info__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.time-control-info__row > .v-icon {
+  margin-top: 2px;
+  opacity: 0.7;
 }
 
 .icon-group__underlay {
