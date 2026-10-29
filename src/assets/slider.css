@@ -1,0 +1,144 @@
+/*
+ * Shared style for the Vuetify sliders (DateTimeSlider and ElevationSlider),
+ * styled after the vue-slider antd theme using the Vuetify theme colours.
+ *
+ * Add the web-oc-slider class to a v-slider and set its colours with:
+ *   --web-oc-slider-rail          track background
+ *   --web-oc-slider-rail-hover    track background when hovering the slider
+ *   --web-oc-slider-fill          filled part of the track, ticks and thumb
+ *   --web-oc-slider-fill-hover    filled part when hovering the slider
+ *   --web-oc-slider-mark          outline of unfilled ticks, defaults to rail
+ *   --web-oc-slider-thumb-active  thumb border when hovered or focused
+ */
+.web-oc-slider {
+  --web-oc-slider-rail: color-mix(
+    in srgb,
+    rgb(var(--v-theme-on-surface)) 16%,
+    rgb(var(--v-theme-surface))
+  );
+  --web-oc-slider-fill: rgb(var(--v-theme-primary));
+  --_web-oc-slider-rail: var(--web-oc-slider-rail);
+  --_web-oc-slider-fill: var(--web-oc-slider-fill);
+}
+
+.web-oc-slider:hover {
+  --_web-oc-slider-rail: var(
+    --web-oc-slider-rail-hover,
+    var(--web-oc-slider-rail)
+  );
+  --_web-oc-slider-fill: var(
+    --web-oc-slider-fill-hover,
+    var(--web-oc-slider-fill)
+  );
+}
+
+.web-oc-slider .v-slider-track {
+  border-radius: 15px;
+}
+
+.web-oc-slider .v-slider-track__background {
+  background-color: var(--_web-oc-slider-rail);
+  opacity: 1;
+  transition: background-color 0.3s;
+}
+
+.web-oc-slider .v-slider-track__fill {
+  background-color: var(--_web-oc-slider-fill);
+  transition: background-color 0.3s;
+}
+
+.web-oc-slider .v-slider-track__tick {
+  border-radius: 50%;
+  background-color: rgb(var(--v-theme-surface));
+  box-shadow: 0 0 0 2px var(--web-oc-slider-mark, var(--_web-oc-slider-rail));
+}
+
+.web-oc-slider .v-slider-track__tick--filled {
+  box-shadow: 0 0 0 2px var(--_web-oc-slider-fill);
+}
+
+.web-oc-slider .v-slider-thumb__surface {
+  box-sizing: border-box;
+  background-color: rgb(var(--v-theme-surface));
+  border: 2px solid var(--_web-oc-slider-fill);
+  transition:
+    box-shadow 0.3s,
+    border-color 0.3s;
+}
+
+.web-oc-slider .v-slider-thumb__surface::before,
+.web-oc-slider .v-slider-thumb__surface::after {
+  display: none;
+}
+
+.web-oc-slider .v-slider-thumb:hover .v-slider-thumb__surface,
+.web-oc-slider .v-slider-thumb--focused .v-slider-thumb__surface {
+  border-color: var(--web-oc-slider-thumb-active, var(--_web-oc-slider-fill));
+}
+
+.web-oc-slider .v-slider-thumb--focused .v-slider-thumb__surface {
+  box-shadow: 0 0 0 5px rgba(var(--v-theme-primary), 0.2);
+}
+
+/* The thumb label only positions the chip, which has its own background */
+.web-oc-slider .v-slider-thumb__label {
+  height: auto;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.web-oc-slider .v-slider-thumb__label > .v-slider-thumb__label-wedge {
+  display: none;
+}
+
+/* Same style as the map control chips (ControlChip.vue) */
+.web-oc-slider .web-oc-slider-chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 5px;
+  font-size: 0.825rem;
+  white-space: nowrap;
+  color: rgb(var(--v-theme-on-surface));
+  backdrop-filter: blur(5px);
+  background-color: rgba(var(--v-theme-surface), 0.8);
+  /* Tint of the tonal v-chip underlay */
+  background-image: linear-gradient(
+    rgba(var(--v-theme-on-surface), var(--v-activated-opacity)),
+    rgba(var(--v-theme-on-surface), var(--v-activated-opacity))
+  );
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Arrow pointing to the thumb, drawn outside the chip so the translucent
+   backgrounds do not overlap. The 6px arrow length is the gap to the thumb. */
+.web-oc-slider .web-oc-slider-chip--arrow-down::after,
+.web-oc-slider .web-oc-slider-chip--arrow-right::after {
+  content: '';
+  position: absolute;
+  backdrop-filter: inherit;
+  background-color: inherit;
+  background-image: inherit;
+  pointer-events: none;
+}
+
+.web-oc-slider .web-oc-slider-chip--arrow-down::after {
+  top: 100%;
+  left: 50%;
+  width: 12px;
+  height: 6px;
+  transform: translateX(-50%);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+.web-oc-slider .web-oc-slider-chip--arrow-right::after {
+  top: 50%;
+  left: 100%;
+  width: 6px;
+  height: 12px;
+  transform: translateY(-50%);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}

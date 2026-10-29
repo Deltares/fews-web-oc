@@ -59,7 +59,7 @@ test('keeps the thumb label visible while dragging off the thumb', async ({
   const component = await mount('general/DateTimeSlider/Wide')
   const page = component.page()
   const thumb = component.locator('.v-slider-thumb')
-  const label = component.locator('.datetime-slider__tooltip--arrow')
+  const label = component.locator('.web-oc-slider-chip--arrow-down')
 
   await expect(label).toBeHidden()
 
@@ -80,7 +80,7 @@ test('keeps the thumb label visible while dragging off the thumb', async ({
 
 test('shows the thumb label on keyboard focus', async ({ mount, page }) => {
   const component = await mount('general/DateTimeSlider/Wide')
-  const label = component.locator('.datetime-slider__tooltip--arrow')
+  const label = component.locator('.web-oc-slider-chip--arrow-down')
 
   await page.mouse.move(0, 0)
   await component.locator('.v-slider-thumb').focus()

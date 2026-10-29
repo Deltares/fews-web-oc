@@ -2,7 +2,7 @@
   <div ref="rootElement" class="elevation-slider">
     <v-slider
       ref="sliderComponent"
-      class="elevation-slider__slider"
+      class="web-oc-slider elevation-slider__slider"
       :model-value="sliderModelValue"
       :max="sliderMax"
       :min="sliderMin"
@@ -25,7 +25,7 @@
       <template #thumb-label>
         <v-theme-provider
           with-background
-          class="elevation-slider__tooltip"
+          class="web-oc-slider-chip web-oc-slider-chip--arrow-right elevation-slider__tooltip"
           @mousedown.stop
           @touchstart.stop
           @pointerdown.stop
@@ -87,6 +87,7 @@
 import { computed, nextTick, ref, watch, watchEffect } from 'vue'
 import { scaleLinear } from 'd3-scale'
 import { clamp, floatPrecision } from '@/lib/utils/math'
+import '@/assets/slider.css'
 
 interface Props {
   modelValue?: number
@@ -320,88 +321,33 @@ watchEffect(() => {
   margin: 0;
 }
 
-/* Styled after the vue-slider antd theme, using the Vuetify theme colours */
+/* Colours for the shared slider style (assets/slider.css) */
 .elevation-slider__slider {
-  --elevation-slider-rail: color-mix(
+  --web-oc-slider-rail: color-mix(
     in srgb,
     rgb(var(--v-theme-on-surface)) 8%,
     rgb(var(--v-theme-surface))
   );
-  --elevation-slider-rail-hover: color-mix(
+  --web-oc-slider-rail-hover: color-mix(
     in srgb,
     rgb(var(--v-theme-on-surface)) 16%,
     rgb(var(--v-theme-surface))
   );
-  --elevation-slider-process: color-mix(
+  --web-oc-slider-fill: color-mix(
     in srgb,
     rgb(var(--v-theme-primary)) 50%,
     rgb(var(--v-theme-surface))
   );
-  --elevation-slider-process-hover: color-mix(
+  --web-oc-slider-fill-hover: color-mix(
     in srgb,
     rgb(var(--v-theme-primary)) 75%,
     rgb(var(--v-theme-surface))
   );
-  --elevation-slider-active: rgb(var(--v-theme-primary));
-}
-
-.elevation-slider__slider:hover {
-  --elevation-slider-rail: var(--elevation-slider-rail-hover);
-  --elevation-slider-process: var(--elevation-slider-process-hover);
+  --web-oc-slider-thumb-active: rgb(var(--v-theme-primary));
 }
 
 .elevation-slider__slider > :deep(.v-input__control) {
   min-height: 200px;
-}
-
-.elevation-slider__slider :deep(.v-slider-track) {
-  border-radius: 15px;
-}
-
-.elevation-slider__slider :deep(.v-slider-track__background) {
-  background-color: var(--elevation-slider-rail);
-  opacity: 1;
-  transition: background-color 0.3s;
-}
-
-.elevation-slider__slider :deep(.v-slider-track__fill) {
-  background-color: var(--elevation-slider-process);
-  transition: background-color 0.3s;
-}
-
-.elevation-slider__slider :deep(.v-slider-track__tick) {
-  border-radius: 50%;
-  background-color: rgb(var(--v-theme-surface));
-  box-shadow: 0 0 0 2px var(--elevation-slider-rail);
-}
-
-.elevation-slider__slider :deep(.v-slider-track__tick--filled) {
-  box-shadow: 0 0 0 2px var(--elevation-slider-process);
-}
-
-.elevation-slider__slider :deep(.v-slider-thumb__surface) {
-  box-sizing: border-box;
-  background-color: rgb(var(--v-theme-surface));
-  border: 2px solid var(--elevation-slider-process);
-  transition:
-    box-shadow 0.3s,
-    border-color 0.3s;
-}
-
-.elevation-slider__slider :deep(.v-slider-thumb__surface::before),
-.elevation-slider__slider :deep(.v-slider-thumb__surface::after) {
-  display: none;
-}
-
-.elevation-slider__slider :deep(.v-slider-thumb:hover .v-slider-thumb__surface),
-.elevation-slider__slider
-  :deep(.v-slider-thumb--focused .v-slider-thumb__surface) {
-  border-color: var(--elevation-slider-active);
-}
-
-.elevation-slider__slider
-  :deep(.v-slider-thumb--focused .v-slider-thumb__surface) {
-  box-shadow: 0 0 0 5px rgba(var(--v-theme-primary), 0.2);
 }
 
 /* Tooltip on the left of the thumb, with the arrow tip touching the thumb */
@@ -410,56 +356,12 @@ watchEffect(() => {
   left: auto;
   right: calc(var(--v-slider-thumb-size) + 6px);
   transform: translateY(-50%);
-  height: auto;
-  min-width: 0;
-  padding: 0;
-  background: transparent;
 }
 
-.elevation-slider__slider
-  :deep(.v-slider-thumb__label > .v-slider-thumb__label-wedge) {
-  display: none;
-}
-
-/* Same style as the map control chips (ControlChip.vue) */
 .elevation-slider__tooltip {
   gap: 4px;
-  display: flex;
-  align-items: center;
-  height: 32px;
-  padding: 0 8px;
-  border-radius: 5px;
-  font-size: 0.825rem;
-  white-space: nowrap;
-  color: rgb(var(--v-theme-on-surface));
-  backdrop-filter: blur(5px);
-  background-color: rgba(var(--v-theme-surface), 0.8);
-  /* Tint of the tonal v-chip underlay */
-  background-image: linear-gradient(
-    rgba(var(--v-theme-on-surface), var(--v-activated-opacity)),
-    rgba(var(--v-theme-on-surface), var(--v-activated-opacity))
-  );
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
   font-family: var(--font-primary);
   cursor: default;
-  position: relative;
-}
-
-/* Arrow pointing to the thumb, drawn outside the chip so the translucent
-   backgrounds do not overlap */
-.elevation-slider__tooltip::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 100%;
-  width: 6px;
-  height: 12px;
-  transform: translateY(-50%);
-  clip-path: polygon(0 0, 100% 50%, 0 100%);
-  backdrop-filter: inherit;
-  background-color: inherit;
-  background-image: inherit;
-  pointer-events: none;
 }
 
 /* Same style as the TableCellEdit inputs */

@@ -7,7 +7,7 @@
       @pointerdown="isKeyboardActive = false"
     >
       <v-slider
-        class="datetime-slider__track"
+        class="web-oc-slider datetime-slider__track"
         :class="{ 'datetime-slider__track--keyboard': isKeyboardActive }"
         v-model="dateIndex"
         :min="0"
@@ -27,7 +27,7 @@
         <template #thumb-label="{ modelValue }">
           <v-theme-provider
             with-background
-            class="datetime-slider__tooltip datetime-slider__tooltip--arrow"
+            class="web-oc-slider-chip web-oc-slider-chip--arrow-down"
           >
             {{ dates[modelValue]?.toLocaleString() }}
           </v-theme-provider>
@@ -36,7 +36,7 @@
           <v-theme-provider
             v-if="markLabels[tick.value]"
             with-background
-            class="datetime-slider__tooltip"
+            class="web-oc-slider-chip"
           >
             {{ markLabels[tick.value] }}
           </v-theme-provider>
@@ -136,6 +136,7 @@ import {
 } from '@/lib/date'
 import { findDateIndex } from '@/lib/utils/dates'
 import { systemTimeAuthority } from '@/services/system-time'
+import '@/assets/slider.css'
 
 interface Properties {
   selectedDate?: Date
@@ -529,37 +530,27 @@ onUnmounted(() => {
   gap: 10px;
 }
 
-/* Styled after the vue-slider antd theme, using the Vuetify theme colours */
+/* Colours for the shared slider style (assets/slider.css) */
 .datetime-slider__track {
-  --datetime-slider-rail: color-mix(
-    in srgb,
-    rgb(var(--v-theme-on-surface)) 16%,
-    rgb(var(--v-theme-surface))
-  );
-  --datetime-slider-rail-hover: color-mix(
+  --web-oc-slider-rail-hover: color-mix(
     in srgb,
     rgb(var(--v-theme-on-surface)) 24%,
     rgb(var(--v-theme-surface))
   );
-  --datetime-slider-mark: color-mix(
+  --web-oc-slider-mark: color-mix(
     in srgb,
     rgb(var(--v-theme-on-surface)) 30%,
     rgb(var(--v-theme-surface))
   );
-  --datetime-slider-primary: rgb(var(--v-theme-primary));
 }
 
 .v-theme--light .datetime-slider__track {
-  --datetime-slider-rail: rgb(var(--v-theme-surface));
-  --datetime-slider-rail-hover: color-mix(
+  --web-oc-slider-rail: rgb(var(--v-theme-surface));
+  --web-oc-slider-rail-hover: color-mix(
     in srgb,
     rgb(var(--v-theme-on-surface)) 8%,
     rgb(var(--v-theme-surface))
   );
-}
-
-.datetime-slider__track:hover {
-  --datetime-slider-rail: var(--datetime-slider-rail-hover);
 }
 
 /* The track spans the full width, so it lines up with the below-track slot */
@@ -577,26 +568,6 @@ onUnmounted(() => {
   margin-inline-start: 100%;
 }
 
-.datetime-slider__track :deep(.v-slider-track) {
-  border-radius: 15px;
-}
-
-.datetime-slider__track :deep(.v-slider-track__background) {
-  background-color: var(--datetime-slider-rail);
-  opacity: 1;
-  transition: background-color 0.3s;
-}
-
-.datetime-slider__track :deep(.v-slider-track__fill) {
-  background-color: var(--datetime-slider-primary);
-}
-
-.datetime-slider__track :deep(.v-slider-track__tick) {
-  border-radius: 50%;
-  background-color: rgb(var(--v-theme-surface));
-  box-shadow: 0 0 0 2px var(--datetime-slider-mark);
-}
-
 /* Larger hover area around the small tick dots */
 .datetime-slider__track :deep(.v-slider-track__tick::after) {
   content: '';
@@ -604,39 +575,9 @@ onUnmounted(() => {
   inset: -6px;
 }
 
-.datetime-slider__track :deep(.v-slider-track__tick--filled) {
-  box-shadow: 0 0 0 2px var(--datetime-slider-primary);
-}
-
-.datetime-slider__track :deep(.v-slider-thumb__surface) {
-  box-sizing: border-box;
-  background-color: rgb(var(--v-theme-surface));
-  border: 2px solid var(--datetime-slider-primary);
-  transition: box-shadow 0.3s;
-}
-
-.datetime-slider__track :deep(.v-slider-thumb__surface::before),
-.datetime-slider__track :deep(.v-slider-thumb__surface::after) {
-  display: none;
-}
-
-.datetime-slider__track
-  :deep(.v-slider-thumb--focused .v-slider-thumb__surface) {
-  box-shadow: 0 0 0 5px rgba(var(--v-theme-primary), 0.2);
-}
-
 /* Tooltip above the thumb, with the arrow tip touching the thumb */
 .datetime-slider__track :deep(.v-slider-thumb__label) {
   bottom: 6px;
-  height: auto;
-  min-width: 0;
-  padding: 0;
-  background: transparent;
-}
-
-.datetime-slider__track
-  :deep(.v-slider-thumb__label > .v-slider-thumb__label-wedge) {
-  display: none;
 }
 
 /* Vuetify's hover mode hides the label when the pointer leaves the thumb
@@ -658,47 +599,6 @@ onUnmounted(() => {
   :deep(.v-slider-thumb--focused .v-slider-thumb__label-container) {
   opacity: 1;
   visibility: visible;
-}
-
-/* Same style as the map control chips (ControlChip.vue) */
-.datetime-slider__tooltip {
-  display: flex;
-  align-items: center;
-  height: 32px;
-  padding: 0 8px;
-  border-radius: 5px;
-  font-size: 0.825rem;
-  white-space: nowrap;
-  color: rgb(var(--v-theme-on-surface));
-  backdrop-filter: blur(5px);
-  background-color: rgba(var(--v-theme-surface), 0.8);
-  /* Tint of the tonal v-chip underlay */
-  background-image: linear-gradient(
-    rgba(var(--v-theme-on-surface), var(--v-activated-opacity)),
-    rgba(var(--v-theme-on-surface), var(--v-activated-opacity))
-  );
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-}
-
-/* Arrow pointing to the thumb, drawn outside the chip so the translucent
-   backgrounds do not overlap */
-.datetime-slider__tooltip--arrow {
-  position: relative;
-}
-
-.datetime-slider__tooltip--arrow::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  width: 12px;
-  height: 6px;
-  transform: translateX(-50%);
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
-  backdrop-filter: inherit;
-  background-color: inherit;
-  background-image: inherit;
-  pointer-events: none;
 }
 
 /* Same height above the track as the thumb label */
