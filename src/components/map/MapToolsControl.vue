@@ -32,7 +32,13 @@ const features = useStorage<GeoJSONStoreFeatures[]>(
 
 let measureControl: MaplibreMeasureControl | null = null
 
-const addControl = () => {
+/**
+ * Adds the measure control and restores the stored features.
+ *
+ * @param mode The mode to activate. Defaults to the select mode when features
+ * are restored.
+ */
+const addControl = (mode?: string) => {
   if (!map || measureControl) return
 
   const control = new MaplibreMeasureControl({
@@ -83,7 +89,18 @@ const addControl = () => {
       // Keep the stored features, so they are not lost by a failed restore
       console.warn('Failed to restore measured features', error)
     }
+    const activeMode =
+      mode ?? (features.value.length > 0 ? 'select' : undefined)
+    if (activeMode) {
+      // The proxied setMode also updates the active button of the control
+      terraDrawInstance.setMode(activeMode)
+    }
   })
+  map.triggerRepaint()
+}
+
+function getActiveMode() {
+  return measureControl?.getTerraDrawInstance()?.getMode()
 }
 
 const removeControl = () => {
@@ -111,6 +128,8 @@ onMounted(() => {
 })
 
 let isRebuildPending = false
+// Active mode of a control that was removed before a base map change
+let modeBeforeRebuild: string | undefined
 
 // Rebuilds the control once the map is idle, i.e. when a new style has loaded.
 // The drawn features are restored from session storage.
@@ -119,9 +138,11 @@ function rebuildControlWhenIdle() {
   isRebuildPending = true
   map.once('idle', () => {
     isRebuildPending = false
+    const mode = modeBeforeRebuild ?? getActiveMode()
+    modeBeforeRebuild = undefined
     if (!isEnabled.value) return
     removeControl()
-    addControl()
+    addControl(mode)
   })
   map.triggerRepaint()
 }
@@ -133,6 +154,7 @@ watch(
   mapStyle,
   () => {
     if (!measureControl) return
+    modeBeforeRebuild = getActiveMode()
     removeControl()
     rebuildControlWhenIdle()
   },
