@@ -127,9 +127,13 @@ import {
 } from 'vue'
 import { scaleTime } from 'd3-scale'
 import { useElementSize } from '@vueuse/core'
-import { DateTime } from 'luxon'
 import { useI18n } from 'vue-i18n'
 
+import {
+  dateBoundaryUnits,
+  getDateBoundaryUnit,
+  toMultiScaleDateLabel,
+} from '@/lib/date'
 import { findDateIndex } from '@/lib/utils/dates'
 import { systemTimeAuthority } from '@/services/system-time'
 
@@ -185,32 +189,49 @@ const { width: sliderWidth } = useElementSize(sliderContainer)
 const isKeyboardActive = ref(false)
 
 const markLabels = computed<Record<number, string>>(() => {
-  const dayMarks: Record<number, string> = {}
   const dateScale = scaleTime().domain(props.dates)
-  const ticks = dateScale.ticks(8)
+  // Scale with the number of labels that fit, so wider sliders get more ticks.
+  // d3 may return fewer ticks than asked, so ask for more and let the spacing
+  // below drop the excess.
+  const tickCount = Math.max(
+    Math.ceil((1.5 * sliderWidth.value) / MIN_MARK_LABEL_SPACING_PX),
+    2,
+  )
+  const ticks = dateScale.ticks(tickCount)
+
+  // Each tick is marked at the first date at or after it
+  const candidates: { index: number; tick: Date; priority: number }[] = []
   let tickIndex = 0
-  let lastMarkPosition = -Infinity
-  for (const index in props.dates) {
-    const date = DateTime.fromJSDate(props.dates[index])
+  props.dates.forEach((date, index) => {
     if (
       tickIndex < ticks.length &&
-      date.toMillis() >= ticks[tickIndex].getTime()
+      date.getTime() >= ticks[tickIndex].getTime()
     ) {
-      tickIndex++
-      // Marks are placed by index, so skip those too close to the previous one
-      const position =
-        (Number(index) / Math.max(props.dates.length - 1, 1)) *
-        sliderWidth.value
-      if (position - lastMarkPosition < MIN_MARK_LABEL_SPACING_PX) continue
-      lastMarkPosition = position
-      dayMarks[Number(index)] = date.toJSDate().toLocaleString(undefined, {
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-      })
+      const tick = ticks[tickIndex++]
+      const priority = dateBoundaryUnits.indexOf(getDateBoundaryUnit(tick))
+      candidates.push({ index, tick, priority })
     }
-  }
-  return dayMarks
+  })
+
+  // Marks are placed by index, so skip those too close to one already placed.
+  // Coarser boundaries go first, so e.g. days win over hours.
+  const position = (index: number) =>
+    (index / Math.max(props.dates.length - 1, 1)) * sliderWidth.value
+  const placed: number[] = []
+  const marks: Record<number, string> = {}
+  candidates
+    .sort((a, b) => b.priority - a.priority || a.index - b.index)
+    .forEach(({ index, tick }) => {
+      const tooClose = placed.some(
+        (other) =>
+          Math.abs(position(index) - position(other)) <
+          MIN_MARK_LABEL_SPACING_PX,
+      )
+      if (tooClose) return
+      placed.push(index)
+      marks[index] = toMultiScaleDateLabel(props.dates[index], tick)
+    })
+  return marks
 })
 
 const tickValues = computed(() =>
@@ -691,10 +712,11 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
+/* Same height above the track as the thumb label */
 .datetime-slider__track :deep(.v-slider-track__tick-label) {
   bottom: 100%;
   left: 50%;
-  margin: 0 0 20px 0;
+  margin: 0 0 11px 0;
   transform: translateX(-50%);
   opacity: 0;
   visibility: hidden;

@@ -290,3 +290,61 @@ export function isInDatesRange(
 export function getFilenameTimestamp() {
   return DateTime.now().toFormat('yyyyMMddHHmmss')
 }
+
+/** Calendar units from finest to coarsest. */
+export const dateBoundaryUnits = [
+  'second',
+  'minute',
+  'hour',
+  'day',
+  'month',
+  'year',
+] as const
+
+export type DateBoundaryUnit = (typeof dateBoundaryUnits)[number]
+
+/**
+ * Returns the coarsest calendar unit at which a date is aligned, e.g. 'day'
+ * for midnight and 'month' for midnight on the first of a month. Uses local
+ * time, like d3 time scales.
+ * @param date - The date to check.
+ * @returns The coarsest unit the date is a boundary of.
+ */
+export function getDateBoundaryUnit(date: Date): DateBoundaryUnit {
+  if (date.getMilliseconds() !== 0 || date.getSeconds() !== 0) return 'second'
+  if (date.getMinutes() !== 0) return 'minute'
+  if (date.getHours() !== 0) return 'hour'
+  if (date.getDate() !== 1) return 'day'
+  if (date.getMonth() !== 0) return 'month'
+  return 'year'
+}
+
+const multiScaleFormatOptions: Record<
+  DateBoundaryUnit,
+  Intl.DateTimeFormatOptions
+> = {
+  second: { hour: '2-digit', minute: '2-digit', second: '2-digit' },
+  minute: { hour: '2-digit', minute: '2-digit' },
+  hour: { hour: '2-digit', minute: '2-digit' },
+  day: { day: 'numeric', month: 'short' },
+  month: { month: 'short' },
+  year: { year: 'numeric' },
+}
+
+/**
+ * Formats a date like the d3 multi-scale time format: only the coarsest unit
+ * at which the boundary date is aligned is shown, so e.g. midnight shows the
+ * day and other hours show the time. Uses local time, like d3 time scales.
+ * @param date - The date to format.
+ * @param boundary - The date that determines the unit, e.g. a d3 tick.
+ * @param locale - The locale to format with, defaults to the browser locale.
+ * @returns The formatted date.
+ */
+export function toMultiScaleDateLabel(
+  date: Date,
+  boundary: Date = date,
+  locale?: string,
+): string {
+  const options = multiScaleFormatOptions[getDateBoundaryUnit(boundary)]
+  return date.toLocaleString(locale, { ...options, hourCycle: 'h23' })
+}

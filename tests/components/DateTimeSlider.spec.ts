@@ -9,7 +9,7 @@ async function visibleTickLabelBoxes(component: Locator) {
   return boxes
 }
 
-for (const story of ['Wide', 'Narrow']) {
+for (const story of ['ExtraWide', 'Wide', 'Narrow']) {
   test(`${story}: date labels do not overlap`, async ({ mount }) => {
     const component = await mount(`general/DateTimeSlider/${story}`)
 
@@ -25,6 +25,33 @@ for (const story of ['Wide', 'Narrow']) {
     }
   })
 }
+
+test('shows more date labels on wider sliders', async ({ mount }) => {
+  const counts: number[] = []
+  for (const story of ['Narrow', 'Wide', 'ExtraWide']) {
+    const component = await mount(`general/DateTimeSlider/${story}`)
+    await component.locator('.v-slider-track__tick').last().hover()
+    counts.push((await visibleTickLabelBoxes(component)).length)
+  }
+  expect(counts[1]).toBeGreaterThan(counts[0])
+  expect(counts[2]).toBeGreaterThan(counts[1])
+})
+
+test('prefers day boundaries over hours when labels compete', async ({
+  mount,
+}) => {
+  const component = await mount('general/DateTimeSlider/NarrowFromNoon')
+
+  // The thumb covers the first tick
+  await component.locator('.v-slider-track__tick').last().hover()
+  const labels = component.locator('.v-slider-track__tick-label')
+  await expect(labels.first()).toBeVisible()
+
+  const texts = (await labels.allTextContents()).map((text) => text.trim())
+  expect(texts.length).toBeGreaterThan(1)
+  // Day labels are dates, hour labels are times
+  for (const text of texts) expect(text).not.toContain(':')
+})
 
 test('keeps the thumb label visible while dragging off the thumb', async ({
   mount,
