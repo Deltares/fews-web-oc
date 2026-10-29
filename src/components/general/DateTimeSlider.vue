@@ -125,15 +125,11 @@ import {
   watch,
   type WatchHandle,
 } from 'vue'
-import { scaleTime } from 'd3-scale'
 import { useElementSize } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 
-import {
-  dateBoundaryUnits,
-  getDateBoundaryUnit,
-  toMultiScaleDateLabel,
-} from '@/lib/date'
+import { toMultiScaleDateLabel } from '@/lib/date'
+import { getEquallySpacedSliderTicks } from '@/lib/date/sliderTicks'
 import { findDateIndex } from '@/lib/utils/dates'
 import { systemTimeAuthority } from '@/services/system-time'
 import '@/assets/slider.css'
@@ -190,49 +186,17 @@ const { width: sliderWidth } = useElementSize(sliderContainer)
 const isKeyboardActive = ref(false)
 
 const markLabels = computed<Record<number, string>>(() => {
-  const dateScale = scaleTime().domain(props.dates)
-  // Scale with the number of labels that fit, so wider sliders get more ticks.
-  // d3 may return fewer ticks than asked, so ask for more and let the spacing
-  // below drop the excess.
-  const tickCount = Math.max(
-    Math.ceil((1.5 * sliderWidth.value) / MIN_MARK_LABEL_SPACING_PX),
-    2,
+  const ticks = getEquallySpacedSliderTicks(
+    props.dates,
+    sliderWidth.value,
+    MIN_MARK_LABEL_SPACING_PX,
   )
-  const ticks = dateScale.ticks(tickCount)
-
-  // Each tick is marked at the first date at or after it
-  const candidates: { index: number; tick: Date; priority: number }[] = []
-  let tickIndex = 0
-  props.dates.forEach((date, index) => {
-    if (
-      tickIndex < ticks.length &&
-      date.getTime() >= ticks[tickIndex].getTime()
-    ) {
-      const tick = ticks[tickIndex++]
-      const priority = dateBoundaryUnits.indexOf(getDateBoundaryUnit(tick))
-      candidates.push({ index, tick, priority })
-    }
-  })
-
-  // Marks are placed by index, so skip those too close to one already placed.
-  // Coarser boundaries go first, so e.g. days win over hours.
-  const position = (index: number) =>
-    (index / Math.max(props.dates.length - 1, 1)) * sliderWidth.value
-  const placed: number[] = []
-  const marks: Record<number, string> = {}
-  candidates
-    .sort((a, b) => b.priority - a.priority || a.index - b.index)
-    .forEach(({ index, tick }) => {
-      const tooClose = placed.some(
-        (other) =>
-          Math.abs(position(index) - position(other)) <
-          MIN_MARK_LABEL_SPACING_PX,
-      )
-      if (tooClose) return
-      placed.push(index)
-      marks[index] = toMultiScaleDateLabel(props.dates[index], tick)
-    })
-  return marks
+  return Object.fromEntries(
+    ticks.map(({ index, tick }) => [
+      index,
+      toMultiScaleDateLabel(props.dates[index], tick),
+    ]),
+  )
 })
 
 const tickValues = computed(() => Object.keys(markLabels.value).map(Number))
