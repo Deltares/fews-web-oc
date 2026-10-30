@@ -32,6 +32,10 @@
     "about": "About",
     "switchTo": "Switch to"
   },
+  "about": {
+    "qrCodeTitle": "Open Web OC on another device",
+    "qrCodeDescription": "Scan this QR code with the camera of your phone or tablet to open {url} in its browser. It opens the start page, not the current view; use Share to send a specific view. You may need to sign in on that device."
+  },
   "configurator": {
     "mode": "Configurator mode",
     "modeActive": "Configurator mode active",

@@ -1,98 +1,106 @@
 <template>
-  <v-card class="home-card">
-    <v-card-title class="d-flex align-center">
-      {{ configStore.general.title ?? 'Delft-FEWS Web OC' }}
-    </v-card-title>
-    <v-card-text class="pa-0">
-      <v-alert
-        v-if="configStore.activeComponents.length === 0"
-        type="error"
-        variant="tonal"
-        class="ma-4"
-      >
-        Unfortunately, you do not have access
-        <v-icon>mdi-emoticon-sad-outline</v-icon>
-      </v-alert>
+  <div>
+    <v-card class="home-card">
+      <v-card-title class="d-flex align-center">
+        {{ configStore.general.title ?? 'Delft-FEWS Web OC' }}
+      </v-card-title>
+      <v-card-text class="pa-0">
+        <v-alert
+          v-if="configStore.activeComponents.length === 0"
+          type="error"
+          variant="tonal"
+          class="ma-4"
+        >
+          Unfortunately, you do not have access
+          <v-icon>mdi-emoticon-sad-outline</v-icon>
+        </v-alert>
 
-      <!-- WebOC -->
-      <div class="px-4 py-3">
-        <div class="d-flex align-center">
-          <v-icon icon="mdi-application-outline" class="mr-3" />
-          <span class="text-body-1"> FEWS WebOC </span>
-          <v-spacer />
-          <div class="d-flex flex-wrap justify-end ga-2">
-            <v-chip size="small" prepend-icon="mdi-tag-outline">
-              {{ version }}
-            </v-chip>
+        <!-- WebOC -->
+        <div class="px-4 py-3">
+          <div class="d-flex align-center">
+            <v-icon icon="mdi-application-outline" class="mr-3" />
+            <span class="text-body-1"> FEWS WebOC </span>
+            <v-spacer />
+            <div class="d-flex flex-wrap justify-end ga-2">
+              <v-chip size="small" prepend-icon="mdi-tag-outline">
+                {{ version }}
+              </v-chip>
 
-            <v-chip
-              v-if="commitHash !== ''"
-              size="small"
-              prepend-icon="mdi-source-commit"
-            >
-              {{ commitHash }}
-            </v-chip>
+              <v-chip
+                v-if="commitHash !== ''"
+                size="small"
+                prepend-icon="mdi-source-commit"
+              >
+                {{ commitHash }}
+              </v-chip>
 
-            <v-chip
-              v-if="commitHash !== ''"
-              size="small"
-              prepend-icon="mdi-package-variant-closed"
-            >
-              {{ buildDate }}
-            </v-chip>
+              <v-chip
+                v-if="commitHash !== ''"
+                size="small"
+                prepend-icon="mdi-package-variant-closed"
+              >
+                {{ buildDate }}
+              </v-chip>
+            </div>
           </div>
         </div>
-      </div>
-      <v-divider />
-      <!-- Web Service -->
-      <div class="px-4 py-3">
-        <div class="d-flex align-center">
-          <v-icon icon="mdi-server-outline" class="mr-3" />
-          <span class="text-body-1"> FEWS Web Services </span>
-          <v-spacer />
-          <div class="d-flex flex-wrap justify-end ga-2">
-            <v-chip size="small" prepend-icon="mdi-tag-outline">
-              {{ webServiceVersion.implementation }}
-            </v-chip>
-            <v-chip size="small" prepend-icon="mdi-package-variant-closed">
-              #{{ webServiceVersion.buildNumber }}
-            </v-chip>
-            <v-chip
-              v-if="webServiceVersion.buildType === 'development'"
-              size="small"
-              prepend-icon="mdi-source-branch"
-            >
-              development
-            </v-chip>
-          </div>
-        </div>
-        <ConfiguratorOnly>
-          <div class="text-body-1 ml-8 mt-2">
-            <a :href="webServiceUrl" target="_blank">
-              {{ webServiceUrl }}
-            </a>
-          </div>
-        </ConfiguratorOnly>
-      </div>
-      <!-- Excluded permissions remain in effect outside configurator mode, so
-           the control stays visible until they are reset. -->
-      <template v-if="configuratorMode.isEnabled || hasExcludedPermissions">
         <v-divider />
-        <ExcludedPermissionsControl />
-      </template>
-      <ConfiguratorOnly>
-        <MicroFrontendOverview />
-      </ConfiguratorOnly>
-      <v-divider />
-      <div class="d-flex justify-center pa-4">
-        <QrCode :value="webOcUrl" :size="128" />
+        <!-- Web Service -->
+        <div class="px-4 py-3">
+          <div class="d-flex align-center">
+            <v-icon icon="mdi-server-outline" class="mr-3" />
+            <span class="text-body-1"> FEWS Web Services </span>
+            <v-spacer />
+            <div class="d-flex flex-wrap justify-end ga-2">
+              <v-chip size="small" prepend-icon="mdi-tag-outline">
+                {{ webServiceVersion.implementation }}
+              </v-chip>
+              <v-chip size="small" prepend-icon="mdi-package-variant-closed">
+                #{{ webServiceVersion.buildNumber }}
+              </v-chip>
+              <v-chip
+                v-if="webServiceVersion.buildType === 'development'"
+                size="small"
+                prepend-icon="mdi-source-branch"
+              >
+                development
+              </v-chip>
+            </div>
+          </div>
+          <ConfiguratorOnly>
+            <div class="text-body-1 ml-8 mt-2">
+              <a :href="webServiceUrl" target="_blank">
+                {{ webServiceUrl }}
+              </a>
+            </div>
+          </ConfiguratorOnly>
+        </div>
+        <!-- Excluded permissions remain in effect outside configurator mode, so
+           the control stays visible until they are reset. -->
+        <template v-if="configuratorMode.isEnabled || hasExcludedPermissions">
+          <v-divider />
+          <ExcludedPermissionsControl />
+        </template>
+        <ConfiguratorOnly>
+          <MicroFrontendOverview />
+        </ConfiguratorOnly>
+      </v-card-text>
+    </v-card>
+    <div class="qr-code-section d-flex align-center ga-4 py-4">
+      <QrCode :value="webOcUrl" :size="128" class="flex-shrink-0" />
+      <div>
+        <div class="text-body-1">{{ t('about.qrCodeTitle') }}</div>
+        <div class="text-body-2 text-medium-emphasis">
+          {{ t('about.qrCodeDescription', { url: webOcUrl }) }}
+        </div>
       </div>
-    </v-card-text>
-  </v-card>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { version as packageVersion } from '../../package.json'
 import { PiWebserviceProvider, Version } from '@deltares/fews-pi-requests'
 import { useConfigStore } from '../stores/config.ts'
@@ -106,6 +114,7 @@ import ConfiguratorOnly from '@/components/configurator/ConfiguratorOnly.vue'
 import { useConfiguratorModeStore } from '@/stores/configuratorMode'
 import { usePermissionsStore } from '@/stores/permissions'
 
+const { t } = useI18n()
 const configuratorMode = useConfiguratorModeStore()
 const permissionsStore = usePermissionsStore()
 const hasExcludedPermissions = computed(
@@ -143,5 +152,12 @@ onMounted(async () => {
   width: 800px;
   max-width: 100%;
   height: fit-content !important;
+}
+
+/* Aligned with the card above. */
+.qr-code-section {
+  margin: auto;
+  width: 800px;
+  max-width: 100%;
 }
 </style>
