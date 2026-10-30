@@ -79,6 +79,41 @@ export function formatPeriodRange(
   return formatter.formatRange(start, lastDate)
 }
 
+/**
+ * Formats a half-open period in the display time zone, with a label for the
+ * missing start or end, e.g. `23 Oct – now` or `now – 30 Oct`.
+ * @param start - The start of the period, open until now when undefined.
+ * @param end - The exclusive end of the period, open from now when undefined.
+ * @param locale - The locale to format with.
+ * @param nowLabel - The label of the missing start or end, e.g. `now`.
+ * @param precision - The precision to format the date with.
+ * @param now - When given, the year is left out for a date in its year.
+ */
+export function formatOpenPeriod(
+  start: Date | undefined,
+  end: Date | undefined,
+  locale: string,
+  nowLabel: string,
+  precision: PeriodPrecision = 'time',
+  now?: Date,
+): string {
+  const date = start ?? end
+  if (!date) return nowLabel
+  // Whole days, months or years end on the last day of the period
+  const shownDate = start || precision === 'time' ? date : new Date(+date - 1)
+  const options = { ...rangeFormatOptions[precision] }
+  if (precision !== 'year' && now) {
+    if (toDateTime(shownDate).year === toDateTime(now).year) {
+      delete options.year
+    }
+  }
+  const formatted = new Intl.DateTimeFormat(locale, {
+    ...options,
+    timeZone: getDisplayTimeZone(),
+  }).format(shownDate)
+  return start ? `${formatted} – ${nowLabel}` : `${nowLabel} – ${formatted}`
+}
+
 const durationUnits = ['years', 'months', 'days', 'hours', 'minutes'] as const
 
 /**

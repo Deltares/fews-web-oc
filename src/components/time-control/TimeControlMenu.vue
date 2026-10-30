@@ -231,6 +231,7 @@ import {
   periodPresetToIntervalItem,
 } from '@/lib/TimeControl/interval'
 import {
+  formatOpenPeriod,
   formatPeriodDuration,
   formatPeriodRange,
   getPeriodPrecision,
@@ -405,11 +406,18 @@ const periodLabel = computed(() => {
       store.systemTime,
     )
   }
-  const format = (date: Date) =>
-    toDisplayDateTime(date)
-      .setLocale(locale.value)
-      .toLocaleString(DateTime.DATETIME_MED)
-  return `${startTime ? format(startTime) : '…'} – ${endTime ? format(endTime) : '…'}`
+  // A preset without a start or end is open until or from now
+  return formatOpenPeriod(
+    startTime,
+    endTime,
+    locale.value,
+    t('timeControl.now'),
+    getPresetPrecision(
+      startTime ?? store.systemTime,
+      endTime ?? store.systemTime,
+    ),
+    store.systemTime,
+  )
 })
 
 function getPresetPrecision(start: Date, end: Date): PeriodPrecision {
@@ -491,19 +499,28 @@ watchEffect(() => {
 })
 
 // Show the days of the default or preset period, none for the default
+// A preset without a start or end is open until or from the system time
 watch(
-  () => [store.startTime, store.endTime, getDisplayTimeZone()],
+  () => [
+    store.startTime,
+    store.endTime,
+    getDisplayTimeZone(),
+    toPickerDay(store.systemTime).getTime(),
+  ],
   () => {
     if (isCustomInterval.value) return
     const { startTime, endTime } = store
-    pickerDays.value =
-      startTime && endTime
-        ? [
-            toPickerDay(startTime),
-            // A period ending at midnight does not include the day it ends on
-            toPickerDay(new Date(endTime.getTime() - 1)),
-          ]
-        : []
+    if (!startTime && !endTime) {
+      pickerDays.value = []
+      return
+    }
+    pickerDays.value = [
+      toPickerDay(startTime ?? store.systemTime),
+      // A period ending at midnight does not include the day it ends on
+      endTime
+        ? toPickerDay(new Date(endTime.getTime() - 1))
+        : toPickerDay(store.systemTime),
+    ]
   },
   { immediate: true },
 )

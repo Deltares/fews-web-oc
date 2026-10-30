@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 import { setDisplayTimeZone } from '@/lib/date/timeZone'
 import {
+  formatOpenPeriod,
   formatPeriodDuration,
   formatPeriodRange,
   getPeriodPrecision,
@@ -97,6 +98,94 @@ describe('formatPeriodRange', () => {
         'en-GB',
       ),
     ).toBe('23 Dec 2026, 10:30–18:00')
+  })
+})
+
+describe('formatOpenPeriod', () => {
+  const now = new Date('2026-12-23T10:30:00+01:00')
+
+  test('writes now for the missing end', () => {
+    expect(
+      formatOpenPeriod(
+        midnight('2026-12-16'),
+        undefined,
+        'en-GB',
+        'now',
+        'day',
+      ),
+    ).toBe('16 Dec 2026 – now')
+  })
+
+  test('writes now for the missing start', () => {
+    // The end is exclusive, whole days end on the day before
+    expect(
+      formatOpenPeriod(
+        undefined,
+        midnight('2026-12-31'),
+        'en-GB',
+        'now',
+        'day',
+      ),
+    ).toBe('now – 30 Dec 2026')
+  })
+
+  test('formats the date with the time by default', () => {
+    expect(
+      formatOpenPeriod(
+        new Date('2026-12-16T10:30:00+01:00'),
+        undefined,
+        'en-GB',
+        'now',
+      ),
+    ).toBe('16 Dec 2026, 10:30 – now')
+    expect(
+      formatOpenPeriod(
+        undefined,
+        new Date('2026-12-30T10:30:00+01:00'),
+        'en-GB',
+        'now',
+      ),
+    ).toBe('now – 30 Dec 2026, 10:30')
+  })
+
+  test('leaves out the year for a date in the current year', () => {
+    expect(
+      formatOpenPeriod(
+        midnight('2026-12-16'),
+        undefined,
+        'en-GB',
+        'now',
+        'day',
+        now,
+      ),
+    ).toBe('16 Dec – now')
+    expect(
+      formatOpenPeriod(
+        undefined,
+        midnight('2027-01-06'),
+        'en-GB',
+        'now',
+        'day',
+        now,
+      ),
+    ).toBe('now – 5 Jan 2027')
+  })
+
+  test('uses the display time zone', () => {
+    setDisplayTimeZone('UTC')
+    expect(
+      formatOpenPeriod(
+        midnight('2026-12-16'),
+        undefined,
+        'en-GB',
+        'now',
+        'day',
+      ),
+    ).toBe('15 Dec 2026 – now')
+  })
+
+  test('writes only now without a start and end', () => {
+    expect(formatOpenPeriod(undefined, undefined, 'en-GB', 'now')).toBe('now')
   })
 })
 
