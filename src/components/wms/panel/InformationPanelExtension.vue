@@ -1,6 +1,6 @@
 <template>
-  <v-hover v-model="isExpanded">
-    <template #default="{ isHovering, props }">
+  <v-hover v-model="isHovering">
+    <template #default="{ props }">
       <v-btn-toggle
         ref="button-toggle"
         v-bind="props"
@@ -14,7 +14,7 @@
         <v-tooltip v-for="(item, index) in items" :key="index" location="top">
           <template #activator="{ props: tooltipProps }">
             <ExtensionButton
-              v-if="item.isActive || isHovering"
+              v-if="item.isActive || isExpanded"
               v-bind="tooltipProps"
               :isActive="item.isActive"
               :value="item[valueKey]"
@@ -45,6 +45,7 @@
     IconKey extends keyof T | undefined = undefined
   "
 >
+import { useFocusWithin } from '@vueuse/core'
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 
 import ExtensionButton from '@/components/wms/panel/ExtensionButton.vue'
@@ -70,7 +71,10 @@ const buttonContainer = computed<HTMLDivElement | null>(() => {
   return buttonToggle.value.$el as HTMLDivElement
 })
 
-const isExpanded = ref<boolean>(false)
+const isHovering = ref<boolean>(false)
+const { focused } = useFocusWithin(buttonToggle)
+const isExpanded = computed<boolean>(() => isHovering.value || focused.value)
+
 watch(isExpanded, async (newIsExpanded) => {
   if (!newIsExpanded) return
   // First, wait for the DOM to update.
