@@ -165,8 +165,11 @@
             <v-btn
               class="text-lowercase"
               size="small"
+              :readonly="!configuratorMode.isEnabled"
               @click="showHash = !showHash"
-              :prepend-icon="showHash ? 'mdi-source-commit' : 'mdi-tag-outline'"
+              :prepend-icon="
+                showCommitHash ? 'mdi-source-commit' : 'mdi-tag-outline'
+              "
               >{{ versionString }}</v-btn
             >
           </template>
@@ -317,8 +320,13 @@ const logoSrc = computed(() => {
     : defaultLogo
 })
 
+// The commit hash is a system detail, only shown in configurator mode.
+const showCommitHash = computed(
+  () => configuratorMode.isEnabled && showHash.value,
+)
+
 const versionString = computed(() => {
-  if (showHash.value && !__GIT_TAG__) {
+  if (showCommitHash.value && !__GIT_TAG__) {
     return __GIT_HASH__
   }
   return version

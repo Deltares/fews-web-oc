@@ -66,15 +66,23 @@
             </v-chip>
           </div>
         </div>
-        <div class="text-body-1 ml-8 mt-2">
-          <a :href="webServiceUrl" target="_blank">
-            {{ webServiceUrl }}
-          </a>
-        </div>
+        <ConfiguratorOnly>
+          <div class="text-body-1 ml-8 mt-2">
+            <a :href="webServiceUrl" target="_blank">
+              {{ webServiceUrl }}
+            </a>
+          </div>
+        </ConfiguratorOnly>
       </div>
-      <v-divider />
-      <ExcludedPermissionsControl />
-      <MicroFrontendOverview />
+      <!-- Excluded permissions remain in effect outside configurator mode, so
+           the control stays visible until they are reset. -->
+      <template v-if="configuratorMode.isEnabled || hasExcludedPermissions">
+        <v-divider />
+        <ExcludedPermissionsControl />
+      </template>
+      <ConfiguratorOnly>
+        <MicroFrontendOverview />
+      </ConfiguratorOnly>
       <v-divider />
       <div class="d-flex justify-center pa-4">
         <QrCode :value="webOcUrl" :size="128" />
@@ -84,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { version as packageVersion } from '../../package.json'
 import { PiWebserviceProvider, Version } from '@deltares/fews-pi-requests'
 import { useConfigStore } from '../stores/config.ts'
@@ -94,7 +102,15 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import ExcludedPermissionsControl from '@/components/permissions/ExcludedPermissionsControl.vue'
 import MicroFrontendOverview from '@/components/microfrontend/MicroFrontendOverview.vue'
 import QrCode from '@/components/general/QrCode.vue'
+import ConfiguratorOnly from '@/components/configurator/ConfiguratorOnly.vue'
+import { useConfiguratorModeStore } from '@/stores/configuratorMode'
+import { usePermissionsStore } from '@/stores/permissions'
 
+const configuratorMode = useConfiguratorModeStore()
+const permissionsStore = usePermissionsStore()
+const hasExcludedPermissions = computed(
+  () => permissionsStore.excludedPermissionIds.length > 0,
+)
 const webOcUrl = `${globalThis.location.origin}${import.meta.env.BASE_URL}`
 const webServiceUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
