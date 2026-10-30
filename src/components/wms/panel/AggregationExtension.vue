@@ -16,7 +16,7 @@
               v-if="isActive(item) || isHovering"
               :item="item"
               :isActive="isActive(item)"
-              :tooltipProps="tooltipProps"
+              v-bind="tooltipProps"
             />
           </template>
           <strong>{{ item.type }} {{ item.id }}</strong>
