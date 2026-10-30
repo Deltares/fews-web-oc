@@ -10,22 +10,17 @@
       <div class="icon-group" v-bind="props">
         <div class="icon-group__underlay"></div>
         <v-tooltip
-          :text="runningWindowTooltip"
-          :disabled="!runningWindowTooltip"
+          :text="periodTooltip"
+          :disabled="!periodTooltip"
           location="bottom"
         >
           <template #activator="{ props: tooltipProps }">
             <span
               v-bind="tooltipProps"
               class="systemtime-status systemtime-status--running"
-              :aria-label="runningWindowTooltip ?? 'System time mode'"
+              :aria-label="periodTooltip ?? 'System time mode'"
             >
-              <v-icon
-                class="systemtime-status__icon"
-                :icon="
-                  runningWindowTooltip ? 'mdi-update' : 'mdi-clock-outline'
-                "
-              />
+              <v-icon class="systemtime-status__icon" :icon="periodIcon" />
               <span
                 class="systemtime-status__dot"
                 :class="{ 'systemtime-status__dot--pulse': syncPulseActive }"
@@ -491,6 +486,19 @@ const runningWindowTooltip = computed(() => {
       ? interval.label
       : t('timeControl.runningWindow')
   return `${label}: ${t('timeControl.runningWindowHint')}`
+})
+
+// The icons of the period list, for the default, custom or preset period
+const periodIcon = computed(() => {
+  if (isCustomInterval.value) return 'mdi-calendar-range'
+  return store.isRunningWindow ? 'mdi-update' : 'mdi-clock-outline'
+})
+
+const periodTooltip = computed(() => {
+  if (isCustomInterval.value) {
+    return `${t('common.custom')}: ${periodDescription.value}`
+  }
+  return runningWindowTooltip.value
 })
 
 const runningDotStyle = computed(() => ({
