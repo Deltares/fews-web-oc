@@ -121,3 +121,11 @@ async function scrollToActive() {
   if (index >= 0) scroller.value?.scrollToIndex(index)
 }
 </script>
+
+<style scoped>
+/* Rows are wider than the rail (also while it expands); clip them instead of
+   scrolling horizontally. Titles are truncated with an ellipsis anyway. */
+.weboc-treemenu {
+  overflow-x: hidden;
+}
+</style>
