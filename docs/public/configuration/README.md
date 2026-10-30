@@ -362,6 +362,37 @@ For `ui.locale`, `default` is the language set by `VITE_I18N_LOCALE` in the [app
 
 For `ui.timeZone`, `system` is the time zone of the user's browser or operating system. Other values are [IANA time zone names](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), such as `UTC` or `Europe/Amsterdam`. Configure `items` to offer other time zones than `system` and `UTC`. Unknown time zones are ignored.
 
+#### Time zones
+
+Users choose the time zone in the user settings and in the time control menu, which shows the UTC offset of each option. To offer additional time zones, configure the options of `ui.timeZone` with `items`. The options replace the built-in ones, so include `system` and `UTC` to keep them.
+
+For example, for a system in Australia, with Sydney time as default and the time zone in the favorites of the user settings menu:
+
+```json
+{
+  "$schema": "./default-user-settings.schema.json",
+  "settings": [
+    {
+      "id": "ui.timeZone",
+      "value": "Australia/Sydney",
+      "favorite": true,
+      "items": [
+        { "value": "system" },
+        { "value": "UTC" },
+        { "value": "Australia/Perth", "title": "Perth (AWST)" },
+        { "value": "Australia/Darwin", "title": "Darwin (ACST)" },
+        { "value": "Australia/Adelaide", "title": "Adelaide (ACST/ACDT)" },
+        { "value": "Australia/Brisbane", "title": "Brisbane (AEST)" },
+        { "value": "Australia/Sydney", "title": "Sydney, Canberra, Melbourne (AEST/AEDT)" },
+        { "value": "Australia/Hobart", "title": "Hobart (AEST/AEDT)" }
+      ]
+    }
+  ]
+}
+```
+
+Use a time zone name, not a fixed offset such as `+10:00`: daylight saving time follows from the name. Adelaide, Sydney and Hobart change to daylight saving time in summer, while Perth, Darwin and Brisbane keep the same offset all year. Without a `title`, the time zone name is shown, e.g. `Australia/Perth`.
+
 #### JSON schema
 
 The [JSON schema for default-user-settings.json](https://github.com/Deltares/fews-web-oc/blob/main/schemas/default-user-settings.schema.json) describes all settings and their allowed values. Download it to `WebResourceFiles/default-user-settings.schema.json` and refer to it with `"$schema": "./default-user-settings.schema.json"`, as in the example above. Editors like Visual Studio Code then validate the file, suggest setting ids and values, and show their descriptions. Use the schema that belongs to the Web OC version you deploy, as new versions can add settings.
