@@ -1,52 +1,41 @@
 <template>
-  <v-hover>
-    <template #default="{ isHovering, props }">
-      <v-btn-toggle
-        v-if="aggregations.length > 0"
-        v-bind="props"
-        v-model="selectedAggregationLabel"
-        density="compact"
-        variant="flat"
-        mandatory
-        class="overflow-visible"
-      >
-        <v-tooltip v-for="item in aggregations" :key="item.id" location="top">
-          <template #activator="{ props: tooltipProps }">
-            <ExtensionButton
-              v-if="isActive(item) || isHovering"
-              v-bind="tooltipProps"
-              :isActive="isActive(item)"
-              :value="item.id"
-              :text="item.shortLabel"
-              :icon="item.icon"
-              activePrependIcon="mdi-clock-end"
-            />
-          </template>
-          <strong>{{ item.type }} {{ item.id }}</strong>
-          <div>{{ toDateRangeString(item.startDate, item.endDate) }}</div>
-        </v-tooltip>
-      </v-btn-toggle>
+  <InformationPanelExtension
+    v-model="selectedAggregationLabel"
+    :items="extensionItems"
+    value-key="id"
+    text-key="shortLabel"
+    icon-key="icon"
+    active-prepend-icon="mdi-clock-end"
+  >
+    <template #tooltip="{ item }">
+      <strong>{{ item.type }} {{ item.id }}</strong>
+      <div>{{ toDateRangeString(item.startDate, item.endDate) }}</div>
     </template>
-  </v-hover>
+  </InformationPanelExtension>
 </template>
 
 <script setup lang="ts">
-import type { AggregationItem } from '@/lib/aggregation'
+import { computed } from 'vue'
+
+import { type AggregationItem } from '@/lib/aggregation'
 import { toDateRangeString } from '@/lib/date'
 
-import ExtensionButton from '@/components/wms/panel/ExtensionButton.vue'
+import InformationPanelExtension from './InformationPanelExtension.vue'
 
 interface Props {
   aggregations: AggregationItem[]
 }
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const selectedAggregationLabel = defineModel<string | null>(
   'selectedAggregationLabel',
   { required: true },
 )
 
-function isActive(item: AggregationItem): boolean {
-  return item.id === selectedAggregationLabel.value
-}
+const extensionItems = computed(() =>
+  props.aggregations.map((aggregation) => ({
+    ...aggregation,
+    isActive: aggregation.id === selectedAggregationLabel.value,
+  })),
+)
 </script>
