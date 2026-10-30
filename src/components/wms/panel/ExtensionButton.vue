@@ -8,7 +8,7 @@
     :icon="icon"
     :append-icon="appendIcon"
     :text="buttonText"
-    min-width="35px"
+    :min-width="isActive ? '55px' : '30px'"
   />
 </template>
 

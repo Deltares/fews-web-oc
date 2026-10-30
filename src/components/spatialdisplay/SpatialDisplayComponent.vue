@@ -131,6 +131,11 @@
               :aggregations="aggregations"
               v-model:selected-aggregation-label="selectedAggregationLabel"
             />
+            <EnsemblesExtension
+              v-if="hasEnsembles"
+              v-model="ensembleSelection"
+              :ensembles="ensembles"
+            />
           </template>
         </InformationPanel>
         <TaskRunControl v-model:taskRunId="taskRunId" />
@@ -216,6 +221,7 @@ import OverlayInformationPanel from '@/components/wms/panel/OverlayInformationPa
 import AggregationPanel from '@/components/wms/panel/AggregationPanel.vue'
 import EnsemblesPanel from '@/components/wms/panel/EnsemblesPanel.vue'
 import AggregationExtension from '@/components/wms/panel/AggregationExtension.vue'
+import EnsemblesExtension from '@/components/wms/panel/EnsemblesExtension.vue'
 import ColourPanel from '@/components/wms/panel/ColourPanel.vue'
 import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
