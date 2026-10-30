@@ -94,6 +94,13 @@
           v-model:show-layer="showLayer"
           @changeLayer="onLayerChange"
         >
+          <template v-if="hasEnsembles">
+            <v-divider />
+            <EnsemblesPanel
+              v-model="ensembleSelection"
+              :ensembles="ensembles"
+            />
+          </template>
           <template v-if="aggregations.length > 0">
             <v-divider />
             <AggregationPanel
@@ -123,6 +130,11 @@
               v-if="doShowAggregated"
               :aggregations="aggregations"
               v-model:selected-aggregation-label="selectedAggregationLabel"
+            />
+            <EnsemblesExtension
+              v-if="hasEnsembles"
+              v-model="ensembleSelection"
+              :ensembles="ensembles"
             />
           </template>
         </InformationPanel>
@@ -206,8 +218,10 @@ import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import InformationPanel from '@/components/wms/panel/InformationPanel.vue'
 import OverlayInformationPanel from '@/components/wms/panel/OverlayInformationPanel.vue'
-import AggregationPanel from '../wms/panel/AggregationPanel.vue'
+import AggregationPanel from '@/components/wms/panel/AggregationPanel.vue'
+import EnsemblesPanel from '@/components/wms/panel/EnsemblesPanel.vue'
 import AggregationExtension from '@/components/wms/panel/AggregationExtension.vue'
+import EnsemblesExtension from '@/components/wms/panel/EnsemblesExtension.vue'
 import ColourPanel from '@/components/wms/panel/ColourPanel.vue'
 import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
@@ -252,6 +266,7 @@ import { clamp } from '@/lib/utils/math'
 import { useAggregations } from '@/services/useAggregations'
 import { provideLayerOrder } from '@/services/useLayerOrder'
 import { useOverlays } from '@/services/useOverlays'
+import { useWmsEnsembles } from '@/services/useWmsEnsembles'
 import SnapshotStrip from '@/components/spatialdisplay/SnapshotStrip.vue'
 import { useSearchContext } from '@/stores/searchContext'
 
@@ -305,6 +320,14 @@ const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
+
+const {
+  ensembles,
+  selection: ensembleSelection,
+  hasEnsembles,
+} = useWmsEnsembles(() => props.layerCapabilities)
+
+watch(ensembleSelection, () => setLayerOptions())
 
 const doFollowNow = ref(taskRunId.value === undefined)
 // Set follow now to false when a task run is selected because taskRun data is typically historical data,
@@ -424,6 +447,8 @@ const maxTimeSeriesFilter = computed(() => {
       : undefined,
     useDisplayUnits: userSettings.useDisplayUnits,
     convertDatum: userSettings.convertDatum,
+    // NOTE: this endpoint does not yet accept ensemble parameters, so it may
+    //       return values that do not match the currently selected ensemble.
   }
   return filter
 })
@@ -648,6 +673,7 @@ function setLayerOptions(): void {
     useDisplayUnits: userSettings.useDisplayUnits,
     useLastValue: isInDatesRange(selectedDate.value, props.times),
     taskRunId: taskRunId.value,
+    ensembleSelection: ensembleSelection.value ?? undefined,
   }
 }
 

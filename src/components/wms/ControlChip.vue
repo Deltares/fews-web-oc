@@ -34,12 +34,8 @@ defineOptions({ inheritAttrs: false })
   top: 28px;
   position: absolute;
   display: flex;
+  flex-direction: column;
   justify-content: center;
-}
-
-.control-chip__extension-slot:hover *,
-.control-chip__extension-slot *:hover,
-.control-chip__extension-slot:focus-within * {
-  display: inherit; /* visible */
+  align-items: start;
 }
 </style>

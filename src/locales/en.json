@@ -299,5 +299,9 @@
   "periodFilter": {
     "all": "All",
     "last": "Last {duration}"
+  },
+  "ensembles": {
+    "ensemble": "Ensemble",
+    "member": "Member"
   }
 }
