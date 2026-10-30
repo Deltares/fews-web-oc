@@ -1,13 +1,15 @@
 <template>
-  <v-hover>
+  <v-hover v-model="isExpanded">
     <template #default="{ isHovering, props }">
       <v-btn-toggle
+        ref="button-toggle"
         v-bind="props"
         v-model="selection"
         density="compact"
         variant="flat"
         mandatory
-        class="overflow-visible"
+        class="overflow-x-auto button-container"
+        @wheel="onWheel"
       >
         <v-tooltip v-for="(item, index) in items" :key="index" location="top">
           <template #activator="{ props: tooltipProps }">
@@ -19,6 +21,7 @@
               :text="getItemProperty(item, textKey)"
               :icon="getItemProperty(item, iconKey)"
               :activePrependIcon="activePrependIcon"
+              :data-is-active="item.isActive"
             />
           </template>
           <slot name="tooltip" :item="item"></slot>
@@ -42,6 +45,8 @@
     IconKey extends keyof T | undefined = undefined
   "
 >
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
+
 import ExtensionButton from '@/components/wms/panel/ExtensionButton.vue'
 
 export interface ExtensionItem {
@@ -59,8 +64,45 @@ defineProps<Props>()
 
 const selection = defineModel<U | null>({ required: true })
 
+const buttonToggle = useTemplateRef('button-toggle')
+const buttonContainer = computed<HTMLDivElement | null>(() => {
+  if (buttonToggle.value === null) return null
+  return buttonToggle.value.$el as HTMLDivElement
+})
+
+const isExpanded = ref<boolean>(false)
+watch(isExpanded, async (newIsExpanded) => {
+  if (!newIsExpanded) return
+  // First, wait for the DOM to update.
+  await nextTick()
+
+  // Make sure we scroll the currently selected button into view upon expansion
+  // of the toggle.
+  const button = buttonContainer.value?.querySelector<HTMLButtonElement>(
+    'button[data-is-active="true"]',
+  )
+  if (!button) return
+  button.scrollIntoView({
+    behavior: 'instant',
+    inline: 'center',
+  })
+})
+
 function getItemProperty(item: T, key?: TextKey | IconKey): string | undefined {
   if (key === undefined) return undefined
   return item[key]
 }
+
+function onWheel(event: WheelEvent): void {
+  // Preserve horizontal scrolling behaviour where possible.
+  if (event.deltaX !== 0) return
+  if (buttonContainer.value === null) return
+  buttonContainer.value.scrollLeft += event.deltaY
+}
 </script>
+
+<style scoped>
+.button-container {
+  width: 400px;
+}
+</style>
