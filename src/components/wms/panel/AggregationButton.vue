@@ -4,7 +4,7 @@
     :value="item.id"
     class="information-panel__tab text-label-medium"
     size="small"
-    :class="{ active }"
+    :class="{ active: isActive }"
     :prepend-icon="data.prependIcon"
     :icon="data.icon"
     :append-icon="data.appendIcon"
@@ -19,18 +19,14 @@ import { computed } from 'vue'
 
 interface Props {
   item: AggregationItem
-  selectedAggregationLabel: string | null
+  isActive: boolean
   tooltipProps: Record<string, unknown>
 }
 
 const props = defineProps<Props>()
 
-const active = computed(() => {
-  return props.item.id === props.selectedAggregationLabel
-})
-
 const data = computed(() => {
-  const isActive = active.value
+  const isActive = props.isActive
   const hasShortLabel = props.item.shortLabel !== ''
   const hasIcon = !!props.item.icon
 
@@ -59,11 +55,9 @@ const data = computed(() => {
   padding: 5px 10px;
   background-color: rgba(var(--v-theme-surface), 0.8);
   cursor: pointer;
-  display: none; /* hidden */
 }
 
 .information-panel__tab.active {
   border-radius: 3px;
-  display: inherit; /* visible */
 }
 </style>
