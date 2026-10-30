@@ -128,4 +128,13 @@ async function scrollToActive() {
 .weboc-treemenu {
   overflow-x: hidden;
 }
+
+/* The collapsed rail is too narrow for a scrollbar; hide it but keep the
+   tree scrollable with the mouse wheel. */
+:global(
+  .v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
+    .weboc-treemenu
+) {
+  scrollbar-width: none;
+}
 </style>
