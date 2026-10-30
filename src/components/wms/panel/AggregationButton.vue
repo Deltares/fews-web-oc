@@ -1,6 +1,5 @@
 <template>
   <v-btn
-    v-bind="tooltipProps"
     :value="item.id"
     class="information-panel__tab text-label-medium"
     size="small"
@@ -20,7 +19,6 @@ import { computed } from 'vue'
 interface Props {
   item: AggregationItem
   isActive: boolean
-  tooltipProps: Record<string, unknown>
 }
 
 const props = defineProps<Props>()
