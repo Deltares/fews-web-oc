@@ -1,4 +1,4 @@
-import { computed, ref, toValue, type MaybeRefOrGetter } from 'vue'
+import { computed, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 
 import {
   type SidePanelProps,
@@ -22,7 +22,9 @@ export interface OpenSidePanel {
  * the state of the panel below it.
  *
  * @param availableTypes types of the panels that are currently enabled; opening
- *   a panel that is not available is ignored.
+ *   a panel that is not available is ignored. When a panel becomes unavailable
+ *   while it is open, it is closed together with the panels stacked on top of
+ *   it.
  */
 export function useSidePanelStack(
   availableTypes: MaybeRefOrGetter<SidePanelType[]>,
@@ -40,6 +42,14 @@ export function useSidePanelStack(
   function isAvailable(type: SidePanelType): boolean {
     return toValue(availableTypes).includes(type)
   }
+
+  watch(
+    () => toValue(availableTypes),
+    () => {
+      const index = stack.value.findIndex((panel) => !isAvailable(panel.type))
+      if (index !== -1) stack.value = stack.value.slice(0, index)
+    },
+  )
 
   function open<T extends SidePanelType>(
     type: T,

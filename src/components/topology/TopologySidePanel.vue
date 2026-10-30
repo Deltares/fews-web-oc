@@ -72,7 +72,7 @@
 
 <script setup lang="ts">
 import type { TopologyNode } from '@deltares/fews-pi-requests'
-import { type Component, computed, ref } from 'vue'
+import { type Component, computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import type { NavigateRoute } from '@/lib/router'
@@ -83,6 +83,7 @@ import {
 } from '@/lib/sidepanel'
 
 import { useConfigStore } from '@/stores/config'
+import { useConfiguratorModeStore } from '@/stores/configuratorMode'
 import { useLogDisplay } from '@/services/useLogDisplay'
 import {
   useSidePanelStack,
@@ -106,11 +107,12 @@ const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
 const configStore = useConfigStore()
+const configuratorMode = useConfiguratorModeStore()
 
 const enabledSidePanels = computed<SidePanel[]>(() =>
   getEnabledSidePanels(configStore.general.sidePanel, {
     thresholds: props.showActiveThresholdCrossingsForFilters ?? false,
-    sharedRequests: import.meta.env.DEV,
+    sharedRequests: configuratorMode.isEnabled,
   }),
 )
 // Persistent panels have their own permanent button in the toolbar, the other
@@ -142,6 +144,14 @@ const menuSidePanelType = ref<SidePanelType | null>(
 const menuSidePanel = computed<SidePanel | null>(
   () => findSidePanel(menuSidePanelType.value) ?? null,
 )
+// Fall back to the first panel when the selected panel is no longer enabled.
+watch(menuSidePanels, (sidePanels) => {
+  if (
+    sidePanels.some((sidePanel) => sidePanel.type === menuSidePanelType.value)
+  )
+    return
+  menuSidePanelType.value = sidePanels[0]?.type ?? null
+})
 
 const logDisplayId = computed(
   () => configStore.general.sidePanel?.logDisplay?.logDisplayId,

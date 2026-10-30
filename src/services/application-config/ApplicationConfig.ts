@@ -21,4 +21,5 @@ export type ApplicationConfig = {
   VITE_REQUEST_HEADER_AUTHORIZATION: RequestHeaderAuthorization
   VITE_I18N_LOCALE: string
   VITE_FEWS_WEBOC_MF_MANIFEST_URL: string
+  VITE_FEWS_WEBOC_CONFIGURATOR_MODE_ALLOWED: boolean | string
 }

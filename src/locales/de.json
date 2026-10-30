@@ -32,6 +32,18 @@
     "about": "Über",
     "switchTo": "Wechseln zu"
   },
+  "about": {
+    "qrCodeTitle": "Web OC auf einem anderen Gerät öffnen",
+    "qrCodeDescription": "Scannen Sie diesen QR-Code mit der Kamera Ihres Smartphones oder Tablets, um {url} im Browser zu öffnen. Es wird die Startseite geöffnet, nicht die aktuelle Ansicht; verwenden Sie Teilen, um eine bestimmte Ansicht zu senden. Möglicherweise müssen Sie sich auf dem Gerät anmelden."
+  },
+  "configurator": {
+    "mode": "Konfiguratormodus",
+    "modeActive": "Konfiguratormodus aktiv",
+    "systemDetail": "Systemdetail",
+    "copy": "In die Zwischenablage kopieren",
+    "copied": "Kopiert",
+    "copyFailed": "Kopieren fehlgeschlagen"
+  },
   "auth": {
     "signOut": "Abmelden"
   },

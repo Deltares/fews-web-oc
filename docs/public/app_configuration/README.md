@@ -20,6 +20,7 @@ The following settings can be provided:
 | `VITE_LOGIN_BUTTON_PROPS` | An object or JSON string containing properties that are passed to the login button. See https://vuetifyjs.com/en/api/v-btn/#props for which property can be set. Helpful properties are `"prependIcon"`, `"text"`, `"appendIcon"` and `"color"`. |
 | `VITE_FEWS_WEBSERVICES_MAX_URL_LENGTH` | Maximum URL length (number) for FEWS WebServices requests. When exceeded, the request is split into multiple requests. If not set, no limit is applied, so very long URLs may fail (for example with HTTP 414 URI Too Long). |
 | `VITE_FEWS_WEBSERVICES_EXPLODE_QUERY_PARAMETERS` | Controls how array query parameters are serialized (boolean). `true` uses repeated keys (for example `taskRunIds=id1&taskRunIds=id2`), `false` uses comma-separated values (for example `taskRunIds=id1,id2`). If not set, the default is `true`. |
+| `VITE_FEWS_WEBOC_CONFIGURATOR_MODE_ALLOWED` | Allows users to enable the configurator mode from the user settings menu (boolean). The configurator mode shows system details, such as the shared requests side panel, that help to understand the FEWS configuration. The app bar is striped while the mode is enabled. It only changes what is shown, not what data is accessible. If not set, the default is `false`; development builds always allow it. |
 
 ## Progressive Web Application Manifest File
 

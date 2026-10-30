@@ -4,11 +4,15 @@
       ref="appBar"
       :color="appBarColor"
       :style="appBarStyle"
+      :class="{ 'configurator-mode': configuratorMode.isEnabled }"
       density="compact"
       data-test-id="app-bar"
       role="banner"
       aria-label="Application header"
     >
+      <span v-if="configuratorMode.isEnabled" class="d-sr-only">
+        {{ t('configurator.modeActive') }}
+      </span>
       <template #prepend>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
         <v-btn :to="{ name: 'Default' }" v-if="!isInstalledPWA && mdAndUp">
@@ -161,8 +165,11 @@
             <v-btn
               class="text-lowercase"
               size="small"
+              :readonly="!configuratorMode.isEnabled"
               @click="showHash = !showHash"
-              :prepend-icon="showHash ? 'mdi-source-commit' : 'mdi-tag-outline'"
+              :prepend-icon="
+                showCommitHash ? 'mdi-source-commit' : 'mdi-tag-outline'
+              "
               >{{ versionString }}</v-btn
             >
           </template>
@@ -187,6 +194,7 @@
 <script setup lang="ts">
 import {
   computed,
+  effectScope,
   nextTick,
   onMounted,
   onUnmounted,
@@ -196,6 +204,7 @@ import {
   watch,
 } from 'vue'
 import { useDisplay, useRtl, useTheme } from 'vuetify'
+import { useI18n } from 'vue-i18n'
 import { useConfigStore } from '../stores/config.ts'
 import { useRoute } from 'vue-router'
 import LoginComponent from '../views/auth/LoginComponent.vue'
@@ -211,9 +220,12 @@ import { toCharacterIcon } from '@/lib/icons/index.ts'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { useCustomStyleSheet } from '@/services/useCustomStyleSheet/index.ts'
 import { useSharedRequestHistoryTracker } from '@/services/useSharedRequestHistory'
+import { useConfiguratorModeStore } from '@/stores/configuratorMode'
 
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
+const configuratorMode = useConfiguratorModeStore()
+const { t } = useI18n()
 
 const { mobile, mdAndUp } = useDisplay()
 
@@ -227,7 +239,22 @@ const route = useRoute()
 const isInstalledPWA = globalThis.matchMedia(
   '(display-mode: standalone)',
 ).matches
-if (import.meta.env.DEV) useSharedRequestHistoryTracker()
+// Track shared requests only while the configurator mode is enabled.
+let sharedRequestTrackerScope: ReturnType<typeof effectScope> | undefined
+watch(
+  () => configuratorMode.isEnabled,
+  (enabled) => {
+    if (enabled && !sharedRequestTrackerScope) {
+      sharedRequestTrackerScope = effectScope()
+      sharedRequestTrackerScope.run(useSharedRequestHistoryTracker)
+    } else if (!enabled && sharedRequestTrackerScope) {
+      sharedRequestTrackerScope.stop()
+      sharedRequestTrackerScope = undefined
+    }
+  },
+  { immediate: true },
+)
+onUnmounted(() => sharedRequestTrackerScope?.stop())
 
 const showHash = ref(false)
 const appBarStyle = ref<StyleValue>()
@@ -293,8 +320,13 @@ const logoSrc = computed(() => {
     : defaultLogo
 })
 
+// The commit hash is a system detail, only shown in configurator mode.
+const showCommitHash = computed(
+  () => configuratorMode.isEnabled && showHash.value,
+)
+
 const versionString = computed(() => {
-  if (showHash.value && !__GIT_TAG__) {
+  if (showCommitHash.value && !__GIT_TAG__) {
     return __GIT_HASH__
   }
   return version
@@ -314,6 +346,24 @@ const useRail = computed(
 </script>
 
 <style>
+/* Same diagonal stripes as editable cells in the time series table, but
+   semi-transparent so the configured app bar colour and image remain visible.
+   The stripes use the text colour of the app bar so they contrast with any
+   configured background colour. */
+.v-app-bar.configurator-mode::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent 0px,
+    transparent 12.73px,
+    color-mix(in srgb, currentColor 5%, transparent) 12.73px,
+    color-mix(in srgb, currentColor 5%, transparent) 25.46px
+  );
+}
+
 html,
 body {
   margin: 0px;

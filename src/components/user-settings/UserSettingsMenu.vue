@@ -26,6 +26,27 @@
           :aria-label="label(setting)"
         />
       </template>
+      <template v-if="configuratorMode.isAllowed">
+        <v-divider />
+        <v-list-item density="compact">
+          <v-switch
+            :model-value="configuratorMode.isEnabled"
+            @update:model-value="configuratorMode.setEnabled(!!$event)"
+            density="compact"
+            color="primary"
+            class="ml-3"
+            hide-details
+            :aria-label="t('configurator.mode')"
+            data-test-id="configurator-mode-switch"
+          >
+            <template #label>
+              <v-label class="text-subtitle-2 text-medium-emphasis">
+                {{ t('configurator.mode') }}
+              </v-label>
+            </template>
+          </v-switch>
+        </v-list-item>
+      </template>
       <v-divider />
       <v-btn
         variant="text"
@@ -47,11 +68,13 @@ import { UserSettingsItem, useUserSettingsStore } from '@/stores/userSettings'
 import UserSettingsDialog from './UserSettingsDialog.vue'
 import { useI18n } from 'vue-i18n'
 import { useUserSettingTranslation } from '@/services/useUserSettingTranslation'
+import { useConfiguratorModeStore } from '@/stores/configuratorMode'
 
 const { t } = useI18n()
 const { label } = useUserSettingTranslation()
 
 const store = useUserSettingsStore()
+const configuratorMode = useConfiguratorModeStore()
 const menu = ref(false)
 const dialog = ref(false)
 
