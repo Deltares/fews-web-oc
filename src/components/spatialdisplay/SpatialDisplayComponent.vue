@@ -94,6 +94,13 @@
           v-model:show-layer="showLayer"
           @changeLayer="onLayerChange"
         >
+          <template v-if="hasEnsembles">
+            <v-divider />
+            <EnsemblesPanel
+              v-model="ensembleSelection"
+              :ensembles="wmsEnsembles.ensembles.value"
+            />
+          </template>
           <template v-if="aggregations.length > 0">
             <v-divider />
             <AggregationPanel
@@ -206,7 +213,8 @@ import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import InformationPanel from '@/components/wms/panel/InformationPanel.vue'
 import OverlayInformationPanel from '@/components/wms/panel/OverlayInformationPanel.vue'
-import AggregationPanel from '../wms/panel/AggregationPanel.vue'
+import AggregationPanel from '@/components/wms/panel/AggregationPanel.vue'
+import EnsemblesPanel from '@/components/wms/panel/EnsemblesPanel.vue'
 import AggregationExtension from '@/components/wms/panel/AggregationExtension.vue'
 import ColourPanel from '@/components/wms/panel/ColourPanel.vue'
 import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
@@ -252,8 +260,10 @@ import { clamp } from '@/lib/utils/math'
 import { useAggregations } from '@/services/useAggregations'
 import { provideLayerOrder } from '@/services/useLayerOrder'
 import { useOverlays } from '@/services/useOverlays'
+import { useWmsEnsembles } from '@/services/useWmsEnsembles'
 import SnapshotStrip from '@/components/spatialdisplay/SnapshotStrip.vue'
 import { useSearchContext } from '@/stores/searchContext'
+import type { EnsembleSelection } from '@/lib/ensemble'
 
 interface ElevationWithUnitSymbol {
   units?: string
