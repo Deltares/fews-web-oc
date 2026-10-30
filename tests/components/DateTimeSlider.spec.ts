@@ -125,7 +125,8 @@ function fitsInRoundedBox(
 
 for (const { story, top, bottom } of [
   { story: 'FloatingDesktop', top: 15, bottom: 15 },
-  { story: 'FloatingPhone', top: 15, bottom: 50 },
+  // The bottom corners are those of the phone screen
+  { story: 'Phone', top: 0, bottom: 55 },
 ]) {
   test(`${story}: buttons and thumb stay inside the rounded corners`, async ({
     mount,

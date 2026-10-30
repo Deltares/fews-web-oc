@@ -52,4 +52,21 @@ const floating = (width: number, cornerRadius: number, phone: boolean) => () =>
   ])
 
 export const FloatingDesktop = floating(1000, 15, false)
-export const FloatingPhone = floating(390, 50, true)
+
+// Full width panel at the bottom of a phone screen, with the content inset to
+// clear the rounded screen corners
+export const Phone = () =>
+  h('div', { style: 'padding-top: 120px; width: 390px' }, [
+    h(DateTimeSlider, {
+      dates,
+      selectedDate: dates[0],
+      doFollowNow: false,
+      hideSpeedControls: true,
+      'data-testid': 'floating-panel',
+      style: {
+        '--datetime-slider-safe-corner-radius': '55px',
+        backgroundColor: 'rgba(var(--v-theme-surface), 0.8)',
+        boxShadow: '0 0 5px rgba(0, 0, 0, 0.5)',
+      },
+    }),
+  ])

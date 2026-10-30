@@ -467,14 +467,25 @@ onUnmounted(() => {
 <style scoped>
 /* A parent can round the bottom corners with --datetime-slider-corner-radius,
    e.g. to follow the rounded corners of the window. The top corners are
-   rounded up to 15px. The content is inset to stay clear of the corners. */
+   rounded up to 15px. The content is inset to stay clear of the corners.
+   A square slider placed in the rounded corners of a screen can inset its
+   content with --datetime-slider-safe-corner-radius instead. */
 .datetime-slider {
   --_corner-radius: var(--datetime-slider-corner-radius, 0px);
+  --_safe-corner-radius: var(
+    --datetime-slider-safe-corner-radius,
+    var(--_corner-radius)
+  );
   --_top-corner-radius: min(var(--_corner-radius), 15px);
   --datetime-slider-inline-padding: max(
     10px,
-    calc(var(--_corner-radius) * 0.35),
+    calc(var(--_safe-corner-radius) * 0.35),
     calc(var(--_top-corner-radius) - 1px)
+  );
+  --datetime-slider-bottom-padding: max(
+    6px,
+    calc(var(--_safe-corner-radius) * 0.35),
+    env(safe-area-inset-bottom, 0px)
   );
   border-radius: var(--_top-corner-radius) var(--_top-corner-radius)
     var(--_corner-radius) var(--_corner-radius);
@@ -488,8 +499,9 @@ onUnmounted(() => {
 .datetime-slider__actions {
   display: flex;
   flex-direction: row;
-  height: 32px;
-  padding: 0px var(--datetime-slider-inline-padding) 6px;
+  height: calc(32px + var(--datetime-slider-bottom-padding) - 6px);
+  padding: 0px var(--datetime-slider-inline-padding)
+    var(--datetime-slider-bottom-padding);
 }
 
 .datetime-slider__datefield {
