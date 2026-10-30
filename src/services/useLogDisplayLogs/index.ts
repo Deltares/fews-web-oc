@@ -1,3 +1,4 @@
+import { toDisplayDateTime } from '@/lib/date/timeZone'
 import type { LogMessage } from '@/lib/log'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import {
@@ -21,9 +22,9 @@ type GroupedLogItem = {
 
 export type VirtualScrollItem = DateSeparatorItem | GroupedLogItem
 
+// The day in the display time zone, as yyyy-MM-dd
 function getDateString(entryTime: string): string {
-  const date = new Date(entryTime)
-  return date.toISOString().split('T')[0]
+  return toDisplayDateTime(new Date(entryTime)).toISODate() ?? ''
 }
 
 function groupByTaskRunId(logs: LogMessage[]): VirtualScrollItem[] {

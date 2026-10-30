@@ -80,6 +80,25 @@
     "group": "UI"
   },
   {
+    "id": "ui.timeZone",
+    "type": "oneOfMultiple",
+    "label": "Time zone",
+    "value": "system",
+    "items": [
+      {
+        "value": "system",
+        "title": "System",
+        "icon": "mdi-monitor"
+      },
+      {
+        "value": "UTC",
+        "title": "UTC",
+        "icon": "mdi-earth"
+      }
+    ],
+    "group": "UI"
+  },
+  {
     "id": "ui.hierarchical-menu-style",
     "type": "oneOfMultiple",
     "label": "Menu style",

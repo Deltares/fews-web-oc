@@ -11,7 +11,11 @@
         v-if="remotes.length > 0"
         class="text-caption text-medium-emphasis mr-2"
       >
-        {{ lastChecked ? lastChecked.toLocaleTimeString() : 'Never' }}
+        {{
+          lastChecked
+            ? toDisplayLocaleString(lastChecked, timeOfDayOptions)
+            : 'Never'
+        }}
       </span>
 
       <v-btn
@@ -78,6 +82,14 @@
 import { computed, onMounted, ref } from 'vue'
 import { useMicroFrontEnd } from '@/composables/useMicroFrontEnd'
 import type { MicroFrontendRemote } from '@/lib/moduleFederation/types'
+import { toDisplayLocaleString } from '@/lib/date/timeZone'
+
+// The options of Date.toLocaleTimeString
+const timeOfDayOptions: Intl.DateTimeFormatOptions = {
+  hour: 'numeric',
+  minute: '2-digit',
+  second: '2-digit',
+}
 
 type RemoteStatus = 'unknown' | 'checking' | 'up' | 'down'
 

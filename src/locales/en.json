@@ -37,13 +37,29 @@
   },
   "timeControl": {
     "browserTime": "Browser time",
-    "endDateAfterStartDate": "End date must be after start date",
+    "browserTimeZone": "Browser time zone",
+    "close": "Close",
+    "days": "Days",
+    "defaultPeriod": "Set per display",
     "followCurrentTime": "Follow current time",
     "followSpecifiedTime": "Follow specified time",
+    "lastSynced": "System time synchronised with the server at {time}",
+    "months": "Months",
+    "nextPage": "Next",
+    "now": "now",
+    "period": "Period",
     "periodPresets": "Period presets",
-    "startDateBeforeEndDate": "Start date must be before end date",
+    "previousPage": "Previous",
+    "runningWindow": "Running window",
+    "runningWindowHint": "Moves with the system time",
+    "syncFailed": "System time could not be synchronised with the server",
+    "syncHint": "The system time is the time of the FEWS server, which can differ from the time on this device. It is synchronised with the server every minute and runs on in the browser in between.",
+    "systemTime": "System time",
+    "timeZone": "Time zone",
+    "title": "Time control",
     "trackingCurrentTime": "Following current time",
-    "trackingSpecifiedTime": "Following specified time"
+    "trackingSpecifiedTime": "Following specified time",
+    "years": "Years"
   },
   "thresholds": {
     "count": "Count",
@@ -137,6 +153,13 @@
             "default": "Default",
             "en": "English",
             "de": "Deutsch"
+          }
+        },
+        "timeZone": {
+          "label": "Time zone",
+          "options": {
+            "system": "System",
+            "UTC": "UTC"
           }
         },
         "hierarchical-menu-style": {

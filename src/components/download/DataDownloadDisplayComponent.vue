@@ -92,7 +92,11 @@
                   <template v-slot:activator="{ props }">
                     <v-icon v-bind="props">mdi-calendar-start</v-icon>
                   </template>
-                  <v-date-picker v-model="startDate" no-title hide-actions>
+                  <v-date-picker
+                    v-model="startPickerDate"
+                    no-title
+                    hide-actions
+                  >
                     <template #header></template>
                   </v-date-picker>
                 </v-menu>
@@ -113,7 +117,7 @@
                   <template v-slot:activator="{ props }">
                     <v-icon v-bind="props">mdi-calendar-end</v-icon>
                   </template>
-                  <v-date-picker v-model="endDate" no-title hide-actions>
+                  <v-date-picker v-model="endPickerDate" no-title hide-actions>
                     <template #header></template>
                   </v-date-picker>
                 </v-menu>
@@ -167,6 +171,7 @@ import {
   TopologyNode,
 } from '@deltares/fews-pi-requests'
 import { DateTime, type DateTimeMaybeValid } from 'luxon'
+import { getDisplayTimeZone, toWallClockDate } from '@/lib/date/timeZone'
 import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.ts'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
@@ -309,22 +314,46 @@ watch(endDateString, (newValue) => {
 })
 
 watch(startDate, (newValue) => {
-  let currentDisplayTime: DateTimeMaybeValid = DateTime.fromFormat(
-    startDateString.value,
-    DATE_FMT,
-  )
-  copyCurrentHoursAndMinutesToNewDateValue(currentDisplayTime, newValue)
   startDateString.value = DateTime.fromJSDate(newValue).toFormat(DATE_FMT)
 })
 
 watch(endDate, (newValue) => {
-  let currentDisplayTime: DateTimeMaybeValid = DateTime.fromFormat(
-    endDateString.value,
-    DATE_FMT,
-  )
-  copyCurrentHoursAndMinutesToNewDateValue(currentDisplayTime, newValue)
   endDateString.value = DateTime.fromJSDate(newValue).toFormat(DATE_FMT)
 })
+
+// Show the selected dates in the new display time zone on a change
+watch(getDisplayTimeZone, () => {
+  startDateString.value = DateTime.fromJSDate(startDate.value).toFormat(
+    DATE_FMT,
+  )
+  endDateString.value = DateTime.fromJSDate(endDate.value).toFormat(DATE_FMT)
+})
+
+// The date pickers work in local time, so they get the date in the display
+// time zone as local date. Picking a day keeps the time of day.
+const startPickerDate = computed<Date>({
+  get: () => toWallClockDate(startDate.value),
+  set: (picked) => {
+    startDate.value = withPickedDay(startDate.value, picked)
+  },
+})
+
+const endPickerDate = computed<Date>({
+  get: () => toWallClockDate(endDate.value),
+  set: (picked) => {
+    endDate.value = withPickedDay(endDate.value, picked)
+  },
+})
+
+function withPickedDay(date: Date, picked: Date): Date {
+  return DateTime.fromJSDate(date)
+    .set({
+      year: picked.getFullYear(),
+      month: picked.getMonth() + 1,
+      day: picked.getDate(),
+    })
+    .toJSDate()
+}
 
 function updateLocations() {
   const attributeIds =
@@ -355,36 +384,13 @@ function updateLocations() {
   }
 }
 
-function copyCurrentHoursAndMinutesToNewDateValue(
-  currentDisplayTime: DateTimeMaybeValid,
-  newValue: Date,
-) {
-  if (currentDisplayTime.isValid) {
-    let currentJSDate = currentDisplayTime.toJSDate()
-    const currentHour = currentJSDate.getHours()
-    const currentMinutes = currentJSDate.getMinutes()
-    newValue.setHours(currentHour)
-    newValue.setMinutes(currentMinutes)
-  }
-}
-
+// Luxon uses the display time zone by default, see setDisplayTimeZone
 function getStartDateValue() {
-  let startDateValue = new Date()
-  startDateValue.setMilliseconds(
-    startDateValue.getMilliseconds() - 1000 * 60 * 60 * 24 * 14,
-  )
-  startDateValue.setHours(0)
-  startDateValue.setMinutes(0)
-  startDateValue.setMilliseconds(0)
-  return startDateValue
+  return DateTime.now().minus({ days: 14 }).startOf('day').toJSDate()
 }
 
 function getEndDateValue() {
-  let endDateValue = new Date()
-  endDateValue.setHours(0)
-  endDateValue.setMinutes(0)
-  endDateValue.setMilliseconds(0)
-  return endDateValue
+  return DateTime.now().startOf('day').toJSDate()
 }
 
 function downloadData() {

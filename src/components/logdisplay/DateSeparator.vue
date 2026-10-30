@@ -8,33 +8,32 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { DateTime } from 'luxon'
+import { toDisplayDateTime } from '@/lib/date/timeZone'
 
 interface Props {
+  /** A day in the display time zone, as yyyy-MM-dd. */
   date: string
 }
 
 const props = defineProps<Props>()
 
 const formattedDate = computed(() => {
-  const messageDate = new Date(props.date)
-  const today = new Date()
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
+  const today = toDisplayDateTime(Date.now())
 
-  if (messageDate.toDateString() === today.toDateString()) {
+  if (props.date === today.toISODate()) {
     return 'Today'
   }
 
-  if (messageDate.toDateString() === yesterday.toDateString()) {
+  if (props.date === today.minus({ days: 1 }).toISODate()) {
     return 'Yesterday'
   }
 
   // For other dates, return a formatted date
-  return messageDate.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
+  return DateTime.fromISO(props.date, { zone: 'UTC' }).toLocaleString(
+    { day: '2-digit', month: 'short', year: 'numeric' },
+    { locale: 'en-GB' },
+  )
 })
 </script>
 

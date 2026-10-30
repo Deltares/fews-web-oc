@@ -1,20 +1,20 @@
 import { DateTime, Duration, DurationLikeObject } from 'luxon'
+import {
+  getDisplayTimeZone,
+  toDisplayDateTime,
+  toDisplayDateTimeInputValue,
+} from './timeZone'
 
 type DateInput = Date | string | number | undefined | null
 
 /**
- * Converts a date to a string in the format 'YYYY-MM-DDTHH:MM'.
+ * Converts a date to a string in the format 'YYYY-MM-DDTHH:MM:SS', in the
+ * display time zone.
  * @param date - The date to convert.
- * @returns The date as a string in the format 'YYYY-MM-DDTHH:MM'.
+ * @returns The date as a string in the format 'YYYY-MM-DDTHH:MM:SS'.
  */
 export function toISOString(date: Date) {
-  const years = date.getFullYear()
-  const months = String(date.getMonth() + 1).padStart(2, '0')
-  const days = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  const seconds = String(date.getSeconds()).padStart(2, '0')
-  return `${years}-${months}-${days}T${hours}:${minutes}:${seconds}`
+  return toDisplayDateTimeInputValue(date, true)
 }
 
 /**
@@ -94,16 +94,6 @@ export function convertTimestampToFewsPiParameter(timestamp: number): string {
   return convertJSDateToFewsPiParameter(new Date(timestamp))
 }
 
-/**
- * Convert date to date time string for datetime-local input.
- *
- * @param date - The date to convert.
- * @returns The date as a string in the format 'YYYY-MM-DDTHH:MM'.
- */
-export function convertDateToDateTimeString(date: Date): string {
-  return date.toISOString().slice(0, 16)
-}
-
 export function toHumanReadableDate(date: DateInput): string {
   if (date === undefined || date === null) {
     return '—'
@@ -116,6 +106,7 @@ export function toHumanReadableDate(date: DateInput): string {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
+    timeZone: getDisplayTimeZone(),
   })
 }
 
@@ -135,6 +126,7 @@ export function toHumanReadableDateTime(date: DateInput): string {
     minute: '2-digit',
     second: '2-digit',
     hour12: false,
+    timeZone: getDisplayTimeZone(),
   })
 }
 
@@ -150,6 +142,7 @@ export function toHumanReadableTime(date: DateInput): string {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
+    timeZone: getDisplayTimeZone(),
   })
 }
 
@@ -166,6 +159,7 @@ export function toShortHumanReadableDate(date: DateInput): string {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
+    timeZone: getDisplayTimeZone(),
   })
 }
 
@@ -305,17 +299,18 @@ export type DateBoundaryUnit = (typeof dateBoundaryUnits)[number]
 
 /**
  * Returns the coarsest calendar unit at which a date is aligned, e.g. 'day'
- * for midnight and 'month' for midnight on the first of a month. Uses local
- * time, like d3 time scales.
+ * for midnight and 'month' for midnight on the first of a month, in the
+ * display time zone.
  * @param date - The date to check.
  * @returns The coarsest unit the date is a boundary of.
  */
 export function getDateBoundaryUnit(date: Date): DateBoundaryUnit {
-  if (date.getMilliseconds() !== 0 || date.getSeconds() !== 0) return 'second'
-  if (date.getMinutes() !== 0) return 'minute'
-  if (date.getHours() !== 0) return 'hour'
-  if (date.getDate() !== 1) return 'day'
-  if (date.getMonth() !== 0) return 'month'
+  const dateTime = toDisplayDateTime(date)
+  if (dateTime.millisecond !== 0 || dateTime.second !== 0) return 'second'
+  if (dateTime.minute !== 0) return 'minute'
+  if (dateTime.hour !== 0) return 'hour'
+  if (dateTime.day !== 1) return 'day'
+  if (dateTime.month !== 1) return 'month'
   return 'year'
 }
 
@@ -334,7 +329,7 @@ const multiScaleFormatOptions: Record<
 /**
  * Formats a date like the d3 multi-scale time format: only the coarsest unit
  * at which the boundary date is aligned is shown, so e.g. midnight shows the
- * day and other hours show the time. Uses local time, like d3 time scales.
+ * day and other hours show the time, in the display time zone.
  * @param date - The date to format.
  * @param boundary - The date that determines the unit, e.g. a d3 tick.
  * @param locale - The locale to format with, defaults to the browser locale.
@@ -346,5 +341,9 @@ export function toMultiScaleDateLabel(
   locale?: string,
 ): string {
   const options = multiScaleFormatOptions[getDateBoundaryUnit(boundary)]
-  return date.toLocaleString(locale, { ...options, hourCycle: 'h23' })
+  return date.toLocaleString(locale, {
+    ...options,
+    hourCycle: 'h23',
+    timeZone: getDisplayTimeZone(),
+  })
 }

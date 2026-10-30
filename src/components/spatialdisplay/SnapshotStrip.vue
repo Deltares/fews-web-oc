@@ -59,12 +59,12 @@
               class="datetime-slider__snapshot-label"
               :class="{
                 'datetime-slider__snapshot-label--day-transition':
-                  frame.isDayTransition && frame.time.getHours() !== 0,
+                  frame.showsDate,
               }"
               :datetime="frame.time.toISOString()"
             >
               <span
-                v-if="frame.isDayTransition && frame.time.getHours() !== 0"
+                v-if="frame.showsDate"
                 class="datetime-slider__snapshot-label-date"
                 >{{ formatSnapshotDay(frame.time) }}</span
               >
@@ -80,12 +80,12 @@
               class="datetime-slider__snapshot-label"
               :class="{
                 'datetime-slider__snapshot-label--day-transition':
-                  frame.isDayTransition && frame.time.getHours() !== 0,
+                  frame.showsDate,
               }"
               :datetime="frame.time.toISOString()"
             >
               <span
-                v-if="frame.isDayTransition && frame.time.getHours() !== 0"
+                v-if="frame.showsDate"
                 class="datetime-slider__snapshot-label-date"
                 >{{ formatSnapshotDay(frame.time) }}</span
               >
@@ -124,10 +124,11 @@ import { clamp } from '@/lib/utils/math'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { toMercator } from '@turf/projection'
 import { point } from '@turf/helpers'
-import { timeFormat } from 'd3-time-format'
+import { toDisplayDateTime, toDisplayLocaleString } from '@/lib/date/timeZone'
 import { configManager } from '@/services/application-config'
 import { convertBoundingBoxToLngLatBounds } from '@/services/useWms'
 import { getFilterFromLayerOptions } from '@/lib/map'
+import { type DateBoundaryUnit, getDateBoundaryUnit } from '@/lib/date'
 
 interface Props {
   times?: Date[]
@@ -236,7 +237,7 @@ const snapshotTimelineTimes = computed(() => {
   const rangeEnd = times.at(-1)
   if (!rangeEnd) return []
 
-  const dayStartMs = new Date(rangeStart).setHours(0, 0, 0, 0)
+  const dayStartMs = toDisplayDateTime(rangeStart).startOf('day').toMillis()
   const firstLayerOffsetMs = rangeStart.getTime() - dayStartMs
   const alignsWithDayStart = firstLayerOffsetMs % snapshotIntervalMs.value === 0
   const originMs = alignsWithDayStart ? dayStartMs : rangeStart.getTime()
@@ -338,11 +339,12 @@ const snapshotFrames = computed(() => {
       timelineIndex > 0
         ? snapshotTimelineTimes.value[timelineIndex - 1]
         : undefined
+    const dateTime = toDisplayDateTime(time)
     const isDayTransition =
       prevTime === undefined ||
-      prevTime.getDate() !== time.getDate() ||
-      prevTime.getMonth() !== time.getMonth() ||
-      prevTime.getFullYear() !== time.getFullYear()
+      !toDisplayDateTime(prevTime).hasSame(dateTime, 'day')
+    // At midnight, the chip itself shows the date
+    const showsDate = isDayTransition && dateTime.hour !== 0
 
     const isInAvailableRange =
       availableStartTime !== undefined &&
@@ -363,6 +365,7 @@ const snapshotFrames = computed(() => {
       index: timelineIndex,
       time,
       isDayTransition,
+      showsDate,
       hasImage,
       hasTimeMismatch,
       url: hasImage ? buildSnapshotGetMapUrl(requestTime, snapshotBbox) : '',
@@ -405,29 +408,36 @@ const maxSelectableLayerStep = computed(() => {
   )
 })
 
-const formatSnapshotMillisecond = timeFormat('.%L')
-const formatSnapshotSecond = timeFormat(':%S')
-const formatSnapshotMinute = timeFormat('%H:%M')
-const formatSnapshotHour = timeFormat('%H:%M')
-const formatSnapshotDay = timeFormat('%d %b')
-const formatSnapshotMonth = timeFormat('%b')
-const formatSnapshotYear = timeFormat('%Y')
+// Luxon formats in the display time zone, with English names like d3
+function formatInDisplayTimeZone(time: Date, format: string): string {
+  return toDisplayDateTime(time).toFormat(format, { locale: 'en-US' })
+}
+
+function formatSnapshotDay(time: Date): string {
+  return formatInDisplayTimeZone(time, 'dd LLL')
+}
 
 function formatSnapshotTime(time: Date): string {
-  return time.toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return toDisplayLocaleString(time, { hour: '2-digit', minute: '2-digit' })
+}
+
+const snapshotChipFormats: Record<DateBoundaryUnit, string> = {
+  second: ':ss',
+  minute: 'HH:mm',
+  hour: 'HH:mm',
+  day: 'dd LLL',
+  month: 'LLL',
+  year: 'yyyy',
 }
 
 function formatSnapshotChip(time: Date): string {
-  if (time.getMilliseconds()) return formatSnapshotMillisecond(time)
-  if (time.getSeconds()) return formatSnapshotSecond(time)
-  if (time.getMinutes()) return formatSnapshotMinute(time)
-  if (time.getHours()) return formatSnapshotHour(time)
-  if (time.getDate() !== 1) return formatSnapshotDay(time)
-  if (time.getMonth() !== 0) return formatSnapshotMonth(time)
-  return formatSnapshotYear(time)
+  if (toDisplayDateTime(time).millisecond) {
+    return formatInDisplayTimeZone(time, '.SSS')
+  }
+  return formatInDisplayTimeZone(
+    time,
+    snapshotChipFormats[getDateBoundaryUnit(time)],
+  )
 }
 
 function onSnapshotScroll(): void {
@@ -745,12 +755,11 @@ function revokeUnusedSnapshotImageUrls(activeUrls: Set<string>): void {
 function getAlignedTimeOnOrBefore(
   date: Date,
   intervalMs: number,
-  originMs?: number,
+  originMs: number,
 ): Date {
-  const refMs = originMs ?? new Date(date).setHours(0, 0, 0, 0)
-  const elapsedMs = date.getTime() - refMs
+  const elapsedMs = date.getTime() - originMs
   const steps = Math.floor(elapsedMs / intervalMs)
-  return new Date(refMs + steps * intervalMs)
+  return new Date(originMs + steps * intervalMs)
 }
 
 function getMaxSelectableScrollLeft(viewport: HTMLElement): number {

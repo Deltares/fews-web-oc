@@ -177,14 +177,11 @@
 
 <script setup lang="ts">
 import {
-  axisBottom,
-  axisLeft,
-  line,
-  scaleLinear,
-  scaleTime,
-  select,
-  timeFormat,
-} from 'd3'
+  getDisplayTimeZone,
+  toDisplayDateTime,
+  toDisplayLocaleString,
+} from '@/lib/date/timeZone'
+import { axisBottom, axisLeft, line, scaleLinear, scaleTime, select } from 'd3'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useResizeObserver } from '@vueuse/core'
 import {
@@ -209,7 +206,7 @@ useResizeObserver(chartContainer, ([entry]) => {
   chartWidth.value = Math.floor(entry.contentRect.width)
 })
 
-watch([history, chartWidth], drawRequestHistoryChart, {
+watch([history, chartWidth, getDisplayTimeZone], drawRequestHistoryChart, {
   flush: 'post',
 })
 
@@ -260,7 +257,7 @@ function getDuration(entry: SharedRequestHistoryEntry): string {
 }
 
 function formatTimestamp(timestamp: number): string {
-  return new Date(timestamp).toLocaleString()
+  return toDisplayLocaleString(timestamp)
 }
 
 interface RequestChartPoint {
@@ -314,7 +311,6 @@ function drawRequestHistoryChart(): void {
         .tickFormat((value) => `${value}`),
     )
 
-  const formatTime = timeFormat('%H:%M:%S')
   plot
     .append('g')
     .attr('class', 'request-history-x-axis')
@@ -322,7 +318,7 @@ function drawRequestHistoryChart(): void {
     .call(
       axisBottom(x)
         .ticks(4)
-        .tickFormat((d) => formatTime(d as Date)),
+        .tickFormat((d) => toDisplayDateTime(d as Date).toFormat('HH:mm:ss')),
     )
 
   const requestLine = line<RequestChartPoint>()

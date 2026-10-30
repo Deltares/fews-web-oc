@@ -354,6 +354,82 @@ describe('deserializeUserSettings – WebResources override tier', () => {
   })
 })
 
+describe('deserializeUserSettings – WebResources options override', () => {
+  const timeZoneSetting: UserSettingsItemOneOf = {
+    id: 'ui.timeZone',
+    type: 'oneOfMultiple',
+    label: 'Time zone',
+    value: 'system',
+    favorite: false,
+    group: 'UI',
+    items: [
+      { value: 'system', title: 'System', icon: 'mdi-monitor' },
+      { value: 'UTC', title: 'UTC', icon: 'mdi-earth' },
+    ],
+  }
+  const defaults: UserSettingsItem[] = [timeZoneSetting]
+
+  it('replaces the options and keeps built-in titles and icons', () => {
+    const overrides: UserSettingsOverride[] = [
+      {
+        id: 'ui.timeZone',
+        items: [
+          { value: 'UTC' },
+          { value: 'Europe/Amsterdam', title: 'Amsterdam' },
+          { value: 'Asia/Tokyo' },
+        ],
+      },
+    ]
+    const [result] = deserializeUserSettings('[]', defaults, overrides)
+
+    expect((result as UserSettingsItemOneOf).items).toEqual([
+      { value: 'UTC', title: 'UTC', icon: 'mdi-earth', configuredTitle: false },
+      { value: 'Europe/Amsterdam', title: 'Amsterdam', configuredTitle: true },
+      { value: 'Asia/Tokyo', title: 'Asia/Tokyo', configuredTitle: false },
+    ])
+  })
+
+  it('uses the first option when the default is no longer available', () => {
+    const overrides: UserSettingsOverride[] = [
+      { id: 'ui.timeZone', items: [{ value: 'UTC' }, { value: 'Asia/Tokyo' }] },
+    ]
+    const [result] = deserializeUserSettings('[]', defaults, overrides)
+
+    expect(result.value).toBe('UTC')
+  })
+
+  it('validates the default value against the configured options', () => {
+    const items = [{ value: 'UTC' }, { value: 'Europe/Amsterdam' }]
+    const [valid] = deserializeUserSettings('[]', defaults, [
+      { id: 'ui.timeZone', items, value: 'Europe/Amsterdam' },
+    ])
+    const [invalid] = deserializeUserSettings('[]', defaults, [
+      { id: 'ui.timeZone', items, value: 'system' },
+    ])
+
+    expect(valid.value).toBe('Europe/Amsterdam')
+    expect(invalid.value).toBe('UTC')
+  })
+
+  it('restores a stored value that is one of the configured options', () => {
+    const overrides: UserSettingsOverride[] = [
+      { id: 'ui.timeZone', items: [{ value: 'UTC' }, { value: 'Asia/Tokyo' }] },
+    ]
+    const data = serialize([{ id: 'ui.timeZone', value: 'Asia/Tokyo' }])
+    const [result] = deserializeUserSettings(data, defaults, overrides)
+
+    expect(result.value).toBe('Asia/Tokyo')
+  })
+
+  it('does not mutate the built-in options', () => {
+    deserializeUserSettings('[]', defaults, [
+      { id: 'ui.timeZone', items: [{ value: 'Asia/Tokyo' }] },
+    ])
+
+    expect(timeZoneSetting.items.map((i) => i.value)).toEqual(['system', 'UTC'])
+  })
+})
+
 describe('serializeUserSettings', () => {
   function parse(data: string) {
     return JSON.parse(data).items

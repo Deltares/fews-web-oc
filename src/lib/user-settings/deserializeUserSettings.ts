@@ -3,7 +3,10 @@ import type {
   UserSettingsItemOneOf,
   UserSettingsWithIcon,
 } from '@/stores/userSettings'
-import type { DefaultUserSetting } from '@/schemas/default-user-settings.typebox'
+import type {
+  DefaultUserSetting,
+  DefaultUserSettingOption,
+} from '@/schemas/default-user-settings.typebox'
 
 /** An entry of the FEWS config `default-user-settings.json`. */
 export type UserSettingsOverride = DefaultUserSetting
@@ -16,6 +19,44 @@ function isValidValueForItem(item: UserSettingsItem, value: unknown): boolean {
   )
 }
 
+/**
+ * Replaces the options of `item` with those from the FEWS config. Options
+ * without a title or icon keep those of the built-in option with the same
+ * value. When the default value is no longer available, the first option
+ * becomes the default.
+ */
+function applyItemsOverride(
+  item: UserSettingsItemOneOf,
+  overrideItems: DefaultUserSettingOption[],
+): void {
+  if (overrideItems.length === 0) return
+  item.items = overrideItems.map((overrideItem) => {
+    const builtIn = item.items.find((i) => i.value === overrideItem.value)
+    return {
+      ...builtIn,
+      ...overrideItem,
+      title: overrideItem.title ?? builtIn?.title ?? overrideItem.value,
+      configuredTitle: overrideItem.title !== undefined,
+    }
+  })
+  if (!item.items.some((i) => i.value === item.value)) {
+    item.value = item.items[0].value
+  }
+}
+
+function applyValueOverride(
+  item: UserSettingsItem,
+  value: UserSettingsOverride['value'],
+): void {
+  if (isValidValueForItem(item, value)) {
+    item.value = value as UserSettingsItem['value']
+  } else {
+    console.warn(
+      `Ignoring invalid default value ${JSON.stringify(value)} for user setting "${item.id}".`,
+    )
+  }
+}
+
 function applyWebResourcesOverrides(
   state: UserSettingsItem[],
   overrides: UserSettingsOverride[],
@@ -24,14 +65,12 @@ function applyWebResourcesOverrides(
     const override = overrides.find((o) => o.id === item.id)
     if (override === undefined) continue
 
+    // Apply the options first, as the default value must be one of them.
+    if (override.items !== undefined && item.type === 'oneOfMultiple') {
+      applyItemsOverride(item, override.items)
+    }
     if (override.value !== undefined) {
-      if (isValidValueForItem(item, override.value)) {
-        item.value = override.value as UserSettingsItem['value']
-      } else {
-        console.warn(
-          `Ignoring invalid default value ${JSON.stringify(override.value)} for user setting "${item.id}".`,
-        )
-      }
+      applyValueOverride(item, override.value)
     }
     if (override.enabled !== undefined) {
       item.disabled = !override.enabled

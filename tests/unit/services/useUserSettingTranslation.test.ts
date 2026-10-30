@@ -81,6 +81,18 @@ describe('useUserSettingTranslation', () => {
     expect(groupTitle({ id: 'Map', title: 'Map' })).toBe('Map')
   })
 
+  it('uses option titles set in the FEWS config', () => {
+    const { optionTitle } = withTranslation('de')
+
+    expect(
+      optionTitle(scrollZoomMode, {
+        value: 'xy',
+        title: 'Horizontal and vertical',
+        configuredTitle: true,
+      }),
+    ).toBe('Horizontal and vertical')
+  })
+
   it('falls back for option values containing dots', () => {
     const { optionTitle } = withTranslation('de')
 

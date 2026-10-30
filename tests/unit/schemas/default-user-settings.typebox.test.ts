@@ -45,6 +45,26 @@ describe('DefaultUserSettingsSchema', () => {
     expect(isValid([{ id: 'ui.map.theme', value: 'osm-bright' }])).toBe(true)
   })
 
+  it('accepts configured options', () => {
+    expect(
+      isValid([
+        {
+          id: 'ui.timeZone',
+          value: 'Europe/Amsterdam',
+          items: [
+            { value: 'UTC' },
+            {
+              value: 'Europe/Amsterdam',
+              title: 'Amsterdam',
+              icon: 'mdi-earth',
+            },
+          ],
+        },
+        { id: 'ui.theme', items: [{ value: 'light' }, { value: 'dark' }] },
+      ]),
+    ).toBe(true)
+  })
+
   it.each([
     ['an option that does not exist', { id: 'ui.theme', value: 'automatic' }],
     ['a string for a boolean', { id: 'datum.verticalDatum', value: 'false' }],
@@ -54,6 +74,24 @@ describe('DefaultUserSettingsSchema', () => {
     ['an unknown property', { id: 'ui.theme', label: 'Theme' }],
     ['a non-boolean enabled', { id: 'ui.theme', enabled: 'yes' }],
     ['a non-boolean favorite', { id: 'ui.theme', favorite: 1 }],
+    ['options for a boolean', { id: 'charts.brush', items: [{ value: 'a' }] }],
+    [
+      'options for ui.map.theme',
+      { id: 'ui.map.theme', items: [{ value: 'a' }] },
+    ],
+    [
+      'an option that is not built in',
+      { id: 'ui.theme', items: [{ value: 'blue' }] },
+    ],
+    ['an empty option list', { id: 'ui.timeZone', items: [] }],
+    [
+      'an option without value',
+      { id: 'ui.timeZone', items: [{ title: 'UTC' }] },
+    ],
+    [
+      'an unknown option property',
+      { id: 'ui.timeZone', items: [{ value: 'UTC', label: 'UTC' }] },
+    ],
   ])('rejects %s', (_, entry) => {
     expect(isValid([entry])).toBe(false)
   })

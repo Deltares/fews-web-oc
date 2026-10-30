@@ -298,7 +298,8 @@ The defaults for all users can be configured in `WebResourceFiles/default-user-s
 - set the default value,
 - hide the setting and fix its value for all users,
 - show a hidden setting, such as the language selection,
-- add the setting to the favorites in the user settings menu.
+- add the setting to the favorites in the user settings menu,
+- replace the options users can choose from, for example the available time zones.
 
 Example:
 
@@ -309,7 +310,15 @@ Example:
     { "id": "ui.theme", "value": "dark" },
     { "id": "units.displayUnits", "value": "system", "favorite": true },
     { "id": "ui.locale", "value": "default", "enabled": true },
-    { "id": "charts.brush", "value": false, "enabled": false }
+    { "id": "charts.brush", "value": false, "enabled": false },
+    {
+      "id": "ui.timeZone",
+      "value": "UTC",
+      "items": [
+        { "value": "UTC" },
+        { "value": "Europe/Amsterdam", "title": "Amsterdam" }
+      ]
+    }
   ]
 }
 ```
@@ -322,6 +331,7 @@ Each entry has the following properties. Only `id` is required.
 | `value` | Default value of the setting. |
 | `enabled` | `true` shows the setting to users. `false` hides it, and the configured `value` (or the Web OC default) applies to all users; values users chose earlier are ignored while the setting is hidden. When omitted, the Web OC default is used: all settings are shown, except the language selection. |
 | `favorite` | `true` shows the setting in the user settings menu (cog icon). Users can change this themselves. |
+| `items` | Options users can choose from, replacing the built-in options. Only for settings with a list of values, except `ui.map.theme`. Each option has a `value` and optionally a `title`, an `icon` ([Material Design icon](https://pictogrammers.com/library/mdi/), e.g. `mdi-earth`) and an `abbreviation` shown instead of an icon. Without a title or icon, those of the built-in option with the same value are used, or else the value itself. A configured title is shown as is in every language, instead of the translation of the built-in title. The `value` of the setting must be one of the options; when omitted and the built-in default is not one of them, the first option is the default. |
 
 A value chosen by a user takes precedence over the configured default. Web OC only stores the settings users changed themselves, so a change of a default in the configuration reaches all users who did not change that setting.
 
@@ -333,6 +343,7 @@ Available settings:
 | Datum | `datum.verticalDatum` | Absolute vertical datum | `true`, `false` | `true` |
 | UI | `ui.theme` | Theme | `auto`, `light`, `dark` | `auto` |
 | UI | `ui.locale` | Language | `system`, `default`, `en`, `de` | `default` (hidden) |
+| UI | `ui.timeZone` | Time zone | `system`, `UTC` or an IANA time zone | `system` |
 | UI | `ui.hierarchical-menu-style` | Menu style | `auto`, `tree`, `column` | `auto` |
 | UI | `ui.sidebar-style` | Sidebar style | `minimal`, `full labels` | `full labels` |
 | UI | `ui.scale` | UI scale | `0.8`, `0.85`, `0.9`, `0.95`, `1`, `1.1`, `1.2` | `1` |
@@ -348,6 +359,39 @@ Available settings:
 | Charts | `charts.brush` | Show brush chart | `true`, `false` | `false` |
 
 For `ui.locale`, `default` is the language set by `VITE_I18N_LOCALE` in the [application configuration](https://deltares.github.io/fews-web-oc/app_configuration/), and `system` is the language of the user's browser or operating system, if Web OC supports it.
+
+For `ui.timeZone`, `system` is the time zone of the user's browser or operating system. Other values are [IANA time zone names](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), such as `UTC` or `Europe/Amsterdam`. Configure `items` to offer other time zones than `system` and `UTC`. Unknown time zones are ignored.
+
+#### Time zones
+
+Users choose the time zone in the user settings and in the time control menu, which shows the UTC offset of each option. To offer additional time zones, configure the options of `ui.timeZone` with `items`. The options replace the built-in ones, so include `system` and `UTC` to keep them.
+
+For example, for a system in Australia, with Sydney time as default and the time zone in the favorites of the user settings menu:
+
+```json
+{
+  "$schema": "./default-user-settings.schema.json",
+  "settings": [
+    {
+      "id": "ui.timeZone",
+      "value": "Australia/Sydney",
+      "favorite": true,
+      "items": [
+        { "value": "system" },
+        { "value": "UTC" },
+        { "value": "Australia/Perth", "title": "Perth (AWST)" },
+        { "value": "Australia/Darwin", "title": "Darwin (ACST)" },
+        { "value": "Australia/Adelaide", "title": "Adelaide (ACST/ACDT)" },
+        { "value": "Australia/Brisbane", "title": "Brisbane (AEST)" },
+        { "value": "Australia/Sydney", "title": "Sydney, Canberra, Melbourne (AEST/AEDT)" },
+        { "value": "Australia/Hobart", "title": "Hobart (AEST/AEDT)" }
+      ]
+    }
+  ]
+}
+```
+
+Use a time zone name, not a fixed offset such as `+10:00`: daylight saving time follows from the name. Adelaide, Sydney and Hobart change to daylight saving time in summer, while Perth, Darwin and Brisbane keep the same offset all year. Without a `title`, the time zone name is shown, e.g. `Australia/Perth`.
 
 #### JSON schema
 

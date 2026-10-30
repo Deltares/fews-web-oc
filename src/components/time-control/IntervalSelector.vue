@@ -1,31 +1,38 @@
 <template>
-  <v-list class="interval-list" density="compact">
-    <v-list-item :active="0 === selectedIndex" @click="onSelectInterval(0)">
-      {{ $t('common.default') }}
-      <template v-slot:append="{ isActive }">
-        <v-icon v-show="isActive" small> mdi-check </v-icon>
-      </template>
-    </v-list-item>
-    <v-list-item :active="1 === selectedIndex" @click="onSelectInterval(1)">
-      {{ $t('common.custom') }}
-      <template v-slot:append="{ isActive }">
-        <v-icon v-show="isActive" small> mdi-check </v-icon>
-      </template>
-    </v-list-item>
+  <v-list class="interval-list" density="compact" prepend-gap="12">
+    <v-list-subheader>{{ $t('timeControl.period') }}</v-list-subheader>
+    <v-list-item
+      density="compact"
+      :lines="false"
+      :active="0 === selectedIndex"
+      :title="$t('common.default')"
+      :subtitle="getSubtitle(0)"
+      prepend-icon="mdi-clock-outline"
+      @click="onSelectInterval(0)"
+    />
+    <v-list-item
+      density="compact"
+      :lines="false"
+      :active="1 === selectedIndex"
+      :title="$t('common.custom')"
+      :subtitle="getSubtitle(1)"
+      prepend-icon="mdi-calendar-range"
+      @click="onSelectInterval(1)"
+    />
     <template v-if="props.items.length">
       <v-divider></v-divider>
       <v-list-subheader>{{ $t('timeControl.periodPresets') }}</v-list-subheader>
       <v-list-item
         v-for="(item, index) in props.items"
         :key="index"
+        density="compact"
+        :lines="false"
         :active="index === selectedIndex - 2"
+        :title="item.label"
+        :subtitle="getSubtitle(index + 2)"
+        prepend-icon="mdi-update"
         @click="onSelectInterval(index + 2)"
-      >
-        {{ item.label }}
-        <template v-slot:append="{ isActive }">
-          <v-icon v-show="isActive" small> mdi-check </v-icon>
-        </template>
-      </v-list-item>
+      />
     </template>
   </v-list>
 </template>
@@ -38,6 +45,8 @@ import { onBeforeMount, ref, watch } from 'vue'
 interface Props {
   items?: LabeledIntervalItem[]
   now?: Date
+  /** Shown as second line of the selected item, e.g. its period. */
+  selectedDescription?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -53,6 +62,10 @@ const selectedIndex = ref(0)
 onBeforeMount(() => {
   updateIndex(interval.value)
 })
+
+function getSubtitle(index: number): string | undefined {
+  return index === selectedIndex.value ? props.selectedDescription : undefined
+}
 
 const onSelectInterval = (index: number) => {
   if (index === 0) {
@@ -82,5 +95,12 @@ watch(interval, (newValue) => updateIndex(newValue))
 .interval-list {
   max-height: 400px;
   overflow-y: auto;
+}
+
+/* Show the whole period of the selected item */
+.interval-list :deep(.v-list-item-subtitle) {
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  white-space: normal;
 }
 </style>

@@ -37,13 +37,29 @@
   },
   "timeControl": {
     "browserTime": "Browser Zeit",
-    "endDateAfterStartDate": "Enddatum muss nach Startdatum liegen",
+    "browserTimeZone": "Zeitzone des Browsers",
+    "close": "Schließen",
+    "days": "Tage",
+    "defaultPeriod": "Je Display festgelegt",
     "followCurrentTime": "Aktuelle Zeit verfolgen",
     "followSpecifiedTime": "Angegebene Zeit verfolgen",
+    "lastSynced": "Systemzeit um {time} mit dem Server synchronisiert",
+    "months": "Monate",
+    "nextPage": "Weiter",
+    "now": "jetzt",
+    "period": "Zeitraum",
     "periodPresets": "Zeitraum-Voreinstellungen",
-    "startDateBeforeEndDate": "Startdatum muss vor Enddatum liegen",
+    "previousPage": "Zurück",
+    "runningWindow": "Laufendes Zeitfenster",
+    "runningWindowHint": "Bewegt sich mit der Systemzeit",
+    "syncFailed": "Systemzeit konnte nicht mit dem Server synchronisiert werden",
+    "syncHint": "Die Systemzeit ist die Zeit des FEWS-Servers und kann von der Zeit dieses Geräts abweichen. Sie wird jede Minute mit dem Server synchronisiert und läuft dazwischen im Browser weiter.",
+    "systemTime": "Systemzeit",
+    "timeZone": "Zeitzone",
+    "title": "Zeitsteuerung",
     "trackingCurrentTime": "Aktuelle Zeit wird verfolgt",
-    "trackingSpecifiedTime": "Angegebene Zeit wird verfolgt"
+    "trackingSpecifiedTime": "Angegebene Zeit wird verfolgt",
+    "years": "Jahre"
   },
   "thresholds": {
     "activeThresholdCrossings": "Aktive Schwellenwertüberschreitungen",
@@ -137,6 +153,13 @@
             "default": "Standard",
             "en": "English",
             "de": "Deutsch"
+          }
+        },
+        "timeZone": {
+          "label": "Zeitzone",
+          "options": {
+            "system": "System",
+            "UTC": "UTC"
           }
         },
         "hierarchical-menu-style": {

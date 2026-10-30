@@ -17,6 +17,8 @@ export type { UserSettingsOverride } from '@/lib/user-settings/deserializeUserSe
 export interface UserSettingsWithIcon {
   value: string
   title: string
+  /** Whether the title is set in the FEWS config, so it is not translated. */
+  configuredTitle?: boolean
   disabled?: boolean
   icon?: string
   /** Short text shown instead of an icon, e.g. a language code. */
