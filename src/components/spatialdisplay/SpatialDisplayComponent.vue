@@ -723,11 +723,14 @@ function onCoordinateMoved(lat: number, lng: number): void {
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
-/* Phones, in portrait and landscape */
+/* Phones, in portrait and landscape. The slider spans the bottom of the
+   screen, with its content inset to clear the rounded screen corners. */
 @media (pointer: coarse) and (max-width: 600px),
   (pointer: coarse) and (max-height: 600px) {
   .spatial-display__slider {
-    --window-corner-radius: 55px;
+    --slider-inset: 0px;
+    --datetime-slider-corner-radius: 0px;
+    --datetime-slider-safe-corner-radius: 55px;
   }
 }
 
