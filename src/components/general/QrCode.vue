@@ -7,8 +7,8 @@
     role="img"
     :aria-label="`QR code for ${value}`"
   >
-    <rect :width="qr.size" :height="qr.size" :fill="dark ? 'black' : 'white'" />
-    <path :d="path" :fill="dark ? 'white' : 'black'" />
+    <rect :width="qr.size" :height="qr.size" class="qr-background" />
+    <path :d="path" class="qr-foreground" />
   </svg>
 </template>
 
@@ -19,12 +19,10 @@ import { encode } from 'uqr'
 interface Props {
   value: string
   size?: number
-  dark?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   size: 128,
-  dark: false,
 })
 
 // The QR specification asks for a 4 module quiet zone; a 2 module border is
@@ -39,3 +37,13 @@ const path = computed(() =>
     .join(''),
 )
 </script>
+
+<style scoped>
+.qr-background {
+  fill: rgb(var(--v-theme-surface));
+}
+
+.qr-foreground {
+  fill: rgb(var(--v-theme-on-surface));
+}
+</style>
