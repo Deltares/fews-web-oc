@@ -16,8 +16,10 @@
       />
     </div>
     <div
+      ref="cellsEl"
       class="period-range-grid__cells"
       @mouseleave="hoveredIndex = undefined"
+      @keydown="onKeydown"
     >
       <div
         v-for="cell in cells"
@@ -42,9 +44,11 @@
           rounded
           size="small"
           :aria-pressed="isInRange(cell.index)"
+          :tabindex="cell.index === focusableIndex ? 0 : -1"
+          :data-index="cell.index"
           @click="onSelect(cell.index)"
           @mouseenter="hoveredIndex = cell.index"
-          @focus="hoveredIndex = cell.index"
+          @focus="onFocus(cell.index)"
         >
           {{ cell.label }}
         </v-btn>
@@ -54,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 interface Props {
@@ -176,6 +180,79 @@ const pageLabel = computed(() =>
     ? String(Math.floor(pageStart.value / 12))
     : `${pageStart.value} – ${pageStart.value + pageSize - 1}`,
 )
+
+// Only one cell is in the tab order, the arrow keys move between the cells
+const columns = 4
+const cellsEl = useTemplateRef('cellsEl')
+const focusedIndex = ref<number>()
+
+function isOnPage(index: number | undefined): index is number {
+  return (
+    index !== undefined &&
+    index >= pageStart.value &&
+    index < pageStart.value + pageSize
+  )
+}
+
+// The last focused cell, else the end of the selection, today or the first
+const focusableIndex = computed(
+  () =>
+    [focusedIndex.value, range.value?.[1], currentIndex.value].find(isOnPage) ??
+    pageStart.value,
+)
+
+function onFocus(index: number) {
+  focusedIndex.value = index
+  hoveredIndex.value = index
+}
+
+function getTargetIndex(event: KeyboardEvent, index: number) {
+  const column = (index - pageStart.value) % columns
+  const isRtl =
+    getComputedStyle(event.currentTarget as Element).direction === 'rtl'
+  switch (event.key) {
+    case 'ArrowLeft':
+      return isRtl ? index + 1 : index - 1
+    case 'ArrowRight':
+      return isRtl ? index - 1 : index + 1
+    case 'ArrowUp':
+      return index - columns
+    case 'ArrowDown':
+      return index + columns
+    case 'Home':
+      return index - column
+    case 'End':
+      return index - column + columns - 1
+    case 'PageUp':
+      return index - pageSize
+    case 'PageDown':
+      return index + pageSize
+  }
+}
+
+function onKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && pendingIndex.value !== undefined) {
+    // Cancel the first picked cell, without closing the menu
+    event.preventDefault()
+    event.stopPropagation()
+    pendingIndex.value = undefined
+    return
+  }
+  const index = focusedIndex.value
+  if (index === undefined) return
+  const target = getTargetIndex(event, index)
+  if (target === undefined) return
+  event.preventDefault()
+  focusCell(target)
+}
+
+// Move to the page of the cell when it is on another page
+async function focusCell(index: number) {
+  if (!isOnPage(index)) pageStart.value = getPageStart(firstDayOf(index))
+  focusedIndex.value = index
+  await nextTick()
+  cellsEl.value?.querySelector<HTMLElement>(`[data-index="${index}"]`)?.focus()
+}
 
 function onSelect(index: number) {
   const pending = pendingIndex.value

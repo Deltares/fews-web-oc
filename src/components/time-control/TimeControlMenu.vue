@@ -65,7 +65,7 @@
     <v-card
       class="time-control-card d-flex flex-column"
       :class="{ 'time-control-card--menu': !isFullscreen }"
-      :width="isFullscreen ? undefined : 640"
+      :width="isFullscreen ? undefined : 560"
     >
       <!-- Like the toolbar of the user settings dialog -->
       <v-toolbar
@@ -84,7 +84,7 @@
       </v-toolbar>
       <div class="flex-grow-1 overflow-y-auto">
         <v-row no-gutters>
-          <v-col cols="12" sm="5" :class="smAndUp ? 'border-e' : 'border-b'">
+          <v-col cols="12" sm :class="smAndUp ? 'border-e' : 'border-b'">
             <interval-selector
               v-model="store.selectedInterval"
               :items="intervalItems"
@@ -92,7 +92,7 @@
               :selected-description="periodDescription"
             />
           </v-col>
-          <v-col cols="12" sm="7">
+          <v-col cols="12" sm="auto" :class="{ 'picker-column': smAndUp }">
             <div class="d-flex justify-center px-4 pt-3">
               <v-btn-toggle
                 v-model="pickerUnit"
@@ -114,41 +114,14 @@
                 }}</v-btn>
               </v-btn-toggle>
             </div>
-            <period-range-grid
-              v-if="pickerUnit !== 'day'"
-              :unit="pickerUnit"
-              :first="pickerDays[0]"
-              :last="pickerDays.at(-1)"
-              :anchor="calendarAnchor"
-              :now="toWallClockDate(store.systemTime)"
-              @select="onGridSelect"
-            />
-            <v-date-picker
-              v-else
+            <period-range-picker
               :model-value="pickerDays"
               @update:model-value="onPickerUpdate"
-              v-model:month="pickerMonth"
-              v-model:year="pickerYear"
-              multiple="range"
-              hide-header
-              show-adjacent-months
-              weeks-in-month="dynamic"
-              control-height="32"
-              width="100%"
-              class="compact-date-picker"
+              :unit="pickerUnit"
+              :anchor="calendarAnchor"
+              :now="toWallClockDate(store.systemTime)"
               :aria-label="t('timeControl.period')"
-            >
-              <!-- Mark today in the display time zone, not in the browser's -->
-              <template #day="{ props: dayProps, item }">
-                <v-btn
-                  v-bind="dayProps"
-                  :variant="getDayVariant(dayProps, item.date)"
-                  :aria-current="isToday(item.date) ? 'date' : undefined"
-                >
-                  {{ item.localized }}
-                </v-btn>
-              </template>
-            </v-date-picker>
+            />
           </v-col>
         </v-row>
 
@@ -241,7 +214,7 @@
 import { ref, computed, watchEffect, watch } from 'vue'
 import { VDialog, VMenu } from 'vuetify/components'
 import IntervalSelector from './IntervalSelector.vue'
-import PeriodRangeGrid from './PeriodRangeGrid.vue'
+import PeriodRangePicker from './PeriodRangePicker.vue'
 import { useI18n } from 'vue-i18n'
 import { useDisplayDateFormat } from '@/services/useDisplayDateFormat'
 import { useDisplay } from 'vuetify'
@@ -541,51 +514,11 @@ const calendarAnchor = computed(() =>
   isCustomInterval.value ? undefined : pickerDays.value.at(-1),
 )
 
-// Month shown in the day calendar, only moved when the end of the period is
-// in another month, so a moving preset does not reset browsing
-const initialMonth =
-  pickerDays.value.at(-1) ?? toWallClockDate(store.systemTime)
-const pickerMonth = ref(initialMonth.getMonth())
-const pickerYear = ref(initialMonth.getFullYear())
-
-watch(
-  () => {
-    const anchor = calendarAnchor.value
-    return anchor ? anchor.getFullYear() * 12 + anchor.getMonth() : undefined
-  },
-  (monthIndex) => {
-    if (monthIndex === undefined) return
-    pickerYear.value = Math.floor(monthIndex / 12)
-    pickerMonth.value = monthIndex % 12
-  },
-)
-
-// Today of the system time in the display time zone, as wall-clock date
-const today = computed(() => toPickerDay(store.systemTime))
-
-function isToday(date: Date): boolean {
-  return date.getTime() === today.value.getTime()
-}
-
-// The day props of Vuetify have the variant, though it is not in their type
-function getDayVariant(dayProps: object, date: Date) {
-  // Selected days are flat, other days are outlined for today only
-  if ('variant' in dayProps && dayProps.variant === 'flat') return 'flat'
-  return isToday(date) ? 'outlined' : 'text'
-}
-
 function toPickerDay(date: Date): Date {
   return toWallClockDate(toDisplayDateTime(date).startOf('day').toJSDate())
 }
 
-function onGridSelect(firstDay: Date, lastDay: Date) {
-  store.selectedInterval = 'custom'
-  pickerDays.value = [firstDay, lastDay]
-}
-
-function onPickerUpdate(days: unknown) {
-  // Picking the first day again clears the selection, keep that day instead
-  if (!Array.isArray(days) || days.length === 0) return
+function onPickerUpdate(days: Date[]) {
   store.selectedInterval = 'custom'
   pickerDays.value = days
 }
@@ -702,23 +635,9 @@ watch(
   max-height: calc(100dvh - 72px);
 }
 
-.compact-date-picker :deep(.v-date-picker-month) {
-  padding-bottom: 4px;
-}
-
-.compact-date-picker :deep(.v-date-picker-month__day) {
-  height: 28px;
-  padding: 1px;
-}
-
-.compact-date-picker :deep(.v-date-picker-month__weekday) {
-  height: 20px;
-}
-
-.compact-date-picker :deep(.v-date-picker-month__day .v-btn) {
-  --v-btn-height: 20px;
-  width: 26px;
-  height: 26px;
+/* Narrow calendars, the period list takes the remaining width */
+.picker-column {
+  width: 280px;
 }
 
 .picker-unit-toggle {
