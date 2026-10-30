@@ -32,6 +32,14 @@
     "about": "About",
     "switchTo": "Switch to"
   },
+  "configurator": {
+    "mode": "Configurator mode",
+    "modeActive": "Configurator mode active",
+    "systemDetail": "System detail",
+    "copy": "Copy to clipboard",
+    "copied": "Copied",
+    "copyFailed": "Failed to copy"
+  },
   "auth": {
     "signOut": "Sign out"
   },

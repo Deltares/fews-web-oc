@@ -32,6 +32,14 @@
     "about": "Über",
     "switchTo": "Wechseln zu"
   },
+  "configurator": {
+    "mode": "Konfiguratormodus",
+    "modeActive": "Konfiguratormodus aktiv",
+    "systemDetail": "Systemdetail",
+    "copy": "In die Zwischenablage kopieren",
+    "copied": "Kopiert",
+    "copyFailed": "Kopieren fehlgeschlagen"
+  },
   "auth": {
     "signOut": "Abmelden"
   },
