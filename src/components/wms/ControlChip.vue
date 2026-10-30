@@ -36,10 +36,4 @@ defineOptions({ inheritAttrs: false })
   display: flex;
   justify-content: center;
 }
-
-.control-chip__extension-slot:hover *,
-.control-chip__extension-slot *:hover,
-.control-chip__extension-slot:focus-within * {
-  display: inherit; /* visible */
-}
 </style>
