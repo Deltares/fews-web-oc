@@ -34,6 +34,8 @@ defineOptions({ inheritAttrs: false })
   top: 28px;
   position: absolute;
   display: flex;
+  flex-direction: column;
   justify-content: center;
+  align-items: start;
 }
 </style>
