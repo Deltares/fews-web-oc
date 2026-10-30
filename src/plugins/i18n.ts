@@ -3,12 +3,6 @@ import { getResourcesStaticUrl } from '@/lib/fews-config'
 
 const datetimeFormats: I18nOptions['datetimeFormats'] = {
   'en-GB': {
-    timeControl: {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-      timeZoneName: 'short',
-    },
     timeControl__mobile: {
       hour: '2-digit',
       minute: '2-digit',
@@ -23,12 +17,6 @@ const datetimeFormats: I18nOptions['datetimeFormats'] = {
     },
   },
   de: {
-    timeControl: {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-      timeZoneName: 'short',
-    },
     timeControl__mobile: {
       hour: '2-digit',
       minute: '2-digit',

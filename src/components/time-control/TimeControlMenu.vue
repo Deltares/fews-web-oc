@@ -1,11 +1,18 @@
 <template>
-  <v-menu left bottom :close-on-content-click="false" class="menu">
+  <!-- A menu, or a fullscreen dialog on phones -->
+  <component
+    :is="isFullscreen ? VDialog : VMenu"
+    v-model="isOpen"
+    v-bind="overlayProps"
+    :class="{ menu: !isFullscreen }"
+  >
     <template v-slot:activator="{ props, isActive }">
       <div class="icon-group" v-bind="props">
         <div class="icon-group__underlay"></div>
         <v-tooltip
           :text="runningWindowTooltip"
           :disabled="!runningWindowTooltip"
+          location="bottom"
         >
           <template #activator="{ props: tooltipProps }">
             <span
@@ -27,9 +34,31 @@
             </span>
           </template>
         </v-tooltip>
-        <span class="icon-group__label">
-          {{ systemTimeLabel }}
-        </span>
+        <v-tooltip
+          :text="otherTimeZoneTooltip"
+          :disabled="!otherTimeZoneTooltip"
+          location="bottom"
+        >
+          <template #activator="{ props: tooltipProps }">
+            <span v-bind="tooltipProps" class="icon-group__label">
+              <!-- Dashed when not in the browser time zone -->
+              <span
+                :class="{
+                  'other-time-zone': otherTimeZoneTooltip && !timeZoneLabel,
+                }"
+              >
+                {{ systemTimeLabel }}
+              </span>
+              <span
+                v-if="timeZoneLabel"
+                class="ms-1"
+                :class="{ 'other-time-zone': otherTimeZoneTooltip }"
+              >
+                {{ timeZoneLabel }}
+              </span>
+            </span>
+          </template>
+        </v-tooltip>
         <v-btn icon size="small" class="last-btn">
           <v-icon>{{
             isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'
@@ -38,122 +67,187 @@
       </div>
     </template>
 
-    <v-card class="time-control-card" :width="mobile ? undefined : 640">
-      <v-row no-gutters>
-        <v-col cols="12" sm="5" :class="smAndUp ? 'border-e' : 'border-b'">
-          <interval-selector
-            v-model="store.selectedInterval"
-            :items="intervalItems"
-            :now="store.systemTime"
-          />
-        </v-col>
-        <v-col cols="12" sm="7">
-          <div class="px-4 pt-3">
-            <div class="text-body-2 text-medium-emphasis">
-              {{ t('timeControl.selectedPeriod') }}
+    <v-card
+      class="time-control-card d-flex flex-column"
+      :class="{ 'time-control-card--menu': !isFullscreen }"
+      :width="isFullscreen ? undefined : 640"
+    >
+      <!-- Like the toolbar of the user settings dialog -->
+      <v-toolbar
+        v-if="isFullscreen"
+        :title="t('timeControl.title')"
+        density="compact"
+      >
+        <v-btn
+          size="small"
+          icon
+          :aria-label="t('timeControl.close')"
+          @click="isOpen = false"
+        >
+          <v-icon size="small">mdi-close</v-icon>
+        </v-btn>
+      </v-toolbar>
+      <div class="flex-grow-1 overflow-y-auto">
+        <v-row no-gutters>
+          <v-col cols="12" sm="5" :class="smAndUp ? 'border-e' : 'border-b'">
+            <interval-selector
+              v-model="store.selectedInterval"
+              :items="intervalItems"
+              :now="store.systemTime"
+              :selected-description="periodDescription"
+            />
+          </v-col>
+          <v-col cols="12" sm="7">
+            <div class="d-flex justify-center px-4 pt-3">
+              <v-btn-toggle
+                v-model="pickerUnit"
+                mandatory
+                density="compact"
+                variant="outlined"
+                divided
+                rounded="lg"
+                class="picker-unit-toggle"
+              >
+                <v-btn value="day" size="small">{{
+                  t('timeControl.days')
+                }}</v-btn>
+                <v-btn value="month" size="small">
+                  {{ t('timeControl.months') }}
+                </v-btn>
+                <v-btn value="year" size="small">{{
+                  t('timeControl.years')
+                }}</v-btn>
+              </v-btn-toggle>
             </div>
-            <div class="text-body-2">{{ periodLabel }}</div>
-            <div
-              v-if="!isCustomInterval"
-              class="text-caption text-medium-emphasis"
+            <period-range-grid
+              v-if="pickerUnit !== 'day'"
+              :unit="pickerUnit"
+              :first="pickerDays[0]"
+              :last="pickerDays.at(-1)"
+              :anchor="calendarAnchor"
+              :now="toWallClockDate(store.systemTime)"
+              class="pt-2"
+              @select="onGridSelect"
+            />
+            <v-date-picker
+              v-else
+              :model-value="pickerDays"
+              @update:model-value="onPickerUpdate"
+              v-model:month="pickerMonth"
+              v-model:year="pickerYear"
+              multiple="range"
+              hide-header
+              show-adjacent-months
+              weeks-in-month="dynamic"
+              control-height="40"
+              width="100%"
+              class="compact-date-picker"
+              :aria-label="t('timeControl.period')"
             >
-              {{ t('timeControl.pickCustomPeriod') }}
-            </div>
-          </div>
-          <v-date-picker
-            :model-value="pickerDays"
-            @update:model-value="onPickerUpdate"
-            multiple="range"
-            hide-header
-            show-adjacent-months
-            weeks-in-month="dynamic"
-            control-height="40"
-            width="100%"
-            class="compact-date-picker"
-            :aria-label="t('timeControl.period')"
-          />
-        </v-col>
-      </v-row>
+              <!-- Mark today in the display time zone, not in the browser's -->
+              <template #day="{ props: dayProps, item }">
+                <v-btn
+                  v-bind="dayProps"
+                  :variant="getDayVariant(dayProps, item.date)"
+                  :aria-current="isToday(item.date) ? 'date' : undefined"
+                >
+                  {{ item.localized }}
+                </v-btn>
+              </template>
+            </v-date-picker>
+          </v-col>
+        </v-row>
 
-      <v-divider />
+        <v-divider />
 
-      <div class="pa-4 time-control-info">
-        <div class="d-flex flex-wrap align-baseline gc-3 text-body-1">
-          <span>{{ systemTimeDetails.date }}</span>
-          <span>
-            <span class="running-clock">{{ systemTimeDetails.time }}</span>
-            <span class="text-medium-emphasis ms-1">
-              {{ systemTimeDetails.timeZone }}
+        <div class="pa-4 time-control-info">
+          <div class="d-flex flex-wrap align-baseline gc-3 text-body-1">
+            <span>{{ systemTimeDetails.date }}</span>
+            <span>
+              <span class="running-clock">{{ systemTimeDetails.time }}</span>
+              <span class="text-medium-emphasis ms-1">
+                {{ systemTimeDetails.timeZone }}
+              </span>
             </span>
-          </span>
-        </div>
+          </div>
 
-        <v-select
-          v-if="timeZoneSetting"
-          :model-value="timeZoneSetting.value"
-          @update:model-value="onTimeZoneUpdate"
-          :items="timeZoneOptions"
-          :label="t('timeControl.timeZone')"
-          :disabled="timeZoneSetting.disabled"
-          item-title="title"
-          item-value="value"
-          prepend-inner-icon="mdi-earth"
-          variant="solo-filled"
-          density="compact"
-          flat
-          item-props
-          hide-details
-        />
-        <div class="text-caption text-medium-emphasis">
-          {{ timeZoneDetails.offset }} · {{ timeZoneDetails.longName }}
-        </div>
-
-        <div
-          v-if="browserTimeZoneDetails"
-          class="time-control-info__row text-caption text-medium-emphasis"
-        >
-          <v-icon size="small" icon="mdi-web" />
-          <span>
-            {{ t('timeControl.browserTimeZone') }}:
-            {{ browserTimeZoneDetails.name }}
-            ({{ browserTimeZoneDetails.offset }})
-          </span>
-        </div>
-        <div
-          v-if="store.syncError"
-          class="time-control-info__row text-caption text-warning"
-        >
-          <v-icon size="small" icon="mdi-sync-alert" />
-          <span>{{ t('timeControl.syncFailed') }}: {{ store.syncError }}</span>
-        </div>
-        <div
-          v-else-if="lastSyncedLabel"
-          class="time-control-info__row text-caption text-medium-emphasis"
-        >
-          <v-icon size="small" icon="mdi-sync" />
-          <span>{{
-            t('timeControl.lastSynced', { time: lastSyncedLabel })
-          }}</span>
-          <v-tooltip :text="t('timeControl.syncHint')" max-width="320">
-            <template #activator="{ props: tooltipProps }">
-              <v-icon
-                v-bind="tooltipProps"
-                size="small"
-                icon="mdi-information-outline"
-                :aria-label="t('timeControl.syncHint')"
-                tabindex="0"
-              />
+          <v-select
+            v-if="timeZoneSetting"
+            :model-value="timeZoneSetting.value"
+            @update:model-value="onTimeZoneUpdate"
+            :items="timeZoneOptions"
+            :label="t('timeControl.timeZone')"
+            :disabled="timeZoneSetting.disabled"
+            item-title="title"
+            item-value="value"
+            prepend-inner-icon="mdi-earth"
+            variant="solo-filled"
+            density="compact"
+            flat
+            item-props
+            hide-details
+          >
+            <template #selection="{ item }">
+              <span class="text-truncate">
+                {{ item.title }}
+                <span class="text-medium-emphasis ms-2">
+                  {{ timeZoneDetails.offset }}
+                </span>
+              </span>
             </template>
-          </v-tooltip>
+          </v-select>
+
+          <div
+            v-if="browserTimeZoneDetails"
+            class="time-control-info__row text-caption text-medium-emphasis"
+          >
+            <v-icon size="small" icon="mdi-web" />
+            <span>
+              {{ t('timeControl.browserTimeZone') }}:
+              {{ browserTimeZoneDetails.name }}
+              ({{ browserTimeZoneDetails.offset }})
+            </span>
+          </div>
+          <div
+            v-if="store.syncError"
+            class="time-control-info__row text-caption text-warning"
+          >
+            <v-icon size="small" icon="mdi-sync-alert" />
+            <span
+              >{{ t('timeControl.syncFailed') }}: {{ store.syncError }}</span
+            >
+          </div>
+          <div
+            v-else-if="lastSyncedLabel"
+            class="time-control-info__row text-caption text-medium-emphasis"
+          >
+            <v-icon size="small" icon="mdi-sync" />
+            <span>{{
+              t('timeControl.lastSynced', { time: lastSyncedLabel })
+            }}</span>
+            <v-tooltip :text="t('timeControl.syncHint')" max-width="320">
+              <template #activator="{ props: tooltipProps }">
+                <v-icon
+                  v-bind="tooltipProps"
+                  size="small"
+                  icon="mdi-information-outline"
+                  :aria-label="t('timeControl.syncHint')"
+                  tabindex="0"
+                />
+              </template>
+            </v-tooltip>
+          </div>
         </div>
       </div>
     </v-card>
-  </v-menu>
+  </component>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watchEffect, watch } from 'vue'
+import { VDialog, VMenu } from 'vuetify/components'
 import IntervalSelector from './IntervalSelector.vue'
+import PeriodRangeGrid from './PeriodRangeGrid.vue'
 import { useI18n } from 'vue-i18n'
 import { useDisplayDateFormat } from '@/services/useDisplayDateFormat'
 import { useDisplay } from 'vuetify'
@@ -165,7 +259,16 @@ import {
   useUserSettingsStore,
 } from '@/stores/userSettings'
 import { useUserSettingTranslation } from '@/services/useUserSettingTranslation'
-import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
+import {
+  intervalToDateRange,
+  periodPresetToIntervalItem,
+} from '@/lib/TimeControl/interval'
+import {
+  formatPeriodDuration,
+  formatPeriodRange,
+  getPeriodPrecision,
+  type PeriodPrecision,
+} from '@/lib/TimeControl/periodLabel'
 import { DateTime } from 'luxon'
 import {
   fromWallClockDate,
@@ -184,6 +287,14 @@ const userSettings = useUserSettingsStore()
 const { optionTitle } = useUserSettingTranslation()
 const { mobile, smAndUp } = useDisplay()
 
+const isOpen = ref(false)
+const isFullscreen = computed(() => !smAndUp.value)
+const overlayProps = computed(() =>
+  isFullscreen.value
+    ? { fullscreen: true, transition: 'dialog-bottom-transition' }
+    : { closeOnContentClick: false },
+)
+
 const intervalItems = computed(() => {
   const presets = configStore.general.timeSettings?.viewPeriodPresets
   return presets?.map(periodPresetToIntervalItem) ?? []
@@ -192,6 +303,30 @@ const intervalItems = computed(() => {
 // First and last day of the period in the date picker, as wall-clock dates,
 // as the picker works in local time. The last day is included in the period.
 const pickerDays = ref<Date[]>([])
+const pickerUnit = ref<'day' | 'month' | 'year'>('day')
+const DAY_IN_MS = 24 * 60 * 60 * 1000
+
+// Show presets in the calendar mode that fits the length of their period, as
+// presets are defined in units up to weeks, e.g. the last year as 52 weeks
+watch(
+  () => store.selectedInterval,
+  (interval) => {
+    if (typeof interval !== 'object') return
+    // A preset without a start or end is open until or from the system time
+    const [start = store.systemTime, end = store.systemTime] =
+      intervalToDateRange(interval, store.systemTime)
+    pickerUnit.value = getPickerUnit(start, end)
+  },
+  { immediate: true },
+)
+
+function getPickerUnit(start: Date, end: Date): 'day' | 'month' | 'year' {
+  const days = Math.abs(end.getTime() - start.getTime()) / DAY_IN_MS
+  if (days <= 62) return 'day'
+  if (days <= 3 * 366) return 'month'
+  return 'year'
+}
+
 const syncPulseActive = ref(false)
 let syncPulseTimeout: ReturnType<typeof setTimeout> | undefined
 
@@ -205,9 +340,20 @@ const systemTimeLabel = computed(() => {
     return '--:--'
   }
 
-  return mobile.value
-    ? d(store.systemTime, 'timeControl__mobile')
-    : d(store.systemTime, 'timeControl')
+  return d(store.systemTime, 'timeControl__mobile')
+})
+
+// The short name of the display time zone, e.g. CET, not on mobile
+const timeZoneLabel = computed(() => {
+  if (mobile.value || !isBackendSynced.value) return undefined
+  return systemTimeDetails.value.timeZone
+})
+
+// Explains the dashed time zone, when it is not the browser time zone
+const otherTimeZoneTooltip = computed(() => {
+  const browser = browserTimeZoneDetails.value
+  if (!browser) return undefined
+  return `${t('timeControl.browserTimeZone')}: ${browser.name} (${browser.offset})`
 })
 
 const systemTimeDetails = computed(() => {
@@ -265,18 +411,59 @@ function onTimeZoneUpdate(value: unknown) {
   if (setting) userSettings.add({ ...setting, value })
 }
 
+// The end of the period, exclusive. A custom period ends at the end of its
+// last day, so it ends at the start of the next day.
+const periodEnd = computed(() => {
+  const { endTime } = store
+  if (!endTime) return undefined
+  return isCustomInterval.value ? new Date(endTime.getTime() + 1) : endTime
+})
+
 const periodLabel = computed(() => {
-  const { startTime, endTime } = store
+  const { startTime } = store
+  const endTime = periodEnd.value
   if (store.selectedInterval === 'default' || (!startTime && !endTime)) {
     return t('timeControl.defaultPeriod')
+  }
+  if (startTime && endTime) {
+    // Presets are shown with the detail that fits their length
+    const precision = isCustomInterval.value
+      ? getPeriodPrecision(startTime, endTime)
+      : getPresetPrecision(startTime, endTime)
+    return formatPeriodRange(
+      startTime,
+      endTime,
+      locale.value,
+      precision,
+      store.systemTime,
+    )
   }
   const format = (date: Date) =>
     toDisplayDateTime(date)
       .setLocale(locale.value)
-      .toLocaleString(
-        isCustomInterval.value ? DateTime.DATE_MED : DateTime.DATETIME_MED,
-      )
+      .toLocaleString(DateTime.DATETIME_MED)
   return `${startTime ? format(startTime) : '…'} – ${endTime ? format(endTime) : '…'}`
+})
+
+function getPresetPrecision(start: Date, end: Date): PeriodPrecision {
+  const days = (end.getTime() - start.getTime()) / DAY_IN_MS
+  if (days < 2) return 'time'
+  if (days <= 62) return 'day'
+  return 'month'
+}
+
+const periodDescription = computed(() =>
+  periodDuration.value
+    ? `${periodLabel.value} · ${periodDuration.value}`
+    : periodLabel.value,
+)
+
+// Only for custom periods, as the label of a preset tells its length
+const periodDuration = computed(() => {
+  const { startTime } = store
+  const endTime = periodEnd.value
+  if (!isCustomInterval.value || !startTime || !endTime) return
+  return formatPeriodDuration(startTime, endTime, locale.value)
 })
 
 // The browser time zone, when dates are displayed in another time zone
@@ -341,8 +528,52 @@ watch(
   { immediate: true },
 )
 
+// Show the end of a default or preset period in the calendar, e.g. the
+// current month for the last 6 months. Custom periods show where they start.
+const calendarAnchor = computed(() =>
+  isCustomInterval.value ? undefined : pickerDays.value.at(-1),
+)
+
+// Month shown in the day calendar, only moved when the end of the period is
+// in another month, so a moving preset does not reset browsing
+const initialMonth =
+  pickerDays.value.at(-1) ?? toWallClockDate(store.systemTime)
+const pickerMonth = ref(initialMonth.getMonth())
+const pickerYear = ref(initialMonth.getFullYear())
+
+watch(
+  () => {
+    const anchor = calendarAnchor.value
+    return anchor ? anchor.getFullYear() * 12 + anchor.getMonth() : undefined
+  },
+  (monthIndex) => {
+    if (monthIndex === undefined) return
+    pickerYear.value = Math.floor(monthIndex / 12)
+    pickerMonth.value = monthIndex % 12
+  },
+)
+
+// Today of the system time in the display time zone, as wall-clock date
+const today = computed(() => toPickerDay(store.systemTime))
+
+function isToday(date: Date): boolean {
+  return date.getTime() === today.value.getTime()
+}
+
+// The day props of Vuetify have the variant, though it is not in their type
+function getDayVariant(dayProps: object, date: Date) {
+  // Selected days are flat, other days are outlined for today only
+  if ('variant' in dayProps && dayProps.variant === 'flat') return 'flat'
+  return isToday(date) ? 'outlined' : 'text'
+}
+
 function toPickerDay(date: Date): Date {
   return toWallClockDate(toDisplayDateTime(date).startOf('day').toJSDate())
+}
+
+function onGridSelect(firstDay: Date, lastDay: Date) {
+  store.selectedInterval = 'custom'
+  pickerDays.value = [firstDay, lastDay]
 }
 
 function onPickerUpdate(days: unknown) {
@@ -454,10 +685,14 @@ watch(
   padding-left: 4px;
 }
 
-.time-control-card {
+.other-time-zone {
+  text-decoration: underline dashed;
+  text-underline-offset: 4px;
+}
+
+.time-control-card--menu {
   max-width: calc(100vw - 16px);
   max-height: calc(100dvh - 72px);
-  overflow-y: auto;
 }
 
 .compact-date-picker :deep(.v-date-picker-month) {
@@ -473,6 +708,10 @@ watch(
   --v-btn-height: 20px;
   width: 30px;
   height: 30px;
+}
+
+.picker-unit-toggle {
+  height: 28px;
 }
 
 .running-clock {
@@ -503,6 +742,7 @@ watch(
   background-color: currentColor;
   opacity: var(--v-activated-opacity); /* hidden by default */
   transition: opacity 0.18s ease;
+  pointer-events: none; /* let the label get hover for its tooltip */
 }
 
 /* 1. Remove focus style from buttons */
