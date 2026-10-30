@@ -1,6 +1,6 @@
 <template>
   <div class="period-range-grid">
-    <div class="d-flex align-center justify-space-between">
+    <div class="period-range-grid__controls">
       <v-btn
         icon="mdi-chevron-left"
         size="small"
@@ -195,27 +195,36 @@ function onSelect(index: number) {
 </script>
 
 <style scoped>
+/* Spacing like the compact date picker of the time control menu */
 .period-range-grid {
-  padding: 0 12px 8px;
+  padding: 0 12px 4px;
+}
+
+.period-range-grid__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
 }
 
 .period-range-grid__cells {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  row-gap: 4px;
 }
 
 .period-range-grid__cell {
   display: flex;
+  align-items: center;
   justify-content: center;
   position: relative;
-  padding: 2px 0;
+  height: 28px;
+  padding: 1px 0;
 }
 
 .period-range-grid__cell--range::before {
   content: '';
   position: absolute;
-  inset: 2px 0;
+  inset: 1px 0;
   background: rgba(var(--v-theme-on-surface), 0.1);
 }
 
@@ -233,6 +242,7 @@ function onSelect(index: number) {
 
 .period-range-grid__cell .v-btn {
   min-width: 56px;
+  height: 26px;
 }
 
 .period-range-grid__current {

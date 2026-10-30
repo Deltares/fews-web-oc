@@ -2,43 +2,37 @@
   <v-list class="interval-list" density="compact" prepend-gap="12">
     <v-list-subheader>{{ $t('timeControl.period') }}</v-list-subheader>
     <v-list-item
+      density="compact"
+      :lines="false"
       :active="0 === selectedIndex"
       :title="$t('common.default')"
       :subtitle="getSubtitle(0)"
       prepend-icon="mdi-clock-outline"
       @click="onSelectInterval(0)"
-    >
-      <template v-slot:append="{ isActive }">
-        <v-icon v-show="isActive" small> mdi-check </v-icon>
-      </template>
-    </v-list-item>
+    />
     <v-list-item
+      density="compact"
+      :lines="false"
       :active="1 === selectedIndex"
       :title="$t('common.custom')"
       :subtitle="getSubtitle(1)"
       prepend-icon="mdi-calendar-range"
       @click="onSelectInterval(1)"
-    >
-      <template v-slot:append="{ isActive }">
-        <v-icon v-show="isActive" small> mdi-check </v-icon>
-      </template>
-    </v-list-item>
+    />
     <template v-if="props.items.length">
       <v-divider></v-divider>
       <v-list-subheader>{{ $t('timeControl.periodPresets') }}</v-list-subheader>
       <v-list-item
         v-for="(item, index) in props.items"
         :key="index"
+        density="compact"
+        :lines="false"
         :active="index === selectedIndex - 2"
         :title="item.label"
         :subtitle="getSubtitle(index + 2)"
         prepend-icon="mdi-update"
         @click="onSelectInterval(index + 2)"
-      >
-        <template v-slot:append="{ isActive }">
-          <v-icon v-show="isActive" small> mdi-check </v-icon>
-        </template>
-      </v-list-item>
+      />
     </template>
   </v-list>
 </template>

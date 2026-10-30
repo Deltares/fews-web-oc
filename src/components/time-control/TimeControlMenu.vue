@@ -121,7 +121,6 @@
               :last="pickerDays.at(-1)"
               :anchor="calendarAnchor"
               :now="toWallClockDate(store.systemTime)"
-              class="pt-2"
               @select="onGridSelect"
             />
             <v-date-picker
@@ -134,7 +133,7 @@
               hide-header
               show-adjacent-months
               weeks-in-month="dynamic"
-              control-height="40"
+              control-height="32"
               width="100%"
               class="compact-date-picker"
               :aria-label="t('timeControl.period')"
@@ -708,14 +707,18 @@ watch(
 }
 
 .compact-date-picker :deep(.v-date-picker-month__day) {
-  height: 32px;
+  height: 28px;
   padding: 1px;
+}
+
+.compact-date-picker :deep(.v-date-picker-month__weekday) {
+  height: 20px;
 }
 
 .compact-date-picker :deep(.v-date-picker-month__day .v-btn) {
   --v-btn-height: 20px;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
 }
 
 .picker-unit-toggle {
