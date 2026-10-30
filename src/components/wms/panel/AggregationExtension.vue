@@ -12,11 +12,14 @@
       >
         <v-tooltip v-for="item in aggregations" :key="item.id" location="top">
           <template #activator="{ props: tooltipProps }">
-            <AggregationButton
+            <ExtensionButton
               v-if="isActive(item) || isHovering"
-              :item="item"
-              :isActive="isActive(item)"
               v-bind="tooltipProps"
+              :isActive="isActive(item)"
+              :value="item.id"
+              :text="item.shortLabel"
+              :icon="item.icon"
+              activePrependIcon="mdi-clock-end"
             />
           </template>
           <strong>{{ item.type }} {{ item.id }}</strong>
@@ -31,7 +34,7 @@
 import type { AggregationItem } from '@/lib/aggregation'
 import { toDateRangeString } from '@/lib/date'
 
-import AggregationButton from '@/components/wms/panel/AggregationButton.vue'
+import ExtensionButton from '@/components/wms/panel/ExtensionButton.vue'
 
 interface Props {
   aggregations: AggregationItem[]
