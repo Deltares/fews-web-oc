@@ -70,12 +70,20 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{ toggle: [] }>()
 
+// Expose the indent as a CSS variable, so rail mode can drop it.
 const indent = computed(() => ({
-  paddingInlineStart: `${16 + props.depth * 16}px`,
+  '--tree-menu-indent': `${props.depth * 16}px`,
 }))
 </script>
 
 <style scoped>
+.v-list-item {
+  padding-inline-start: calc(16px + var(--tree-menu-indent, 0px));
+  transition-duration: 0.2s;
+  transition-property: padding-inline-start;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .tree-menu--list-item {
   margin-left: 2px;
   border-left: 2px solid rgb(var(--v-border-color));
@@ -92,6 +100,12 @@ const indent = computed(() => ({
 </style>
 
 <style>
+.v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
+  .weboc-treemenu
+  .v-list-item {
+  padding-inline-start: 16px;
+}
+
 .v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
   .weboc-treemenu
   .v-list-item__content {
