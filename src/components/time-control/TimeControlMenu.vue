@@ -128,80 +128,93 @@
         <v-divider />
 
         <div class="pa-4 time-control-info">
-          <div class="d-flex flex-wrap align-baseline gc-3 text-body-1">
+          <!-- Date, time and time zone on one text baseline -->
+          <div
+            class="time-control-info__row time-control-info__clock text-body-2"
+          >
             <span>{{ systemTimeDetails.date }}</span>
-            <span>
-              <span class="running-clock">{{ systemTimeDetails.time }}</span>
-              <span class="text-medium-emphasis ms-1">
-                {{ systemTimeDetails.timeZone }}
-              </span>
-            </span>
-          </div>
-
-          <v-select
-            v-if="timeZoneSetting"
-            :model-value="timeZoneSetting.value"
-            @update:model-value="onTimeZoneUpdate"
-            :items="timeZoneOptions"
-            :label="t('timeControl.timeZone')"
-            :disabled="timeZoneSetting.disabled"
-            item-title="title"
-            item-value="value"
-            prepend-inner-icon="mdi-earth"
-            variant="solo-filled"
-            density="compact"
-            flat
-            item-props
-            hide-details
-          >
-            <template #selection="{ item }">
-              <span class="text-truncate">
-                {{ item.title }}
-                <span class="text-medium-emphasis ms-2">
-                  {{ timeZoneDetails.offset }}
-                </span>
-              </span>
-            </template>
-          </v-select>
-
-          <div
-            v-if="browserTimeZoneDetails"
-            class="time-control-info__row text-caption text-medium-emphasis"
-          >
-            <v-icon size="small" icon="mdi-web" />
-            <span>
-              {{ t('timeControl.browserTimeZone') }}:
-              {{ browserTimeZoneDetails.name }}
-              ({{ browserTimeZoneDetails.offset }})
-            </span>
-          </div>
-          <div
-            v-if="store.syncError"
-            class="time-control-info__row text-caption text-warning"
-          >
-            <v-icon size="small" icon="mdi-sync-alert" />
-            <span
-              >{{ t('timeControl.syncFailed') }}: {{ store.syncError }}</span
+            <span class="running-clock">{{ systemTimeDetails.time }}</span>
+            <!-- Picks the time zone, when it can be set by the user -->
+            <!-- Closed on a pick, as closing on content click closes the parent -->
+            <v-menu
+              v-model="isTimeZoneMenuOpen"
+              location="bottom start"
+              :close-on-content-click="false"
+              :disabled="!timeZoneSetting || timeZoneSetting.disabled"
             >
-          </div>
-          <div
-            v-else-if="lastSyncedLabel"
-            class="time-control-info__row text-caption text-medium-emphasis"
-          >
-            <v-icon size="small" icon="mdi-sync" />
-            <span>{{
-              t('timeControl.lastSynced', { time: lastSyncedLabel })
-            }}</span>
-            <v-tooltip :text="t('timeControl.syncHint')" max-width="320">
-              <template #activator="{ props: tooltipProps }">
-                <v-icon
-                  v-bind="tooltipProps"
-                  size="small"
-                  icon="mdi-information-outline"
-                  :aria-label="t('timeControl.syncHint')"
-                  tabindex="0"
-                />
+              <template #activator="{ props: menuProps }">
+                <!-- Names the browser time zone, when it is another one -->
+                <v-tooltip
+                  :text="otherTimeZoneTooltip"
+                  :disabled="!otherTimeZoneTooltip"
+                  location="bottom"
+                >
+                  <template #activator="{ props: tooltipProps }">
+                    <v-chip
+                      v-if="timeZoneSetting"
+                      v-bind="mergeProps(menuProps, tooltipProps)"
+                      :disabled="timeZoneSetting.disabled"
+                      :aria-label="`${t('timeControl.timeZone')}: ${timeZoneTitle}`"
+                      role="button"
+                      link
+                      size="small"
+                      variant="tonal"
+                      :append-icon="
+                        isTimeZoneMenuOpen
+                          ? 'mdi-chevron-up'
+                          : 'mdi-chevron-down'
+                      "
+                      class="time-zone-chip"
+                    >
+                      {{ systemTimeDetails.timeZone }}
+                    </v-chip>
+                    <span
+                      v-else
+                      v-bind="tooltipProps"
+                      class="text-medium-emphasis"
+                      :tabindex="otherTimeZoneTooltip ? 0 : undefined"
+                    >
+                      {{ systemTimeDetails.timeZone }}
+                    </span>
+                  </template>
+                </v-tooltip>
               </template>
+              <v-list density="compact" max-height="320">
+                <v-list-subheader>
+                  {{ t('timeControl.timeZone') }}
+                </v-list-subheader>
+                <v-list-item
+                  v-for="option in timeZoneOptions"
+                  :key="option.value"
+                  :title="option.title"
+                  :subtitle="option.subtitle"
+                  :disabled="option.disabled"
+                  :active="option.value === timeZoneSetting?.value"
+                  @click="onTimeZonePick(option.value)"
+                />
+              </v-list>
+            </v-menu>
+            <v-spacer />
+            <v-tooltip max-width="320" location="bottom">
+              <template #activator="{ props: tooltipProps }">
+                <!-- The time of the last sync with its icon -->
+                <v-chip
+                  v-bind="tooltipProps"
+                  :aria-label="syncStatus"
+                  :color="store.syncError ? 'warning' : undefined"
+                  :prepend-icon="
+                    store.syncError ? 'mdi-sync-alert' : 'mdi-sync'
+                  "
+                  size="small"
+                  variant="tonal"
+                  tabindex="0"
+                  class="sync-chip"
+                >
+                  {{ lastSyncedLabel ?? '--:--' }}
+                </v-chip>
+              </template>
+              <div v-if="syncStatus">{{ syncStatus }}</div>
+              <div class="mt-1">{{ t('timeControl.syncHint') }}</div>
             </v-tooltip>
           </div>
         </div>
@@ -211,7 +224,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watchEffect, watch } from 'vue'
+import { ref, computed, mergeProps, watchEffect, watch } from 'vue'
 import { VDialog, VMenu } from 'vuetify/components'
 import IntervalSelector from './IntervalSelector.vue'
 import PeriodRangePicker from './PeriodRangePicker.vue'
@@ -327,7 +340,7 @@ const otherTimeZoneTooltip = computed(() => {
 const systemTimeDetails = computed(() => {
   const dateTime = toDisplayDateTime(store.systemTime).setLocale(locale.value)
   return {
-    date: dateTime.toLocaleString(DateTime.DATE_HUGE),
+    date: dateTime.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY),
     time: dateTime.toLocaleString(DateTime.TIME_WITH_SECONDS),
     timeZone: dateTime.offsetNameShort ?? '',
   }
@@ -370,6 +383,21 @@ const timeZoneOptions = computed(() => {
     }
   })
 })
+
+// The title of the selected time zone, for the label of its menu button
+const timeZoneTitle = computed(
+  () =>
+    timeZoneOptions.value.find(
+      (option) => option.value === timeZoneSetting.value?.value,
+    )?.title,
+)
+
+const isTimeZoneMenuOpen = ref(false)
+
+function onTimeZonePick(value: string) {
+  isTimeZoneMenuOpen.value = false
+  onTimeZoneUpdate(value)
+}
 
 function onTimeZoneUpdate(value: unknown) {
   if (typeof value !== 'string') return
@@ -455,6 +483,15 @@ const lastSyncedLabel = computed(() => {
   return toDisplayDateTime(store.lastSyncedAt)
     .setLocale(locale.value)
     .toLocaleString(DateTime.TIME_WITH_SECONDS)
+})
+
+// Shown in the tooltip of the sync icon
+const syncStatus = computed(() => {
+  if (store.syncError) {
+    return `${t('timeControl.syncFailed')}: ${store.syncError}`
+  }
+  if (!lastSyncedLabel.value) return undefined
+  return t('timeControl.lastSynced', { time: lastSyncedLabel.value })
 })
 
 // Describes the preset period, which moves with the system time
@@ -657,6 +694,35 @@ watch(
   width: 280px;
 }
 
+/* The text of the date, time and time zone chip share their baseline */
+.time-control-info__clock {
+  align-items: baseline;
+}
+
+/* Compact, in the font of the date and time */
+.time-zone-chip,
+.sync-chip {
+  font-size: inherit;
+  letter-spacing: inherit;
+}
+
+.time-zone-chip {
+  padding-inline: 8px 4px;
+}
+
+.time-zone-chip :deep(.v-chip__append) {
+  margin-inline: 0;
+}
+
+.sync-chip {
+  padding-inline: 6px 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sync-chip :deep(.v-chip__prepend) {
+  margin-inline: 0 4px;
+}
+
 .picker-unit-toggle {
   height: 28px;
 }
@@ -673,12 +739,11 @@ watch(
 
 .time-control-info__row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
 }
 
 .time-control-info__row > .v-icon {
-  margin-top: 2px;
   opacity: 0.7;
 }
 
