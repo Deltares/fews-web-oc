@@ -19,7 +19,6 @@
         v-if="nodesStore.nodeButtons.length > 0 && showLeafsAsButton"
         v-model:activeNodeId="nodesStore.activeNodeId"
         :items="nodesStore.nodeButtons"
-        variant="tonal"
       />
     </Teleport>
 
