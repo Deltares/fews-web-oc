@@ -94,7 +94,7 @@ test.describe('Default Selection in Topology', () => {
     )
 
     const leafNodeButton = page.getByRole('button', { name: 'Leaf node' })
-    await expect(leafNodeButton).toContainText('Regional NWP')
+    await expect(leafNodeButton).toHaveAccessibleName(/Regional NWP/)
     await leafNodeButton.click()
     const nodeLink = page.getByRole('link', {
       name: 'Regional NWP',
