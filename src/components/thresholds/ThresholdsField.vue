@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { toDateAbsDifferenceString, toShortHumanReadableDate } from '@/lib/date'
 import type { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
-import { useNow } from '@vueuse/core'
+import { useIntervalFn, useNow } from '@vueuse/core'
 import { computed } from 'vue'
 import { useParametersStore } from '@/stores/parameters'
 import { useLocationNamesStore } from '@/stores/locationNames'
@@ -44,7 +44,9 @@ const parameterStore = useParametersStore()
 const locationNamesStore = useLocationNamesStore()
 
 const NOW_REFRESH_INTERVAL = 1000
-const now = useNow({ interval: NOW_REFRESH_INTERVAL })
+const now = useNow({
+  scheduler: (cb) => useIntervalFn(cb, NOW_REFRESH_INTERVAL),
+})
 
 const maxColor = computed(() => props.crossing.color)
 
