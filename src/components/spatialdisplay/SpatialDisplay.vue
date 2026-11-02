@@ -20,7 +20,7 @@
         :times="times"
         :settings="settings.map"
         v-model:elevation="elevation"
-        v-model:ensemble-selection="ensembleSelection"
+        @update:ensemble-selection="ensembleSelection = $event"
         @update:current-time="currentTime = $event"
         @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
