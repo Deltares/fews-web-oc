@@ -94,7 +94,7 @@
           v-model:show-layer="showLayer"
           @changeLayer="onLayerChange"
         >
-          <template v-if="hasEnsembles">
+          <template v-if="canSelectEnsemble">
             <v-divider />
             <EnsemblesPanel
               v-model="ensembleSelection"
@@ -132,7 +132,7 @@
               v-model:selected-aggregation-label="selectedAggregationLabel"
             />
             <EnsemblesExtension
-              v-if="hasEnsembles"
+              v-if="canSelectEnsemble"
               v-model="ensembleSelection"
               :ensembles="ensembles"
             />
@@ -324,7 +324,7 @@ const elevationUnit = ref('')
 const {
   ensembles,
   selection: ensembleSelection,
-  hasEnsembles,
+  canSelectEnsemble,
 } = useWmsEnsembles(() => props.layerCapabilities)
 
 watch(ensembleSelection, () => setLayerOptions())

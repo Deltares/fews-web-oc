@@ -41,7 +41,15 @@ export function useWmsEnsembles(
     { immediate: true },
   )
 
-  const hasEnsembles = computed<boolean>(() => ensembles.value.length > 0)
+  // Only allow selecting an ensemble member if there is something to choose,
+  // i.e. not for a single ensemble with a single member.
+  const canSelectEnsemble = computed<boolean>(() => {
+    const numMembers = ensembles.value.reduce(
+      (total, ensemble) => total + ensemble.ensembleMemberIds.length,
+      0,
+    )
+    return numMembers > 1
+  })
 
   function initialiseEnsembleSelection(): EnsembleSelection | null {
     const firstEnsemble = ensembles.value[0]
@@ -53,5 +61,5 @@ export function useWmsEnsembles(
     }
   }
 
-  return { ensembles, selection, hasEnsembles }
+  return { ensembles, selection, canSelectEnsemble }
 }
