@@ -127,7 +127,7 @@
           </template>
           <template #extension>
             <AggregationExtension
-              v-if="doShowAggregated"
+              v-if="doShowAggregated && aggregations.length > 0"
               :aggregations="aggregations"
               v-model:selected-aggregation-label="selectedAggregationLabel"
             />
