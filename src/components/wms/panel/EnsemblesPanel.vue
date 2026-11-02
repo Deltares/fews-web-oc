@@ -56,7 +56,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import NumberStepperField from '@/components/general/NumberStepperField.vue'
-import type { EnsembleSelection } from '@/lib/ensemble'
+import { type EnsembleSelection, isWholeNumberMemberId } from '@/lib/ensemble'
 import { toLabel } from '@/lib/utils/toLabel'
 
 const { t } = useI18n()
@@ -92,7 +92,7 @@ const ensembleMemberIds = computed(() => {
 // input instead of a select.
 const memberNumbers = computed(() =>
   ensembleMemberIds.value.map((memberId) =>
-    /^-?\d+$/.test(memberId) ? parseInt(memberId) : NaN,
+    isWholeNumberMemberId(memberId) ? parseInt(memberId) : NaN,
   ),
 )
 const isNumericMembers = computed(
@@ -157,7 +157,7 @@ function stepMember(direction: 1 | -1) {
 
 function commitMemberText() {
   const text = memberText.value.trim()
-  if (/^-?\d+$/.test(text)) {
+  if (isWholeNumberMemberId(text)) {
     selectedEnsembleMemberNumber.value = parseInt(text)
   }
   // Show the actual member, e.g. after invalid input or a non-existent member.
