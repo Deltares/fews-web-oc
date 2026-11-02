@@ -58,6 +58,19 @@ const ensembleMemberIds = computed(() => {
   return selectedEnsemble.value?.ensembleMemberIds ?? []
 })
 
+// Only update the model value when the selection has actually changed, to
+// avoid triggering watchers (and layer reloads) on the model with an identical
+// selection.
+function updateSelection(ensembleId: string, ensembleMemberId: string) {
+  if (
+    selection.value?.ensembleId === ensembleId &&
+    selection.value?.ensembleMemberId === ensembleMemberId
+  ) {
+    return
+  }
+  selection.value = { ensembleId, ensembleMemberId }
+}
+
 // Update the model value based on the select fields and vice versa.
 watch(selectedEnsembleId, (newSelectedEnsembleId) => {
   if (newSelectedEnsembleId === null) return
@@ -80,10 +93,7 @@ watch(selectedEnsembleId, (newSelectedEnsembleId) => {
   const newSelectedEnsembleMemberId = hasOldMemberId
     ? selectedEnsembleMemberId.value
     : ensemble.ensembleMemberIds[0]
-  selection.value = {
-    ensembleId: newSelectedEnsembleId,
-    ensembleMemberId: newSelectedEnsembleMemberId,
-  }
+  updateSelection(newSelectedEnsembleId, newSelectedEnsembleMemberId)
 })
 watch(selectedEnsembleMemberId, (newSelectedEnsembleMemberId) => {
   if (
@@ -92,10 +102,7 @@ watch(selectedEnsembleMemberId, (newSelectedEnsembleMemberId) => {
   ) {
     return
   }
-  selection.value = {
-    ensembleId: selectedEnsembleId.value,
-    ensembleMemberId: newSelectedEnsembleMemberId,
-  }
+  updateSelection(selectedEnsembleId.value, newSelectedEnsembleMemberId)
 })
 
 watch(
