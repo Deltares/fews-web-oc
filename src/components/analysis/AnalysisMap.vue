@@ -1,7 +1,7 @@
 <template>
   <MapComponent
     :bounds
-    :style="mapStyle"
+    :map-style="mapStyle"
     :showScale="false"
     :showGeolocation="false"
     :showNavigation="false"

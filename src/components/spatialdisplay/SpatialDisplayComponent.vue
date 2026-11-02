@@ -1,7 +1,7 @@
 <template>
   <MapComponent
     :bounds="bounds"
-    :style="mapStyle"
+    :map-style="mapStyle"
     :layer-name="layerName"
     :layer-capabilities="layerCapabilities"
   >

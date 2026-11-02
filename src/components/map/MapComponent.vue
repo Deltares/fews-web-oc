@@ -72,7 +72,9 @@ import MapTheme from '@/components/map/MapTheme.vue'
 
 interface Props {
   bounds?: LngLatBounds
-  style: string
+  // Not named style, which Vue treats as the CSS style attribute, e.g. when
+  // merging fallthrough attributes.
+  mapStyle: string
   showGeolocation?: boolean
   showNavigation?: boolean
   showScale?: boolean
@@ -94,7 +96,7 @@ const userSettings = useUserSettingsStore()
 
 const minZoom = ref(0)
 
-const initialStyle = props.style
+const initialStyle = props.mapStyle
 
 onMounted(() => {
   updateMinZoom()
@@ -103,7 +105,7 @@ onMounted(() => {
 const { getBeforeId } = useLayerOrder()
 
 watch(
-  () => props.style,
+  () => props.mapStyle,
   (newBaseStyle) => {
     if (!newBaseStyle) return
 
