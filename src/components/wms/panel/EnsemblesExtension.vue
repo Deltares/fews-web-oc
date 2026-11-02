@@ -70,8 +70,6 @@ const collapsedText = computed(() => {
 const extensionItems = computed(() =>
   ensembleMemberIds.value.map((ensembleMemberId) => ({
     value: ensembleMemberId,
-    text: ensembleMemberId,
-    icon: undefined,
   })),
 )
 
