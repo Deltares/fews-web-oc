@@ -5,7 +5,7 @@
       <v-col cols="8">
         <v-select
           v-model="selectedEnsembleId"
-          :items="ensembles"
+          :items="selectableEnsembles"
           item-value="ensembleId"
           item-title="ensembleId"
           density="compact"
@@ -46,6 +46,11 @@ const selection = defineModel<EnsembleSelection | null>({ required: true })
 const selectedEnsembleId = ref<string | null>(null)
 const selectedEnsembleMemberId = ref<string | null>(null)
 
+// Ensembles without members cannot be selected.
+const selectableEnsembles = computed(() =>
+  props.ensembles.filter((ensemble) => ensemble.ensembleMemberIds.length > 0),
+)
+
 const selectedEnsemble = computed<Ensemble | null>(() => {
   if (selectedEnsembleId.value === null) return null
   const ensemble = props.ensembles.find(
@@ -75,24 +80,22 @@ function updateSelection(ensembleId: string, ensembleMemberId: string) {
 watch(selectedEnsembleId, (newSelectedEnsembleId) => {
   if (newSelectedEnsembleId === null) return
 
-  const ensemble = props.ensembles.find(
-    (ensemble) => ensemble.ensembleId === newSelectedEnsembleId,
-  )
-  if (
-    ensemble?.ensembleMemberIds[0] === undefined ||
-    selectedEnsembleMemberId.value === null
-  ) {
+  const firstEnsembleMemberId = ensembleMemberIds.value[0]
+  if (firstEnsembleMemberId === undefined) {
+    // This ensemble has no members, so it cannot be selected; revert the
+    // select field to the ensemble that is actually selected.
+    selectedEnsembleId.value = selection.value?.ensembleId ?? null
     return
   }
 
   // Check whether our current ensemble member ID exists in this ensemble, in
   // that case, preserve it.
-  const hasOldMemberId = ensemble.ensembleMemberIds.includes(
-    selectedEnsembleMemberId.value,
-  )
+  const oldMemberId = selectedEnsembleMemberId.value
+  const hasOldMemberId =
+    oldMemberId !== null && ensembleMemberIds.value.includes(oldMemberId)
   const newSelectedEnsembleMemberId = hasOldMemberId
-    ? selectedEnsembleMemberId.value
-    : ensemble.ensembleMemberIds[0]
+    ? oldMemberId
+    : firstEnsembleMemberId
   updateSelection(newSelectedEnsembleId, newSelectedEnsembleMemberId)
 })
 watch(selectedEnsembleMemberId, (newSelectedEnsembleMemberId) => {
