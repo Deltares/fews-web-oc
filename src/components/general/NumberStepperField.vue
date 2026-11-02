@@ -6,6 +6,14 @@
     :class="$attrs.class"
     :style="[{ '--number-stepper-field-height': `${height}px` }, rootStyle]"
   >
+    <span
+      v-if="prefix"
+      class="number-stepper-field__prefix"
+      aria-hidden="true"
+      @click="inputElement?.focus()"
+    >
+      {{ prefix }}
+    </span>
     <input
       ref="inputElement"
       v-model="modelValue"
@@ -50,12 +58,14 @@ interface Props {
   decrementLabel?: string
   size?: number
   height?: number
+  prefix?: string
 }
 const {
   incrementLabel = 'Increase',
   decrementLabel = 'Decrease',
   size = 6,
   height = 24,
+  prefix,
 } = defineProps<Props>()
 
 // The steppers share the field height, so scale their icons with it.
@@ -123,6 +133,15 @@ defineExpose({
   background: transparent;
   font: inherit;
   line-height: calc(var(--number-stepper-field-height) - 4px);
+}
+
+.number-stepper-field__prefix {
+  display: flex;
+  align-items: center;
+  padding-left: 4px;
+  opacity: var(--v-medium-emphasis-opacity);
+  cursor: text;
+  user-select: none;
 }
 
 /* Inset in the field, like the spin buttons of a number input */

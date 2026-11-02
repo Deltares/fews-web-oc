@@ -302,6 +302,7 @@
   },
   "ensembles": {
     "ensemble": "Ensemble",
-    "member": "Member"
+    "member": "Member",
+    "description": "Ensemble {ensemble}, members {range}"
   }
 }

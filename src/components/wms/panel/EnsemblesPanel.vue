@@ -8,40 +8,45 @@
         item-value="ensembleId"
         :item-title="(ensemble: Ensemble) => toLabel(ensemble.ensembleId)"
         :aria-label="t('ensembles.ensemble')"
-        variant="solo-filled"
-        flat
+        variant="outlined"
         density="compact"
         hide-details
-        class="ensemble-select"
+        class="ensemble-select stepper-field-select"
       />
-      <span v-else class="ensemble-label text-truncate">
+      <span v-else class="ensemble-label text-truncate font-weight-medium">
         {{ toLabel(selectedEnsembleId ?? '') }}
       </span>
-      <template v-if="isNumericMembers">
-        <NumberStepperField
-          v-model="memberText"
-          :aria-label="t('ensembles.member')"
-          :size="4"
-          :height="36"
-          class="member-input"
-          @step="stepMember"
-          @blur="commitMemberText"
-          @keydown="onMemberKeydown"
-        />
-        <span class="member-range text-no-wrap"> ({{ memberRange }}) </span>
-      </template>
+      <NumberStepperField
+        v-if="isNumericMembers"
+        v-model="memberText"
+        :aria-label="t('ensembles.member')"
+        :size="memberInputSize"
+        :height="36"
+        prefix="#"
+        class="member-input"
+        @step="stepMember"
+        @blur="commitMemberText"
+        @keydown="onMemberKeydown"
+      />
       <v-select
         v-else
         v-model="selectedEnsembleMemberId"
         :items="ensembleMemberIds"
         :aria-label="t('ensembles.member')"
-        variant="solo-filled"
-        flat
+        variant="outlined"
         density="compact"
         hide-details
-        class="member-input member-select"
+        class="member-input member-select stepper-field-select"
       />
     </div>
+    <v-list-item-subtitle class="pt-1">
+      {{
+        t('ensembles.description', {
+          ensemble: toLabel(selectedEnsembleId ?? ''),
+          range: memberRange,
+        })
+      }}
+    </v-list-item-subtitle>
   </v-list-item>
 </template>
 
@@ -95,10 +100,18 @@ const isNumericMembers = computed(
     memberNumbers.value.length > 0 &&
     memberNumbers.value.every((memberNumber) => !Number.isNaN(memberNumber)),
 )
-const memberRange = computed(
-  () =>
-    `${Math.min(...memberNumbers.value)}–${Math.max(...memberNumbers.value)}`,
+// Fit the input to the longest member number, with room for the caret.
+const memberInputSize = computed(
+  () => Math.max(...memberNumbers.value.map((n) => String(n).length)) + 1,
 )
+const memberRange = computed(() => {
+  if (isNumericMembers.value) {
+    return `${Math.min(...memberNumbers.value)}–${Math.max(...memberNumbers.value)}`
+  }
+  const firstMemberId = ensembleMemberIds.value[0] ?? ''
+  const lastMemberId = ensembleMemberIds.value.at(-1) ?? ''
+  return `${firstMemberId}–${lastMemberId}`
+})
 
 const selectedEnsembleMemberNumber = computed<number | null>({
   get: () => {
@@ -236,5 +249,28 @@ watch(
 
 .member-select {
   width: 130px;
+}
+
+/* Match the height and border of NumberStepperField */
+.stepper-field-select :deep(.v-field) {
+  --v-input-control-height: 36px;
+  --v-input-padding-top: 6px;
+  --v-field-padding-bottom: 6px;
+}
+
+.stepper-field-select :deep(.v-field__outline) {
+  --v-field-border-opacity: var(--v-border-opacity);
+  color: rgb(var(--v-border-color));
+}
+
+.stepper-field-select :deep(.v-field:hover .v-field__outline) {
+  --v-field-border-opacity: 0.6;
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.stepper-field-select :deep(.v-field.v-field--focused .v-field__outline) {
+  --v-field-border-opacity: 1;
+  --v-field-border-width: 1px;
+  color: rgb(var(--v-theme-primary));
 }
 </style>
