@@ -20,6 +20,7 @@
         :times="times"
         :settings="settings.map"
         v-model:elevation="elevation"
+        v-model:ensemble-selection="ensembleSelection"
         @update:current-time="currentTime = $event"
         @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
@@ -34,6 +35,7 @@
         :settings="resolvedSettings"
         :currentTime="currentTime"
         :elevation="elevation"
+        :ensembleSelection="ensembleSelection"
         :taskRunId="taskRunId"
       >
         <template #toolbar-append>
@@ -68,6 +70,7 @@ import {
 } from '@/lib/topology/componentSettings'
 import { useDateRegistry } from '@deltares/fews-web-oc-composables'
 import type { NavigateRoute } from '@/lib/router'
+import type { EnsembleSelection } from '@/lib/ensemble'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 import { useLocationNamesStore } from '@/stores/locationNames'
 import {
@@ -265,6 +268,7 @@ const showChartPanel = computed(() => {
 })
 
 const elevation = ref<number | undefined>()
+const ensembleSelection = ref<EnsembleSelection | undefined>()
 const currentTime = ref<Date>()
 const maximized = ref(false)
 

@@ -305,6 +305,7 @@ const emit = defineEmits([
   'coordinateClick',
   'changeLayer',
   'update:elevation',
+  'update:ensembleSelection',
   'update:currentTime',
 ])
 
@@ -634,6 +635,16 @@ watch(
   (elevation) => {
     // Follow the debounced layerOption's elevation value.
     emit('update:elevation', elevation)
+  },
+  { immediate: true },
+)
+
+watch(
+  () => layerOptions.value?.ensembleSelection,
+  (ensembleSelection) => {
+    // Follow the ensemble selection of the layer, so the time series of a
+    // clicked location show the same ensemble member as the map.
+    emit('update:ensembleSelection', ensembleSelection)
   },
   { immediate: true },
 )
