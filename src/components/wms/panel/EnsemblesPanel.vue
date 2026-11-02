@@ -28,9 +28,7 @@
           @blur="commitMemberText"
           @keydown="onMemberKeydown"
         />
-        <span class="member-total text-no-wrap">
-          {{ t('ensembles.ofTotal', { total: ensembleMemberIds.length }) }}
-        </span>
+        <span class="member-range text-no-wrap"> ({{ memberRange }}) </span>
       </template>
       <v-select
         v-else
@@ -95,6 +93,10 @@ const isNumericMembers = computed(
   () =>
     memberNumbers.value.length > 0 &&
     memberNumbers.value.every((memberNumber) => !Number.isNaN(memberNumber)),
+)
+const memberRange = computed(
+  () =>
+    `${Math.min(...memberNumbers.value)}–${Math.max(...memberNumbers.value)}`,
 )
 
 const selectedEnsembleMemberNumber = computed<number | null>({
