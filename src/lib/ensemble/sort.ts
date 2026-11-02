@@ -12,7 +12,8 @@ export function sortEnsembleMemberIds(ensembleMemberIds: string[]): string[] {
     // Sort IDs with the same value, e.g. '1' and '01', alphabetically so the
     // order is deterministic.
     return ensembleMemberIds.toSorted(
-      (a, b) => parseInt(a) - parseInt(b) || a.localeCompare(b),
+      (a, b) =>
+        Number.parseInt(a, 10) - Number.parseInt(b, 10) || a.localeCompare(b),
     )
   }
   // If not all IDs are numeric, we sort alphabetically.

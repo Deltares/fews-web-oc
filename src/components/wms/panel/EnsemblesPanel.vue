@@ -92,7 +92,9 @@ const ensembleMemberIds = computed(() => {
 // input instead of a select.
 const memberNumbers = computed(() =>
   ensembleMemberIds.value.map((memberId) =>
-    isWholeNumberMemberId(memberId) ? parseInt(memberId) : NaN,
+    isWholeNumberMemberId(memberId)
+      ? Number.parseInt(memberId, 10)
+      : Number.NaN,
   ),
 )
 const isNumericMembers = computed(
@@ -158,7 +160,7 @@ function stepMember(direction: 1 | -1) {
 function commitMemberText() {
   const text = memberText.value.trim()
   if (isWholeNumberMemberId(text)) {
-    selectedEnsembleMemberNumber.value = parseInt(text)
+    selectedEnsembleMemberNumber.value = Number.parseInt(text, 10)
   }
   // Show the actual member, e.g. after invalid input or a non-existent member.
   editedMemberText.value = null
