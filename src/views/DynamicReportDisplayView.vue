@@ -3,9 +3,15 @@
     <v-toolbar v-if="locations.length" density="compact">
       <v-menu
         v-if="locations && locations.length > 1"
+        v-model="locationMenuOpen"
         location="bottom"
         z-index="10000"
+        width="360"
+        min-width="0"
+        max-width="calc(100vw - 32px)"
         max-height="400"
+        :close-on-content-click="false"
+        @update:model-value="locationSearch = ''"
       >
         <template #activator="{ props }">
           <v-btn
@@ -15,15 +21,34 @@
             :text="selectedLocation?.name"
           />
         </template>
-        <v-list v-model="selectedLocation" density="compact">
-          <v-list-item
-            v-for="location in locations"
-            @click="selectedLocation = location"
-            :key="location.id"
-            :title="location.name"
-            :active="selectedLocation === location"
+        <v-card>
+          <v-text-field
+            v-model="locationSearch"
+            :label="t('search.searchForLocations')"
+            prepend-inner-icon="mdi-magnify"
+            density="compact"
+            variant="outlined"
+            hide-details
+            clearable
+            class="ma-2"
           />
-        </v-list>
+          <v-list v-model="selectedLocation" density="compact">
+            <v-virtual-scroll
+              :items="filteredLocations"
+              item-key="id"
+              item-height="32"
+              :height="Math.min(filteredLocations.length * 32, 320)"
+            >
+              <template #default="{ item: location }">
+                <v-list-item
+                  @click="selectLocation(location)"
+                  :title="location.name"
+                  :active="selectedLocation === location"
+                />
+              </template>
+            </v-virtual-scroll>
+          </v-list>
+        </v-card>
       </v-menu>
       <span class="mx-5">{{ selectedLocation?.name }}</span>
     </v-toolbar>
@@ -67,6 +92,7 @@ import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import { toDateArray } from '@/lib/date'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import { useDateRegistry } from '@deltares/fews-web-oc-composables'
+import { useI18n } from 'vue-i18n'
 interface Props {
   topologyNode?: TopologyNode
   settings?: ComponentSettings
@@ -76,6 +102,9 @@ const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
 })
 
+const { t } = useI18n()
+const locationMenuOpen = ref(false)
+const locationSearch = ref<string | null>('')
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const selectedLocation = ref<{ id: string; name: string } | undefined>(
   undefined,
@@ -100,6 +129,21 @@ const { reportHtml, capabilities } = useDynamicReport(
 const locations = computed(() => {
   return capabilities.value?.selectableLocations ?? []
 })
+
+const filteredLocations = computed(() => {
+  const search = locationSearch.value?.trim().toLowerCase()
+  if (!search) return locations.value
+  return locations.value.filter(
+    (location) =>
+      location.name.toLowerCase().includes(search) ||
+      location.id.toLowerCase().includes(search),
+  )
+})
+
+function selectLocation(location: { id: string; name: string }) {
+  selectedLocation.value = location
+  locationMenuOpen.value = false
+}
 
 const times = computed(() => {
   if (!dateTimeSliderEnabled.value) return []
