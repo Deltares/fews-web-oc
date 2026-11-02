@@ -33,6 +33,7 @@ import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
+import type { EnsembleSelection } from '@/lib/ensemble'
 
 interface Props {
   layerName?: string
@@ -43,6 +44,7 @@ interface Props {
   settings?: ComponentSettings
   currentTime?: Date
   elevation?: number
+  ensembleSelection?: EnsembleSelection
   taskRunId?: string
 }
 
@@ -120,6 +122,8 @@ function getTimeSeriesGridActionsFilter(
     documentFormat: 'PI_JSON',
     useDisplayUnits: userSettings.useDisplayUnits,
     taskRunId: props.taskRunId,
+    ensembleId: props.ensembleSelection?.ensembleId,
+    ensembleMemberId: props.ensembleSelection?.ensembleMemberId,
     // Should be available according to the docs, but errors
     // convertDatum: settings.convertDatum,
   }

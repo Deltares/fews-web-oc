@@ -92,9 +92,14 @@ function removeHooksFromMapObject(): void {
 
 // Allow only one simultaneous request to wait for layer initialisation; abort
 // all requests but the last.
+function isAbortError(error: unknown): boolean {
+  if (error instanceof Error && error.name === 'AbortError') return true
+  return String(error).toLowerCase().includes('abort')
+}
+
 function addUpdateWatcher<T>(
   watchExpression: () => T,
-  callback: (newValue: T) => void,
+  callback: (newValue: T) => void | Promise<void>,
 ): void {
   let abortController = new AbortController()
   watch(watchExpression, async (newValue) => {
@@ -108,12 +113,19 @@ function addUpdateWatcher<T>(
     )
     if (!isInitialised) return
 
-    callback(newValue)
+    try {
+      await callback(newValue)
+    } catch (error) {
+      // Requests are aborted when a newer update supersedes them.
+      if (isAbortError(error)) return
+      console.error('Failed to update the streamline layer:', error)
+      isLoading.value = false
+    }
   })
 }
 
-// Update the velocity field when the time, elevation or color scale range is
-// changed, abort all but the last change.
+// Update the velocity field when the time, elevation, ensemble selection or
+// color scale range is changed, abort all but the last change.
 addUpdateWatcher(
   () => props.layerOptions.time,
   async (time) => {
@@ -125,14 +137,21 @@ addUpdateWatcher(
   () => props.layerOptions.elevation,
   (elevation) => {
     if (!layer) return
-    layer.setElevation(elevation ?? null)
+    return layer.setElevation(elevation ?? null)
+  },
+)
+addUpdateWatcher(
+  () => props.layerOptions.ensembleSelection,
+  (ensembleSelection) => {
+    if (!layer) return
+    return layer.setEnsembleSelection(ensembleSelection ?? null)
   },
 )
 addUpdateWatcher(
   () => props.layerOptions.colorScaleRange,
   (colorScaleRange) => {
     if (!layer) return
-    layer.setColorScaleRange(
+    return layer.setColorScaleRange(
       getColorScaleRangeFromString(colorScaleRange) ?? null,
     )
   },
@@ -155,7 +174,7 @@ addUpdateWatcher(
   () => props.layerOptions.useLastValue,
   (useLastValue) => {
     if (!layer) return
-    layer.setUseLastValue(useLastValue ?? false)
+    return layer.setUseLastValue(useLastValue ?? false)
   },
 )
 
@@ -178,6 +197,7 @@ function setupLayer(): WMSStreamlineLayer {
     await layer.initialise(
       props.layerOptions.time,
       props.layerOptions.elevation ?? undefined,
+      props.layerOptions.ensembleSelection ?? undefined,
       getColorScaleRangeFromString(props.layerOptions.colorScaleRange),
     )
   })

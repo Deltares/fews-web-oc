@@ -30,41 +30,17 @@
           @touchstart.stop
           @pointerdown.stop
         >
-          <!-- Text input with the same style as TableCellEdit, a number input
-               shows spin buttons and Edge may use a comma as decimal separator -->
-          <div v-if="isEditing" class="elevation-slider__tooltip-field">
-            <input
-              ref="tooltipInput"
-              v-model="editValue"
-              aria-label="Elevation"
-              class="elevation-slider__tooltip-input"
-              type="text"
-              inputmode="decimal"
-              @blur="onEditBlur"
-              @keydown.stop="onKeydown"
-            />
-            <!-- Prevent mousedown so the input keeps focus -->
-            <div class="elevation-slider__tooltip-steppers">
-              <button
-                type="button"
-                tabindex="-1"
-                aria-label="Increase elevation"
-                @mousedown.prevent
-                @click="stepEditValue(1)"
-              >
-                <v-icon icon="mdi-chevron-up" size="12" />
-              </button>
-              <button
-                type="button"
-                tabindex="-1"
-                aria-label="Decrease elevation"
-                @mousedown.prevent
-                @click="stepEditValue(-1)"
-              >
-                <v-icon icon="mdi-chevron-down" size="12" />
-              </button>
-            </div>
-          </div>
+          <NumberStepperField
+            v-if="isEditing"
+            ref="tooltipInput"
+            v-model="editValue"
+            label="Elevation"
+            increment-label="Increase elevation"
+            decrement-label="Decrease elevation"
+            @step="stepEditValue"
+            @blur="onEditBlur"
+            @keydown.stop="onKeydown"
+          />
           <button
             v-else
             type="button"
@@ -87,6 +63,7 @@
 import { computed, nextTick, ref, watch, watchEffect } from 'vue'
 import { scaleLinear } from 'd3-scale'
 import { clamp, floatPrecision } from '@/lib/utils/math'
+import NumberStepperField from '@/components/general/NumberStepperField.vue'
 import '@/assets/slider.css'
 
 interface Props {
@@ -110,7 +87,7 @@ const editValue = ref('')
 const isEditing = ref(false)
 
 const rootElement = ref<HTMLElement>()
-const tooltipInput = ref<HTMLInputElement>()
+const tooltipInput = ref<InstanceType<typeof NumberStepperField>>()
 const sliderComponent = ref<{ focus: () => void }>()
 
 const numberOfMarks = 8
@@ -198,9 +175,6 @@ const onKeydown = (e: KeyboardEvent) => {
     acceptEdit()
   } else if (e.key === 'Escape') {
     closeTooltip()
-  } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-    e.preventDefault()
-    stepEditValue(e.key === 'ArrowUp' ? 1 : -1)
   }
 }
 
@@ -353,70 +327,6 @@ watchEffect(() => {
   gap: 4px;
   font-family: var(--font-primary);
   cursor: default;
-}
-
-/* Same style as the TableCellEdit inputs */
-.elevation-slider__tooltip-field {
-  display: flex;
-  align-items: stretch;
-  box-sizing: border-box;
-  height: 24px;
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-radius: 4px;
-  background-color: rgb(var(--v-theme-surface));
-  transition:
-    border-color 120ms ease,
-    background-color 120ms ease;
-}
-
-.elevation-slider__tooltip-field:hover:not(:focus-within) {
-  border-color: rgba(var(--v-theme-on-surface), 0.6);
-}
-
-.elevation-slider__tooltip-field:focus-within {
-  border-color: transparent;
-  outline: 1px solid rgb(var(--v-theme-primary));
-  outline-offset: -1px;
-}
-
-.elevation-slider__slider .elevation-slider__tooltip-input {
-  /* Vuetify hides every input inside the slider container */
-  display: block;
-  width: 6ch;
-  padding: 0px 2px;
-  border: 0;
-  outline: none;
-  color: currentColor;
-  background: transparent;
-  font: inherit;
-  line-height: 20px;
-}
-
-/* Inset in the field, like the spin buttons of a number input */
-.elevation-slider__tooltip-steppers {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  padding: 2px;
-}
-
-.elevation-slider__tooltip-steppers > button {
-  display: flex;
-  flex: 1 1 0;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  padding: 0;
-  overflow: hidden;
-  border: 0;
-  border-radius: 2px;
-  color: inherit;
-  background: transparent;
-  cursor: pointer;
-}
-
-.elevation-slider__tooltip-steppers > button:hover {
-  background-color: rgba(var(--v-theme-on-surface), var(--v-hover-opacity));
 }
 
 .elevation-slider__edit-button {

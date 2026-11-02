@@ -21,6 +21,7 @@ import { debounce } from 'lodash-es'
 import { useLayer, useSource } from '@/services/useLayer'
 import { type GetMapFilter, WMSProvider } from '@deltares/fews-wms-requests'
 import { getFilterFromLayerOptions } from '@/lib/map'
+import { EnsembleSelection } from '@/lib/ensemble'
 
 export interface AnimatedRasterLayerOptions {
   name: string
@@ -34,6 +35,7 @@ export interface AnimatedRasterLayerOptions {
   useLastValue?: boolean
   layerType?: string
   taskRunId?: string
+  ensembleSelection?: EnsembleSelection
 }
 
 interface Props {

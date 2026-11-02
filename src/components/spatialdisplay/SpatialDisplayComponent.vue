@@ -1,7 +1,7 @@
 <template>
   <MapComponent
     :bounds="bounds"
-    :style="mapStyle"
+    :map-style="mapStyle"
     :layer-name="layerName"
     :layer-capabilities="layerCapabilities"
   >
@@ -94,6 +94,13 @@
           v-model:show-layer="showLayer"
           @changeLayer="onLayerChange"
         >
+          <template v-if="canSelectEnsemble">
+            <v-divider />
+            <EnsemblesPanel
+              v-model="ensembleSelection"
+              :ensembles="ensembles"
+            />
+          </template>
           <template v-if="aggregations.length > 0">
             <v-divider />
             <AggregationPanel
@@ -119,11 +126,18 @@
             />
           </template>
           <template #extension>
-            <AggregationExtension
-              v-if="doShowAggregated"
-              :aggregations="aggregations"
-              v-model:selected-aggregation-label="selectedAggregationLabel"
-            />
+            <div class="d-flex align-start ga-1">
+              <AggregationExtension
+                v-if="doShowAggregated && aggregations.length > 0"
+                :aggregations="aggregations"
+                v-model:selected-aggregation-label="selectedAggregationLabel"
+              />
+              <EnsemblesExtension
+                v-if="canSelectEnsemble"
+                v-model="ensembleSelection"
+                :ensembles="ensembles"
+              />
+            </div>
           </template>
         </InformationPanel>
         <TaskRunControl v-model:taskRunId="taskRunId" />
@@ -206,8 +220,10 @@ import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import InformationPanel from '@/components/wms/panel/InformationPanel.vue'
 import OverlayInformationPanel from '@/components/wms/panel/OverlayInformationPanel.vue'
-import AggregationPanel from '../wms/panel/AggregationPanel.vue'
+import AggregationPanel from '@/components/wms/panel/AggregationPanel.vue'
+import EnsemblesPanel from '@/components/wms/panel/EnsemblesPanel.vue'
 import AggregationExtension from '@/components/wms/panel/AggregationExtension.vue'
+import EnsemblesExtension from '@/components/wms/panel/EnsemblesExtension.vue'
 import ColourPanel from '@/components/wms/panel/ColourPanel.vue'
 import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
@@ -252,6 +268,7 @@ import { clamp } from '@/lib/utils/math'
 import { useAggregations } from '@/services/useAggregations'
 import { provideLayerOrder } from '@/services/useLayerOrder'
 import { useOverlays } from '@/services/useOverlays'
+import { useWmsEnsembles } from '@/services/useWmsEnsembles'
 import SnapshotStrip from '@/components/spatialdisplay/SnapshotStrip.vue'
 import { useSearchContext } from '@/stores/searchContext'
 
@@ -288,6 +305,7 @@ const emit = defineEmits([
   'coordinateClick',
   'changeLayer',
   'update:elevation',
+  'update:ensembleSelection',
   'update:currentTime',
 ])
 
@@ -305,6 +323,14 @@ const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
+
+const {
+  ensembles,
+  selection: ensembleSelection,
+  canSelectEnsemble,
+} = useWmsEnsembles(() => props.layerCapabilities)
+
+watch(ensembleSelection, () => setLayerOptions())
 
 const doFollowNow = ref(taskRunId.value === undefined)
 // Set follow now to false when a task run is selected because taskRun data is typically historical data,
@@ -424,6 +450,8 @@ const maxTimeSeriesFilter = computed(() => {
       : undefined,
     useDisplayUnits: userSettings.useDisplayUnits,
     convertDatum: userSettings.convertDatum,
+    // NOTE: this endpoint does not yet accept ensemble parameters, so it may
+    //       return values that do not match the currently selected ensemble.
   }
   return filter
 })
@@ -612,6 +640,16 @@ watch(
 )
 
 watch(
+  () => layerOptions.value?.ensembleSelection,
+  (ensembleSelection) => {
+    // Follow the ensemble selection of the layer, so the time series of a
+    // clicked location show the same ensemble member as the map.
+    emit('update:ensembleSelection', ensembleSelection)
+  },
+  { immediate: true },
+)
+
+watch(
   [() => currentColourScale.value?.range, () => userSettings.useDisplayUnits],
   () => {
     setLayerOptions()
@@ -648,6 +686,7 @@ function setLayerOptions(): void {
     useDisplayUnits: userSettings.useDisplayUnits,
     useLastValue: isInDatesRange(selectedDate.value, props.times),
     taskRunId: taskRunId.value,
+    ensembleSelection: ensembleSelection.value ?? undefined,
   }
 }
 
