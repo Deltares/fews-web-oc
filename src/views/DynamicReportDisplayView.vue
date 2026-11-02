@@ -1,56 +1,31 @@
 <template>
   <div class="d-flex flex-column h-100 w-100">
     <v-toolbar v-if="locations.length" density="compact">
-      <v-menu
-        v-if="locations && locations.length > 1"
-        v-model="locationMenuOpen"
-        location="bottom"
-        z-index="10000"
+      <v-autocomplete
+        v-if="locations.length > 1"
+        v-model="selectedLocation"
+        :items="locations"
+        item-title="name"
+        item-value="id"
+        return-object
+        :filter-keys="['title', 'value']"
+        :custom-filter="filterLocation"
+        density="compact"
+        variant="outlined"
+        hide-details
         width="360"
-        min-width="0"
-        max-width="calc(100vw - 32px)"
-        max-height="400"
-        :close-on-content-click="false"
-        @update:model-value="locationSearch = ''"
-      >
-        <template #activator="{ props }">
-          <v-btn
-            v-bind="props"
-            variant="text"
-            append-icon="mdi-chevron-down"
-            :text="selectedLocation?.name"
-          />
-        </template>
-        <v-card>
-          <v-text-field
-            v-model="locationSearch"
-            :label="t('search.searchForLocations')"
-            prepend-inner-icon="mdi-magnify"
-            density="compact"
-            variant="outlined"
-            hide-details
-            clearable
-            class="ma-2"
-          />
-          <v-list v-model="selectedLocation" density="compact">
-            <v-virtual-scroll
-              :items="filteredLocations"
-              item-key="id"
-              item-height="32"
-              :height="Math.min(filteredLocations.length * 32, 320)"
-            >
-              <template #default="{ item: location }">
-                <v-list-item
-                  @click="selectLocation(location)"
-                  :title="location.name"
-                  :active="selectedLocation === location"
-                />
-              </template>
-            </v-virtual-scroll>
-          </v-list>
-        </v-card>
-      </v-menu>
-      <span class="mx-5">{{ selectedLocation?.name }}</span>
+        max-width="100%"
+        class="flex-grow-0 mx-2"
+        :menu-props="{
+          width: 360,
+          minWidth: 0,
+          maxWidth: 'calc(100vw - 32px)',
+          maxHeight: 400,
+          zIndex: 10000,
+        }"
+        :list-props="{ density: 'compact' }"
+      />
+      <span v-else class="mx-5">{{ selectedLocation?.name }}</span>
     </v-toolbar>
     <ShadowFrame :htmlContent="reportHtml" />
     <DateTimeSlider
@@ -92,7 +67,6 @@ import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import { toDateArray } from '@/lib/date'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import { useDateRegistry } from '@deltares/fews-web-oc-composables'
-import { useI18n } from 'vue-i18n'
 interface Props {
   topologyNode?: TopologyNode
   settings?: ComponentSettings
@@ -102,13 +76,8 @@ const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
 })
 
-const { t } = useI18n()
-const locationMenuOpen = ref(false)
-const locationSearch = ref<string | null>('')
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const selectedLocation = ref<{ id: string; name: string } | undefined>(
-  undefined,
-)
+const selectedLocation = ref<(typeof locations.value)[number]>()
 const selectedDateOfSlider = ref<Date | undefined>(undefined)
 const { selectedDate, dateTimeSliderEnabled } =
   useSelectedDate(selectedDateOfSlider)
@@ -130,19 +99,8 @@ const locations = computed(() => {
   return capabilities.value?.selectableLocations ?? []
 })
 
-const filteredLocations = computed(() => {
-  const search = locationSearch.value?.trim().toLowerCase()
-  if (!search) return locations.value
-  return locations.value.filter(
-    (location) =>
-      location.name.toLowerCase().includes(search) ||
-      location.id.toLowerCase().includes(search),
-  )
-})
-
-function selectLocation(location: { id: string; name: string }) {
-  selectedLocation.value = location
-  locationMenuOpen.value = false
+function filterLocation(value: string, query: string) {
+  return value.toLowerCase().includes(query.trim().toLowerCase())
 }
 
 const times = computed(() => {
