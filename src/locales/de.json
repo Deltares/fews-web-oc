@@ -245,6 +245,7 @@
     "measureRestoreFailed": "Die Messungen konnten nicht wiederhergestellt werden und wurden entfernt.",
     "noDataLayer": "Kein Datenlayer verfügbar",
     "overlays": "Layerauswahl",
+    "previousNext": "vorherige/nächste",
     "selectLayers": "Layerauswahl",
     "timeRange": "Zeitbereich",
     "unnamedLayer": "Unbenannter Layer"
@@ -303,6 +304,9 @@
   "ensembles": {
     "ensemble": "Ensemble",
     "member": "Ensemblemitglied",
-    "description": "Ensemble {ensemble}, Mitglieder {range}"
+    "description": "Ensemble {ensemble}, Mitglieder {range}",
+    "membersRange": "Mitglieder {range}",
+    "previousNextMember": "vorheriges/nächstes Mitglied",
+    "previousNextRow": "vorherige/nächste Zeile"
   }
 }

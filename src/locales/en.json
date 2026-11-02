@@ -245,6 +245,7 @@
     "measureRestoreFailed": "The measured features could not be restored and have been removed.",
     "noDataLayer": "No data layer available",
     "overlays": "Overlays",
+    "previousNext": "previous/next",
     "selectLayers": "Select layers",
     "timeRange": "Time range",
     "unnamedLayer": "Unnamed layer"
@@ -303,6 +304,9 @@
   "ensembles": {
     "ensemble": "Ensemble",
     "member": "Member",
-    "description": "Ensemble {ensemble}, members {range}"
+    "description": "Ensemble {ensemble}, members {range}",
+    "membersRange": "Members {range}",
+    "previousNextMember": "previous/next member",
+    "previousNextRow": "previous/next row"
   }
 }

@@ -12,6 +12,7 @@
         :class="{ 'button-container--grid': isGrid }"
         :style="gridStyle"
         @wheel="onWheel"
+        @keydown="onKeydown"
       >
         <!-- In a grid, tooltips would cover neighbouring buttons -->
         <v-tooltip
@@ -38,6 +39,18 @@
       </v-btn-toggle>
     </template>
   </v-hover>
+  <!-- A single tooltip for the whole grid, shown while it is expanded -->
+  <v-tooltip
+    v-if="$slots.hint && buttonContainer"
+    :activator="buttonContainer"
+    :model-value="isGrid"
+    :open-on-hover="false"
+    :open-on-focus="false"
+    :open-on-click="false"
+    location="end"
+  >
+    <slot name="hint"></slot>
+  </v-tooltip>
 </template>
 
 <script
@@ -55,7 +68,14 @@
   "
 >
 import { useFocusWithin } from '@vueuse/core'
-import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
+import {
+  type ComponentPublicInstance,
+  computed,
+  nextTick,
+  ref,
+  useTemplateRef,
+  watch,
+} from 'vue'
 
 import ExtensionButton from '@/components/wms/panel/ExtensionButton.vue'
 
@@ -79,7 +99,7 @@ const props = defineProps<Props>()
 
 const selection = defineModel<U | null>({ required: true })
 
-const buttonToggle = useTemplateRef('button-toggle')
+const buttonToggle = useTemplateRef<ComponentPublicInstance>('button-toggle')
 const buttonContainer = computed<HTMLDivElement | null>(() => {
   if (buttonToggle.value === null) return null
   return buttonToggle.value.$el as HTMLDivElement
@@ -126,6 +146,32 @@ function getButtonText(item: T): string | undefined {
 function getItemProperty(item: T, key?: TextKey | IconKey): string | undefined {
   if (key === undefined) return undefined
   return item[key]
+}
+
+// Arrow keys select the previous or next item, and in a grid also the item in
+// the row above or below. Focus moves along so the selection stays visible.
+async function onKeydown(event: KeyboardEvent): Promise<void> {
+  const rowStep = isGrid.value ? props.columns : undefined
+  const steps: Record<string, number | undefined> = {
+    ArrowLeft: -1,
+    ArrowRight: 1,
+    ArrowUp: rowStep === undefined ? undefined : -rowStep,
+    ArrowDown: rowStep,
+  }
+  const step = steps[event.key]
+  if (step === undefined) return
+
+  const activeIndex = props.items.findIndex((item) => item.isActive)
+  const nextItem = props.items[activeIndex + step]
+  // Also prevent scrolling the page when there is no item in this direction.
+  event.preventDefault()
+  if (activeIndex === -1 || nextItem === undefined) return
+
+  selection.value = nextItem[props.valueKey]
+  await nextTick()
+  buttonContainer.value
+    ?.querySelector<HTMLButtonElement>('button[data-is-active="true"]')
+    ?.focus()
 }
 
 function onWheel(event: WheelEvent): void {

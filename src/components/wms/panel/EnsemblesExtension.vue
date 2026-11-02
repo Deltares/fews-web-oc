@@ -8,9 +8,19 @@
     :collapsed-text="collapsedText"
     :columns="10"
   >
-    <template #tooltip="{ item }">
+    <template #hint>
       <strong>{{ toLabel(selection?.ensembleId ?? '') }}</strong>
-      <div>{{ item.value }}</div>
+      <div>{{ t('ensembles.membersRange', { range: memberRange }) }}</div>
+      <div class="d-flex flex-column ga-1 pt-2">
+        <KeyboardHint
+          :keys="['←', '→']"
+          :label="t('ensembles.previousNextMember')"
+        />
+        <KeyboardHint
+          :keys="['↑', '↓']"
+          :label="t('ensembles.previousNextRow')"
+        />
+      </div>
     </template>
   </InformationPanelExtension>
 </template>
@@ -18,9 +28,12 @@
 <script setup lang="ts">
 import { Ensemble } from '@deltares/fews-wms-requests'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import { EnsembleSelection } from '@/lib/ensemble'
 import { toLabel } from '@/lib/utils/toLabel'
+
+import KeyboardHint from '@/components/general/KeyboardHint.vue'
 
 import InformationPanelExtension from './InformationPanelExtension.vue'
 
@@ -28,6 +41,8 @@ interface Props {
   ensembles: Ensemble[]
 }
 const props = defineProps<Props>()
+
+const { t } = useI18n()
 
 const selection = defineModel<EnsembleSelection | null>({ required: true })
 
@@ -38,6 +53,12 @@ const ensembleMemberIds = computed<string[]>(() => {
     (ensemble) => ensemble.ensembleId === selectedEnsembleId,
   )
   return ensemble?.ensembleMemberIds ?? []
+})
+
+const memberRange = computed(() => {
+  const firstMemberId = ensembleMemberIds.value[0] ?? ''
+  const lastMemberId = ensembleMemberIds.value.at(-1) ?? ''
+  return `${firstMemberId}–${lastMemberId}`
 })
 
 // Show the member with a "#" prefix when collapsed, e.g. "#5".
