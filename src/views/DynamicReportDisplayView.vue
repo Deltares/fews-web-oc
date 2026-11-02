@@ -10,19 +10,16 @@
         return-object
         :filter-keys="['title', 'value']"
         :custom-filter="filterLocation"
+        :aria-label="t('search.searchForLocations')"
         density="compact"
-        variant="outlined"
+        variant="plain"
         hide-details
-        width="360"
+        menu-icon="mdi-chevron-down"
+        min-width="200"
+        width="max-content"
         max-width="100%"
-        class="flex-grow-0 mx-2"
-        :menu-props="{
-          width: 360,
-          minWidth: 0,
-          maxWidth: 'calc(100vw - 32px)',
-          maxHeight: 400,
-          zIndex: 10000,
-        }"
+        class="location-select ms-1 flex-grow-0"
+        :menu-props="{ width: 360 }"
         :list-props="{ density: 'compact' }"
       />
       <span v-else class="mx-5">{{ selectedLocation?.name }}</span>
@@ -67,6 +64,7 @@ import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import { toDateArray } from '@/lib/date'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import { useDateRegistry } from '@deltares/fews-web-oc-composables'
+import { useI18n } from 'vue-i18n'
 interface Props {
   topologyNode?: TopologyNode
   settings?: ComponentSettings
@@ -76,6 +74,7 @@ const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
 })
 
+const { t } = useI18n()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const selectedLocation = ref<(typeof locations.value)[number]>()
 const selectedDateOfSlider = ref<Date | undefined>(undefined)
@@ -122,3 +121,29 @@ watch(locations, (newLocations) => {
 
 const { mobile } = useDisplay()
 </script>
+
+<style scoped>
+.location-select :deep(.v-field) {
+  border-radius: 4px;
+  padding-inline: 8px;
+}
+
+.location-select :deep(.v-field:hover),
+.location-select :deep(.v-field--focused) {
+  background: rgba(var(--v-theme-on-surface), var(--v-hover-opacity));
+}
+
+.location-select :deep(.v-field__input) {
+  min-height: 36px;
+  padding-block: 0;
+}
+
+.location-select :deep(.v-autocomplete__selection) {
+  max-width: 100%;
+}
+
+.location-select :deep(.v-field__append-inner) {
+  align-items: center;
+  padding-top: 0;
+}
+</style>
