@@ -6,7 +6,7 @@
         v-model="selectedEnsembleId"
         :items="selectableEnsembles"
         item-value="ensembleId"
-        item-title="ensembleId"
+        :item-title="(ensemble: Ensemble) => toLabel(ensemble.ensembleId)"
         :aria-label="t('ensembles.ensemble')"
         variant="solo-filled"
         flat
@@ -15,7 +15,7 @@
         class="ensemble-select"
       />
       <span v-else class="ensemble-label text-truncate">
-        {{ selectedEnsembleId }}
+        {{ toLabel(selectedEnsembleId ?? '') }}
       </span>
       <template v-if="isNumericMembers">
         <NumberStepperField
@@ -52,6 +52,7 @@ import { useI18n } from 'vue-i18n'
 
 import NumberStepperField from '@/components/general/NumberStepperField.vue'
 import type { EnsembleSelection } from '@/lib/ensemble'
+import { toLabel } from '@/lib/utils/toLabel'
 
 const { t } = useI18n()
 

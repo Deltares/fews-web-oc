@@ -7,7 +7,7 @@
     active-prepend-icon="mdi-source-fork"
   >
     <template #tooltip="{ item }">
-      <strong>{{ selection?.ensembleId }}</strong>
+      <strong>{{ toLabel(selection?.ensembleId ?? '') }}</strong>
       <div>{{ item.value }}</div>
     </template>
   </InformationPanelExtension>
@@ -18,6 +18,7 @@ import { Ensemble } from '@deltares/fews-wms-requests'
 import { computed } from 'vue'
 
 import { EnsembleSelection } from '@/lib/ensemble'
+import { toLabel } from '@/lib/utils/toLabel'
 
 import InformationPanelExtension from './InformationPanelExtension.vue'
 
