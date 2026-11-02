@@ -302,6 +302,7 @@
   },
   "ensembles": {
     "ensemble": "Ensemble",
-    "member": "Member"
+    "member": "Member",
+    "ofTotal": "of {total}"
   }
 }
