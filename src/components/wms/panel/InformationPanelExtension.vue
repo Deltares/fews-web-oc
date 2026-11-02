@@ -31,6 +31,7 @@
               :icon="getItemProperty(item, iconKey)"
               :activePrependIcon="isGrid ? undefined : activePrependIcon"
               :compact="isGrid"
+              :class="getCornerClasses(index)"
               :data-is-active="item.isActive"
             />
           </template>
@@ -118,6 +119,42 @@ const gridStyle = computed(() =>
     : undefined,
 )
 
+const allCorners = [
+  'corner--top-start',
+  'corner--top-end',
+  'corner--bottom-start',
+  'corner--bottom-end',
+]
+
+// Only the outer corners of the buttons are rounded, also for the active
+// button. When collapsed only the active button is shown, so it has all
+// corners rounded. When expanded the buttons form a single row or a grid; with
+// an incomplete last row, the last button of the row above also forms an outer
+// corner.
+function getCornerClasses(index: number): string[] {
+  if (!isExpanded.value) return allCorners
+
+  const numItems = props.items.length
+  const columns = isGrid.value ? (props.columns ?? numItems) : numItems
+  const lastIndex = numItems - 1
+  const lastRow = Math.floor(lastIndex / columns)
+  const row = Math.floor(index / columns)
+  const isRowEnd = index % columns === columns - 1 || index === lastIndex
+  const isAboveIncompleteLastRow =
+    row === lastRow - 1 && index + columns > lastIndex
+
+  const classes: string[] = []
+  if (index === 0) classes.push('corner--top-start')
+  if (row === 0 && isRowEnd) classes.push('corner--top-end')
+  if (row === lastRow && index % columns === 0) {
+    classes.push('corner--bottom-start')
+  }
+  if (index === lastIndex || (isRowEnd && isAboveIncompleteLastRow)) {
+    classes.push('corner--bottom-end')
+  }
+  return classes
+}
+
 watch(isExpanded, async (newIsExpanded) => {
   // All buttons of a grid are visible, so there is no need to scroll.
   if (!newIsExpanded || isGrid.value) return
@@ -194,5 +231,26 @@ function onWheel(event: WheelEvent): void {
   width: max-content;
   max-width: none;
   height: auto;
+}
+
+/* Square buttons, also when active, except at the outer corners */
+.button-container.v-btn-group .v-btn {
+  border-radius: 0;
+}
+
+.button-container.v-btn-group .corner--top-start {
+  border-start-start-radius: 4px;
+}
+
+.button-container.v-btn-group .corner--top-end {
+  border-start-end-radius: 4px;
+}
+
+.button-container.v-btn-group .corner--bottom-start {
+  border-end-start-radius: 4px;
+}
+
+.button-container.v-btn-group .corner--bottom-end {
+  border-end-end-radius: 4px;
 }
 </style>
