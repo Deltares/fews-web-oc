@@ -19,7 +19,7 @@
       <NumberStepperField
         v-if="isNumericMembers"
         v-model="memberText"
-        :aria-label="t('ensembles.member')"
+        :label="t('ensembles.member')"
         :size="memberInputSize"
         :height="36"
         prefix="#"

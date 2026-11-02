@@ -34,7 +34,7 @@
             v-if="isEditing"
             ref="tooltipInput"
             v-model="editValue"
-            aria-label="Elevation"
+            label="Elevation"
             increment-label="Increase elevation"
             decrement-label="Decrease elevation"
             @step="stepEditValue"

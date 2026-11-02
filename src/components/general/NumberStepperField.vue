@@ -6,15 +6,21 @@
     :class="$attrs.class"
     :style="[{ '--number-stepper-field-height': `${height}px` }, rootStyle]"
   >
-    <span
+    <!-- A label, so clicking the prefix focuses the input. It is not part of
+         the accessible name of the input, see aria-labelledby below. -->
+    <label
       v-if="prefix"
+      :for="inputId"
       class="number-stepper-field__prefix"
       aria-hidden="true"
-      @click="inputElement?.focus()"
     >
       {{ prefix }}
-    </span>
+    </label>
+    <!-- Visually hidden, the field is labelled by its context -->
+    <label :id="labelId" :for="inputId" class="d-sr-only">{{ label }}</label>
     <input
+      :id="inputId"
+      :aria-labelledby="labelId"
       ref="inputElement"
       v-model="modelValue"
       v-bind="inputAttrs"
@@ -49,11 +55,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useAttrs, type StyleValue } from 'vue'
+import { computed, ref, useAttrs, useId, type StyleValue } from 'vue'
 
 defineOptions({ inheritAttrs: false })
 
 interface Props {
+  label: string
   incrementLabel?: string
   decrementLabel?: string
   size?: number
@@ -75,6 +82,8 @@ const modelValue = defineModel<string>({ required: true })
 const emit = defineEmits<{ step: [direction: 1 | -1] }>()
 
 const inputElement = ref<HTMLInputElement>()
+const inputId = useId()
+const labelId = useId()
 
 // Class and style apply to the field, other attributes (e.g. aria-label and
 // listeners) to the input.
