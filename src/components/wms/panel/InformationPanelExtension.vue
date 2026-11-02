@@ -185,9 +185,29 @@ function getItemProperty(item: T, key?: TextKey | IconKey): string | undefined {
   return item[key]
 }
 
+// Select the item at the given offset from the active item, e.g. -1 for the
+// previous item. Returns false if there is no item at that offset.
+async function selectRelative(
+  step: number,
+  { focus }: { focus: boolean },
+): Promise<boolean> {
+  const activeIndex = props.items.findIndex((item) => item.isActive)
+  const nextItem = props.items[activeIndex + step]
+  if (activeIndex === -1 || nextItem === undefined) return false
+
+  selection.value = nextItem[props.valueKey]
+  if (focus) {
+    await nextTick()
+    buttonContainer.value
+      ?.querySelector<HTMLButtonElement>('button[data-is-active="true"]')
+      ?.focus()
+  }
+  return true
+}
+
 // Arrow keys select the previous or next item, and in a grid also the item in
 // the row above or below. Focus moves along so the selection stays visible.
-async function onKeydown(event: KeyboardEvent): Promise<void> {
+function onKeydown(event: KeyboardEvent): void {
   const rowStep = isGrid.value ? props.columns : undefined
   const steps: Record<string, number | undefined> = {
     ArrowLeft: -1,
@@ -198,24 +218,50 @@ async function onKeydown(event: KeyboardEvent): Promise<void> {
   const step = steps[event.key]
   if (step === undefined) return
 
-  const activeIndex = props.items.findIndex((item) => item.isActive)
-  const nextItem = props.items[activeIndex + step]
   // Also prevent scrolling the page when there is no item in this direction.
   event.preventDefault()
-  if (activeIndex === -1 || nextItem === undefined) return
-
-  selection.value = nextItem[props.valueKey]
-  await nextTick()
-  buttonContainer.value
-    ?.querySelector<HTMLButtonElement>('button[data-is-active="true"]')
-    ?.focus()
+  selectRelative(step, { focus: true })
 }
 
+// Scroll distance in pixels for a single step through the grid. A mouse wheel
+// notch is at least this distance and steps once, the small amounts of a
+// trackpad are accumulated.
+const WHEEL_STEP_DISTANCE = 40
+let wheelDistance = 0
+
+// Wheel deltas can be in pixels, lines or pages, depending on the browser and
+// device.
+function getWheelDelta(event: WheelEvent, pageSize: number): number {
+  // Use the dominant direction, e.g. for horizontal scrolling on a trackpad.
+  const delta =
+    Math.abs(event.deltaX) > Math.abs(event.deltaY)
+      ? event.deltaX
+      : event.deltaY
+  if (event.deltaMode === WheelEvent.DOM_DELTA_LINE) return delta * 16
+  if (event.deltaMode === WheelEvent.DOM_DELTA_PAGE) return delta * pageSize
+  return delta
+}
+
+// In a grid, the wheel walks through the items in order. In a row, the wheel
+// scrolls the row horizontally. In both cases the wheel event does not reach
+// the map below.
 function onWheel(event: WheelEvent): void {
-  // Preserve horizontal scrolling behaviour where possible.
-  if (event.deltaX !== 0 || isGrid.value) return
-  if (buttonContainer.value === null) return
-  buttonContainer.value.scrollLeft += event.deltaY
+  const container = buttonContainer.value
+  if (container === null) return
+  event.preventDefault()
+
+  const delta = getWheelDelta(event, container.clientWidth)
+  if (!isGrid.value) {
+    container.scrollLeft += delta
+    return
+  }
+
+  // Reset when changing direction, so the selection responds immediately.
+  if (Math.sign(delta) !== Math.sign(wheelDistance)) wheelDistance = 0
+  wheelDistance += delta
+  if (Math.abs(wheelDistance) < WHEEL_STEP_DISTANCE) return
+  wheelDistance = 0
+  selectRelative(Math.sign(delta), { focus: focused.value })
 }
 </script>
 
