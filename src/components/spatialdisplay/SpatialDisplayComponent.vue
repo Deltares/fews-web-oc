@@ -98,7 +98,7 @@
             <v-divider />
             <EnsemblesPanel
               v-model="ensembleSelection"
-              :ensembles="wmsEnsembles.ensembles.value"
+              :ensembles="ensembles"
             />
           </template>
           <template v-if="aggregations.length > 0">
@@ -263,7 +263,6 @@ import { useOverlays } from '@/services/useOverlays'
 import { useWmsEnsembles } from '@/services/useWmsEnsembles'
 import SnapshotStrip from '@/components/spatialdisplay/SnapshotStrip.vue'
 import { useSearchContext } from '@/stores/searchContext'
-import type { EnsembleSelection } from '@/lib/ensemble'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -315,6 +314,14 @@ const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
+
+const {
+  ensembles,
+  selection: ensembleSelection,
+  hasEnsembles,
+} = useWmsEnsembles(() => props.layerCapabilities)
+
+watch(ensembleSelection, () => setLayerOptions())
 
 const doFollowNow = ref(taskRunId.value === undefined)
 // Set follow now to false when a task run is selected because taskRun data is typically historical data,
@@ -434,6 +441,8 @@ const maxTimeSeriesFilter = computed(() => {
       : undefined,
     useDisplayUnits: userSettings.useDisplayUnits,
     convertDatum: userSettings.convertDatum,
+    // NOTE: this endpoint does not yet accept ensemble parameters, so it may
+    //       return values that do not match the currently selected ensemble.
   }
   return filter
 })
@@ -658,6 +667,7 @@ function setLayerOptions(): void {
     useDisplayUnits: userSettings.useDisplayUnits,
     useLastValue: isInDatesRange(selectedDate.value, props.times),
     taskRunId: taskRunId.value,
+    ensembleSelection: ensembleSelection.value ?? undefined,
   }
 }
 

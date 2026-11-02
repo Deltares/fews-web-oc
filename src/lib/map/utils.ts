@@ -88,5 +88,10 @@ export function getFilterFromLayerOptions(options: AnimatedRasterLayerOptions) {
     filter.colorscalerange = options.colorScaleRange
   }
 
+  if (options.ensembleSelection) {
+    filter.ensembleId = options.ensembleSelection.ensembleId
+    filter.ensembleMemberId = options.ensembleSelection.ensembleMemberId
+  }
+
   return filter
 }

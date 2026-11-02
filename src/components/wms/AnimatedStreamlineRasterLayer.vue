@@ -112,8 +112,8 @@ function addUpdateWatcher<T>(
   })
 }
 
-// Update the velocity field when the time, elevation or color scale range is
-// changed, abort all but the last change.
+// Update the velocity field when the time, elevation, ensemble selection or
+// color scale range is changed, abort all but the last change.
 addUpdateWatcher(
   () => props.layerOptions.time,
   async (time) => {
@@ -126,6 +126,13 @@ addUpdateWatcher(
   (elevation) => {
     if (!layer) return
     layer.setElevation(elevation ?? null)
+  },
+)
+addUpdateWatcher(
+  () => props.layerOptions.ensembleSelection,
+  (ensembleSelection) => {
+    if (!layer) return
+    layer.setEnsembleSelection(ensembleSelection ?? null)
   },
 )
 addUpdateWatcher(
@@ -178,6 +185,7 @@ function setupLayer(): WMSStreamlineLayer {
     await layer.initialise(
       props.layerOptions.time,
       props.layerOptions.elevation ?? undefined,
+      props.layerOptions.ensembleSelection ?? undefined,
       getColorScaleRangeFromString(props.layerOptions.colorScaleRange),
     )
   })
