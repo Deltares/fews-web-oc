@@ -22,25 +22,6 @@ export function useWmsEnsembles(
     })
   })
 
-  const selection = ref<EnsembleSelection | null>(null)
-  // If the ensembles change, reinitialise the selection if necessary.
-  watch(
-    ensembles,
-    () => {
-      const hasExistingSelection = ensembles.value.some(
-        (ensemble) =>
-          ensemble.ensembleId === selection.value?.ensembleId &&
-          ensemble.ensembleMemberIds.includes(
-            selection.value?.ensembleMemberId,
-          ),
-      )
-      if (!hasExistingSelection) {
-        selection.value = initialiseEnsembleSelection()
-      }
-    },
-    { immediate: true },
-  )
-
   // Only allow selecting an ensemble member if there is something to choose,
   // i.e. not for a single ensemble with a single member.
   const canSelectEnsemble = computed<boolean>(() => {
@@ -50,6 +31,58 @@ export function useWmsEnsembles(
     )
     return numMembers > 1
   })
+
+  const selection = ref<EnsembleSelection | null>(null)
+
+  // Remember the selected member per ensemble, so the selection is restored
+  // after switching to and from e.g. a deterministic layer. Ordered from least
+  // to most recently selected.
+  const rememberedMemberIds = new Map<string, string>()
+  watch(
+    selection,
+    (newSelection) => {
+      // Selections without a choice, e.g. of a deterministic layer, should not
+      // replace the member chosen for an ensemble.
+      if (newSelection === null || !canSelectEnsemble.value) return
+      rememberedMemberIds.delete(newSelection.ensembleId)
+      rememberedMemberIds.set(
+        newSelection.ensembleId,
+        newSelection.ensembleMemberId,
+      )
+    },
+    { flush: 'sync' },
+  )
+
+  // If the ensembles change, reinitialise the selection if necessary.
+  watch(
+    ensembles,
+    () => {
+      if (!isValidSelection(selection.value)) {
+        selection.value =
+          findRememberedSelection() ?? initialiseEnsembleSelection()
+      }
+    },
+    { immediate: true },
+  )
+
+  function isValidSelection(
+    candidate: EnsembleSelection | null,
+  ): candidate is EnsembleSelection {
+    return ensembles.value.some(
+      (ensemble) =>
+        ensemble.ensembleId === candidate?.ensembleId &&
+        ensemble.ensembleMemberIds.includes(candidate.ensembleMemberId),
+    )
+  }
+
+  function findRememberedSelection(): EnsembleSelection | null {
+    const remembered = [...rememberedMemberIds].reverse()
+    for (const [ensembleId, ensembleMemberId] of remembered) {
+      const candidate = { ensembleId, ensembleMemberId }
+      if (isValidSelection(candidate)) return candidate
+    }
+    return null
+  }
 
   function initialiseEnsembleSelection(): EnsembleSelection | null {
     const firstEnsemble = ensembles.value[0]
