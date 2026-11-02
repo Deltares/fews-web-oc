@@ -23,16 +23,16 @@
         >
           <template #activator="{ props: tooltipProps }">
             <ExtensionButton
-              v-if="item.isActive || isExpanded"
+              v-if="isActive(item) || isExpanded"
               v-bind="tooltipProps"
-              :isActive="item.isActive"
+              :isActive="isActive(item)"
               :value="item[valueKey]"
               :text="getButtonText(item)"
               :icon="getItemProperty(item, iconKey)"
               :activePrependIcon="isGrid ? undefined : activePrependIcon"
               :compact="isGrid"
               :class="getCornerClasses(index)"
-              :data-is-active="item.isActive"
+              :data-is-active="isActive(item)"
             />
           </template>
           <slot name="tooltip" :item="item"></slot>
@@ -59,8 +59,7 @@
   lang="ts"
   generic="
     U,
-    T extends ExtensionItem &
-      Record<ValueKey, U> &
+    T extends Record<ValueKey, U> &
       Partial<Record<Exclude<TextKey, undefined>, string>> &
       Partial<Record<Exclude<IconKey, undefined>, string>>,
     ValueKey extends keyof T,
@@ -80,10 +79,6 @@ import {
 
 import ExtensionButton from '@/components/wms/panel/ExtensionButton.vue'
 
-export interface ExtensionItem {
-  isActive: boolean
-}
-
 interface Props {
   items: T[]
   valueKey: ValueKey
@@ -99,6 +94,10 @@ interface Props {
 const props = defineProps<Props>()
 
 const selection = defineModel<U | null>({ required: true })
+
+function isActive(item: T): boolean {
+  return item[props.valueKey] === selection.value
+}
 
 const buttonToggle = useTemplateRef<ComponentPublicInstance>('button-toggle')
 const buttonContainer = computed<HTMLDivElement | null>(() => {
@@ -174,7 +173,7 @@ watch(isExpanded, async (newIsExpanded) => {
 })
 
 function getButtonText(item: T): string | undefined {
-  if (item.isActive && !isExpanded.value && props.collapsedText) {
+  if (isActive(item) && !isExpanded.value && props.collapsedText) {
     return props.collapsedText
   }
   return getItemProperty(item, props.textKey)
@@ -191,7 +190,7 @@ async function selectRelative(
   step: number,
   { focus }: { focus: boolean },
 ): Promise<boolean> {
-  const activeIndex = props.items.findIndex((item) => item.isActive)
+  const activeIndex = props.items.findIndex(isActive)
   const nextItem = props.items[activeIndex + step]
   if (activeIndex === -1 || nextItem === undefined) return false
 

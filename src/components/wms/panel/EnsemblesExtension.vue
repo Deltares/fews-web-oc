@@ -72,7 +72,6 @@ const extensionItems = computed(() =>
     value: ensembleMemberId,
     text: ensembleMemberId,
     icon: undefined,
-    isActive: ensembleMemberId === selection.value?.ensembleMemberId,
   })),
 )
 
