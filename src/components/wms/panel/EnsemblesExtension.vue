@@ -5,6 +5,7 @@
     value-key="value"
     text-key="value"
     active-prepend-icon="mdi-source-fork"
+    :collapsed-text="collapsedText"
   >
     <template #tooltip="{ item }">
       <strong>{{ toLabel(selection?.ensembleId ?? '') }}</strong>
@@ -36,6 +37,15 @@ const ensembleMemberIds = computed<string[]>(() => {
     (ensemble) => ensemble.ensembleId === selectedEnsembleId,
   )
   return ensemble?.ensembleMemberIds ?? []
+})
+
+// Show the member with the range of members when collapsed, e.g. "#5 (0–19)".
+const collapsedText = computed(() => {
+  const memberId = selection.value?.ensembleMemberId
+  const firstMemberId = ensembleMemberIds.value[0]
+  const lastMemberId = ensembleMemberIds.value.at(-1)
+  if (memberId === undefined || firstMemberId === undefined) return undefined
+  return `#${memberId} (${firstMemberId}–${lastMemberId})`
 })
 
 const extensionItems = computed(() =>

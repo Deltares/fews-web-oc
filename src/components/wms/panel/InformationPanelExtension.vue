@@ -18,7 +18,7 @@
               v-bind="tooltipProps"
               :isActive="item.isActive"
               :value="item[valueKey]"
-              :text="getItemProperty(item, textKey)"
+              :text="getButtonText(item)"
               :icon="getItemProperty(item, iconKey)"
               :activePrependIcon="activePrependIcon"
               :data-is-active="item.isActive"
@@ -60,8 +60,10 @@ interface Props {
   textKey?: TextKey
   iconKey?: IconKey
   activePrependIcon?: string
+  // Text of the active button when collapsed, e.g. to give more context.
+  collapsedText?: string
 }
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const selection = defineModel<U | null>({ required: true })
 
@@ -91,6 +93,13 @@ watch(isExpanded, async (newIsExpanded) => {
     inline: 'center',
   })
 })
+
+function getButtonText(item: T): string | undefined {
+  if (item.isActive && !isExpanded.value && props.collapsedText) {
+    return props.collapsedText
+  }
+  return getItemProperty(item, props.textKey)
+}
 
 function getItemProperty(item: T, key?: TextKey | IconKey): string | undefined {
   if (key === undefined) return undefined
