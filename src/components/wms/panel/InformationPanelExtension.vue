@@ -9,9 +9,17 @@
         variant="flat"
         mandatory
         class="overflow-x-auto button-container"
+        :class="{ 'button-container--grid': isGrid }"
+        :style="gridStyle"
         @wheel="onWheel"
       >
-        <v-tooltip v-for="(item, index) in items" :key="index" location="top">
+        <!-- In a grid, tooltips would cover neighbouring buttons -->
+        <v-tooltip
+          v-for="(item, index) in items"
+          :key="index"
+          location="top"
+          :disabled="isGrid"
+        >
           <template #activator="{ props: tooltipProps }">
             <ExtensionButton
               v-if="item.isActive || isExpanded"
@@ -20,7 +28,8 @@
               :value="item[valueKey]"
               :text="getButtonText(item)"
               :icon="getItemProperty(item, iconKey)"
-              :activePrependIcon="activePrependIcon"
+              :activePrependIcon="isGrid ? undefined : activePrependIcon"
+              :compact="isGrid"
               :data-is-active="item.isActive"
             />
           </template>
@@ -62,6 +71,9 @@ interface Props {
   activePrependIcon?: string
   // Text of the active button when collapsed, e.g. to give more context.
   collapsedText?: string
+  // Show the expanded buttons in a grid with this number of columns instead of
+  // a horizontally scrolling row.
+  columns?: number
 }
 const props = defineProps<Props>()
 
@@ -77,8 +89,18 @@ const isHovering = ref<boolean>(false)
 const { focused } = useFocusWithin(buttonToggle)
 const isExpanded = computed<boolean>(() => isHovering.value || focused.value)
 
+const isGrid = computed<boolean>(
+  () => props.columns !== undefined && isExpanded.value,
+)
+const gridStyle = computed(() =>
+  isGrid.value
+    ? { gridTemplateColumns: `repeat(${props.columns}, 1fr)` }
+    : undefined,
+)
+
 watch(isExpanded, async (newIsExpanded) => {
-  if (!newIsExpanded) return
+  // All buttons of a grid are visible, so there is no need to scroll.
+  if (!newIsExpanded || isGrid.value) return
   // First, wait for the DOM to update.
   await nextTick()
 
@@ -108,7 +130,7 @@ function getItemProperty(item: T, key?: TextKey | IconKey): string | undefined {
 
 function onWheel(event: WheelEvent): void {
   // Preserve horizontal scrolling behaviour where possible.
-  if (event.deltaX !== 0) return
+  if (event.deltaX !== 0 || isGrid.value) return
   if (buttonContainer.value === null) return
   buttonContainer.value.scrollLeft += event.deltaY
 }
@@ -117,5 +139,13 @@ function onWheel(event: WheelEvent): void {
 <style scoped>
 .button-container {
   width: 400px;
+}
+
+.button-container.button-container--grid {
+  display: grid;
+  /* Same row height as the collapsed button group */
+  grid-auto-rows: 36px;
+  width: max-content;
+  height: auto;
 }
 </style>

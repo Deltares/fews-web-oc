@@ -3,12 +3,12 @@
     :value="value"
     class="information-panel__tab text-label-medium"
     size="small"
-    :class="{ active: isActive }"
+    :class="{ active: isActive, 'information-panel__tab--compact': compact }"
     :prepend-icon="prependIcon"
     :icon="icon"
     :append-icon="appendIcon"
     :text="buttonText"
-    :min-width="isActive ? '55px' : '30px'"
+    :min-width="compact ? 0 : isActive ? '55px' : '30px'"
   />
 </template>
 
@@ -21,6 +21,7 @@ interface Props {
   text?: string
   icon?: string
   activePrependIcon?: string
+  compact?: boolean
 }
 
 const props = defineProps<Props>()
@@ -50,6 +51,10 @@ const prependIcon = computed<string | undefined>(() =>
   padding: 5px 10px;
   background-color: rgba(var(--v-theme-surface), 0.8);
   cursor: pointer;
+}
+
+.information-panel__tab.information-panel__tab--compact {
+  padding: 4px 6px;
 }
 
 .information-panel__tab.active {

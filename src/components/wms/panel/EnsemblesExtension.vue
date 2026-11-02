@@ -6,6 +6,7 @@
     text-key="value"
     active-prepend-icon="mdi-source-fork"
     :collapsed-text="collapsedText"
+    :columns="10"
   >
     <template #tooltip="{ item }">
       <strong>{{ toLabel(selection?.ensembleId ?? '') }}</strong>
