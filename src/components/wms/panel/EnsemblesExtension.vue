@@ -40,13 +40,10 @@ const ensembleMemberIds = computed<string[]>(() => {
   return ensemble?.ensembleMemberIds ?? []
 })
 
-// Show the member with the range of members when collapsed, e.g. "#5 (0–19)".
+// Show the member with a "#" prefix when collapsed, e.g. "#5".
 const collapsedText = computed(() => {
   const memberId = selection.value?.ensembleMemberId
-  const firstMemberId = ensembleMemberIds.value[0]
-  const lastMemberId = ensembleMemberIds.value.at(-1)
-  if (memberId === undefined || firstMemberId === undefined) return undefined
-  return `#${memberId} (${firstMemberId}–${lastMemberId})`
+  return memberId === undefined ? undefined : `#${memberId}`
 })
 
 const extensionItems = computed(() =>

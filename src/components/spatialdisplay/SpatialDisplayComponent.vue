@@ -126,16 +126,18 @@
             />
           </template>
           <template #extension>
-            <AggregationExtension
-              v-if="doShowAggregated && aggregations.length > 0"
-              :aggregations="aggregations"
-              v-model:selected-aggregation-label="selectedAggregationLabel"
-            />
-            <EnsemblesExtension
-              v-if="canSelectEnsemble"
-              v-model="ensembleSelection"
-              :ensembles="ensembles"
-            />
+            <div class="d-flex align-start ga-1">
+              <AggregationExtension
+                v-if="doShowAggregated && aggregations.length > 0"
+                :aggregations="aggregations"
+                v-model:selected-aggregation-label="selectedAggregationLabel"
+              />
+              <EnsemblesExtension
+                v-if="canSelectEnsemble"
+                v-model="ensembleSelection"
+                :ensembles="ensembles"
+              />
+            </div>
           </template>
         </InformationPanel>
         <TaskRunControl v-model:taskRunId="taskRunId" />

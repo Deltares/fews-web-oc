@@ -138,7 +138,7 @@ function onWheel(event: WheelEvent): void {
 
 <style scoped>
 .button-container {
-  width: 400px;
+  max-width: 400px;
 }
 
 .button-container.button-container--grid {
@@ -146,6 +146,7 @@ function onWheel(event: WheelEvent): void {
   /* Same row height as the collapsed button group */
   grid-auto-rows: 36px;
   width: max-content;
+  max-width: none;
   height: auto;
 }
 </style>
