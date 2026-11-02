@@ -1,5 +1,5 @@
 <template>
-  <v-list-item prepend-icon="mdi-sitemap">
+  <v-list-item prepend-icon="mdi-source-fork">
     <div class="d-flex align-center ga-2">
       <v-select
         v-if="selectableEnsembles.length > 1"

@@ -4,7 +4,7 @@
     :items="extensionItems"
     value-key="value"
     text-key="value"
-    active-prepend-icon="mdi-file-table-box-multiple"
+    active-prepend-icon="mdi-source-fork"
   >
     <template #tooltip="{ item }">
       <strong>{{ selection?.ensembleId }}</strong>
