@@ -7,11 +7,15 @@
     :class="{ menu: !isFullscreen }"
   >
     <template v-slot:activator="{ props, isActive }">
-      <div class="icon-group" v-bind="props">
-        <div class="icon-group__underlay"></div>
+      <!-- On phones the whole group is the button, without the chevron -->
+      <BtnGroup
+        v-bind="isFullscreen ? mergeProps(props, phoneActivatorProps) : props"
+        class="time-control-btn"
+        :class="{ 'time-control-btn--compact': isFullscreen }"
+      >
         <v-tooltip
           :text="periodTooltip"
-          :disabled="!periodTooltip"
+          :disabled="!periodTooltip || isFullscreen"
           location="bottom"
         >
           <template #activator="{ props: tooltipProps }">
@@ -31,7 +35,7 @@
         </v-tooltip>
         <v-tooltip
           :text="otherTimeZoneTooltip"
-          :disabled="!otherTimeZoneTooltip"
+          :disabled="!otherTimeZoneTooltip || isFullscreen"
           location="bottom"
         >
           <template #activator="{ props: tooltipProps }">
@@ -54,12 +58,18 @@
             </span>
           </template>
         </v-tooltip>
-        <v-btn icon size="small" class="last-btn">
+        <v-btn
+          v-if="!isFullscreen"
+          icon
+          size="small"
+          class="last-btn"
+          :aria-label="t('timeControl.title')"
+        >
           <v-icon>{{
             isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'
           }}</v-icon>
         </v-btn>
-      </div>
+      </BtnGroup>
     </template>
 
     <v-card
@@ -231,6 +241,7 @@ import PeriodRangePicker from './PeriodRangePicker.vue'
 import { useI18n } from 'vue-i18n'
 import { useDisplayDateFormat } from '@/services/useDisplayDateFormat'
 import { useDisplay } from 'vuetify'
+import BtnGroup from '@/components/general/BtnGroup.vue'
 
 import { CLOCK_TICK_MS, useSystemTimeStore } from '@/stores/systemTime'
 import { useConfigStore } from '@/stores/config'
@@ -275,6 +286,18 @@ const overlayProps = computed(() =>
     ? { fullscreen: true, transition: 'dialog-bottom-transition' }
     : { closeOnContentClick: false },
 )
+
+// Makes the group a button on phones, as it has no chevron button there
+const phoneActivatorProps = computed(() => ({
+  role: 'button',
+  tabindex: 0,
+  'aria-label': t('timeControl.title'),
+  onKeydown: (event: KeyboardEvent) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return
+    event.preventDefault()
+    ;(event.currentTarget as HTMLElement).click()
+  },
+}))
 
 const intervalItems = computed(() => {
   const presets = configStore.general.timeSettings?.viewPeriodPresets
@@ -603,12 +626,13 @@ watch(
   z-index: 10000;
 }
 
-.icon-group {
-  display: inline-flex;
-  align-items: center;
+.time-control-btn {
   gap: 6px;
-  position: relative;
-  border-radius: 24px;
+}
+
+/* Room after the label, where other screens show the chevron */
+.time-control-btn--compact {
+  padding-right: 12px;
 }
 
 .systemtime-status {
@@ -745,27 +769,5 @@ watch(
 
 .time-control-info__row > .v-icon {
   opacity: 0.7;
-}
-
-.icon-group__underlay {
-  position: absolute;
-  inset: 0; /* fill the container */
-  border-radius: 20px;
-  background-color: currentColor;
-  opacity: var(--v-activated-opacity); /* hidden by default */
-  transition: opacity 0.18s ease;
-  pointer-events: none; /* let the label get hover for its tooltip */
-}
-
-/* 1. Remove focus style from buttons */
-.last-btn:focus {
-  outline: none !important;
-}
-
-/* 2. Show focus outline on the *group* instead */
-.icon-group:has(.last-btn:focus) {
-  outline: 1px solid rgb(33, 150, 243) !important;
-  outline: 2px solid var(--v-theme-primary);
-  outline-offset: -1px;
 }
 </style>
