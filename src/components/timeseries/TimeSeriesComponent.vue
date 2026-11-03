@@ -109,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch, watchEffect } from 'vue'
 import TimeSeriesChart from '../charts/TimeSeriesChart.vue'
 import TimeSeriesChartBrush from '../charts/TimeSeriesChartBrush.vue'
 import TimeSeriesTable from '../table/TimeSeriesTable.vue'
@@ -129,7 +129,7 @@ import { useSystemTimeStore } from '@/stores/systemTime'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 import { useDisplay } from 'vuetify'
-import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
+import { onBeforeRouteUpdate, onBeforeRouteLeave, useRoute } from 'vue-router'
 import { until } from '@vueuse/core'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import {
@@ -144,6 +144,12 @@ import {
 } from '@/lib/display/utils'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 import { getBrushDomain } from '@/lib/charts/brush.ts'
+import { useChartParametersStore } from '@/stores/chartParameters'
+import {
+  filterSubplotsByParameterIds,
+  getParameterIds,
+  parseParameterIds,
+} from '@/lib/display/parameters'
 
 interface Props {
   config?: DisplayConfig
@@ -207,6 +213,8 @@ const props = withDefaults(defineProps<Props>(), {
 const { selectedDate } = useSelectedDate(() => props.currentTime)
 const store = useSystemTimeStore()
 const userSettings = useUserSettingsStore()
+const route = useRoute()
+const chartParameters = useChartParametersStore()
 const isEditing = ref(false)
 const confirmationDialog = ref(false)
 const { xs } = useDisplay()
@@ -335,19 +343,40 @@ async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
   refreshTableTimeSeries()
 }
 
+const displayKey = Symbol('chartParameters')
+watchEffect(() => {
+  chartParameters.setParameterIds(
+    displayKey,
+    getParameterIds([
+      ...props.config.subplots,
+      ...props.elevationChartConfig.subplots,
+    ]),
+  )
+})
+
+const selectedParameterIds = computed(() =>
+  parseParameterIds(route.query.parameterIds),
+)
+
+const filteredSubplots = computed(() =>
+  filterSubplotsByParameterIds(
+    props.config.subplots,
+    selectedParameterIds.value,
+  ),
+)
+
 const subplots = computed(() =>
-  props.config.subplots.map((subplot) =>
+  filteredSubplots.value.map((subplot) =>
     getSubplotWithDomain(subplot, fullDomain.value),
   ),
 )
 
-const elevationChartSubplots = computed(() => {
-  if (props.elevationChartConfig) {
-    return props.elevationChartConfig.subplots
-  } else {
-    return []
-  }
-})
+const elevationChartSubplots = computed(() =>
+  filterSubplotsByParameterIds(
+    props.elevationChartConfig.subplots,
+    selectedParameterIds.value,
+  ),
+)
 
 // Clear a maximized id once its subplot no longer exists in the (possibly new) list.
 watch(subplots, (newSubplots) => {
@@ -373,7 +402,7 @@ watch(elevationChartSubplots, (newSubplots) => {
 const tableConfig = ref<ChartConfig>({ id: '', title: '', series: [] })
 
 watch(
-  () => props.config.subplots,
+  subplots,
   (newSubplots) => {
     const series = newSubplots
       .flatMap((subplot) => subplot.series)
@@ -391,6 +420,7 @@ watch(
       series,
     }
   },
+  { immediate: true },
 )
 
 watch(isEditing, () => {
@@ -404,6 +434,7 @@ watch(isEditing, () => {
 })
 
 onUnmounted(() => {
+  chartParameters.removeParameterIds(displayKey)
   globalThis.onbeforeunload = null
 })
 

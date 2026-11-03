@@ -15,6 +15,8 @@ type SubplotItem = Pick<
   | 'visibleInPlot'
   | 'visibleInTable'
   | 'plotWeight'
+  | 'thresholdAxisScaling'
+  | 'parameterId'
 >
 
 export interface ChartSeries extends SubplotItem {
@@ -30,5 +32,4 @@ export interface ChartSeries extends SubplotItem {
   editable?: boolean
   locationId?: string
   thresholds?: ThresholdLine[]
-  thresholdAxisScaling?: TimeSeriesDisplaySubplotItem['thresholdAxisScaling']
 }
