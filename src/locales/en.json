@@ -28,6 +28,9 @@
       "noData": "No data points are available for the selected time series and time range."
     }
   },
+  "reports": {
+    "noReportAvailable": "No report available"
+  },
   "layout": {
     "about": "About",
     "switchTo": "Switch to"

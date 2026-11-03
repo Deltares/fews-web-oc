@@ -24,7 +24,10 @@
       />
       <span v-else class="mx-5">{{ selectedLocation?.name }}</span>
     </v-toolbar>
-    <ShadowFrame :htmlContent="reportHtml" />
+    <ShadowFrame v-if="reportHtml" :htmlContent="reportHtml" />
+    <span v-else-if="isReady" class="mx-auto mt-2">{{
+      t('reports.noReportAvailable')
+    }}</span>
     <DateTimeSlider
       v-if="dateTimeSliderEnabled && times?.length"
       v-model:selectedDate="selectedDateOfSlider"
@@ -88,7 +91,7 @@ const filter = computed(() => {
   }
 })
 
-const { reportHtml, capabilities } = useDynamicReport(
+const { reportHtml, capabilities, isReady } = useDynamicReport(
   baseUrl,
   () => props.topologyNode?.dynamicReportDisplay?.id,
   filter,
