@@ -80,11 +80,16 @@ export const useUserSettingsStore = defineStore(
   'userSettings',
   () => {
     const groups = ref<UserSettingsGroup[]>(defaultGroups)
-    const items = ref<UserSettingsItem[]>([...defaultUserSettings])
+    // Copies, so that runtime changes do not modify the built-in defaults.
+    const items = ref<UserSettingsItem[]>(
+      defaultUserSettings.map((item) => ({ ...item })),
+    )
     const convertDatum = ref(false)
     const useDisplayUnits = ref(true)
     const preferredLayerKind = ref<LayerKind | null>(null)
     const webResourcesOverrides = ref<UserSettingsOverride[]>([])
+    // Option lists updated at runtime (e.g. base maps), by setting id.
+    const runtimeOptions = new Map<string, UserSettingsWithIcon[]>()
 
     const route = useRoute()
 
@@ -155,7 +160,9 @@ export const useUserSettingsStore = defineStore(
     }
 
     function updateSettingItems(id: string, newItems: UserSettingsWithIcon[]) {
-      const current = get(id)
+      runtimeOptions.set(id, newItems)
+      // Not get(id): with a route query that returns a copy.
+      const current = items.value.find((item) => item.id === id)
       if (current?.type !== 'oneOfMultiple') return
 
       current.items = newItems
@@ -189,40 +196,34 @@ export const useUserSettingsStore = defineStore(
       }
     }
 
+    // The built-in defaults with the option lists that were updated at
+    // runtime, so these survive rebuilding the settings.
+    function defaultsWithRuntimeOptions(): UserSettingsItem[] {
+      return defaultUserSettings.map((item) => {
+        const options = runtimeOptions.get(item.id)
+        return item.type === 'oneOfMultiple' && options !== undefined
+          ? { ...item, items: options }
+          : item
+      })
+    }
+
     async function initializeWithWebResources(): Promise<void> {
       const overrides = await fetchWebResourcesDefaultUserSettings()
       webResourcesOverrides.value = overrides
 
-      baselineItems = deserializeUserSettings(
-        '[]',
-        defaultUserSettings,
-        overrides,
-      )
+      const defaults = defaultsWithRuntimeOptions()
+      baselineItems = deserializeUserSettings('[]', defaults, overrides)
       const rawData = globalThis.localStorage.getItem(STORAGE_KEY) ?? '{}'
-      items.value = deserializeUserSettings(
-        rawData,
-        defaultUserSettings,
-        overrides,
-      )
+      items.value = deserializeUserSettings(rawData, defaults, overrides)
       applySpecialActions()
     }
 
     function restoreDefaults(): void {
       const restored = deserializeUserSettings(
         '[]',
-        defaultUserSettings,
+        defaultsWithRuntimeOptions(),
         webResourcesOverrides.value,
       )
-      // Keep option lists that were updated at runtime (e.g. base maps).
-      for (const item of restored) {
-        const current = items.value.find((i) => i.id === item.id)
-        if (
-          item.type === 'oneOfMultiple' &&
-          current?.type === 'oneOfMultiple'
-        ) {
-          item.items = current.items
-        }
-      }
       // Also drop stored choices for settings that are currently disabled.
       globalThis.localStorage.removeItem(STORAGE_KEY)
       items.value = restored
