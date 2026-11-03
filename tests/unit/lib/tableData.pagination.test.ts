@@ -18,7 +18,7 @@ import {
 } from '@/lib/table/tableData'
 
 function createSeries(id: string, data: Series['data'] = []): Series {
-  const series = new Series(new SeriesUrlRequest('benchmark', id))
+  const series = new Series(new SeriesUrlRequest('test', id))
   series.data = data
   return series
 }
@@ -140,87 +140,56 @@ describe('table-data page helpers', () => {
       ),
     ).toBeUndefined()
   })
-})
 
-describe('table-data repeated page-load benchmark', () => {
-  it('measures full rebuilds through 50,000 rows', () => {
-    const pageSize = 1_000
-    const checkpoints = new Set([10_000, 25_000, 50_000])
-    const seriesCount = 5
-    const chartSeries = Array.from({ length: seriesCount }, (_, index) => {
-      const id = `series-${index}`
-      return {
-        id,
-        dataResources: [id],
-      }
-    }) as ChartSeries[]
-    const seriesIds = chartSeries.map(({ id }) => id)
+  it('loads pages incrementally into the same rows as a full rebuild', () => {
+    const pageSize = 100
+    const rowCount = 2_000
     const allEvents = Object.fromEntries(
-      seriesIds.map((id, column) => [
+      chartSeries.map(({ dataResources: [id] }, column) => [
         id,
-        Array.from({ length: 50_000 }, (_, row) => ({
-          x: new Date(Date.UTC(2025, 0, 1) + row * 60_000),
-          y: ((row * 17 + column * 31) % 1_000) / 10,
+        Array.from({ length: rowCount }, (_, row) => ({
+          x: date(row),
+          y: row + column,
           flag: '9',
           comment: `Row ${row + 1}, series ${column + 1}`,
         })),
       ]),
     )
     const loadedSeries = Object.fromEntries(
-      seriesIds.map((id) => [id, createSeries(id)]),
+      Object.keys(allEvents).map((id) => [id, createSeries(id)]),
     ) as Record<string, Series>
-    let seriesDataLengths = new Map<string, number>()
-    const cumulativeTimings = new Map<number, number>()
-    const incrementalTimings = new Map<number, number>()
-    let fullRebuildTotalMs = 0
-    let incrementalTotalMs = 0
-    let finalRows: ReturnType<typeof createTableData> = []
-    let incrementalRows: TableData[] = []
-
-    for (let rowCount = pageSize; rowCount <= 50_000; rowCount += pageSize) {
-      for (const id of seriesIds) {
-        loadedSeries[id].data = allEvents[id].slice(0, rowCount)
-      }
-
-      const startedAt = performance.now()
-      finalRows = createTableData(chartSeries, loadedSeries, seriesIds)
-      const elapsedMs = performance.now() - startedAt
-      fullRebuildTotalMs += elapsedMs
-
-      const incrementalStartedAt = performance.now()
-      if (rowCount === pageSize) {
-        incrementalRows = createTableData(chartSeries, loadedSeries, seriesIds)
-        seriesDataLengths = getTableSeriesDataLengths(
-          chartSeries,
-          loadedSeries,
-          seriesIds,
-        )
-      } else {
-        const page = createTableDataPage(
-          chartSeries,
-          loadedSeries,
-          seriesIds,
-          seriesDataLengths,
-          'after',
-        )
-        incrementalRows = mergeTableData(incrementalRows, page!.rows)
-        seriesDataLengths = page!.seriesDataLengths
-      }
-      const incrementalElapsedMs = performance.now() - incrementalStartedAt
-      incrementalTotalMs += incrementalElapsedMs
-
-      if (checkpoints.has(rowCount)) {
-        cumulativeTimings.set(rowCount, elapsedMs)
-        incrementalTimings.set(rowCount, incrementalElapsedMs)
-        console.info(
-          `[table-data benchmark] ${rowCount} rows: full rebuild ${elapsedMs.toFixed(1)}ms (cumulative ${fullRebuildTotalMs.toFixed(1)}ms), incremental ${incrementalElapsedMs.toFixed(1)}ms (cumulative ${incrementalTotalMs.toFixed(1)}ms)`,
-        )
+    const loadRows = (count: number) => {
+      for (const [id, events] of Object.entries(allEvents)) {
+        loadedSeries[id].data = events.slice(0, count)
       }
     }
 
-    expect(finalRows).toHaveLength(50_000)
-    expect(incrementalRows).toEqual(finalRows)
-    expect(cumulativeTimings.size).toBe(checkpoints.size)
-    expect(incrementalTimings.size).toBe(checkpoints.size)
+    loadRows(pageSize)
+    let rows: TableData[] = createTableData(
+      chartSeries,
+      loadedSeries,
+      seriesIds,
+    )
+    let lengths = getTableSeriesDataLengths(
+      chartSeries,
+      loadedSeries,
+      seriesIds,
+    )
+    for (let count = 2 * pageSize; count <= rowCount; count += pageSize) {
+      loadRows(count)
+      const page = createTableDataPage(
+        chartSeries,
+        loadedSeries,
+        seriesIds,
+        lengths,
+        'after',
+      )
+      expect(page).toBeDefined()
+      rows = mergeTableData(rows, page!.rows)
+      lengths = page!.seriesDataLengths
+    }
+
+    expect(rows).toHaveLength(rowCount)
+    expect(rows).toEqual(createTableData(chartSeries, loadedSeries, seriesIds))
   })
 })
