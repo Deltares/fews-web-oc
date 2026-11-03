@@ -18,6 +18,7 @@
     "preview:e2e": "vite preview --port 5172 --strictPort --mode e2e",
     "test:unit": "vitest run",
     "test:dev": "vitest",
+    "test:bench": "vitest bench --run",
     "test:component": "playwright test -c playwright-ct.config.ts",
     "test:e2e": "playwright test -c playwright-e2e.config.ts",
     "playwright:install": "playwright install --with-deps chromium firefox webkit",
