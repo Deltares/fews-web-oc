@@ -97,6 +97,78 @@ export const ThresholdSwitching = defineComponent({
   },
 })
 
+export const EnsembleMembers = defineComponent({
+  props: {
+    dataReady: { type: Boolean, default: false },
+    memberCount: { type: Number, default: 3 },
+    offset: { type: Number, default: 0 },
+  },
+  setup(props) {
+    const start = new Date('2026-01-01T00:00:00Z')
+    const end = new Date('2026-01-02T00:00:00Z')
+    const config: ChartConfig = {
+      id: 'ensemble',
+      title: 'Ensemble',
+      xAxis: [{ domain: [start, end] }],
+      yAxis: [{ defaultDomain: [0, 4] }],
+      series: [
+        {
+          id: 'forecast',
+          dataResources: ['forecast'],
+          name: 'GEFS forecast',
+          type: 'line',
+          options: {
+            x: { key: 'x', axisIndex: 0 },
+            y: { key: 'y', axisIndex: 0 },
+          },
+          unit: 'm',
+          style: { stroke: 'blue' },
+          visibleInPlot: true,
+          visibleInLegend: true,
+          visibleInTable: true,
+        },
+      ],
+    }
+    const series = computed<Record<string, Series>>(() => {
+      if (!props.dataReady) return {}
+      return Object.fromEntries(
+        Array.from({ length: props.memberCount }, (_, index) => {
+          const member = new Series(
+            new SeriesUrlRequest('story', `/forecast/${index}`),
+          )
+          member.ensemble = {
+            requestKey: 'forecast',
+            memberId: String(index),
+          }
+          member.data = [
+            {
+              x: start,
+              y: index === 2 ? null : index + 1 + props.offset,
+              flag: '0',
+            },
+            {
+              x: end,
+              y: index === 2 ? null : index + 2 + props.offset,
+              flag: '0',
+            },
+          ]
+          return [`forecast[GEFS:${index}]`, member]
+        }),
+      )
+    })
+    const settings = getDefaultSettings().charts.timeSeriesChart
+    settings.legend.placement = 'above chart'
+    return () =>
+      h('div', { style: { height: '500px' } }, [
+        h(TimeSeriesChart, {
+          config,
+          series: series.value,
+          settings,
+        }),
+      ])
+  },
+})
+
 function createMockChart(
   index: number,
   domain: [Date, Date],

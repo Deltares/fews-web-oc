@@ -1,5 +1,45 @@
 import { test, expect } from '@playwright/test'
 
+test('draws ensemble members independently when the last member has no values', async ({
+  mount,
+}) => {
+  const component = await mount('charts/TimeSeriesChart/EnsembleMembers')
+  await component.update({ dataReady: true })
+  const memberPaths = component.locator(
+    '.chart-container svg .charts [data-chart-id^="forecast:"] path',
+  )
+  await expect(memberPaths).toHaveCount(3)
+  await expect(memberPaths.nth(0)).toHaveAttribute('d', /^M.+L/)
+  await expect(memberPaths.nth(1)).toHaveAttribute('d', /^M.+L/)
+  await expect(memberPaths.nth(2)).not.toHaveAttribute('d', /^M.+L/)
+  await expect(
+    component.getByText('GEFS forecast', { exact: true }),
+  ).toHaveCount(1)
+
+  const firstCurve = await memberPaths.first().elementHandle()
+  const previousPath = await memberPaths.first().getAttribute('d')
+  await component.update({ dataReady: true, offset: 0.5 })
+  await expect(memberPaths.first()).not.toHaveAttribute('d', previousPath!)
+  expect(await firstCurve!.evaluate((element) => element.isConnected)).toBe(
+    true,
+  )
+
+  const legend = component.getByRole('button', {
+    name: 'GEFS forecast',
+    exact: true,
+  })
+  await legend.click()
+  for (const curve of await memberPaths.all()) {
+    await expect(curve).toHaveCSS('visibility', 'hidden')
+  }
+  await legend.click()
+  await expect(memberPaths.first()).toHaveCSS('visibility', 'visible')
+
+  await component.update({ dataReady: true, memberCount: 1 })
+  await expect(memberPaths).toHaveCount(1)
+  await expect(memberPaths.first()).toHaveAttribute('d', /^M.+L/)
+})
+
 test('renders delayed series data after switching plot configurations', async ({
   mount,
 }) => {

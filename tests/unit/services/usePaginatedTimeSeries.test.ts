@@ -14,6 +14,8 @@ import {
   usePaginatedTimeSeries,
   useTimeSeries,
 } from '../../../src/services/useTimeSeries'
+import { useEnsembleChartConfig } from '@/services/useEnsembleChartConfig'
+import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 
 describe.each([
   { name: 'useTimeSeries', useSeries: useTimeSeries },
@@ -119,6 +121,91 @@ describe.each([
     }
     scope.stop()
   })
+
+  it.each(['ensembleMemberIndex', 'ensembleMemberId'] as const)(
+    'preserves every ensemble member identified by %s, including trailing missing members',
+    (memberField) => {
+      const responses = ref({
+        forecast: {
+          timeSeries: Array.from({ length: 30 }, (_, index) => ({
+            header: {
+              ensembleId: 'GEFS',
+              [memberField]: String(index + 1),
+              missVal: '-999',
+              startDate: { date: '2026-11-02', time: '12:00:00' },
+              endDate: { date: '2026-11-02', time: '12:00:00' },
+            },
+            events: [
+              {
+                date: '2026-11-02',
+                time: '12:00:00',
+                value: index < 16 ? String(index + 1) : '-999',
+                flag: '0',
+              },
+            ],
+          })),
+        },
+      })
+      mocks.usePiTimeSeries.mockReturnValue({
+        entries: ref({}),
+        responses,
+        loading: ref(false),
+        refreshing: ref(false),
+        loadingKeys: ref([]),
+        requestRefresh: vi.fn(),
+        pauseRefresh: vi.fn(),
+        resumeRefresh: vi.fn(),
+      })
+      const scope = effectScope()
+      const result = scope.run(() =>
+        useSeries([{ key: 'forecast', request: '/timeseries?test=true' }], {}),
+      )!
+      const config: ChartConfig = {
+        id: 'plot',
+        title: 'Ensemble',
+        series: [
+          {
+            id: 'forecast',
+            dataResources: ['forecast'],
+            name: 'GEFS forecast',
+            type: 'line',
+            unit: 'm',
+            options: {},
+            style: { stroke: 'blue' },
+            visibleInLegend: true,
+            visibleInPlot: true,
+            visibleInTable: true,
+          },
+        ],
+      }
+      const expanded = scope.run(() =>
+        useEnsembleChartConfig(config, result.series),
+      )!
+
+      expect(Object.keys(result.series.value)).toHaveLength(30)
+      expect(expanded.value.series).toHaveLength(30)
+      expect(new Set(expanded.value.series.map((item) => item.id)).size).toBe(
+        30,
+      )
+      const values = expanded.value.series.map(
+        (item) => result.series.value[item.dataResources[0]].data?.[0].y,
+      )
+      expect(values.slice(0, 16)).toEqual(
+        Array.from({ length: 16 }, (_, index) => index + 1),
+      )
+      expect(values.slice(16)).toEqual(Array(14).fill(null))
+      expect(new Set(expanded.value.series.map((item) => item.name))).toEqual(
+        new Set(['GEFS forecast']),
+      )
+      expect(config.series).toHaveLength(1)
+
+      const previousConfig = expanded.value
+      responses.value.forecast.timeSeries[0].events[0].value = '42'
+      expect(expanded.value).toBe(previousConfig)
+      expect(result.series.value['forecast[GEFS:1]'].data?.[0].y).toBe(42)
+      scope.stop()
+    },
+  )
 })
 
 describe('usePaginatedTimeSeries', () => {

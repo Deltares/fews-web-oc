@@ -100,14 +100,26 @@ function useTimeSeriesData(
 
       const isGridTimeSeries = request.request.includes('/timeseries/grid?')
       response.timeSeries.forEach((timeSeries, index) => {
-        const resourceId = isGridTimeSeries ? `${key}[${index}]` : key
+        const header = timeSeries.header
+        const memberId = header?.ensembleMemberId ?? header?.ensembleMemberIndex
+        const isEnsembleMember = !isGridTimeSeries && memberId !== undefined
+        const resourceId = isGridTimeSeries
+          ? `${key}[${index}]`
+          : isEnsembleMember
+            ? `${key}[${encodeURIComponent(header?.ensembleId ?? '')}:${encodeURIComponent(memberId)}]`
+            : key
         const convertedSeries = convertTimeSeriesResultToSeries(
           timeSeries,
           response,
           resourceId,
           currentSelectedTime,
         )
-        if (convertedSeries !== undefined) result[resourceId] = convertedSeries
+        if (convertedSeries !== undefined) {
+          if (isEnsembleMember) {
+            convertedSeries.ensemble = { requestKey: key, memberId }
+          }
+          result[resourceId] = convertedSeries
+        }
       })
     })
 
