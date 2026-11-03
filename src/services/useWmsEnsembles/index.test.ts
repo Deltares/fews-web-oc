@@ -28,6 +28,20 @@ test('selects the first member of the first ensemble initially', () => {
   })
 })
 
+test('removes duplicate member IDs', () => {
+  const { ensembles } = useWmsEnsembles(
+    layerWithEnsembles([
+      {
+        ensembleId: 'Gefs',
+        ensembleMemberIds: ['2', '2', '1', '1', '10', '10'],
+      },
+    ]),
+  )
+  expect(ensembles.value).toEqual([
+    { ensembleId: 'Gefs', ensembleMemberIds: ['1', '2', '10'] },
+  ])
+})
+
 test('restores the selected member after switching to and from a deterministic layer', async () => {
   const layer = ref<Layer | undefined>(ensembleLayer)
   const { selection, canSelectEnsemble } = useWmsEnsembles(layer)
