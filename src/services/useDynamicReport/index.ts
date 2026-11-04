@@ -46,8 +46,14 @@ export function useDynamicReportHtml(
   const isReady = ref(false)
   const isLoading = ref(false)
   const error = shallowRef<string>()
+  let latestRequestId = 0
 
   async function loadReport() {
+    const requestId = ++latestRequestId
+    isLoading.value = false
+    isReady.value = false
+    error.value = undefined
+
     const _displayId = toValue(displayId)
     const _filter = toValue(filter)
     const _capabilities = toValue(capabilities)
@@ -61,7 +67,6 @@ export function useDynamicReportHtml(
       return
     }
     isLoading.value = true
-    isReady.value = false
     try {
       const provider = new PiWebserviceProvider(baseUrl, {
         transformRequestFn: createTransformRequestFn(),
@@ -72,13 +77,17 @@ export function useDynamicReportHtml(
         useLastValue: true,
         ..._filter,
       })
+      if (requestId !== latestRequestId) return
       reportHtml.value = response
     } catch {
+      if (requestId !== latestRequestId) return
       error.value = 'Error loading report'
       reportHtml.value = ''
     } finally {
-      isLoading.value = false
-      isReady.value = true
+      if (requestId === latestRequestId) {
+        isLoading.value = false
+        isReady.value = true
+      }
     }
   }
   watchEffect(loadReport)

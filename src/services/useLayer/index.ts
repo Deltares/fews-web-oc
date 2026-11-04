@@ -21,6 +21,7 @@ import {
   SourceSpecification,
 } from 'maplibre-gl'
 import { useLayerOrder } from '@/services/useLayerOrder'
+import { isStyleReady } from '@/lib/map'
 
 export function useLayer(
   layerId: string,
@@ -91,11 +92,17 @@ export function useLayer(
     })
   })
 
-  watch(filter, (newFilter) => {
-    if (!map) return
+  function applyFilter(): void {
+    if (!map || !isStyleReady(map)) return
+    if (!map.getLayer(layerId)) return
 
-    map.setFilter(layerId, newFilter)
-  })
+    map.setFilter(layerId, filter.value)
+  }
+
+  watch(filter, applyFilter)
+  // A rebuilt style copies its layers from the previous style, so a filter
+  // change that was skipped during the rebuild has to be applied afterwards.
+  map?.on('style.load', applyFilter)
 
   function addLayer(): void {
     if (!map) return
@@ -115,6 +122,7 @@ export function useLayer(
   }
 
   onScopeDispose(() => {
+    map?.off('style.load', applyFilter)
     removeLayer()
   })
 }

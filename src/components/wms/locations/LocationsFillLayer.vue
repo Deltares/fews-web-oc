@@ -2,8 +2,10 @@
 
 <script setup lang="ts">
 import type { FillLayerSpecification, Source } from 'maplibre-gl'
-import { computed } from 'vue'
+import { computed, onScopeDispose, watch } from 'vue'
+import { isStyleReady } from '@/lib/map'
 import { useLayer } from '@/services/useLayer'
+import { useMap } from '@/services/useMap'
 
 interface Props {
   layerId: string
@@ -15,21 +17,22 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { map } = useMap()
 
 const filter: FillLayerSpecification['filter'] = ['==', '$type', 'Polygon']
 
-const paint = computed(() => {
-  const selectedIds = props.selectedLocationIds?.length
-    ? props.selectedLocationIds
-    : ['invalid-no-layer-selected']
-  const hoverStateId = props.hoveredStateId ?? 'invalid-no-hover'
-  const hoverId = selectedIds.includes(hoverStateId)
-    ? 'invalid-already-selected'
-    : hoverStateId
-  return props.isDark
-    ? getDarkPaint(selectedIds, hoverId)
-    : getLightPaint(selectedIds, hoverId)
-})
+const paint = computed<FillLayerSpecification['paint']>(() => ({
+  'fill-color': props.isDark ? 'darkgrey' : '#dfdfdf',
+  'fill-opacity': [
+    'case',
+    ['boolean', ['feature-state', 'selected'], false],
+    props.isDark ? 0.35 : 0.8,
+    ['boolean', ['feature-state', 'hover'], false],
+    props.isDark ? 0.3 : 0.6,
+    props.isDark ? 0.2 : 0.3,
+  ],
+  'fill-outline-color': props.isDark ? 'white' : 'black',
+}))
 
 useLayer(
   props.layerId,
@@ -43,41 +46,72 @@ useLayer(
   () => props.source,
 )
 
-function getDarkPaint(
-  selectedIds: string[],
-  hoverId: string,
-): FillLayerSpecification['paint'] {
-  return {
-    'fill-color': 'darkgrey',
-    'fill-opacity': [
-      'match',
-      ['get', 'locationId'],
-      selectedIds,
-      0.35,
-      hoverId,
-      0.3,
-      0.2,
-    ],
-    'fill-outline-color': 'white',
+const appliedSelectedIds = new Set<string>()
+let appliedHoveredId: string | undefined
+
+function syncFeatureState() {
+  if (!map || !props.source || !isStyleReady(map)) return
+
+  const selectedIds = new Set(props.selectedLocationIds)
+  for (const id of appliedSelectedIds) {
+    if (!selectedIds.has(id)) {
+      map.removeFeatureState({ source: props.sourceId, id }, 'selected')
+      appliedSelectedIds.delete(id)
+    }
+  }
+  for (const id of selectedIds) {
+    if (!appliedSelectedIds.has(id)) {
+      map.setFeatureState({ source: props.sourceId, id }, { selected: true })
+      appliedSelectedIds.add(id)
+    }
+  }
+
+  if (props.hoveredStateId !== appliedHoveredId) {
+    if (appliedHoveredId !== undefined) {
+      map.removeFeatureState(
+        { source: props.sourceId, id: appliedHoveredId },
+        'hover',
+      )
+    }
+    if (props.hoveredStateId !== undefined) {
+      map.setFeatureState(
+        { source: props.sourceId, id: props.hoveredStateId },
+        { hover: true },
+      )
+    }
+    appliedHoveredId = props.hoveredStateId
   }
 }
 
-function getLightPaint(
-  selectedIds: string[],
-  hoverId: string,
-): FillLayerSpecification['paint'] {
-  return {
-    'fill-color': '#dfdfdf',
-    'fill-opacity': [
-      'match',
-      ['get', 'locationId'],
-      selectedIds,
-      0.8,
-      hoverId,
-      0.6,
-      0.3,
-    ],
-    'fill-outline-color': 'black',
-  }
+// Feature state belongs to the source instance, so it has to be applied again
+// when the source is recreated or the style is rebuilt. A rebuild keeps the
+// source ref unchanged, which is why it needs the style.load event.
+function restoreFeatureState() {
+  appliedSelectedIds.clear()
+  appliedHoveredId = undefined
+  syncFeatureState()
 }
+
+watch(
+  [() => props.selectedLocationIds?.slice(), () => props.hoveredStateId],
+  syncFeatureState,
+  { immediate: true },
+)
+watch(() => props.source, restoreFeatureState)
+map?.on('style.load', restoreFeatureState)
+
+onScopeDispose(() => {
+  map?.off('style.load', restoreFeatureState)
+  if (!map || !isStyleReady(map) || !map.getSource(props.sourceId)) return
+
+  for (const id of appliedSelectedIds) {
+    map.removeFeatureState({ source: props.sourceId, id }, 'selected')
+  }
+  if (appliedHoveredId !== undefined) {
+    map.removeFeatureState(
+      { source: props.sourceId, id: appliedHoveredId },
+      'hover',
+    )
+  }
+})
 </script>
