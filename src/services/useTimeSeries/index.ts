@@ -40,6 +40,28 @@ function timeZoneOffsetString(offset: number): string {
     .padStart(2, '0')}`
 }
 
+interface TimeSeriesResource {
+  id: string
+  ensemble?: Series['ensemble']
+}
+
+function getTimeSeriesResource(
+  key: string,
+  index: number,
+  isGridTimeSeries: boolean,
+  header: Header | undefined,
+): TimeSeriesResource {
+  if (isGridTimeSeries) return { id: `${key}[${index}]` }
+  const memberId = header?.ensembleMemberId ?? header?.ensembleMemberIndex
+  if (memberId !== undefined) {
+    return {
+      id: `${key}[${encodeURIComponent(header?.ensembleId ?? '')}:${encodeURIComponent(memberId)}]`,
+      ensemble: { requestKey: key, memberId },
+    }
+  }
+  return { id: key }
+}
+
 function useTimeSeriesData(
   requests: MaybeRefOrGetter<ActionRequest[]>,
   options: MaybeRefOrGetter<PiTimeSeriesQueryOptions>,
@@ -100,26 +122,20 @@ function useTimeSeriesData(
 
       const isGridTimeSeries = request.request.includes('/timeseries/grid?')
       response.timeSeries.forEach((timeSeries, index) => {
-        const header = timeSeries.header
-        const memberId = header?.ensembleMemberId ?? header?.ensembleMemberIndex
-        const isEnsembleMember = !isGridTimeSeries && memberId !== undefined
-        const resourceId = isGridTimeSeries
-          ? `${key}[${index}]`
-          : isEnsembleMember
-            ? `${key}[${encodeURIComponent(header?.ensembleId ?? '')}:${encodeURIComponent(memberId)}]`
-            : key
-        const convertedSeries = convertTimeSeriesResultToSeries(
+        const resource = getTimeSeriesResource(
+          key,
+          index,
+          isGridTimeSeries,
+          timeSeries.header,
+        )
+        const series = convertTimeSeriesResultToSeries(
           timeSeries,
           response,
-          resourceId,
+          resource,
           currentSelectedTime,
         )
-        if (convertedSeries !== undefined) {
-          if (isEnsembleMember) {
-            convertedSeries.ensemble = { requestKey: key, memberId }
-          }
-          result[resourceId] = convertedSeries
-        }
+        if (series === undefined) return
+        result[resource.id] = series
       })
     })
 
@@ -444,18 +460,19 @@ export async function postTimeSeriesEdit(
 function convertTimeSeriesResultToSeries(
   timeSeries: TimeSeriesResult,
   response: TimeSeriesResponse,
-  resourceId: string,
+  resource: TimeSeriesResource,
   selectedTime?: Date,
 ): Series | undefined {
   const header = timeSeries.header
   if (header === undefined) return undefined
 
-  const resource = new SeriesUrlRequest(
+  const seriesRequest = new SeriesUrlRequest(
     'fews-pi',
-    `dummyUrl-for-resource-${resourceId}`,
+    `dummyUrl-for-resource-${resource.id}`,
   )
-  const series = new Series(resource)
+  const series = new Series(seriesRequest)
 
+  series.ensemble = resource.ensemble
   series.missingValue = header.missVal
   const timeZone =
     response.timeZone === undefined
