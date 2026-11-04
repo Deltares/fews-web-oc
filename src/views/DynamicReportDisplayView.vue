@@ -25,6 +25,9 @@
       <span v-else class="mx-5">{{ selectedLocation?.name }}</span>
     </v-toolbar>
     <ShadowFrame v-if="reportHtml" :htmlContent="reportHtml" />
+    <span v-else-if="error" class="mx-auto mt-2">{{
+      t('reports.loadFailed')
+    }}</span>
     <span v-else-if="isReady" class="mx-auto mt-2">{{
       t('reports.noReportAvailable')
     }}</span>
@@ -49,6 +52,7 @@
 
 <script setup lang="ts">
 import {
+  type DynamicReportDisplayCapabilitiesResponse,
   type TopologyNode,
   isDimensionWithPeriod,
 } from '@deltares/fews-pi-requests'
@@ -68,6 +72,10 @@ import { toDateArray } from '@/lib/date'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import { useDateRegistry } from '@deltares/fews-web-oc-composables'
 import { useI18n } from 'vue-i18n'
+type SelectableLocation = NonNullable<
+  DynamicReportDisplayCapabilitiesResponse['dynamicReportDisplayCapabilities']['selectableLocations']
+>[number]
+
 interface Props {
   topologyNode?: TopologyNode
   settings?: ComponentSettings
@@ -79,7 +87,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { t } = useI18n()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const selectedLocation = ref<(typeof locations.value)[number]>()
+const selectedLocation = ref<SelectableLocation>()
 const selectedDateOfSlider = ref<Date | undefined>(undefined)
 const { selectedDate, dateTimeSliderEnabled } =
   useSelectedDate(selectedDateOfSlider)
@@ -91,7 +99,7 @@ const filter = computed(() => {
   }
 })
 
-const { reportHtml, capabilities, isReady } = useDynamicReport(
+const { reportHtml, capabilities, isReady, error } = useDynamicReport(
   baseUrl,
   () => props.topologyNode?.dynamicReportDisplay?.id,
   filter,

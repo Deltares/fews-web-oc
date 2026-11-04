@@ -29,6 +29,7 @@
     }
   },
   "reports": {
+    "loadFailed": "Failed to load report",
     "noReportAvailable": "No report available"
   },
   "layout": {
