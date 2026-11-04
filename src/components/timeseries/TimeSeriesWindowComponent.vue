@@ -19,7 +19,7 @@
             variant="text"
             min-width="48"
             class="pa-0"
-            @click="displayType = item.value"
+            @click="onDisplayTypeClick(item.value)"
           >
             <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>
           </v-btn>
@@ -62,6 +62,7 @@
       :current-time="currentTime"
       v-model:displayType="displayType"
       :information-content="informationContent"
+      :dynamic-report="dynamicReport"
       :settings="settings"
     >
     </TimeSeriesComponent>
@@ -83,6 +84,7 @@ import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFil
 import { DisplayConfig, DisplayType } from '@/lib/display/DisplayConfig'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import type { DynamicReportPanelConfig } from '@/services/useDynamicReport'
 import type {
   FilterActionsFilter,
   TimeSeriesGridActionsFilter,
@@ -95,6 +97,7 @@ interface Props {
   elevationChartDisplayconfig?: DisplayConfig | null
   currentTime?: Date
   informationContent?: string | null
+  dynamicReport?: DynamicReportPanelConfig | null
   filter?: FilterActionsFilter | TimeSeriesGridActionsFilter
   settings: ChartsSettings
 }
@@ -151,6 +154,8 @@ function toDisplayType(
       return DisplayType.TimeSeriesTable
     case 'verticalProfileChart':
       return DisplayType.ElevationChart
+    case 'dynamicReportDisplay':
+      return DisplayType.DynamicReport
     case 'verticalProfileTable':
       throw new Error('Vertical profile table is not supported')
     default:
@@ -161,13 +166,23 @@ function toDisplayType(
 const displayType = ref<DisplayType>(
   toDisplayType(props.settings.general.startPanel),
 )
+// Whether the user explicitly selected a display type, in which case the
+// start panel should no longer be selected automatically once it becomes
+// available (e.g. after asynchronously loading its content).
+const userSelectedDisplayType = ref(false)
 watch(
   () => props.settings.general.startPanel,
   (newValue) => {
     displayType.value = toDisplayType(newValue)
+    userSelectedDisplayType.value = false
   },
   { immediate: true },
 )
+
+function onDisplayTypeClick(value: DisplayType) {
+  displayType.value = value
+  userSelectedDisplayType.value = true
+}
 
 const displayTypeItems = ref<DisplayTypeItem[]>([])
 
@@ -184,6 +199,11 @@ watchEffect(() => {
     props.settings.verticalProfileChart.enabled && elevationChartsDefined
   const tableEnabled = props.settings.timeSeriesTable.enabled
   const metaDataEnabled = props.settings.metaDataPanel.enabled && tooltipDefined
+
+  const dynamicReportEnabled =
+    props.settings.dynamicReportDisplay.enabled &&
+    props.dynamicReport !== undefined
+  const noDynamicReport = props.dynamicReport === null
   const enabledItems = [
     {
       icon: 'mdi-chart-line',
@@ -212,11 +232,24 @@ watchEffect(() => {
       disabled: noTooltip,
       hidden: !metaDataEnabled,
     },
+    {
+      icon: 'mdi-table-clock',
+      label: 'Report',
+      value: DisplayType.DynamicReport,
+      disabled: noDynamicReport,
+      hidden: !dynamicReportEnabled,
+    },
   ].filter((item) => !item.hidden)
   const activeItems = enabledItems
     .filter((item) => !item.disabled)
     .map((dt) => dt.value)
-  if (!activeItems.includes(displayType.value)) {
+  const startDisplayType = toDisplayType(props.settings.general.startPanel)
+  if (
+    !userSelectedDisplayType.value &&
+    activeItems.includes(startDisplayType)
+  ) {
+    displayType.value = startDisplayType
+  } else if (!activeItems.includes(displayType.value)) {
     displayType.value = activeItems[0] ?? DisplayType.Unknown
   }
   displayTypeItems.value = enabledItems

@@ -6,7 +6,7 @@ type DeepRequiredMapSettings = DeepRequired<PiMapSettings>
 export type MapSettings = Omit<DeepRequiredMapSettings, 'locationsLayer'> & {
   locationsLayer: Omit<
     DeepRequiredMapSettings['locationsLayer'],
-    'minZoom' | 'maxZoom'
+    'minZoom' | 'maxZoom' | 'legend'
   >
 }
 

@@ -15,7 +15,7 @@ export type DeepRequiredComponentSettings =
 
 export type ComponentSettings = Omit<
   DeepRequiredComponentSettings,
-  'map' | 'charts'
+  'map' | 'charts' | 'sidePanel'
 > & {
   map: MapSettings
   charts: ChartsSettings

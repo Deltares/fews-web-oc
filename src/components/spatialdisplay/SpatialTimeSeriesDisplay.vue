@@ -5,6 +5,8 @@
     :disable-thinning="isGridCoordinateMode"
     :elevation-chart-filter="elevationChartFilter"
     :locations-tooltip-filter="locationsTooltipFilter"
+    :dynamic-report-display-id="dynamicReportDisplayId"
+    :dynamic-report-location-ids="dynamicReportLocationIds"
     :current-time="currentTime"
     :settings="settings"
   >
@@ -203,5 +205,17 @@ const locationsTooltipFilter = computed<LocationsTooltipFilter | undefined>(
       filterId: filterIds.value[0],
     }
   },
+)
+
+// The dynamic report display is only shown for locations from the filter,
+// not for grid coordinates.
+const dynamicReportDisplayId = computed(() => {
+  if (!props.settings.charts.dynamicReportDisplay.enabled) return
+  if (!props.locationIds) return
+  return props.topologyNode?.dynamicReportDisplay?.id
+})
+
+const dynamicReportLocationIds = computed(
+  () => props.locationIds?.split(',') ?? [],
 )
 </script>
