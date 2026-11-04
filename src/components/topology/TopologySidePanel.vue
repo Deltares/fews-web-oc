@@ -49,7 +49,9 @@
     v-if="activePanel !== null"
     :title="getTitleForSidePanel(activePanel.type)"
     :can-go-back="canGoBack"
+    :pinned="isPinned"
     class="h-100"
+    @update:pinned="storedPinned = $event"
     @back="popPanel()"
     @close="closePanels()"
   >
@@ -71,19 +73,31 @@
 </template>
 
 <script setup lang="ts">
-import type { TopologyNode } from '@deltares/fews-pi-requests'
-import { type Component, computed, ref, watch } from 'vue'
+import type {
+  SidePanelSettings,
+  TopologyNode,
+} from '@deltares/fews-pi-requests'
+import { useStorage } from '@vueuse/core'
+import { type Component, computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import {
+  isNavigationFailure,
+  NavigationFailureType,
+  useRoute,
+  useRouter,
+} from 'vue-router'
 
 import type { NavigateRoute } from '@/lib/router'
 import {
   getEnabledSidePanels,
+  getSidePanelTypeForShowComponent,
   type SidePanel,
   type SidePanelType,
 } from '@/lib/sidepanel'
 
 import { useConfigStore } from '@/stores/config'
 import { useConfiguratorModeStore } from '@/stores/configuratorMode'
+import { useConfiguredSidePanel } from '@/services/useConfiguredSidePanel'
 import { useLogDisplay } from '@/services/useLogDisplay'
 import {
   useSidePanelStack,
@@ -97,6 +111,12 @@ interface Props {
   topologyNode?: TopologyNode
   locationIds?: string
   showActiveThresholdCrossingsForFilters?: boolean
+  /** Panel configured in the component settings of the topology node. */
+  showComponent?: SidePanelSettings['showComponent']
+  /** Whether the component settings of the topology node have been loaded. */
+  componentSettingsReady?: boolean
+  /** Panel requested by the route when the topology display was opened. */
+  initialSidePanel?: string
 }
 const props = defineProps<Props>()
 
@@ -106,6 +126,8 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
 const configStore = useConfigStore()
 const configuratorMode = useConfiguratorModeStore()
 
@@ -227,4 +249,65 @@ function toggleSidePanel(type: SidePanelType): void {
     openSidePanel(type)
   }
 }
+
+const storedPinned = useStorage(
+  'weboc-side-panel-pinned-v1.0.0',
+  false,
+  globalThis.localStorage,
+  { mergeDefaults: true, writeDefaults: false },
+)
+// The pin button is part of the side panel, so without an open panel the pin
+// could not be released.
+const isPinned = computed(
+  () => storedPinned.value && rootPanelType.value !== null,
+)
+watch(rootPanelType, (type) => {
+  if (type === null) storedPinned.value = false
+})
+
+const routeSidePanel = enabledSidePanels.value.find(
+  (sidePanel) => sidePanel.type === props.initialSidePanel,
+)
+if (routeSidePanel) openSidePanel(routeSidePanel.type)
+
+useConfiguredSidePanel({
+  nodeId: () => props.topologyNode?.id,
+  isReady: () => props.componentSettingsReady ?? false,
+  configuredPanelType: () =>
+    getSidePanelTypeForShowComponent(
+      props.showComponent,
+      enabledSidePanels.value.map((sidePanel) => sidePanel.type),
+    ),
+  isPinned,
+  rootPanelType,
+  open: openSidePanel,
+  close: closePanels,
+})
+
+// The route of the topology display, which contains the side panel.
+const topologyRouteRecord = route.matched[0]
+
+function syncSidePanelToRoute(): void {
+  const current = router.currentRoute.value
+  if (!current.matched.includes(topologyRouteRecord)) return
+
+  const type = rootPanelType.value
+  if ((current.query.sidePanel ?? null) === type) return
+
+  router.replace({
+    query: { ...current.query, sidePanel: type ?? undefined },
+    hash: current.hash,
+  })
+}
+
+watch(rootPanelType, syncSidePanelToRoute, { immediate: true })
+
+// The open panel is leading: navigating within the application does not always
+// preserve the query parameter, and an update of the route can be cancelled by
+// a concurrent navigation, so it is restored after each completed navigation.
+const removeAfterEach = router.afterEach((_to, _from, failure) => {
+  if (isNavigationFailure(failure, NavigationFailureType.cancelled)) return
+  syncSidePanelToRoute()
+})
+onUnmounted(removeAfterEach)
 </script>

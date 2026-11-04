@@ -410,7 +410,10 @@ onUnmounted(() => {
 })
 
 onBeforeRouteLeave(confirmUnsavedChanges)
-onBeforeRouteUpdate(confirmUnsavedChanges)
+onBeforeRouteUpdate((to, from) => {
+  // A query update does not leave the current display.
+  if (to.path !== from.path) return confirmUnsavedChanges()
+})
 async function confirmUnsavedChanges() {
   if (isEditing.value) {
     // For multiple simultaneous leaves set to false since confirm dialog is async

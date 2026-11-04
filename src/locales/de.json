@@ -261,11 +261,13 @@
     "exportStatus": "Export status",
     "logDisplay": "Logs",
     "nonCurrentData": "Nicht-Aktuelle Daten",
+    "pin": "Seitenleiste anheften",
     "runTask": "Aufgabe ausführen",
     "share": "Teilen",
     "sharedRequests": "Gemeinsam genutzte Anfragen",
     "taskOverview": "Aufgaben Übersicht",
-    "thresholds": "Übersicht Schwellenwerte"
+    "thresholds": "Übersicht Schwellenwerte",
+    "unpin": "Seitenleiste lösen"
   },
   "workflow": {
     "expectedRuntime": "Erwartete Laufzeit",
