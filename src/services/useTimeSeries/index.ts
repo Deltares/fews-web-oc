@@ -42,7 +42,7 @@ function timeZoneOffsetString(offset: number): string {
 
 interface TimeSeriesResource {
   id: string
-  ensemble?: Series['ensemble']
+  ensemble?: NonNullable<Series['ensemble']>
 }
 
 function getTimeSeriesResource(

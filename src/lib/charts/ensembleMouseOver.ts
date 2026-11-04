@@ -4,6 +4,7 @@ import {
   type Chart,
 } from '@deltares/fews-web-oc-charts'
 import type { ChartConfig } from './types/ChartConfig'
+import type { ChartSeries } from './types/ChartSeries'
 import type { Series } from '../timeseries/timeSeries'
 
 interface EnsembleHoverSummary {
@@ -12,6 +13,13 @@ interface EnsembleHoverSummary {
   minimum: number
   maximum: number
   unit: string
+}
+
+interface EnsembleHoverGroup {
+  summary: EnsembleHoverSummary
+  distance: number
+  color: string
+  chart: Chart
 }
 
 export class EnsembleMouseOver extends MouseOver {
@@ -56,15 +64,7 @@ export class EnsembleMouseOver extends MouseOver {
     )
     const resources = this.getSeries()
     const ensembleIds = new Set<string>()
-    const groups = new Map<
-      string,
-      {
-        summary: EnsembleHoverSummary
-        distance: number
-        color: string
-        chart: Chart
-      }
-    >()
+    const groups = new Map<string, EnsembleHoverGroup>()
 
     for (const chart of this.chartAxes.charts) {
       const item = items.get(chart.id)
@@ -72,68 +72,18 @@ export class EnsembleMouseOver extends MouseOver {
       const ensemble = resources[item.dataResources[0]]?.ensemble
       if (!ensemble) continue
       ensembleIds.add(chart.id)
-      if (!chart.visible) continue
-
-      if (!chart.axisIndex.x || !chart.axisIndex.y) continue
-      const xScale = this.chartAxes.xScales[chart.axisIndex.x.axisIndex]
-      const yScale = this.chartAxes.yScales[chart.axisIndex.y.axisIndex]
-      const hovered = chart.onPointerMove(
-        xScale.invert(mouse[0]),
-        'x',
-        xScale,
-        yScale,
-      )
-      const value = hovered?.point.y
-      if (typeof value !== 'number' || !Number.isFinite(value)) continue
-      const distance = Math.abs(yScale(value) - mouse[1])
+      const hovered = this.getHoveredMember(chart, item, ensemble, mouse)
+      if (!hovered) continue
       const key = JSON.stringify([
         ensemble.requestKey,
         item.name,
         chart.axisIndex,
       ])
-      const group = groups.get(key)
-      if (!group) {
-        groups.set(key, {
-          summary: {
-            member: ensemble.memberId,
-            value,
-            minimum: value,
-            maximum: value,
-            unit: item.unit,
-          },
-          distance,
-          chart,
-          color: String(hovered?.style.color ?? item.style.stroke ?? ''),
-        })
-      } else {
-        group.summary.minimum = Math.min(group.summary.minimum, value)
-        group.summary.maximum = Math.max(group.summary.maximum, value)
-        if (distance < group.distance) {
-          group.summary.member = ensemble.memberId
-          group.summary.value = value
-          group.distance = distance
-          group.chart = chart
-        }
-      }
+      this.updateGroup(groups, key, hovered)
     }
 
     const nearest = new Set(Array.from(groups.values(), ({ chart }) => chart))
-    for (const chart of this.chartAxes.charts) {
-      if (!ensembleIds.has(chart.id)) continue
-      if (!nearest.has(chart)) {
-        chart.onPointerOut()
-        continue
-      }
-      const path = chart.group.select<SVGPathElement>('path').node()
-      if (!path) continue
-      this.highlightedPaths.push({
-        path,
-        width: path.style.getPropertyValue('stroke-width'),
-        priority: path.style.getPropertyPriority('stroke-width'),
-      })
-      const width = parseFloat(getComputedStyle(path).strokeWidth)
-      path.style.setProperty('stroke-width', `${Math.max(2.5, width + 1.5)}px`)
-    }
+    this.highlightNearestMembers(ensembleIds, nearest)
 
     this.summaries = Array.from(groups.values(), ({ summary, color }) => {
       const span = document.createElement('span')
@@ -152,6 +102,85 @@ export class EnsembleMouseOver extends MouseOver {
       super.updateChartIndicators(mouse)
     } finally {
       this.setTrace(undefined)
+    }
+  }
+
+  private getHoveredMember(
+    chart: Chart,
+    item: ChartSeries,
+    ensemble: NonNullable<Series['ensemble']>,
+    mouse: [number, number],
+  ): EnsembleHoverGroup | undefined {
+    if (!chart.visible || !chart.axisIndex.x || !chart.axisIndex.y) return
+    const xScale = this.chartAxes.xScales[chart.axisIndex.x.axisIndex]
+    const yScale = this.chartAxes.yScales[chart.axisIndex.y.axisIndex]
+    const hovered = chart.onPointerMove(
+      xScale.invert(mouse[0]),
+      'x',
+      xScale,
+      yScale,
+    )
+    const value = hovered?.point.y
+    if (typeof value !== 'number' || !Number.isFinite(value)) return
+    return {
+      summary: {
+        member: ensemble.memberId,
+        value,
+        minimum: value,
+        maximum: value,
+        unit: item.unit,
+      },
+      distance: Math.abs(yScale(value) - mouse[1]),
+      chart,
+      color: String(hovered?.style.color ?? item.style.stroke ?? ''),
+    }
+  }
+
+  private updateGroup(
+    groups: Map<string, EnsembleHoverGroup>,
+    key: string,
+    hovered: EnsembleHoverGroup,
+  ) {
+    const group = groups.get(key)
+    if (!group) {
+      groups.set(key, hovered)
+      return
+    }
+    group.summary.minimum = Math.min(
+      group.summary.minimum,
+      hovered.summary.value,
+    )
+    group.summary.maximum = Math.max(
+      group.summary.maximum,
+      hovered.summary.value,
+    )
+    if (hovered.distance < group.distance) {
+      group.summary.member = hovered.summary.member
+      group.summary.value = hovered.summary.value
+      group.distance = hovered.distance
+      group.chart = hovered.chart
+    }
+  }
+
+  private highlightNearestMembers(
+    ensembleIds: Set<string>,
+    nearest: Set<Chart>,
+  ) {
+    for (const chart of this.chartAxes.charts) {
+      if (!ensembleIds.has(chart.id)) continue
+      if (!nearest.has(chart)) {
+        chart.onPointerOut()
+        continue
+      }
+      const path = chart.group.select<SVGPathElement>('path').node()
+      if (!path) continue
+      this.highlightedPaths.push({
+        path,
+        width: path.style.getPropertyValue('stroke-width'),
+        priority: path.style.getPropertyPriority('stroke-width'),
+      })
+      const width = Number.parseFloat(getComputedStyle(path).strokeWidth)
+      path.style.setProperty('stroke-width', `${Math.max(2.5, width + 1.5)}px`)
     }
   }
 
