@@ -1,5 +1,113 @@
 import { test, expect } from '@playwright/test'
 
+test('summarizes ensemble hover with the nearest member and min–max', async ({
+  mount,
+  page,
+}) => {
+  const component = await mount('charts/TimeSeriesChart/EnsembleMembers', {
+    dataReady: true,
+  })
+  const curves = component.locator(
+    '.chart-container svg .charts [data-chart-id^="forecast:"] path',
+  )
+  const summary = component.locator('.ensemble-hover-summary')
+  const originalWidths = await curves.evaluateAll((paths) =>
+    paths.map((path) => getComputedStyle(path).strokeWidth),
+  )
+  const dots = component.locator(
+    '.chart-container svg [data-chart-id^="forecast:"] circle',
+  )
+  let pointer = { x: 0, y: 0 }
+  for (const index of [0, 1]) {
+    const point = await curves
+      .nth(index)
+      .evaluate((element: SVGPathElement) => {
+        const point = element.getPointAtLength(0)
+        const screen = new DOMPoint(point.x + 1, point.y).matrixTransform(
+          element.getScreenCTM()!,
+        )
+        return { x: screen.x, y: screen.y }
+      })
+    pointer = point
+    await page.mouse.move(point.x, point.y)
+    await expect(summary).toHaveCount(1)
+    await expect(summary).not.toContainText('GEFS forecast')
+    await expect(summary).toHaveText(
+      `${index + 1} m · member ${index} · min–max 1–2`,
+    )
+    await expect(curves.nth(index)).toHaveCSS('stroke-width', '2.5px')
+    for (let member = 0; member < 3; member++) {
+      await expect(dots.nth(member)).toHaveCSS(
+        'opacity',
+        member === index ? '1' : '0',
+      )
+      if (member !== index) {
+        await expect(curves.nth(member)).toHaveCSS(
+          'stroke-width',
+          originalWidths[member],
+        )
+      }
+    }
+  }
+  await page.mouse.move(0, 0)
+  for (let member = 0; member < 3; member++) {
+    await expect(curves.nth(member)).toHaveCSS(
+      'stroke-width',
+      originalWidths[member],
+    )
+    await expect(dots.nth(member)).toHaveCSS('opacity', '0')
+  }
+  await component.update({ dataReady: true, offset: 0.5 })
+  await page.mouse.move(pointer.x + 1, pointer.y)
+  await expect(summary).toContainText('min–max 1.5–2.5')
+
+  await component
+    .getByRole('button', { name: 'GEFS forecast', exact: true })
+    .click()
+  await page.mouse.move(pointer.x + 2, pointer.y)
+  await expect(component.locator('.tooltip')).toHaveCSS('opacity', '0')
+})
+
+test('draws ensemble members independently when the last member has no values', async ({
+  mount,
+}) => {
+  const component = await mount('charts/TimeSeriesChart/EnsembleMembers')
+  await component.update({ dataReady: true })
+  const memberPaths = component.locator(
+    '.chart-container svg .charts [data-chart-id^="forecast:"] path',
+  )
+  await expect(memberPaths).toHaveCount(3)
+  await expect(memberPaths.nth(0)).toHaveAttribute('d', /^M.+L/)
+  await expect(memberPaths.nth(1)).toHaveAttribute('d', /^M.+L/)
+  await expect(memberPaths.nth(2)).not.toHaveAttribute('d', /^M.+L/)
+  await expect(
+    component.getByText('GEFS forecast', { exact: true }),
+  ).toHaveCount(1)
+
+  const firstCurve = await memberPaths.first().elementHandle()
+  const previousPath = await memberPaths.first().getAttribute('d')
+  await component.update({ dataReady: true, offset: 0.5 })
+  await expect(memberPaths.first()).not.toHaveAttribute('d', previousPath!)
+  expect(await firstCurve!.evaluate((element) => element.isConnected)).toBe(
+    true,
+  )
+
+  const legend = component.getByRole('button', {
+    name: 'GEFS forecast',
+    exact: true,
+  })
+  await legend.click()
+  for (const curve of await memberPaths.all()) {
+    await expect(curve).toHaveCSS('visibility', 'hidden')
+  }
+  await legend.click()
+  await expect(memberPaths.first()).toHaveCSS('visibility', 'visible')
+
+  await component.update({ dataReady: true, memberCount: 1 })
+  await expect(memberPaths).toHaveCount(1)
+  await expect(memberPaths.first()).toHaveAttribute('d', /^M.+L/)
+})
+
 test('renders delayed series data after switching plot configurations', async ({
   mount,
 }) => {

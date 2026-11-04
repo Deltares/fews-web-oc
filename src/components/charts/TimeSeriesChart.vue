@@ -113,6 +113,8 @@ import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
 import { getThresholdValues, isUniqueThreshold } from '@/lib/charts/thresholds'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 import { useI18n } from 'vue-i18n'
+import { useEnsembleChartConfig } from '@/services/useEnsembleChartConfig'
+import { EnsembleMouseOver } from '@/lib/charts/ensembleMouseOver'
 
 interface Props {
   config: ChartConfig
@@ -127,6 +129,10 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const chartConfig = useEnsembleChartConfig(
+  () => props.config,
+  () => props.series,
+)
 const domain = defineModel<[Date, Date]>('domain')
 
 const userSettingsStore = useUserSettingsStore()
@@ -138,7 +144,7 @@ defineExpose({
   axisAccept,
 })
 
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
@@ -159,7 +165,7 @@ let zoomedY = false
 onMounted(() => {
   if (!chartContainer.value) return
 
-  const axisOptions = getAxisOptions(props.config, props.settings, {
+  const axisOptions = getAxisOptions(chartConfig.value, props.settings, {
     isVerticalProfile: props.verticalProfile,
     locale: locale.value,
     timeZone: getAxisTimeZone(),
@@ -182,11 +188,18 @@ onMounted(() => {
   })
   margin.value = { ...axis.margin }
 
-  const mouseOver = new MouseOver({
-    direction: props.verticalProfile
-      ? MouseOverDirection.Vertical
-      : MouseOverDirection.Horizontal,
-  })
+  const mouseOver = props.verticalProfile
+    ? new MouseOver({ direction: MouseOverDirection.Vertical })
+    : new EnsembleMouseOver(
+        axis,
+        () => chartConfig.value,
+        () => props.series,
+        (summary) =>
+          t('ensembles.hoverSummary', {
+            ...summary,
+            unit: summary.unit ? ` ${summary.unit}` : '',
+          }),
+      )
 
   const wheelMode = userSettingsStore.scrollZoomMode
   const scrollModifierKey = ModifierKey.Shift
@@ -263,7 +276,7 @@ function onResetZoom() {
 }
 
 function setThresholdLines() {
-  const series = props.config.series
+  const series = chartConfig.value.series
   thresholdLinesVisitor.options = []
   if (!series.some((s) => s.thresholds?.length)) {
     axis.options.y?.forEach((y) => delete y.defaultDomain)
@@ -316,7 +329,7 @@ function setThresholdLines() {
 }
 
 function setTags() {
-  const series = props.config?.series ?? []
+  const series = chartConfig.value.series
   const isHorizontalColorCode = series.some(
     (s) => s.type === 'horizontalColorCode',
   )
@@ -356,7 +369,7 @@ const resize = () => {
 }
 
 function isAllDataLoaded() {
-  return props.config.series.every((s) =>
+  return chartConfig.value.series.every((s) =>
     s.dataResources.every((id) => props.series[id] !== undefined),
   )
 }
@@ -364,14 +377,14 @@ function isAllDataLoaded() {
 const onValueChange = () => {
   clearChart(axis)
 
-  refreshChart(axis, props.config, props.series)
+  refreshChart(axis, chartConfig.value, props.series)
   const zoomOptions = setThresholdLines()
   if (zoomOptions) {
     axis.setOptions(zoomOptions)
   }
   // Delay automatic margin calculation until thresholds and all series data are present
   axis.options.automargin = isAllDataLoaded()
-  redraw(axis, props.config)
+  redraw(axis, chartConfig.value)
   resetAxes(false)
   setTags()
 }
@@ -389,17 +402,14 @@ watch(domain, (newDomain) => {
 
 const { resetAxes } = useSeriesUpdateChartData(
   () => props.series,
-  () => props.config,
+  chartConfig,
   () => axis,
 )
 
-watch(
-  () => props.config,
-  () => {
-    if (!axis) return
-    onValueChange()
-  },
-)
+watch(chartConfig, () => {
+  if (!axis) return
+  onValueChange()
+})
 
 // KeepAlive can reuse this component for a subplot whose requests changed;
 // when the config update ran before the new data resources had arrived,
@@ -408,7 +418,7 @@ watch(
   () => props.series,
   () => {
     if (!axis) return
-    const hasUncreatedChart = props.config.series.some(
+    const hasUncreatedChart = chartConfig.value.series.some(
       (s) =>
         s.dataResources.every((id) => props.series[id] !== undefined) &&
         !axis.charts.some((c: any) => c.id === s.id),
