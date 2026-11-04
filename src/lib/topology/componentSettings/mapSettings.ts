@@ -22,6 +22,9 @@ export const defaultMapSettings: MapSettings = {
     locationNames: true,
     singleClickAction: true,
     locationSearchEnabled: true,
+    legend: {
+      show: true,
+    },
   },
   overlays: [],
 }
