@@ -1,5 +1,45 @@
 import { test, expect } from '@playwright/test'
 
+test('summarizes ensemble hover with the nearest member and min–max', async ({
+  mount,
+  page,
+}) => {
+  const component = await mount('charts/TimeSeriesChart/EnsembleMembers', {
+    dataReady: true,
+  })
+  const curves = component.locator(
+    '.chart-container svg .charts [data-chart-id^="forecast:"] path',
+  )
+  const summary = component.locator('.ensemble-hover-summary')
+  let pointer = { x: 0, y: 0 }
+  for (const index of [0, 1]) {
+    const point = await curves
+      .nth(index)
+      .evaluate((element: SVGPathElement) => {
+        const point = element.getPointAtLength(0)
+        const screen = new DOMPoint(point.x + 1, point.y).matrixTransform(
+          element.getScreenCTM()!,
+        )
+        return { x: screen.x, y: screen.y }
+      })
+    pointer = point
+    await page.mouse.move(point.x, point.y)
+    await expect(summary).toHaveCount(1)
+    await expect(summary).not.toContainText('GEFS forecast')
+    await expect(summary).toContainText(`member ${index} = ${index + 1} m`)
+    await expect(summary).toContainText('min–max: 1–2 m')
+  }
+  await component.update({ dataReady: true, offset: 0.5 })
+  await page.mouse.move(pointer.x + 1, pointer.y)
+  await expect(summary).toContainText('min–max: 1.5–2.5 m')
+
+  await component
+    .getByRole('button', { name: 'GEFS forecast', exact: true })
+    .click()
+  await page.mouse.move(pointer.x + 2, pointer.y)
+  await expect(component.locator('.tooltip')).toHaveCSS('opacity', '0')
+})
+
 test('draws ensemble members independently when the last member has no values', async ({
   mount,
 }) => {

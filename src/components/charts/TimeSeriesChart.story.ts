@@ -1,4 +1,4 @@
-import { computed, defineComponent, h, ref } from 'vue'
+import { computed, defineComponent, h, onMounted, ref } from 'vue'
 import TimeSeriesChart from './TimeSeriesChart.vue'
 import TimeSeriesChartBrush from './TimeSeriesChartBrush.vue'
 import type { Margin } from '@deltares/fews-web-oc-charts'
@@ -6,6 +6,7 @@ import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { SeriesUrlRequest } from '@/lib/timeseries/timeSeriesResource'
 import { getDefaultSettings } from '@/lib/topology/componentSettings'
+import { i18n, loadLocale } from '@/plugins/i18n'
 
 export const ThresholdSwitching = defineComponent({
   props: {
@@ -104,6 +105,7 @@ export const EnsembleMembers = defineComponent({
     offset: { type: Number, default: 0 },
   },
   setup(props) {
+    onMounted(() => loadLocale(i18n.global.locale.value))
     const start = new Date('2026-01-01T00:00:00Z')
     const end = new Date('2026-01-02T00:00:00Z')
     const config: ChartConfig = {

@@ -114,6 +114,7 @@ import { getThresholdValues, isUniqueThreshold } from '@/lib/charts/thresholds'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 import { useI18n } from 'vue-i18n'
 import { useEnsembleChartConfig } from '@/services/useEnsembleChartConfig'
+import { EnsembleMouseOver } from '@/lib/charts/ensembleMouseOver'
 
 interface Props {
   config: ChartConfig
@@ -143,7 +144,7 @@ defineExpose({
   axisAccept,
 })
 
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
@@ -187,11 +188,14 @@ onMounted(() => {
   })
   margin.value = { ...axis.margin }
 
-  const mouseOver = new MouseOver({
-    direction: props.verticalProfile
-      ? MouseOverDirection.Vertical
-      : MouseOverDirection.Horizontal,
-  })
+  const mouseOver = props.verticalProfile
+    ? new MouseOver({ direction: MouseOverDirection.Vertical })
+    : new EnsembleMouseOver(
+        axis,
+        () => chartConfig.value,
+        () => props.series,
+        (summary) => t('ensembles.hoverSummary', { ...summary }),
+      )
 
   const wheelMode = userSettingsStore.scrollZoomMode
   const scrollModifierKey = ModifierKey.Shift
