@@ -304,7 +304,7 @@
   "ensembles": {
     "ensemble": "Ensemble",
     "member": "Member",
-    "hoverSummary": "member {member} = {value} {unit} (min–max: {minimum}–{maximum} {unit})",
+    "hoverSummary": "{value}{unit} · member {member} · min–max {minimum}–{maximum}",
     "description": "Ensemble {ensemble}, members {range}",
     "membersRange": "Members {range}",
     "previousNextMember": "previous/next member",

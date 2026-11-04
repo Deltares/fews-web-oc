@@ -1,4 +1,8 @@
-import { MouseOver, type CartesianAxes } from '@deltares/fews-web-oc-charts'
+import {
+  MouseOver,
+  type CartesianAxes,
+  type Chart,
+} from '@deltares/fews-web-oc-charts'
 import type { ChartConfig } from './types/ChartConfig'
 import type { Series } from '../timeseries/timeSeries'
 
@@ -12,6 +16,29 @@ interface EnsembleHoverSummary {
 
 export class EnsembleMouseOver extends MouseOver {
   private summaries: HTMLSpanElement[] = []
+  private highlightedPaths: {
+    path: SVGPathElement
+    width: string
+    priority: string
+  }[] = []
+
+  private clearHighlights() {
+    for (const { path, width, priority } of this.highlightedPaths) {
+      if (width) path.style.setProperty('stroke-width', width, priority)
+      else path.style.removeProperty('stroke-width')
+    }
+    this.highlightedPaths = []
+  }
+
+  override onPointerout() {
+    this.clearHighlights()
+    super.onPointerout()
+  }
+
+  override redraw() {
+    this.clearHighlights()
+    super.redraw()
+  }
 
   constructor(
     private readonly chartAxes: CartesianAxes,
@@ -23,6 +50,7 @@ export class EnsembleMouseOver extends MouseOver {
   }
 
   override updateChartIndicators(mouse: [number, number]) {
+    this.clearHighlights()
     const items = new Map(
       this.getConfig().series.map((item) => [item.id, item]),
     )
@@ -34,6 +62,7 @@ export class EnsembleMouseOver extends MouseOver {
         summary: EnsembleHoverSummary
         distance: number
         color: string
+        chart: Chart
       }
     >()
 
@@ -73,6 +102,7 @@ export class EnsembleMouseOver extends MouseOver {
             unit: item.unit,
           },
           distance,
+          chart,
           color: String(hovered?.style.color ?? item.style.stroke ?? ''),
         })
       } else {
@@ -82,8 +112,27 @@ export class EnsembleMouseOver extends MouseOver {
           group.summary.member = ensemble.memberId
           group.summary.value = value
           group.distance = distance
+          group.chart = chart
         }
       }
+    }
+
+    const nearest = new Set(Array.from(groups.values(), ({ chart }) => chart))
+    for (const chart of this.chartAxes.charts) {
+      if (!ensembleIds.has(chart.id)) continue
+      if (!nearest.has(chart)) {
+        chart.onPointerOut()
+        continue
+      }
+      const path = chart.group.select<SVGPathElement>('path').node()
+      if (!path) continue
+      this.highlightedPaths.push({
+        path,
+        width: path.style.getPropertyValue('stroke-width'),
+        priority: path.style.getPropertyPriority('stroke-width'),
+      })
+      const width = parseFloat(getComputedStyle(path).strokeWidth)
+      path.style.setProperty('stroke-width', `${Math.max(2.5, width + 1.5)}px`)
     }
 
     this.summaries = Array.from(groups.values(), ({ summary, color }) => {

@@ -11,6 +11,12 @@ test('summarizes ensemble hover with the nearest member and min–max', async ({
     '.chart-container svg .charts [data-chart-id^="forecast:"] path',
   )
   const summary = component.locator('.ensemble-hover-summary')
+  const originalWidths = await curves.evaluateAll((paths) =>
+    paths.map((path) => getComputedStyle(path).strokeWidth),
+  )
+  const dots = component.locator(
+    '.chart-container svg [data-chart-id^="forecast:"] circle',
+  )
   let pointer = { x: 0, y: 0 }
   for (const index of [0, 1]) {
     const point = await curves
@@ -26,12 +32,34 @@ test('summarizes ensemble hover with the nearest member and min–max', async ({
     await page.mouse.move(point.x, point.y)
     await expect(summary).toHaveCount(1)
     await expect(summary).not.toContainText('GEFS forecast')
-    await expect(summary).toContainText(`member ${index} = ${index + 1} m`)
-    await expect(summary).toContainText('min–max: 1–2 m')
+    await expect(summary).toHaveText(
+      `${index + 1} m · member ${index} · min–max 1–2`,
+    )
+    await expect(curves.nth(index)).toHaveCSS('stroke-width', '2.5px')
+    for (let member = 0; member < 3; member++) {
+      await expect(dots.nth(member)).toHaveCSS(
+        'opacity',
+        member === index ? '1' : '0',
+      )
+      if (member !== index) {
+        await expect(curves.nth(member)).toHaveCSS(
+          'stroke-width',
+          originalWidths[member],
+        )
+      }
+    }
+  }
+  await page.mouse.move(0, 0)
+  for (let member = 0; member < 3; member++) {
+    await expect(curves.nth(member)).toHaveCSS(
+      'stroke-width',
+      originalWidths[member],
+    )
+    await expect(dots.nth(member)).toHaveCSS('opacity', '0')
   }
   await component.update({ dataReady: true, offset: 0.5 })
   await page.mouse.move(pointer.x + 1, pointer.y)
-  await expect(summary).toContainText('min–max: 1.5–2.5 m')
+  await expect(summary).toContainText('min–max 1.5–2.5')
 
   await component
     .getByRole('button', { name: 'GEFS forecast', exact: true })

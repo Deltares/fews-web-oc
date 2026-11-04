@@ -194,7 +194,11 @@ onMounted(() => {
         axis,
         () => chartConfig.value,
         () => props.series,
-        (summary) => t('ensembles.hoverSummary', { ...summary }),
+        (summary) =>
+          t('ensembles.hoverSummary', {
+            ...summary,
+            unit: summary.unit ? ` ${summary.unit}` : '',
+          }),
       )
 
   const wheelMode = userSettingsStore.scrollZoomMode
