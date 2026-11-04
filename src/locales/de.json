@@ -28,6 +28,10 @@
       "noData": "Für die ausgewählten Zeitreihen und den gewählten Zeitraum sind keine Datenpunkte verfügbar."
     }
   },
+  "reports": {
+    "loadFailed": "Bericht konnte nicht geladen werden",
+    "noReportAvailable": "Kein Bericht verfügbar"
+  },
   "layout": {
     "about": "Über",
     "switchTo": "Wechseln zu"
