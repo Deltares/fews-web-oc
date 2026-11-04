@@ -1,6 +1,6 @@
 import { AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
 import { GetMapFilter } from '@deltares/fews-wms-requests'
-import type { StyleSpecification } from 'maplibre-gl'
+import type { Map, StyleSpecification } from 'maplibre-gl'
 
 const LAYER_PREFIX = 'weboc-layer-'
 const SOURCE_PREFIX = 'weboc-source-'
@@ -19,6 +19,16 @@ export function isCustomLayer(id: string) {
 
 export function isCustomSource(id: string) {
   return id.startsWith(SOURCE_PREFIX)
+}
+
+/**
+ * Whether style mutations such as setFilter and setFeatureState are allowed.
+ * They throw while a style is being rebuilt, and map.style is null after a lost
+ * WebGL context. map.isStyleLoaded() is too strict to use here: it is also false
+ * while tiles are loading, which would drop updates that are valid.
+ */
+export function isStyleReady(map: Map): boolean {
+  return map.style?._loaded === true
 }
 
 export function transformStyle(
