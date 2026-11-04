@@ -37,6 +37,9 @@
         :showActiveThresholdCrossingsForFilters="
           showActiveThresholdCrossingsForFilters
         "
+        :showComponent="componentSettings?.sidePanel?.showComponent"
+        :componentSettingsReady="isComponentSettingsReady"
+        :initialSidePanel="initialSidePanel"
         @navigate="onNavigate"
       />
     </Teleport>
@@ -105,6 +108,9 @@ const props = withDefaults(defineProps<Props>(), {
 
 const route = useRoute()
 const router = useRouter()
+
+// Read before the initial reroute, which does not preserve the query.
+const initialSidePanel = route.query.sidePanel?.toString()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { thresholds } = useTopologyThresholds(baseUrl)
@@ -182,10 +188,11 @@ function getComponentConfig(topologyId?: string) {
   return config ?? configStore.getComponentByType('TopologyDisplay')
 }
 
-const { componentSettings } = useComponentSettings(baseUrl, () => [
-  topologyComponentConfig.value?.componentSettingsId,
-  topologyNode.value?.componentSettingsId,
-])
+const { componentSettings, isReady: isComponentSettingsReady } =
+  useComponentSettings(baseUrl, () => [
+    topologyComponentConfig.value?.componentSettingsId,
+    topologyNode.value?.componentSettingsId,
+  ])
 
 watchEffect(() => {
   if (showLeafsAsButton.value && Array.isArray(props.nodeId)) {

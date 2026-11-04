@@ -257,11 +257,13 @@
     "exportStatus": "Export status",
     "logDisplay": "Logs",
     "nonCurrentData": "Non-current data",
+    "pin": "Pin side panel",
     "runTask": "Run tasks",
     "share": "Share",
     "sharedRequests": "Shared requests",
     "taskOverview": "Task overview",
-    "thresholds": "Thresholds overview"
+    "thresholds": "Thresholds overview",
+    "unpin": "Unpin side panel"
   },
   "workflow": {
     "expectedRuntime": "Expected runtime",

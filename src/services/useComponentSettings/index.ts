@@ -32,7 +32,10 @@ export function useComponentSettings(
   const isLoading = ref(false)
   const error = shallowRef<string>()
 
+  let latestRequestId = 0
+
   async function loadComponentSettings() {
+    const requestId = ++latestRequestId
     isLoading.value = true
     isReady.value = false
 
@@ -41,6 +44,8 @@ export function useComponentSettings(
     )
     if (_componentSettingsIds.length === 0) {
       componentSettings.value = undefined
+      isLoading.value = false
+      isReady.value = true
       return
     }
     const _parentComponentSettings = toValue(parentComponentSettings)
@@ -75,16 +80,23 @@ export function useComponentSettings(
         _componentSettingsIds.map((id) => cache.get(id)),
       )
 
+      // Ignore the result if a newer request has been started in the meantime.
+      if (requestId !== latestRequestId) return
+
       componentSettings.value = getSettings([
         _parentComponentSettings,
         ...responses,
       ])
     } catch {
+      if (requestId !== latestRequestId) return
+
       error.value = 'Error loading componentSettings'
       componentSettings.value = undefined
     } finally {
-      isLoading.value = false
-      isReady.value = true
+      if (requestId === latestRequestId) {
+        isLoading.value = false
+        isReady.value = true
+      }
     }
   }
 
