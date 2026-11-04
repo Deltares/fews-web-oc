@@ -3,6 +3,7 @@
 <script setup lang="ts">
 import type { FillLayerSpecification, Source } from 'maplibre-gl'
 import { computed, onScopeDispose, watch } from 'vue'
+import { isStyleReady } from '@/lib/map'
 import { useLayer } from '@/services/useLayer'
 import { useMap } from '@/services/useMap'
 
@@ -45,56 +46,70 @@ useLayer(
   () => props.source,
 )
 
-let selectedIds = new Set<string>()
-watch(
-  [() => props.source, () => props.selectedLocationIds?.slice()],
-  ([source, ids], [previousSource]) => {
-    if (source !== previousSource) selectedIds = new Set()
-    if (!map || !source) return
+const appliedSelectedIds = new Set<string>()
+let appliedHoveredId: string | undefined
 
-    const nextIds = new Set(ids)
-    for (const id of selectedIds) {
-      if (!nextIds.has(id)) {
-        map.removeFeatureState({ source: props.sourceId, id }, 'selected')
-      }
-    }
-    for (const id of nextIds) {
-      if (!selectedIds.has(id)) {
-        map.setFeatureState({ source: props.sourceId, id }, { selected: true })
-      }
-    }
-    selectedIds = nextIds
-  },
-  { immediate: true },
-)
+function syncFeatureState() {
+  if (!map || !props.source || !isStyleReady(map)) return
 
-watch(
-  [() => props.source, () => props.hoveredStateId],
-  ([source, id], [previousSource, previousId]) => {
-    if (!map || !source) return
-    if (source === previousSource && previousId !== undefined) {
+  const selectedIds = new Set(props.selectedLocationIds)
+  for (const id of appliedSelectedIds) {
+    if (!selectedIds.has(id)) {
+      map.removeFeatureState({ source: props.sourceId, id }, 'selected')
+      appliedSelectedIds.delete(id)
+    }
+  }
+  for (const id of selectedIds) {
+    if (!appliedSelectedIds.has(id)) {
+      map.setFeatureState({ source: props.sourceId, id }, { selected: true })
+      appliedSelectedIds.add(id)
+    }
+  }
+
+  if (props.hoveredStateId !== appliedHoveredId) {
+    if (appliedHoveredId !== undefined) {
       map.removeFeatureState(
-        { source: props.sourceId, id: previousId },
+        { source: props.sourceId, id: appliedHoveredId },
         'hover',
       )
     }
-    if (id !== undefined) {
-      map.setFeatureState({ source: props.sourceId, id }, { hover: true })
+    if (props.hoveredStateId !== undefined) {
+      map.setFeatureState(
+        { source: props.sourceId, id: props.hoveredStateId },
+        { hover: true },
+      )
     }
-  },
+    appliedHoveredId = props.hoveredStateId
+  }
+}
+
+// Feature state belongs to the source instance, so it has to be applied again
+// when the source is recreated or the style is rebuilt. A rebuild keeps the
+// source ref unchanged, which is why it needs the style.load event.
+function restoreFeatureState() {
+  appliedSelectedIds.clear()
+  appliedHoveredId = undefined
+  syncFeatureState()
+}
+
+watch(
+  [() => props.selectedLocationIds?.slice(), () => props.hoveredStateId],
+  syncFeatureState,
   { immediate: true },
 )
+watch(() => props.source, restoreFeatureState)
+map?.on('style.load', restoreFeatureState)
 
 onScopeDispose(() => {
-  if (!map || !props.source || map.getSource(props.sourceId) !== props.source) {
-    return
-  }
-  for (const id of selectedIds) {
+  map?.off('style.load', restoreFeatureState)
+  if (!map || !isStyleReady(map) || !map.getSource(props.sourceId)) return
+
+  for (const id of appliedSelectedIds) {
     map.removeFeatureState({ source: props.sourceId, id }, 'selected')
   }
-  if (props.hoveredStateId !== undefined) {
+  if (appliedHoveredId !== undefined) {
     map.removeFeatureState(
-      { source: props.sourceId, id: props.hoveredStateId },
+      { source: props.sourceId, id: appliedHoveredId },
       'hover',
     )
   }

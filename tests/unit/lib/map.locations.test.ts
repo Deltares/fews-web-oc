@@ -29,6 +29,7 @@ const map = vi.hoisted(() => ({
   removeFeatureState: vi.fn(),
   getSource: vi.fn(),
   getCanvas: () => ({ style: { cursor: '' } }),
+  style: { _loaded: true },
 }))
 
 vi.mock('@/services/useMap', () => ({ useMap: () => ({ map }) }))
@@ -117,6 +118,12 @@ function mountLayer() {
   return props
 }
 
+function styleLoad() {
+  for (const [event, handler] of map.on.mock.calls) {
+    if (event === 'style.load') handler()
+  }
+}
+
 function fillEvent(name: string, locationId?: string) {
   const handlers = map.on.mock.calls.filter(
     ([event, layer]) => event === name && layer === mapIds.location.layer.fill,
@@ -134,6 +141,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   layers.clear()
   source.value = { type: 'geojson' }
+  map.style._loaded = true
   map.getSource.mockImplementation(() => source.value)
   container = document.createElement('div')
 })
@@ -213,10 +221,26 @@ describe('location map interactions', () => {
     )
   })
 
-  it('restores interaction state when the source is recreated', async () => {
+  it('restores interaction state when the style is rebuilt with the same source ref', async () => {
     mountLayer()
     fillEvent('mousemove', 'district')
     await nextTick()
+    map.setFeatureState.mockClear()
+
+    styleLoad()
+
+    expect(map.setFeatureState).toHaveBeenCalledWith(
+      { source: mapIds.location.source, id: 'child' },
+      { selected: true },
+    )
+    expect(map.setFeatureState).toHaveBeenCalledWith(
+      { source: mapIds.location.source, id: 'district' },
+      { hover: true },
+    )
+  })
+
+  it('restores interaction state when the source is recreated', async () => {
+    mountLayer()
     map.setFeatureState.mockClear()
 
     source.value = { type: 'geojson' }
@@ -226,9 +250,58 @@ describe('location map interactions', () => {
       { source: mapIds.location.source, id: 'child' },
       { selected: true },
     )
+  })
+
+  it('does not touch feature state during a rebuild and applies the latest state afterwards', async () => {
+    const props = mountLayer()
+    map.setFeatureState.mockClear()
+    map.removeFeatureState.mockClear()
+    map.style._loaded = false
+    const notLoaded = () => {
+      throw new Error('Style is not done loading.')
+    }
+    map.setFeatureState.mockImplementation(notLoaded)
+    map.removeFeatureState.mockImplementation(notLoaded)
+
+    props.selectedLocationIds = ['district']
+    await nextTick()
+    fillEvent('mousemove', 'district')
+    await nextTick()
+
+    expect(map.setFeatureState).not.toHaveBeenCalled()
+    expect(map.removeFeatureState).not.toHaveBeenCalled()
+
+    map.style._loaded = true
+    map.setFeatureState.mockReset()
+    map.removeFeatureState.mockReset()
+    styleLoad()
+
+    expect(map.setFeatureState).toHaveBeenCalledWith(
+      { source: mapIds.location.source, id: 'district' },
+      { selected: true },
+    )
     expect(map.setFeatureState).toHaveBeenCalledWith(
       { source: mapIds.location.source, id: 'district' },
       { hover: true },
+    )
+    expect(map.setFeatureState).not.toHaveBeenCalledWith(
+      { source: mapIds.location.source, id: 'child' },
+      { selected: true },
+    )
+  })
+
+  it('clears feature state on unmount after a rebuild replaced the source', async () => {
+    mountLayer()
+    styleLoad()
+    map.getSource.mockImplementation(() => ({ type: 'geojson' }))
+    map.removeFeatureState.mockClear()
+
+    app?.unmount()
+    app = undefined
+
+    expect(map.removeFeatureState).toHaveBeenCalledWith(
+      { source: mapIds.location.source, id: 'child' },
+      'selected',
     )
   })
 
