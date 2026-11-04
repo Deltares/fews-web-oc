@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import { federation } from '@module-federation/vite'
-import { createWebOCConfig } from './vite.config.shared.js'
+import { createWebOCConfig } from './webocConfig.shared.js'
 
 export default defineConfig(({ mode }) =>
   createWebOCConfig(mode, './src/lib/moduleFederation/index.ts', [
