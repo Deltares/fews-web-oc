@@ -2,6 +2,7 @@ import {
   defaultChartSettings,
   defaultMapSettings,
   defaultSchematicStatusDisplaySettings,
+  defaultSidePanelSettings,
   defaultReportSettings,
   type ChartsSettings,
   type MapSettings,
@@ -15,7 +16,7 @@ export type DeepRequiredComponentSettings =
 
 export type ComponentSettings = Omit<
   DeepRequiredComponentSettings,
-  'map' | 'charts' | 'sidePanel'
+  'map' | 'charts'
 > & {
   map: MapSettings
   charts: ChartsSettings
@@ -25,6 +26,7 @@ export function getDefaultSettings(): ComponentSettings {
   return {
     id: '',
     map: defaultMapSettings,
+    sidePanel: defaultSidePanelSettings,
     ssd: defaultSchematicStatusDisplaySettings,
     charts: defaultChartSettings,
     report: defaultReportSettings,

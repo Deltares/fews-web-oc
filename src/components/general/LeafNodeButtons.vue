@@ -7,29 +7,32 @@
     v-bind="overlayProps"
   >
     <template #activator="{ props, isActive }">
-      <v-tooltip :text="activeName" :disabled="!isPhone" location="bottom">
-        <template #activator="{ props: tooltipProps }">
-          <BtnGroup
-            v-bind="{ ...props, ...tooltipProps }"
-            class="leaf-node-buttons"
+      <BtnGroup v-bind="props" class="leaf-node-buttons">
+        <!-- Only the icon on phones, the dialog shows the active name -->
+        <v-btn
+          v-if="isPhone"
+          icon
+          size="small"
+          class="last-btn"
+          :aria-label="`Leaf node: ${activeName}`"
+        >
+          <v-icon>mdi-filter-variant</v-icon>
+        </v-btn>
+        <template v-else>
+          <v-icon class="leaf-node-buttons__icon">mdi-filter-variant</v-icon>
+          <span class="leaf-node-buttons__label">{{ activeName }}</span>
+          <v-btn
+            icon
+            size="small"
+            class="last-btn"
+            :aria-label="`Leaf node: ${activeName}`"
           >
-            <v-icon class="leaf-node-buttons__icon">mdi-filter-variant</v-icon>
-            <span v-if="!isPhone" class="leaf-node-buttons__label">
-              {{ activeName }}
-            </span>
-            <v-btn
-              icon
-              size="small"
-              class="last-btn"
-              :aria-label="`Leaf node: ${activeName}`"
-            >
-              <v-icon>{{
-                isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'
-              }}</v-icon>
-            </v-btn>
-          </BtnGroup>
+            <v-icon>{{
+              isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'
+            }}</v-icon>
+          </v-btn>
         </template>
-      </v-tooltip>
+      </BtnGroup>
     </template>
 
     <v-card>
@@ -115,7 +118,6 @@ function selectItem(id: string) {
 
 <style scoped>
 .leaf-node-buttons {
-  align-items: center;
   cursor: pointer;
   min-width: 0;
 }

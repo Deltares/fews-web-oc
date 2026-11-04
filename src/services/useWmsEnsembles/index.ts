@@ -14,10 +14,16 @@ export function useWmsEnsembles(
     // sorting of numeric ensembleMemberIds, which are sorted in alphabetical
     // order. This causes e.g. 2 to appear after 10, which looks a bit weird in
     // selection menus.
+    //
+    // Member IDs are also deduplicated: for layers with multiple parameters
+    // (e.g. a raster with animated vectors), FEWS lists each member once per
+    // parameter.
     return unsorted.map((ensemble) => {
       return {
         ensembleId: ensemble.ensembleId,
-        ensembleMemberIds: sortEnsembleMemberIds(ensemble.ensembleMemberIds),
+        ensembleMemberIds: sortEnsembleMemberIds([
+          ...new Set(ensemble.ensembleMemberIds),
+        ]),
       }
     })
   })

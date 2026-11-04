@@ -103,6 +103,6 @@ export const defaultChartSettings: ChartsSettings = {
     enabled: true,
   },
   dynamicReportDisplay: {
-    enabled: false,
+    enabled: true,
   },
 }

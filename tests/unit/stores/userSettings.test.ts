@@ -307,3 +307,56 @@ describe('userSettings store – settings enabled by the FEWS config', () => {
     expect(store.get('ui.locale')?.value).toBe('de')
   })
 })
+
+describe('userSettings store – base maps from the map layer config', () => {
+  const baseMaps = [
+    { value: 'automatic', title: 'Automatic' },
+    { value: 'light', title: 'Light' },
+    { value: 'dark', title: 'Dark' },
+    { value: 'osm', title: 'OpenStreetMap' },
+  ]
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('keeps base maps that arrive before the FEWS config file', async () => {
+    mockFewsConfigFile(defaultUserSettingsJson)
+
+    const store = useUserSettingsStore()
+    store.updateSettingItems('ui.map.theme', baseMaps)
+    await store.initializeWithWebResources()
+
+    const mapTheme = store.get('ui.map.theme')
+    expect(mapTheme?.type === 'oneOfMultiple' && mapTheme.items).toEqual(
+      baseMaps,
+    )
+  })
+
+  it('restores a saved base map that arrives before the FEWS config file', async () => {
+    mockFewsConfigFile(defaultUserSettingsJson)
+    storeLocalSettings([{ id: 'ui.map.theme', value: 'osm' }])
+
+    const store = useUserSettingsStore()
+    store.updateSettingItems('ui.map.theme', baseMaps)
+    await store.initializeWithWebResources()
+
+    expect(store.get('ui.map.theme')?.value).toBe('osm')
+  })
+
+  it('restores a saved base map that arrives after the FEWS config file', async () => {
+    mockFewsConfigFile(defaultUserSettingsJson)
+    storeLocalSettings([{ id: 'ui.map.theme', value: 'osm' }])
+
+    const store = useUserSettingsStore()
+    await store.initializeWithWebResources()
+    store.updateSettingItems('ui.map.theme', baseMaps)
+
+    expect(store.get('ui.map.theme')?.value).toBe('osm')
+  })
+})

@@ -69,7 +69,7 @@
       class="d-flex flex-column h-100 overflow-y-hidden"
     >
       <TimeSeriesTable
-        :config="tableConfig"
+        :config="ensembleTableConfig"
         :series="tableSeries"
         :key="tableConfig.title"
         :settings="settings.timeSeriesTable"
@@ -156,6 +156,7 @@ import {
 } from '@/lib/display/utils'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 import { getBrushDomain } from '@/lib/charts/brush.ts'
+import { useEnsembleChartConfig } from '@/services/useEnsembleChartConfig'
 
 interface Props {
   config?: DisplayConfig
@@ -384,6 +385,7 @@ watch(elevationChartSubplots, (newSubplots) => {
 })
 
 const tableConfig = ref<ChartConfig>({ id: '', title: '', series: [] })
+const ensembleTableConfig = useEnsembleChartConfig(tableConfig, tableSeries)
 
 watch(
   () => props.config.subplots,

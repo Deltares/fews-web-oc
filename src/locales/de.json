@@ -304,6 +304,7 @@
   "ensembles": {
     "ensemble": "Ensemble",
     "member": "Ensemblemitglied",
+    "hoverSummary": "{value}{unit} · Mitglied {member} · Min–Max {minimum}–{maximum}",
     "description": "Ensemble {ensemble}, Mitglieder {range}",
     "membersRange": "Mitglieder {range}",
     "previousNextMember": "vorheriges/nächstes Mitglied",

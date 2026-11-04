@@ -6,7 +6,7 @@ type DeepRequiredMapSettings = DeepRequired<PiMapSettings>
 export type MapSettings = Omit<DeepRequiredMapSettings, 'locationsLayer'> & {
   locationsLayer: Omit<
     DeepRequiredMapSettings['locationsLayer'],
-    'minZoom' | 'maxZoom' | 'legend'
+    'minZoom' | 'maxZoom'
   >
 }
 
@@ -22,6 +22,9 @@ export const defaultMapSettings: MapSettings = {
     locationNames: true,
     singleClickAction: true,
     locationSearchEnabled: true,
+    legend: {
+      show: true,
+    },
   },
   overlays: [],
 }
