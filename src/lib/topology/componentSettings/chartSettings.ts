@@ -16,6 +16,7 @@ export type ChartsSettings = Omit<
   | 'verticalProfileChart'
   | 'verticalProfileTable'
   | 'metaDataPanel'
+  | 'dynamicReportDisplay'
 > & {
   timeSeriesChart: WithOptionalLocationEnabledAttribute<
     DeepRequiredChartsSettings['timeSeriesChart']
@@ -31,6 +32,9 @@ export type ChartsSettings = Omit<
   >
   metaDataPanel: WithOptionalLocationEnabledAttribute<
     DeepRequiredChartsSettings['metaDataPanel']
+  >
+  dynamicReportDisplay: WithOptionalLocationEnabledAttribute<
+    DeepRequiredChartsSettings['dynamicReportDisplay']
   >
 }
 
@@ -96,6 +100,9 @@ export const defaultChartSettings: ChartsSettings = {
     sortDepthColumn: 'descending', // TODO: Implement
   },
   metaDataPanel: {
+    enabled: true,
+  },
+  dynamicReportDisplay: {
     enabled: true,
   },
 }

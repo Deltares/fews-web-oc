@@ -25,6 +25,9 @@ export function getDefaultSettings(): ComponentSettings {
   return {
     id: '',
     map: defaultMapSettings,
+    sidePanel: {
+      showComponent: 'None',
+    },
     ssd: defaultSchematicStatusDisplaySettings,
     charts: defaultChartSettings,
     report: defaultReportSettings,
