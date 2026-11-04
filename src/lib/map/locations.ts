@@ -1,6 +1,6 @@
 import type { Location } from '@deltares/fews-pi-requests'
 import type { Feature, FeatureCollection, Geometry } from 'geojson'
-import type { LegacyFilterSpecification } from 'maplibre-gl'
+import type { ExpressionSpecification } from 'maplibre-gl'
 import { mapIds } from './ids'
 
 export interface ExtendedLocation extends Location {
@@ -8,7 +8,6 @@ export interface ExtendedLocation extends Location {
   webocIcon: string | undefined
   sortKey: number
   invertedSortKey: number
-  selected?: boolean
 }
 
 export const locationLayerIds = Object.values(mapIds.location.layer)
@@ -23,7 +22,6 @@ export const clickableLocationLayerIds = [
 
 export function addPropertiesToLocationGeojson(
   geojson: FeatureCollection<Geometry, Location>,
-  selectedLocationIds: string[],
   showNames: boolean,
   showDataAvailability: boolean,
 ): FeatureCollection<Geometry, ExtendedLocation> {
@@ -40,7 +38,6 @@ export function addPropertiesToLocationGeojson(
         webocIcon: getIconName(feature),
         sortKey: getSortKey(feature),
         invertedSortKey: getInvertedSortKey(feature),
-        selected: selectedLocationIds.includes(feature.properties.locationId),
       },
     }
   })
@@ -103,10 +100,16 @@ export function getLocationWithChilds(
 
 export function shouldBehaveLikeChildFilter(
   isChild: boolean | undefined,
-): LegacyFilterSpecification {
+  selectedLocationIds: string[],
+): ExpressionSpecification {
+  const selected: ExpressionSpecification = [
+    'in',
+    ['get', 'locationId'],
+    ['literal', [...selectedLocationIds]],
+  ]
   return isChild
     ? // Child: has parentLocationId AND not selected
-      ['all', ['has', 'parentLocationId'], ['!=', 'selected', true]]
+      ['all', ['has', 'parentLocationId'], ['!', selected]]
     : // Parent: no parentLocationId OR selected
-      ['any', ['!has', 'parentLocationId'], ['==', 'selected', true]]
+      ['any', ['!', ['has', 'parentLocationId']], selected]
 }

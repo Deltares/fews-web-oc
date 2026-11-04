@@ -12,16 +12,17 @@ interface Props {
   source: Source | undefined
   isDark: boolean
   child?: boolean
+  selectedLocationIds: string[]
 }
 
 const props = defineProps<Props>()
 
-const filter: SymbolLayerSpecification['filter'] = [
+const filter = computed<SymbolLayerSpecification['filter']>(() => [
   'all',
   ['has', 'webocIcon'],
-  ['==', '$type', 'Point'],
-  shouldBehaveLikeChildFilter(props.child),
-]
+  ['==', ['geometry-type'], 'Point'],
+  shouldBehaveLikeChildFilter(props.child, props.selectedLocationIds),
+])
 
 const baseLayout: SymbolLayerSpecification['layout'] = {
   'icon-image': ['get', 'webocIcon'],
@@ -68,7 +69,7 @@ useLayer(
   () => ({
     id: props.layerId,
     type: 'symbol',
-    filter,
+    filter: filter.value,
     layout: layout.value,
     paint: paint.value,
     source: props.sourceId,

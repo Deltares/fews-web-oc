@@ -22,6 +22,7 @@
     :sourceId="mapIds.location.source"
     :isDark="isDark"
     :source="source"
+    :selectedLocationIds="selectedChildLocationIds"
   />
   <LocationsSymbolLayer
     v-if="showLocations"
@@ -30,6 +31,7 @@
     :isDark="isDark"
     :source="source"
     child
+    :selectedLocationIds="selectedChildLocationIds"
   />
 
   <LocationsTextLayer
@@ -38,9 +40,13 @@
     :sourceId="mapIds.location.source"
     :source="source"
     :isDark="isDark"
+    :selectedLocationIds="selectedChildLocationIds"
   />
 
-  <LocationsMarkers :geojson="geojson" />
+  <LocationsMarkers
+    :geojson="geojson"
+    :selectedLocationIds="selectedLocationIds"
+  />
 </template>
 
 <script setup lang="ts">
@@ -129,10 +135,35 @@ const geojson = computed(() => {
 
   return addPropertiesToLocationGeojson(
     { ...props.locationsGeoJson, features: filteredLocations },
-    props.selectedLocationIds,
     showNames.value,
     showDataAvailability.value,
   )
+})
+
+const childLocationIds = computed(
+  () =>
+    new Set(
+      geojson.value.features
+        .filter(
+          (feature) =>
+            feature.geometry.type === 'Point' &&
+            'parentLocationId' in feature.properties,
+        )
+        .map((feature) => feature.properties.locationId),
+    ),
+)
+
+const selectedChildLocationIds = computed<string[]>((previous) => {
+  const ids = props.selectedLocationIds.filter((id) =>
+    childLocationIds.value.has(id),
+  )
+  // Changing symbol filters reloads source tiles, so polygon selection must
+  // leave these filters unchanged.
+  return previous &&
+    previous.length === ids.length &&
+    ids.every((id, index) => id === previous[index])
+    ? previous
+    : ids
 })
 
 const emit = defineEmits(['click'])
@@ -140,6 +171,7 @@ const emit = defineEmits(['click'])
 const { source } = useSource(mapIds.location.source, () => ({
   type: 'geojson',
   data: geojson.value,
+  promoteId: 'locationId',
 }))
 
 watch(geojson, () => {
@@ -208,7 +240,7 @@ function onFillMouseLeave() {
 function onFillMouseMove(
   e: MapLayerMouseEvent & { features?: MapGeoJSONFeature[] },
 ) {
-  hoveredStateId.value = e.features?.[0].properties.locationId
+  hoveredStateId.value = e.features?.[0]?.properties.locationId
 }
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
@@ -239,8 +271,8 @@ function removeHooksFromMapObject() {
       map.off('mouseleave', layerId, unsetCursorPointer)
     }
 
-    map.on('mousemove', mapIds.location.layer.fill, onFillMouseMove)
-    map.on('mouseleave', mapIds.location.layer.fill, onFillMouseLeave)
+    map.off('mousemove', mapIds.location.layer.fill, onFillMouseMove)
+    map.off('mouseleave', mapIds.location.layer.fill, onFillMouseLeave)
     map.off('style.load', addLocationIcons)
   }
 }

@@ -12,15 +12,20 @@ interface Props {
   source: Source | undefined
   isDark: boolean
   child?: boolean
+  selectedLocationIds: string[]
 }
 
 const props = defineProps<Props>()
 
-const filter: SymbolLayerSpecification['filter'] = [
+const filter = computed<SymbolLayerSpecification['filter']>(() => [
   'all',
-  ['==', '$type', 'Point'],
-  ['any', ['!has', 'iconName'], shouldBehaveLikeChildFilter(props.child)],
-]
+  ['==', ['geometry-type'], 'Point'],
+  [
+    'any',
+    ['!', ['has', 'iconName']],
+    shouldBehaveLikeChildFilter(props.child, props.selectedLocationIds),
+  ],
+])
 
 const layout: SymbolLayerSpecification['layout'] = {
   'text-field': ['get', 'locationName'],
@@ -48,7 +53,7 @@ useLayer(
   () => ({
     id: props.layerId,
     type: 'symbol',
-    filter,
+    filter: filter.value,
     layout,
     paint: paint.value,
     source: props.sourceId,
