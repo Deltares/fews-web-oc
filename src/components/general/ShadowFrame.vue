@@ -55,6 +55,8 @@ watch(
 <style scoped>
 .shadow-frame {
   all: initial;
+  display: block;
+  box-sizing: border-box;
   height: 100%;
   padding: 10px;
   overflow-y: auto;

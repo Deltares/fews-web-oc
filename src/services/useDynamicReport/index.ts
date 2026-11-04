@@ -64,6 +64,7 @@ export function useDynamicReportHtml(
     }
 
     if (!hasRequiredParameters(_capabilities, _filter)) {
+      reportHtml.value = ''
       return
     }
     isLoading.value = true
