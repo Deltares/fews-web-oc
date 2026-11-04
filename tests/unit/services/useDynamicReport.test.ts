@@ -167,4 +167,31 @@ describe('useDynamicReport', () => {
     expect(isReady.value).toBe(false)
     expect(reportHtml.value).toBe('')
   })
+
+  it('clears the previous report when the filter no longer allows a request', async () => {
+    getReport.mockResolvedValueOnce('<p>a</p>')
+
+    const { filter, reportHtml } = await setup('a')
+    await flush()
+    expect(reportHtml.value).toBe('<p>a</p>')
+
+    filter.value = { locationId: 'unknown' }
+    await flush()
+
+    expect(reportHtml.value).toBe('')
+  })
+
+  it('ignores an in-flight report when the filter no longer allows a request', async () => {
+    const first = deferred<string>()
+    getReport.mockReturnValueOnce(first.promise)
+
+    const { filter, reportHtml } = await setup('a')
+    filter.value = { locationId: 'unknown' }
+    await flush()
+
+    first.resolve('<p>a</p>')
+    await flush()
+
+    expect(reportHtml.value).toBe('')
+  })
 })

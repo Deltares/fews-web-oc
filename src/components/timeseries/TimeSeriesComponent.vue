@@ -91,6 +91,16 @@
     >
       <div v-html="informationContent" class="pa-4 h-100 w-100" />
     </v-window-item>
+    <v-window-item
+      v-if="settings.dynamicReportDisplay.enabled && dynamicReport"
+      :value="DisplayType.DynamicReport"
+      class="h-100"
+    >
+      <DynamicReportPanel
+        :config="dynamicReport"
+        :selectedDate="selectedDate"
+      />
+    </v-window-item>
   </v-window>
   <v-dialog v-model="confirmationDialog" persistent max-width="500">
     <v-card prepend-icon="mdi-content-save" title="Unsaved Changes">
@@ -113,6 +123,8 @@ import { computed, onUnmounted, ref, watch } from 'vue'
 import TimeSeriesChart from '../charts/TimeSeriesChart.vue'
 import TimeSeriesChartBrush from '../charts/TimeSeriesChartBrush.vue'
 import TimeSeriesTable from '../table/TimeSeriesTable.vue'
+import DynamicReportPanel from './DynamicReportPanel.vue'
+import type { DynamicReportPanelConfig } from '@/services/useDynamicReport'
 import {
   DisplayType,
   type DisplayConfig,
@@ -153,6 +165,7 @@ interface Props {
   elevationChartConfig?: DisplayConfig
   currentTime?: Date
   informationContent?: string | null
+  dynamicReport?: DynamicReportPanelConfig | null
   settings?: ChartsSettings
 }
 

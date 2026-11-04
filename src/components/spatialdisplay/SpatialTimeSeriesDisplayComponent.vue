@@ -10,6 +10,7 @@
         :filter="filter"
         :settings="settings.charts"
         :informationContent="tooltip"
+        :dynamicReport="dynamicReport"
       >
         <template #toolbar-append>
           <slot name="toolbar-append" />
@@ -32,6 +33,10 @@ import { computed } from 'vue'
 import { useLocationTooltip } from '@/services/useLocationTooltip'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useTaskRunsStore } from '@/stores/taskRuns'
+import {
+  getDynamicReportPanelConfig,
+  useDynamicReportCapabilities,
+} from '@/services/useDynamicReport'
 
 interface Props {
   brushFilter?: FilterActionsFilter | TimeSeriesGridActionsFilter
@@ -39,6 +44,8 @@ interface Props {
   filter?: FilterActionsFilter | TimeSeriesGridActionsFilter
   elevationChartFilter?: TimeSeriesGridActionsFilter
   locationsTooltipFilter?: LocationsTooltipFilter
+  dynamicReportDisplayId?: string
+  dynamicReportLocationIds?: string[]
   currentTime?: Date
   settings: ComponentSettings
   hideFullscreenButton?: boolean
@@ -77,5 +84,16 @@ const { displayConfig: brushChartConfig } = useDisplayConfigFilter(
 const { tooltip } = useLocationTooltip(
   baseUrl,
   () => props.locationsTooltipFilter,
+)
+
+const { capabilities: dynamicReportCapabilities } =
+  useDynamicReportCapabilities(baseUrl, () => props.dynamicReportDisplayId)
+
+const dynamicReport = computed(() =>
+  getDynamicReportPanelConfig(
+    props.dynamicReportDisplayId,
+    dynamicReportCapabilities.value,
+    props.dynamicReportLocationIds ?? [],
+  ),
 )
 </script>

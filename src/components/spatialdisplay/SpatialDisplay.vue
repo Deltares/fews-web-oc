@@ -121,6 +121,7 @@ const filterOptions = computed(() => {
     props.settings.charts.timeSeriesTable.locationEnabledAttribute,
     props.settings.charts.verticalProfileChart.locationEnabledAttribute,
     props.settings.charts.metaDataPanel.locationEnabledAttribute,
+    props.settings.charts.dynamicReportDisplay.locationEnabledAttribute,
   ].filter((id): id is string => !!id)
   return {
     ...(userSettings.get('ui.map.showDataAvailability')?.value === true
@@ -216,6 +217,14 @@ const resolvedSettings = computed<ComponentSettings>(() => {
           selected,
           props.settings.charts.metaDataPanel.locationEnabledAttribute,
           props.settings.charts.metaDataPanel.enabled,
+        ),
+      },
+      dynamicReportDisplay: {
+        ...props.settings.charts.dynamicReportDisplay,
+        enabled: getDisplayEnabledFromLocationAttributes(
+          selected,
+          props.settings.charts.dynamicReportDisplay.locationEnabledAttribute,
+          props.settings.charts.dynamicReportDisplay.enabled,
         ),
       },
     },
