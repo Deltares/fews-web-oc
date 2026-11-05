@@ -281,6 +281,7 @@ function createMarks(
 ): (BandMark | BarMark | SeriesMark | LineMark)[] {
   const marks: (BandMark | BarMark | SeriesMark | LineMark)[] = []
   const mergedMarkerIndices = new Set<number>()
+  const stackedBarAxes = new Set<string>()
 
   for (const [seriesIndex, item] of chartSeries.entries()) {
     if (mergedMarkerIndices.has(seriesIndex)) continue
@@ -311,6 +312,45 @@ function createMarks(
     }
 
     if (item.type === 'bar') {
+      if (stackedBarAxes.has(yScale)) continue
+      const barSeries = chartSeries.filter(
+        (candidate) =>
+          candidate.type === 'bar' &&
+          candidate.visibleInPlot !== false &&
+          (yScales[candidate.options.y.axisIndex]?.id ?? 'y0') === yScale &&
+          resources[candidate.dataResources[0]]?.data !== undefined,
+      )
+      if (barSeries.length > 1) {
+        stackedBarAxes.add(yScale)
+        const stackId = `stack:${yScale}:${barSeries.map((series) => series.id).join(':')}`
+        const rows = getStackedBarData(barSeries, resources)
+        const data = handles.use(`table:${stackId}`, createBarStore, { rows })
+        marks.push(
+          handles.use(`mark:${stackId}`, bar, data.store, {
+            id: `${yScales.find(({ id }) => id === yScale)?.axis.label || 'Stacked bars'} (${yScale})`,
+            x: 'x',
+            scales: { x: 'x', y: yScale },
+            renderer: 'svg',
+            orientation: 'vertical',
+            interval: { start: 'start', end: 'x' },
+            layout: 'stacked',
+            layers: barSeries.map((series, index) => ({
+              id: `${index}:${series.id}`,
+              y: `y${index}`,
+              label: series.visibleInLegend === false ? undefined : series.name,
+              fill: styleValue(series, 'fill'),
+              stroke: styleValue(series, 'stroke'),
+              strokeWidth: styleNumber(series, 'stroke-width', 1),
+            })),
+            groupPadding: 0.1,
+            layerPadding: 0,
+            visible: true,
+            label: '',
+            opacity: 1,
+          }),
+        )
+        continue
+      }
       const rows = getBarData(item, resources)
       if (!rows) continue
       const data = handles.use(`table:${markId}`, createBarStore, { rows })
@@ -541,6 +581,28 @@ function getBarData(item: ChartSeries, resources: Record<string, Series>) {
     y.push(event.y)
   }
   return { x, start, y }
+}
+
+function getStackedBarData(
+  items: ChartSeries[],
+  resources: Record<string, Series>,
+): TableInput {
+  const values = items.map((item) => {
+    const byTime = new Map<number, number>()
+    addDataToMap(byTime, resources[item.dataResources[0]].data ?? [])
+    return byTime
+  })
+  const x = [...new Set(values.flatMap((byTime) => [...byTime.keys()]))].sort(
+    (a, b) => a - b,
+  )
+  const rows: Record<string, number[]> = {
+    x,
+    start: x.map((time, index) => x[index - 1] ?? time),
+  }
+  for (const [index, byTime] of values.entries()) {
+    rows[`y${index}`] = x.map((time) => byTime.get(time) ?? Number.NaN)
+  }
+  return rows
 }
 
 function createBarStore({ rows }: { rows: TableInput }) {

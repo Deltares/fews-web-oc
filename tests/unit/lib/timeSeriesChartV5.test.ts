@@ -270,6 +270,128 @@ describe('v5 static chart config', () => {
     expect(handles.has('table:0:bars')).toBe(false)
   })
 
+  it('stacks visible bars on the same axis without combining different axes', () => {
+    const first = createChartSeries('dry', 'bar', ['dry'])
+    const second = createChartSeries('normal', 'bar', ['normal'])
+    const hidden = createChartSeries('hidden', 'bar', ['hidden'])
+    hidden.visibleInPlot = false
+    second.style.fill = '#ffff00'
+    const config = toPlotConfig(
+      {
+        id: 'probabilities',
+        title: '',
+        yAxis: [
+          { kind: 'value', position: 'left' },
+          { kind: 'value', position: 'right' },
+        ],
+        series: [
+          first,
+          second,
+          hidden,
+          createChartSeries('other', 'bar', ['other'], 1),
+        ],
+      },
+      {},
+      defaultChartSettings.timeSeriesChart,
+      {},
+      {
+        dry: createResource([
+          { x: new Date(0), y: 0.2 },
+          { x: new Date(1000), y: 0.4 },
+        ]),
+        normal: createResource([
+          { x: new Date(0), y: 0.8 },
+          { x: new Date(1000), y: 0.6 },
+        ]),
+        hidden: createResource([{ x: new Date(0), y: 10 }]),
+        other: createResource([{ x: new Date(0), y: 5 }]),
+      },
+    )
+    expect(config.marks).toHaveLength(2)
+    const mark = config.marks![0]
+    if (!('data' in mark) || !('valueAt' in mark.data)) {
+      throw new Error('Expected a table-backed stacked bar mark')
+    }
+    expect(mark.options.get().resolved).toMatchObject({
+      id: 'Stacked bars (y0)',
+      layout: 'stacked',
+      scales: { x: 'x', y: 'y0' },
+      interval: { start: 'start', end: 'x' },
+      label: '',
+      layers: [
+        { id: '0:dry', y: 'y0', label: 'dry', fill: '#336699' },
+        { id: '1:normal', y: 'y1', label: 'normal', fill: '#ffff00' },
+      ],
+    })
+    expect(
+      Array.from({ length: mark.data.length }, (_, index) => [
+        mark.data.valueAt('start', index),
+        mark.data.valueAt('x', index),
+        mark.data.valueAt('y0', index),
+        mark.data.valueAt('y1', index),
+      ]),
+    ).toEqual([
+      [0, 0, 0.2, 0.8],
+      [0, 1000, 0.4, 0.6],
+    ])
+    const other = config.marks![1]
+    if (!('options' in other)) throw new Error('Expected an updatable bar mark')
+    expect(other.options.get().resolved).toMatchObject({
+      scales: { x: 'x', y: 'y1' },
+      y: 'y',
+    })
+  })
+
+  it('reuses stacked bars while preserving missing and unreliable sample gaps', () => {
+    const handles = handleCache()
+    const items = [
+      createChartSeries('first', 'bar', ['first']),
+      createChartSeries('second', 'bar', ['second']),
+    ]
+    const resources = {
+      first: createResource([
+        { x: new Date(0), y: 0.2 },
+        { x: new Date(1000), y: 0.3, flag: '6' },
+        { x: new Date(2000), y: 0.4 },
+      ]),
+      second: createResource([
+        { x: new Date(0), y: 0.8 },
+        { x: new Date(2000), y: 0.6 },
+      ]),
+    }
+    const build = () =>
+      toPlotConfig(
+        { id: 'subplot', title: '', series: items },
+        {},
+        defaultChartSettings.timeSeriesChart,
+        { handles },
+        resources,
+      )
+    const first = build().marks![0]
+    if (!('data' in first) || !('valueAt' in first.data)) {
+      throw new Error('Expected a table-backed stacked bar mark')
+    }
+    const table = first.data
+    expect(table.valueAt('y0', 1)).toBeNaN()
+    expect(table.valueAt('y1', 1)).toBeNaN()
+    expect(table.valueAt('start', 2)).toBe(1000)
+    resources.first = createResource([
+      { x: new Date(0), y: 0.5 },
+      { x: new Date(2000), y: 0.7 },
+    ])
+    items[1].style.fill = '#ff0000'
+    const second = build().marks![0]
+    expect(second).toBe(first)
+    expect(first.data).toBe(table)
+    expect(table.length).toBe(2)
+    expect(table.valueAt('y0', 1)).toBe(0.7)
+    expect(table.valueAt('y1', 1)).toBe(0.6)
+    if (!('options' in second)) throw new Error('Expected an updatable bar mark')
+    expect(second.options.get().resolved).toMatchObject({
+      layers: [{ fill: '#336699' }, { fill: '#ff0000' }],
+    })
+  })
+
   it('gives time bars explicit preceding-sample intervals without bridging missing values', () => {
     const handles = handleCache()
     const config: ChartConfig = {
