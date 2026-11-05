@@ -12,6 +12,7 @@ import { fetchWebResourcesDefaultUserSettings } from '@/services/useDefaultUserS
 
 export { deserializeUserSettings } from '@/lib/user-settings/deserializeUserSettings'
 export type { UserSettingsOverride } from '@/lib/user-settings/deserializeUserSettings'
+import type { ColorContrast } from '@deltares/fews-web-oc-charts'
 import type {
   ChartEngine,
   ChartWheelMode,
@@ -98,6 +99,9 @@ export const useUserSettingsStore = defineStore(
     const route = useRoute()
     const chartEngine = computed<ChartEngine>(() =>
       get('charts.engine')?.value === 'v5' ? 'v5' : 'v4',
+    )
+    const chartColorContrast = computed<ColorContrast>(() =>
+      get('charts.colorContrast')?.value === 'none' ? 'none' : 'auto',
     )
 
     // Settings disabled in the FEWS config are hidden from the user.
@@ -253,6 +257,7 @@ export const useUserSettingsStore = defineStore(
       preferredLayerKind,
       webResourcesOverrides,
       chartEngine,
+      chartColorContrast,
       listByGroup,
       listFavorite,
       get,

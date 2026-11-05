@@ -34,6 +34,7 @@ export interface ToPlotConfigOptions {
   domain?: [Date, Date]
   locale?: string
   theme?: ThemeMode
+  colorContrast?: PlotConfig['colorContrast']
   themeElement?: Element
   verticalProfile?: boolean
   plugins?: PlotConfig['plugins']
@@ -102,6 +103,7 @@ function buildPlotConfig(
     margins: getV5PlotMargins(settings, options),
     align: options.align,
     theme: options.theme ?? 'auto',
+    colorContrast: options.colorContrast ?? 'auto',
     themeElement: options.themeElement,
     scales,
     directions,
