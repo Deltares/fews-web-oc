@@ -63,6 +63,7 @@
       v-model:displayType="displayType"
       :information-content="informationContent"
       :dynamic-report="dynamicReport"
+      :downloadReport="downloadReport"
       :settings="settings"
     >
     </TimeSeriesComponent>
@@ -98,11 +99,12 @@ interface Props {
   currentTime?: Date
   informationContent?: string | null
   dynamicReport?: DynamicReportPanelConfig | null
+  downloadReport?: boolean
   filter?: FilterActionsFilter | TimeSeriesGridActionsFilter
   settings: ChartsSettings
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { downloadReport: true })
 
 const { t } = useI18n()
 

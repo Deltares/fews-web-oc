@@ -99,6 +99,7 @@
       <DynamicReportPanel
         :config="dynamicReport"
         :selectedDate="selectedDate"
+        :downloadReport="downloadReport"
       />
     </v-window-item>
   </v-window>
@@ -166,10 +167,12 @@ interface Props {
   currentTime?: Date
   informationContent?: string | null
   dynamicReport?: DynamicReportPanelConfig | null
+  downloadReport?: boolean
   settings?: ChartsSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  downloadReport: true,
   config: () => {
     return {
       title: '',

@@ -33,6 +33,14 @@ vi.mock('@/components/general/ShadowFrame.vue', () => ({
   },
 }))
 
+vi.mock('@/components/reports/DownloadReportButton.vue', () => ({
+  default: {
+    props: ['displayId', 'disabled'],
+    template:
+      '<button class="download" :disabled="disabled">{{ displayId }}</button>',
+  },
+}))
+
 vi.mock('vuetify/components/VAlert', () => ({
   VAlert: {
     render(this: { $slots: { default?: () => any } }) {
@@ -61,6 +69,7 @@ describe('DynamicReportPanel', () => {
   function mountPanel(initial: {
     config: DynamicReportPanelConfig
     selectedDate?: Date
+    downloadReport?: boolean
   }) {
     const props = reactive({ ...initial })
     app = createApp({
@@ -68,6 +77,7 @@ describe('DynamicReportPanel', () => {
         h(DynamicReportPanel, {
           config: props.config,
           selectedDate: props.selectedDate,
+          downloadReport: props.downloadReport,
         }),
     })
     app.use(createI18n({ legacy: false, locale: 'en', messages: { en } }))
@@ -134,5 +144,28 @@ describe('DynamicReportPanel', () => {
       en.reports.loadFailed,
     )
     expect(container.textContent).not.toContain(en.reports.noReportAvailable)
+  })
+
+  it('only enables download for a completed report and respects the download setting', async () => {
+    let resolve!: (html: string) => void
+    getDynamicReportDisplay.mockImplementation(
+      () =>
+        new Promise<string>((res) => {
+          resolve = res
+        }),
+    )
+    const props = mountPanel({ config: config(), downloadReport: true })
+    await flushPromises()
+    expect(container.querySelector('.download')).toBeNull()
+
+    resolve('Loaded report')
+    await flushPromises()
+    const button = container.querySelector<HTMLButtonElement>('.download')!
+    expect(button.disabled).toBe(false)
+    expect(button.textContent).toBe('display')
+
+    props.downloadReport = false
+    await nextTick()
+    expect(container.querySelector('.download')).toBeNull()
   })
 })

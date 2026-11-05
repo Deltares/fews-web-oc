@@ -1,5 +1,15 @@
 <template>
-  <ShadowFrame v-if="reportHtml" :htmlContent="reportHtml" />
+  <div v-if="reportHtml" class="d-flex flex-column h-100 w-100">
+    <div v-if="downloadReport" class="d-flex justify-end flex-shrink-0">
+      <DownloadReportButton
+        :displayId="config.displayId"
+        :locationId="filter.locationId"
+        :time="filter.time"
+        :disabled="isLoading || !isReady || !!error || isMissingTime"
+      />
+    </div>
+    <ShadowFrame :htmlContent="reportHtml" />
+  </div>
   <v-alert v-else-if="error" type="error" variant="tonal" class="ma-2">
     {{ t('reports.loadFailed') }}
   </v-alert>
@@ -11,6 +21,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import ShadowFrame from '@/components/general/ShadowFrame.vue'
+import DownloadReportButton from '@/components/reports/DownloadReportButton.vue'
 import { configManager } from '@/services/application-config'
 import {
   type DynamicReportPanelConfig,
@@ -21,9 +32,10 @@ import { useI18n } from 'vue-i18n'
 interface Props {
   config: DynamicReportPanelConfig
   selectedDate?: Date
+  downloadReport?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { downloadReport: true })
 
 const { t } = useI18n()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -41,7 +53,7 @@ const filter = computed(() => ({
   time: hasTimeDimension.value ? props.selectedDate?.toISOString() : undefined,
 }))
 
-const { reportHtml, isReady, error } = useDynamicReportHtml(
+const { reportHtml, isReady, isLoading, error } = useDynamicReportHtml(
   baseUrl,
   () => props.config.displayId,
   () => props.config.capabilities,
