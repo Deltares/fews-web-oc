@@ -6,8 +6,37 @@ import {
 } from '@deltares/fews-web-oc-charts'
 import { getDisplayTimeZone } from '@/lib/date/timeZone'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
+import type {
+  ChartAxis,
+  ChartAxisKind,
+  ChartAxisPosition,
+} from '@/lib/charts/types/ChartAxis'
 import type { ChartsSettings } from '@/lib/topology/componentSettings'
 import { merge } from 'lodash-es'
+
+const axisTypes: Record<ChartAxisKind, AxisType> = {
+  time: AxisType.time,
+  value: AxisType.value,
+  degrees: AxisType.degrees,
+  band: AxisType.band,
+}
+
+const axisPositions: Record<ChartAxisPosition, AxisPosition> = {
+  left: AxisPosition.Left,
+  right: AxisPosition.Right,
+  bottom: AxisPosition.Bottom,
+  top: AxisPosition.Top,
+}
+
+function toV4AxisOptions(
+  axes?: ChartAxis[],
+): CartesianAxesOptions['x'] | undefined {
+  return axes?.map(({ kind, position, ...options }) => ({
+    ...options,
+    type: axisTypes[kind],
+    ...(position ? { position: axisPositions[position] } : {}),
+  }))
+}
 
 function getDefaultMargin() {
   return {
@@ -172,8 +201,8 @@ export function getAxisOptions(
   },
 ): CartesianAxesOptions {
   const configOptions: Partial<CartesianAxesOptions> = {
-    x: config?.xAxis,
-    y: config?.yAxis,
+    ...(config?.xAxis ? { x: toV4AxisOptions(config.xAxis) } : {}),
+    ...(config?.yAxis ? { y: toV4AxisOptions(config.yAxis) } : {}),
   }
 
   const extraOptions = [configOptions]

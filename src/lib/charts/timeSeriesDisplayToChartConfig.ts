@@ -12,11 +12,7 @@ import {
   chartMarkerFromFews,
   cssStyleFromFewsBar,
 } from './styles'
-import {
-  AxisOptions,
-  AxisPosition,
-  AxisType,
-} from '@deltares/fews-web-oc-charts'
+import type { ChartAxis, ChartAxisPosition } from './types/ChartAxis'
 import { hashString } from '../utils/hash.js'
 
 const MAX_MILLISECONDS_FROM_EPOCH = 8.64e15
@@ -254,7 +250,7 @@ function getChartStyle(
 
 function xAxisFromPlotItemXAxis(
   xAxis: TimeSeriesDisplayPlotItemXAxis,
-): AxisOptions[] {
+): ChartAxis[] {
   const axes = []
   const includeZero =
     xAxis.axisMinValue === 0 && xAxis.axisMaxValue === undefined
@@ -265,8 +261,8 @@ function xAxisFromPlotItemXAxis(
     xAxis.axisMinValue === 0 &&
     xAxis.axisMaxValue === 360
 
-  const axis: AxisOptions = {
-    type: isDegrees ? AxisType.degrees : AxisType.value,
+  const axis: ChartAxis = {
+    kind: isDegrees ? 'degrees' : 'value',
     label: xAxis.axisLabel,
     includeZero,
   }
@@ -281,9 +277,9 @@ function xAxisFromPlotItemXAxis(
   return axes
 }
 
-function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): AxisOptions[] {
-  const axes: AxisOptions[] = []
-  const positions = [AxisPosition.Left, AxisPosition.Right]
+function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): ChartAxis[] {
+  const axes: ChartAxis[] = []
+  const positions: ChartAxisPosition[] = ['left', 'right']
   for (const position of positions) {
     const axisItem = subplot.items.find(
       (item) => item.yAxis?.axisPosition === position,
@@ -293,7 +289,7 @@ function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): AxisOptions[] {
 
     if (axisItem.type === 'horizontalColorCode') {
       axes.push({
-        type: AxisType.band,
+        kind: 'band',
         position,
         label: yAxis.axisLabel,
       })
@@ -303,8 +299,8 @@ function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): AxisOptions[] {
 
     const includeZero =
       yAxis.axisMinValue === 0 && yAxis.axisMaxValue === undefined
-    const axis: AxisOptions = {
-      type: AxisType.value,
+    const axis: ChartAxis = {
+      kind: 'value',
       position,
       label: yAxis.axisLabel,
       includeZero,
@@ -313,7 +309,7 @@ function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): AxisOptions[] {
     if (yAxis.axisMinValue !== undefined && yAxis.axisMaxValue !== undefined) {
       const domain: [number, number] = [yAxis.axisMinValue, yAxis.axisMaxValue]
       if (yAxis.axisMinValue === 0 && yAxis.axisMaxValue === 360) {
-        axis.type = AxisType.degrees
+        axis.kind = 'degrees'
         axis.domain = domain
         axis.nice = false
       } else {

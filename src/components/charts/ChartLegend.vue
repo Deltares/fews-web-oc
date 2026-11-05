@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Margin } from '@deltares/fews-web-oc-charts'
+import type { ChartMargin } from '@/lib/charts/types/TimeSeriesChartProps'
 import type { Tag } from '@/lib/charts/tags'
 import { useElementSize, useToggle } from '@vueuse/core'
 import { computed, useTemplateRef, watch } from 'vue'
@@ -74,7 +74,7 @@ import type { ChartsSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   tags: Tag[]
-  margin: Margin
+  margin: ChartMargin
   settings:
     | ChartsSettings['timeSeriesChart']['legend']
     | ChartsSettings['verticalProfileChart']['legend']

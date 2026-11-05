@@ -2,6 +2,7 @@ import { createApp, h, shallowRef, type App, type Component } from 'vue'
 import vuetify from '../../src/plugins/vuetify'
 import { i18n } from '../../src/plugins/i18n'
 import { createPinia, setActivePinia } from 'pinia'
+import { createMemoryHistory, createRouter } from 'vue-router'
 
 const pinia = createPinia()
 
@@ -47,6 +48,12 @@ let app: App | undefined
     app.use(vuetify)
     app.use(i18n)
     app.use(pinia)
+    app.use(
+      createRouter({
+        history: createMemoryHistory(),
+        routes: [{ path: '/:pathMatch(.*)*', component: host }],
+      }),
+    )
     app.mount('#root')
   }
 }

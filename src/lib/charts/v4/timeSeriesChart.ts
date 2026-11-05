@@ -3,22 +3,66 @@ import {
   ChartArea,
   ChartBar,
   ChartLine,
-  ChartMarker,
+  ChartMarker as V4ChartMarker,
   ChartMatrix,
   ChartRule,
   DataValue,
   MouseOverOptions,
+  SymbolOptions,
   TooltipAnchor,
-  TooltipOptions,
+  type ChartOptions,
+  type DataPoint,
 } from '@deltares/fews-web-oc-charts'
-import { ChartConfig } from './types/ChartConfig'
-import { ChartSeries } from './types/ChartSeries'
-import { Series } from '../timeseries/timeSeries'
-import { dataFromResources, removeUnreliableData } from './dataFromResources'
+import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
+import type { ChartSeries } from '@/lib/charts/types/ChartSeries'
+import type { ChartMarker } from '@/lib/charts/types/ChartMarker'
+import type { Series } from '@/lib/timeseries/timeSeries'
+import type {
+  SeriesArrayData,
+  SeriesData,
+} from '@/lib/timeseries/types/SeriesData'
+import { dataFromResources, removeUnreliableData } from '../dataFromResources'
 import {
   getColorMap,
   horizontalColorCodeDataFromData,
-} from './horizontalColorCode'
+} from '../horizontalColorCode'
+
+const symbolIds: Record<ChartMarker['shape'], number> = {
+  circle: 0,
+  cross: 1,
+  diamond: 2,
+  square: 3,
+  asterisk: 4,
+  'triangle-up': 5,
+  'triangle-down': 5,
+  wye: 6,
+  x: 6,
+  plus: 1,
+  rectangle: 3,
+}
+
+function toV4Symbol(marker?: ChartMarker): SymbolOptions | undefined {
+  if (!marker) return
+  return {
+    id: symbolIds[marker.shape],
+    size: marker.size,
+    skip: marker.skip,
+  }
+}
+
+function toV4Data(data: (SeriesData | SeriesArrayData)[]): DataPoint[] {
+  // Keep FEWS flag metadata and nullable array values; the library type omits both.
+  return data as unknown as DataPoint[]
+}
+
+function toV4MatrixData(
+  data: ReturnType<typeof horizontalColorCodeDataFromData>,
+): DataPoint[] {
+  // Matrix y values are categories, which the library's DataPoint type omits.
+  return data.map(
+    ({ x, y, color }) => ({ x, y, color }) as unknown as DataPoint,
+  )
+}
 
 export function clearChart(axis: CartesianAxes) {
   axis.removeAllCharts()
@@ -33,9 +77,10 @@ function addToChart(
   const id = chartSeries.id
 
   const rawData = dataFromResources(chartSeries.dataResources, series)
-  const data = removeUnreliableData(rawData)
+  const reliableData = removeUnreliableData(rawData)
+  const data = toV4Data(reliableData)
 
-  const tooltip: TooltipOptions = {
+  const tooltip: NonNullable<ChartOptions['tooltip']> = {
     toolTipFormatter: (d) => {
       const tooltipElement = document.createElement('div')
       const yValueLabel = Array.isArray(d.y) ? d.y.join('-') : d.y
@@ -69,8 +114,11 @@ function addToChart(
       chart = new ChartBar(data, { tooltip })
       break
     case 'horizontalColorCode': {
-      const matrixData = horizontalColorCodeDataFromData(chartSeries, data)
-      chart = new ChartMatrix(matrixData, {
+      const matrixData = horizontalColorCodeDataFromData(
+        chartSeries,
+        reliableData,
+      )
+      chart = new ChartMatrix(toV4MatrixData(matrixData), {
         y: {
           paddingInner: chartSeries.barMargin,
         },
@@ -82,8 +130,8 @@ function addToChart(
       break
     }
     default:
-      chart = new ChartMarker(data, {
-        symbol: chartSeries.marker,
+      chart = new V4ChartMarker(data, {
+        symbol: toV4Symbol(chartSeries.marker),
         tooltip,
       })
   }
@@ -154,11 +202,14 @@ export function updateChartData(
     }
 
     const rawData = dataFromResources(chartSeries.dataResources, series)
-    const data = removeUnreliableData(rawData)
+    const reliableData = removeUnreliableData(rawData)
+    const data = toV4Data(reliableData)
 
     const matrixData =
       chartSeries.type === 'horizontalColorCode'
-        ? horizontalColorCodeDataFromData(chartSeries, data)
+        ? toV4MatrixData(
+            horizontalColorCodeDataFromData(chartSeries, reliableData),
+          )
         : undefined
 
     // Update each matching chart

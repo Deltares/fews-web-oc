@@ -19,8 +19,7 @@
           :config="subplot"
           :series="chartSeries"
           :highlightTime="selectedDate"
-          :zoomHandler="sharedZoomHandler"
-          :panHandler="sharedPanHandler"
+          :group="chartGroup"
           :settings="settings.timeSeriesChart"
           :forecastLegend="config.forecastLegend"
           :maximized="maximizedChartSubplotId === subplot.id"
@@ -59,7 +58,7 @@
           :series="elevationChartSeries"
           :key="subplot.id"
           :style="{ minWidth: `${getElevationChartMinWidth(subplot.id)}%` }"
-          :zoomHandler="sharedVerticalZoomHandler"
+          :group="chartGroup"
           :settings="settings.verticalProfileChart"
           :maximized="maximizedElevationSubplotId === subplot.id"
           @toggle-maximize="toggleMaximizeSubplot('elevation', subplot.id)"
@@ -131,7 +130,7 @@
 
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
-import TimeSeriesChart from '../charts/TimeSeriesChart.vue'
+import TimeSeriesChart from '../charts/TimeSeriesChartSwitch.vue'
 import TimeSeriesChartBrush from '../charts/TimeSeriesChartBrush.vue'
 import TimeSeriesTable from '../table/TimeSeriesTable.vue'
 import DynamicReportPanel from './DynamicReportPanel.vue'
@@ -235,8 +234,7 @@ const userSettings = useUserSettingsStore()
 const isEditing = ref(false)
 const confirmationDialog = ref(false)
 const { xs } = useDisplay()
-const { sharedZoomHandler, sharedPanHandler, sharedVerticalZoomHandler } =
-  useChartHandlers()
+const chartGroup = useChartHandlers()
 
 type SubplotListKey = 'chart' | 'elevation'
 

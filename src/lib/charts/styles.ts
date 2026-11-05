@@ -1,17 +1,5 @@
 import { SvgPropertiesHyphen } from 'csstype'
-import { SymbolOptions } from '@deltares/fews-web-oc-charts'
-
-const SymbolType = {
-  Circle: 0,
-  Cross: 1,
-  Diamond: 2,
-  Square: 3,
-  Asterisk: 4,
-  TriangleUp: 5,
-  Wye: 6,
-} as const
-
-type SymbolType = (typeof SymbolType)[keyof typeof SymbolType]
+import type { ChartMarker, ChartMarkerShape } from './types/ChartMarker'
 
 /**
  * Converts a hexadecimal color code to its RGB representation.
@@ -207,9 +195,10 @@ export function cssStyleFromFewsMarker(item: {
 export function chartMarkerFromFews(
   style: string,
   markerSize: number = 3,
-): SymbolOptions {
-  const marker: SymbolOptions = {
-    id: SymbolType.Circle,
+): ChartMarker {
+  let shape: ChartMarkerShape = 'circle'
+  const marker: ChartMarker = {
+    shape,
     size: markerSize ** 2,
     skip: 1,
   }
@@ -217,30 +206,31 @@ export function chartMarkerFromFews(
     case 'none':
       break
     case 'diamond':
-      marker.id = SymbolType.Diamond
+      shape = 'diamond'
       break
     case 'square':
-      marker.id = SymbolType.Square
+      shape = 'square'
       break
     case 'triangleup':
-      marker.id = SymbolType.TriangleUp
+      shape = 'triangle-up'
       break
     case 'triangledown':
-      marker.id = SymbolType.TriangleUp
+      shape = 'triangle-down'
       break
     case 'circle':
-      marker.id = SymbolType.Circle
+      shape = 'circle'
       break
     case 'x':
-      marker.id = SymbolType.Wye
+      shape = 'wye'
       break
     case '+':
-      marker.id = SymbolType.Cross
+      shape = 'cross'
       break
     case 'rectangle':
-      marker.id = SymbolType.Square
+      shape = 'rectangle'
       break
   }
+  marker.shape = shape
   return marker
 }
 

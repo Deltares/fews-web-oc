@@ -263,7 +263,7 @@ export function getSubplotWithDomain(
   if (!domain) return subplot
 
   const axis = subplot.xAxis?.[0]
-  const updatedAxis = { ...axis, domain }
+  const updatedAxis = { ...axis, kind: axis?.kind ?? 'time', domain }
 
   return {
     ...subplot,

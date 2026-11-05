@@ -32,7 +32,7 @@ vi.mock('@deltares/fews-web-oc-charts', () => {
   }
 })
 
-import { refreshChart, updateChartData } from '@/lib/charts/timeSeriesChart'
+import { refreshChart, updateChartData } from '@/lib/charts/v4/timeSeriesChart'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 
 function createAxis() {
