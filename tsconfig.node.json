@@ -8,7 +8,8 @@
   },
   "include": [
     "vite.config.ts",
-    "vite.config.shared.ts",
-    "vite.config.standalone.ts"
+    "webocConfig.shared.ts",
+    "vite.config.standalone.ts",
+    "vitest.config.ts"
   ]
 }

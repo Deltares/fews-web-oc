@@ -162,8 +162,5 @@ export function createWebOCConfig(
     optimizeDeps: {
       exclude: ['@deltares/fews-ssd-webcomponent', 'vuetify'],
     },
-    test: {
-      include: ['**/*.test.?(c|m)[jt]s?(x)'],
-    },
   }
 }
