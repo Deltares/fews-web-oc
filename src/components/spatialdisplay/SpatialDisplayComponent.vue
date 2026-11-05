@@ -147,6 +147,7 @@
           width="50vw"
           max-width="250"
           :locations="locations"
+          :geojson="geojson"
           :locationToChildrenMap="locationToChildrenMap"
           :selectedLocationIds="selectedLocationIds"
           v-model:selectedLocationCategories="selectedLocationCategories"

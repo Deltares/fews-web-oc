@@ -1,49 +1,42 @@
 <template>
   <v-list-item
     v-for="item in itemGroups"
-    :key="item.iconLabel ?? defaultIconValue"
+    :key="item.groupName ?? defaultIconValue"
+    :prepend-gap="0"
     :class="{
-      'text-disabled': !isLabelSelected(item.iconLabel),
+      'text-disabled': !isGroupSelected(item),
     }"
-    @click="toggleAll(item.iconLabel)"
+    @click="toggleAll(item)"
   >
     <template #prepend>
       <v-icon
-        v-if="item.thresholdIconName ?? item.iconName"
-        :icon="toResourceIcon(item.thresholdIconName ?? item.iconName ?? '')"
+        v-if="item.iconName"
+        :icon="toResourceIcon(item.iconName)"
+        :aria-label="item.groupName"
+        size="16"
         class="mr-2 location-icon"
         :class="{
-          'location-icon-selected': isLabelSelected(item.iconLabel),
+          'location-icon-selected': isGroupSelected(item),
         }"
-        size="16"
       />
-      <svg
+      <LocationGeometryIcon
         v-else
         class="mr-2 location-icon"
         :class="{
-          'location-icon-selected': isLabelSelected(item.iconLabel),
+          'location-icon-selected': isGroupSelected(item),
         }"
-        viewBox="0 0 16 16"
-        width="16"
-        height="16"
-        aria-hidden="true"
-      >
-        <circle
-          cx="8"
-          cy="8"
-          r="7"
-          fill="#dfdfdf"
-          stroke="black"
-          stroke-width="2"
-        />
-      </svg>
+        :hasPointFeatures="item.hasPointFeatures"
+        :hasNonPointFeatures="item.hasNonPointFeatures"
+        :isDark="isDark"
+      />
     </template>
     <v-list-item-title>
-      {{ item.iconLabel ?? t('search.otherLocations') }}
+      {{ item.groupName ?? t('search.otherLocations') }}
     </v-list-item-title>
     <template #append>
       <template v-for="category in item.categories" :key="category.value">
         <v-btn
+          v-show="item.categories.length > 1"
           size="xsmall"
           @click.stop="toggleItem(category.value)"
           class="location-icon h-100"
@@ -51,14 +44,20 @@
             'location-icon-selected': isSelected(category.value),
           }"
         >
+          <LocationGeometryIcon
+            v-if="!category.isPointCategory"
+            :hasPointFeatures="false"
+            :hasNonPointFeatures="true"
+            :isDark="isDark"
+          />
           <v-icon
-            v-if="category.thresholdIconName"
+            v-else-if="category.thresholdIconName"
             :icon="toResourceIcon(category.thresholdIconName)"
-            :aria-label="`${item.iconLabel} - treshold`"
+            :aria-label="`${item.groupName ?? t('search.otherLocations')} - treshold`"
             size="16"
           />
           <svg
-            v-else-if="item.categories.length > 1"
+            v-else
             class="empty-threshold-icon"
             viewBox="0 0 16 16"
             width="16"
@@ -102,6 +101,8 @@
 import { computed } from 'vue'
 import { toResourceIcon } from '@/lib/icons'
 import { useI18n } from 'vue-i18n'
+import LocationGeometryIcon from '@/components/wms/locations/LocationGeometryIcon.vue'
+import { getLocationGroupName } from '@/lib/map/locations'
 
 type LegendItem = {
   category: string
@@ -109,16 +110,22 @@ type LegendItem = {
   iconName?: string
   thresholdIconName?: string
   value: string
+  isPointCategory: boolean
+  hasPointFeatures: boolean
+  hasNonPointFeatures: boolean
 }
 
 type LegendItemGroup = {
-  iconLabel?: string
+  groupName?: string
   iconName?: string
-  thresholdIconName?: string
   categories: LegendItem[]
+  hasPointFeatures: boolean
+  hasNonPointFeatures: boolean
 }
 
 const { t } = useI18n()
+
+defineProps<{ isDark: boolean }>()
 
 const items = defineModel<LegendItem[]>('items', { required: true })
 const modelValue = defineModel<string[]>({
@@ -127,24 +134,37 @@ const modelValue = defineModel<string[]>({
 const defaultIconValue = '__default-location-icon__'
 
 const itemGroups = computed(() => {
-  const groupedByLabel = new Map<string | undefined, LegendItemGroup>()
+  const groupedByName = new Map<string | undefined, LegendItemGroup>()
 
   items.value.forEach((item) => {
-    const group = groupedByLabel.get(item.iconLabel)
+    const groupName = getLocationGroupName(item)
+    const group = groupedByName.get(groupName)
     if (group) {
       group.categories.push(item)
       return
     }
 
-    groupedByLabel.set(item.iconLabel, {
-      iconLabel: item.iconLabel,
-      iconName: item.iconName,
-      thresholdIconName: item.thresholdIconName,
+    groupedByName.set(groupName, {
+      groupName,
       categories: [item],
+      hasPointFeatures: item.hasPointFeatures,
+      hasNonPointFeatures: item.hasNonPointFeatures,
     })
   })
 
-  return Array.from(groupedByLabel.values())
+  groupedByName.forEach((group) => {
+    group.iconName = group.categories.find(
+      (category) => category.isPointCategory && category.iconName,
+    )?.iconName
+    group.hasPointFeatures = group.categories.some(
+      (category) => category.hasPointFeatures,
+    )
+    group.hasNonPointFeatures = group.categories.some(
+      (category) => category.hasNonPointFeatures,
+    )
+  })
+
+  return Array.from(groupedByName.values())
 })
 
 function toggleItem(iconValue: string): void {
@@ -157,20 +177,14 @@ function isSelected(iconValue: string): boolean {
   return modelValue.value.includes(iconValue)
 }
 
-function isLabelSelected(iconLabel?: string): boolean {
-  const categoryValues = items.value
-    .filter((category) => category.iconLabel === iconLabel)
-    .map((category) => category.value)
-
-  return categoryValues.some(isSelected)
+function isGroupSelected(group: LegendItemGroup): boolean {
+  return group.categories.some((category) => isSelected(category.value))
 }
 
-function toggleAll(iconLabel?: string): void {
-  const itemValues = items.value
-    .filter((item) => item.iconLabel === iconLabel)
-    .map((item) => item.value)
+function toggleAll(group: LegendItemGroup): void {
+  const itemValues = group.categories.map((item) => item.value)
 
-  modelValue.value = isLabelSelected(iconLabel)
+  modelValue.value = isGroupSelected(group)
     ? modelValue.value.filter((value) => !itemValues.includes(value))
     : Array.from(new Set([...modelValue.value, ...itemValues]))
 }

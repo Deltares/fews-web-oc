@@ -29,7 +29,7 @@ const paint = computed<FillLayerSpecification['paint']>(() => ({
     props.isDark ? 0.35 : 0.8,
     ['boolean', ['feature-state', 'hover'], false],
     props.isDark ? 0.3 : 0.6,
-    props.isDark ? 0.2 : 0.3,
+    0,
   ],
   'fill-outline-color': props.isDark ? 'white' : 'black',
 }))

@@ -27,7 +27,7 @@
       class="number-stepper-field__input"
       :style="{ width: `${size}ch` }"
       type="text"
-      inputmode="decimal"
+      inputmode="numeric"
       @keydown="onKeydown"
     />
     <!-- Prevent mousedown so the input keeps focus -->

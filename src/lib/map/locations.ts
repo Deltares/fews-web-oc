@@ -8,15 +8,16 @@ export interface ExtendedLocation extends Location {
   webocIcon: string | undefined
   sortKey: number
   invertedSortKey: number
+  isNonPointLocation?: boolean
 }
 
 export const locationLayerIds = Object.values(mapIds.location.layer)
 
-// NOTE: When multiple layers are clicked the order of the layers here is important.
 export const clickableLocationLayerIds = [
   mapIds.location.layer.circle,
   mapIds.location.layer.symbol,
   mapIds.location.layer.childSymbol,
+  mapIds.location.layer.line,
   mapIds.location.layer.fill,
 ]
 
@@ -38,6 +39,7 @@ export function addPropertiesToLocationGeojson(
         webocIcon: getIconName(feature),
         sortKey: getSortKey(feature),
         invertedSortKey: getInvertedSortKey(feature),
+        isNonPointLocation: isNonPointGeometry(feature.geometry),
       },
     }
   })
@@ -112,4 +114,44 @@ export function shouldBehaveLikeChildFilter(
       ['all', ['has', 'parentLocationId'], ['!', selected]]
     : // Parent: no parentLocationId OR selected
       ['any', ['!', ['has', 'parentLocationId']], selected]
+}
+
+export function isNonPointGeometry(geometry: Geometry | undefined): boolean {
+  return (
+    geometry?.type === 'Polygon' ||
+    geometry?.type === 'MultiPolygon' ||
+    geometry?.type === 'LineString' ||
+    geometry?.type === 'MultiLineString' ||
+    geometry?.type === 'GeometryCollection'
+  )
+}
+
+export function isPointGeometry(geometry: Geometry | undefined): boolean {
+  return geometry?.type === 'Point' || geometry?.type === 'MultiPoint'
+}
+
+export interface LocationWithIconLabel extends Location {
+  iconLabel?: string
+}
+
+export function getLocationGroupName(location: {
+  iconLabel?: string
+  iconName?: string
+}): string | undefined {
+  return location.iconLabel ?? location.iconName
+}
+
+export function getLocationCategory(
+  feature: Feature<Geometry, LocationWithIconLabel>,
+): string {
+  const isPoint = isPointGeometry(feature.geometry)
+  if (!isPoint) {
+    const groupName = JSON.stringify(
+      getLocationGroupName(feature.properties) ?? null,
+    )
+    return `__non_point_location_group__:${groupName}`
+  }
+  const activeIcon =
+    feature.properties.thresholdIconName ?? feature.properties.iconName
+  return `${getLocationGroupName(feature.properties)}-${activeIcon}`
 }
