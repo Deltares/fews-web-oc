@@ -1,6 +1,13 @@
 import { AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
 import { GetMapFilter } from '@deltares/fews-wms-requests'
-import type { Map, StyleSpecification } from 'maplibre-gl'
+import type { FeatureCollection } from 'geojson'
+import type {
+  GeoJSONFeatureDiff,
+  GeoJSONSourceDiff,
+  GeoJSONSourceSpecification,
+  Map,
+  StyleSpecification,
+} from 'maplibre-gl'
 
 const LAYER_PREFIX = 'weboc-layer-'
 const SOURCE_PREFIX = 'weboc-source-'
@@ -104,4 +111,54 @@ export function getFilterFromLayerOptions(options: AnimatedRasterLayerOptions) {
   }
 
   return filter
+}
+
+/**
+ * Returns the property changes between two versions of a feature collection.
+ * Returns undefined if the changes are not limited to properties, which means
+ * that the features or their geometry objects differ. Geometry is compared by
+ * reference, because comparing large geometries by value is too expensive.
+ */
+export function getGeojsonPropertiesDiff(
+  previous: GeoJSONSourceSpecification['data'] | undefined,
+  next: GeoJSONSourceSpecification['data'],
+  promoteId: string,
+): GeoJSONSourceDiff | undefined {
+  if (!isFeatureCollection(previous) || !isFeatureCollection(next)) return
+  if (previous.features.length !== next.features.length) return
+
+  const ids = new Set<string | number>()
+  const update: GeoJSONFeatureDiff[] = []
+  for (const [index, feature] of next.features.entries()) {
+    const previousFeature = previous.features[index]
+    const id = feature.properties?.[promoteId]
+    if (
+      id === undefined ||
+      ids.has(id) ||
+      previousFeature.properties?.[promoteId] !== id ||
+      previousFeature.geometry !== feature.geometry
+    ) {
+      return
+    }
+    ids.add(id)
+
+    const properties = feature.properties ?? {}
+    const previousProperties = previousFeature.properties ?? {}
+    const addOrUpdateProperties = Object.entries(properties)
+      .filter(([key, value]) => previousProperties[key] !== value)
+      .map(([key, value]) => ({ key, value }))
+    const removeProperties = Object.keys(previousProperties).filter(
+      (key) => !(key in properties),
+    )
+    if (addOrUpdateProperties.length || removeProperties.length) {
+      update.push({ id, addOrUpdateProperties, removeProperties })
+    }
+  }
+  return { update }
+}
+
+function isFeatureCollection(
+  data: GeoJSONSourceSpecification['data'] | undefined,
+): data is FeatureCollection {
+  return typeof data === 'object' && data.type === 'FeatureCollection'
 }

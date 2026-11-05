@@ -21,7 +21,7 @@ import {
   SourceSpecification,
 } from 'maplibre-gl'
 import { useLayerOrder } from '@/services/useLayerOrder'
-import { isStyleReady } from '@/lib/map'
+import { getGeojsonPropertiesDiff, isStyleReady } from '@/lib/map'
 
 export function useLayer(
   layerId: string,
@@ -135,12 +135,16 @@ export function useSource(
   const source = shallowRef<Source>()
 
   const { map } = useMap()
+  let currentGeojsonData: GeoJSONSourceSpecification['data'] | undefined
 
   function addSource(options: SourceSpecification) {
     if (!map) return
 
     map.addSource(sourceId, options)
     source.value = map?.getSource(sourceId)
+    if (isGeojsonSourceSpecification(options)) {
+      currentGeojsonData = options.data
+    }
   }
 
   watch(
@@ -167,14 +171,35 @@ export function useSource(
     }
 
     if (isGeojsonSourceSpecification(options)) {
-      const geojsonSource = source as GeoJSONSource
-      void geojsonSource.setData(options.data)
+      updateGeojsonSource(source as GeoJSONSource, options)
       return
     }
 
     console.warn(
       `Source with id ${sourceId} is not an image source, cannot update source state.`,
     )
+  }
+
+  // Sending GeoJSON to the worker is expensive for large geometries, so only
+  // changed properties are sent if the geometry stays the same.
+  function updateGeojsonSource(
+    source: GeoJSONSource,
+    options: GeoJSONSourceSpecification,
+  ) {
+    const diff =
+      typeof options.promoteId === 'string'
+        ? getGeojsonPropertiesDiff(
+            currentGeojsonData,
+            options.data,
+            options.promoteId,
+          )
+        : undefined
+    if (!diff) {
+      void source.setData(options.data)
+    } else if (diff.update?.length) {
+      void source.updateData(diff)
+    }
+    currentGeojsonData = options.data
   }
 
   function removeSource() {

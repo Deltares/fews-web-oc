@@ -52,6 +52,7 @@
       :locationsGeoJson="geojson"
       :selectedLocationIds="selectedLocationIds"
       :selectedLocationCategories="selectedLocationCategories"
+      :thresholdFilter="locationThresholdFilter"
       :settings="settings.locationsLayer"
       @click="onLocationClick"
     />
@@ -255,6 +256,7 @@ import { useWorkflowsStore } from '@/stores/workflows'
 import CoordinateSelectorMarker from '@/components/wms/CoordinateSelectorMarker.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
 import { FeatureCollection, Geometry } from 'geojson'
+import type { LocationThresholdFilter } from '@/lib/map'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import OverlayLayer from '@/components/wms/OverlayLayer.vue'
 import { useColourScales } from '@/services/useColourScales'
@@ -288,6 +290,7 @@ interface Props {
   elevation?: number
   locations?: Location[]
   geojson: FeatureCollection<Geometry, Location>
+  locationThresholdFilter?: LocationThresholdFilter
   locationIds?: string
   latitude?: string
   longitude?: string

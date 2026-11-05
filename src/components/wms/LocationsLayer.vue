@@ -7,6 +7,7 @@
     :selectedLocationIds="selectedLocationIds"
     :isDark="isDark"
     :hoveredStateId="hoveredStateId"
+    :visibilityFilter="visibilityFilter"
   />
 
   <LocationsLineLayer
@@ -15,6 +16,7 @@
     :sourceId="mapIds.location.source"
     :source="source"
     :isDark="isDark"
+    :visibilityFilter="visibilityFilter"
   />
 
   <LocationsCircleLayer
@@ -22,6 +24,7 @@
     :layerId="mapIds.location.layer.circle"
     :sourceId="mapIds.location.source"
     :source="source"
+    :visibilityFilter="visibilityFilter"
   />
 
   <LocationsSymbolLayer
@@ -31,6 +34,8 @@
     :isDark="isDark"
     :source="source"
     :selectedLocationIds="selectedChildLocationIds"
+    :visibilityFilter="visibilityFilter"
+    :showNames="showNames"
   />
   <LocationsSymbolLayer
     v-if="showLocations"
@@ -40,6 +45,8 @@
     :source="source"
     child
     :selectedLocationIds="selectedChildLocationIds"
+    :visibilityFilter="visibilityFilter"
+    :showNames="showNames"
   />
 
   <LocationsTextLayer
@@ -49,10 +56,12 @@
     :source="source"
     :isDark="isDark"
     :selectedLocationIds="selectedChildLocationIds"
+    :visibilityFilter="visibilityFilter"
+    :showNames="showNames"
   />
 
   <LocationsMarkers
-    :geojson="geojson"
+    :geojson="visibleGeojson"
     :selectedLocationIds="selectedLocationIds"
   />
 </template>
@@ -79,7 +88,9 @@ import {
   mapIds,
   clickableLocationLayerIds,
   addPropertiesToLocationGeojson,
-  getLocationCategory,
+  getLocationVisibilityFilter,
+  isLocationVisible,
+  type LocationThresholdFilter,
 } from '@/lib/map'
 import { useMap } from '@/services/useMap'
 import { useSource } from '@/services/useLayer'
@@ -96,6 +107,7 @@ interface Props {
   locationsGeoJson?: FeatureCollection<Geometry, Location>
   selectedLocationIds?: string[]
   selectedLocationCategories?: string[]
+  thresholdFilter?: LocationThresholdFilter
   showLocations?: boolean
   settings?: MapSettings['locationsLayer']
 }
@@ -119,31 +131,36 @@ const showNames = computed(() => {
   return showNamesUserSetting && showNamesComponentSetting
 })
 
-const showDataAvailability = computed(() => {
-  return Boolean(userSettings.get('ui.map.showDataAvailability')?.value)
-})
-
 const locationsClickable = computed(() => props.settings.singleClickAction)
 
-const geojson = computed(() => {
-  const filteredLocations = props.selectedLocationCategories?.length
-    ? props.locationsGeoJson.features.filter((feature) => {
-        const category = getLocationCategory(feature)
-        return props.selectedLocationCategories?.includes(category)
-      })
-    : props.locationsGeoJson.features
+// The source contains all locations. Hiding locations and their names is done
+// by the layers, so that these changes do not send the geometry to the worker.
+const sourceGeojson = computed(() =>
+  addPropertiesToLocationGeojson(props.locationsGeoJson),
+)
 
-  return addPropertiesToLocationGeojson(
-    { ...props.locationsGeoJson, features: filteredLocations },
-    showNames.value,
-    showDataAvailability.value,
-  )
-})
+const visibilityFilter = computed(() =>
+  getLocationVisibilityFilter(
+    props.selectedLocationCategories,
+    props.thresholdFilter,
+  ),
+)
+
+const visibleGeojson = computed(() => ({
+  ...sourceGeojson.value,
+  features: sourceGeojson.value.features.filter((feature) =>
+    isLocationVisible(
+      feature.properties,
+      props.selectedLocationCategories,
+      props.thresholdFilter,
+    ),
+  ),
+}))
 
 const childLocationIds = computed(
   () =>
     new Set(
-      geojson.value.features
+      visibleGeojson.value.features
         .filter(
           (feature) =>
             feature.geometry.type === 'Point' &&
@@ -170,11 +187,11 @@ const emit = defineEmits(['click'])
 
 const { source } = useSource(mapIds.location.source, () => ({
   type: 'geojson',
-  data: geojson.value,
+  data: sourceGeojson.value,
   promoteId: 'locationId',
 }))
 
-watch(geojson, () => {
+watch(sourceGeojson, () => {
   addLocationIcons()
 })
 
@@ -195,7 +212,7 @@ watch(locationsClickable, () => {
 async function addLocationIcons() {
   if (!map) return
 
-  addLocationIconsToMap(map, geojson.value).catch((error) =>
+  addLocationIconsToMap(map, sourceGeojson.value).catch((error) =>
     console.error(`Failed to add location icons to the map: ${error}`),
   )
 }

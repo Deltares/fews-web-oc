@@ -1,7 +1,11 @@
 <template></template>
 
 <script setup lang="ts">
-import type { Source, SymbolLayerSpecification } from 'maplibre-gl'
+import type {
+  ExpressionSpecification,
+  Source,
+  SymbolLayerSpecification,
+} from 'maplibre-gl'
 import { shouldBehaveLikeChildFilter } from '@/lib/map'
 import { computed } from 'vue'
 import { useLayer } from '@/services/useLayer'
@@ -13,6 +17,8 @@ interface Props {
   isDark: boolean
   child?: boolean
   selectedLocationIds: string[]
+  visibilityFilter: ExpressionSpecification
+  showNames: boolean
 }
 
 const props = defineProps<Props>()
@@ -25,10 +31,11 @@ const filter = computed<SymbolLayerSpecification['filter']>(() => [
     ['!', ['has', 'iconName']],
     shouldBehaveLikeChildFilter(props.child, props.selectedLocationIds),
   ],
+  props.visibilityFilter,
 ])
 
-const layout: SymbolLayerSpecification['layout'] = {
-  'text-field': ['get', 'locationName'],
+const layout = computed<SymbolLayerSpecification['layout']>(() => ({
+  'text-field': props.showNames ? ['get', 'locationName'] : '',
   'text-size': 12,
   'text-overlap': 'never',
   'text-padding': 16,
@@ -37,7 +44,7 @@ const layout: SymbolLayerSpecification['layout'] = {
   'text-max-width': 15,
   // When overlap is false sort order has to be inverted for some reason
   'symbol-sort-key': ['get', 'invertedSortKey'],
-}
+}))
 
 const paint = computed<SymbolLayerSpecification['paint']>(() => {
   return {
@@ -54,7 +61,7 @@ useLayer(
     id: props.layerId,
     type: 'symbol',
     filter: filter.value,
-    layout,
+    layout: layout.value,
     paint: paint.value,
     source: props.sourceId,
   }),

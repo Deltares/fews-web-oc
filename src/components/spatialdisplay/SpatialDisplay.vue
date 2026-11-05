@@ -12,7 +12,8 @@
         :group-id="groupId"
         v-model:task-run-id="taskRunId"
         :locations="filteredLocations"
-        :geojson="filteredGeojson"
+        :geojson="thresholdGeojson"
+        :location-threshold-filter="locationThresholdFilter"
         @changeLocationIds="onLocationsChange"
         @changeLayer="onLayerChange"
         :layer-capabilities="layerCapabilities"
@@ -74,7 +75,7 @@ import type { EnsembleSelection } from '@/lib/ensemble'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 import { useLocationNamesStore } from '@/stores/locationNames'
 import {
-  filterFeaturesByThresholds,
+  applyThresholdCrossingsToFeatures,
   filterLocationsByThresholds,
 } from '@/lib/thresholds/utils'
 
@@ -250,16 +251,26 @@ const filteredLocations = computed(() => {
     selectedCrossings.value,
   )
 })
-const filteredGeojson = computed(() => {
+const thresholdGeojson = computed(() => {
   if (warningLevelsStore.selectedWarningLevelIds.length === 0) {
     return geojson.value
   }
   return {
     ...geojson.value,
-    features: filterFeaturesByThresholds(
+    features: applyThresholdCrossingsToFeatures(
       geojson.value.features,
-      selectedSeverities.value,
       selectedCrossings.value,
+    ),
+  }
+})
+const locationThresholdFilter = computed(() => {
+  if (warningLevelsStore.selectedWarningLevelIds.length === 0) {
+    return undefined
+  }
+  return {
+    severities: selectedSeverities.value,
+    crossingLocationIds: selectedCrossings.value.map(
+      (crossing) => crossing.locationId,
     ),
   }
 })

@@ -1,7 +1,11 @@
 <template></template>
 
 <script setup lang="ts">
-import type { FillLayerSpecification, Source } from 'maplibre-gl'
+import type {
+  ExpressionSpecification,
+  FillLayerSpecification,
+  Source,
+} from 'maplibre-gl'
 import { computed, onScopeDispose, watch } from 'vue'
 import { isStyleReady } from '@/lib/map'
 import { useLayer } from '@/services/useLayer'
@@ -14,12 +18,17 @@ interface Props {
   selectedLocationIds: string[] | undefined
   isDark: boolean
   hoveredStateId: string | undefined
+  visibilityFilter: ExpressionSpecification
 }
 
 const props = defineProps<Props>()
 const { map } = useMap()
 
-const filter: FillLayerSpecification['filter'] = ['==', '$type', 'Polygon']
+const filter = computed<FillLayerSpecification['filter']>(() => [
+  'all',
+  ['==', ['geometry-type'], 'Polygon'],
+  props.visibilityFilter,
+])
 
 const paint = computed<FillLayerSpecification['paint']>(() => ({
   'fill-color': props.isDark ? 'darkgrey' : '#dfdfdf',
@@ -40,7 +49,7 @@ useLayer(
     id: props.layerId,
     type: 'fill',
     paint: paint.value,
-    filter: filter,
+    filter: filter.value,
     source: props.sourceId,
   }),
   () => props.source,
