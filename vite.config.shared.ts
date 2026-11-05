@@ -63,7 +63,12 @@ export function createWebOCConfig(
     server: {
       port: 5173,
       proxy: {
-        '/FewsWebServices/': `${env.DEV_SERVER_PROXY_FEWS_PI}`,
+        '/FewsWebServices/': {
+          target: env.DEV_SERVER_PROXY_FEWS_PI,
+          changeOrigin: true,
+          // Basic auth credentials as "user:password"
+          auth: env.DEV_SERVER_PROXY_AUTH || undefined,
+        },
       },
       headers: {
         'content-security-policy': [
