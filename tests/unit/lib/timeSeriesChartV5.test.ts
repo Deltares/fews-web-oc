@@ -53,6 +53,115 @@ function createResource(
 }
 
 describe('v5 static chart config', () => {
+  it('renders ensemble requests as native member plots with aligned gaps and metadata', () => {
+    const item = createChartSeries('forecast', 'line', ['request'], 1)
+    const first = createResource([
+      { x: new Date(0), y: 1 },
+      { x: new Date(1000), y: 2, flag: '6' },
+      { x: new Date(2000), y: 3 },
+    ])
+    first.ensemble = { requestKey: 'request', memberId: '1' }
+    const second = createResource([
+      { x: new Date(0), y: 4 },
+      { x: new Date(2000), y: 6 },
+    ])
+    second.ensemble = { requestKey: 'request', memberId: '2' }
+    const unrelated = createResource([{ x: new Date(0), y: 100 }])
+    unrelated.ensemble = { requestKey: 'other', memberId: '1' }
+    const plotConfig = toPlotConfig(
+      {
+        id: 'subplot',
+        title: '',
+        yAxis: [
+          { kind: 'value', position: 'left' },
+          { kind: 'value', position: 'right' },
+        ],
+        series: [item],
+      },
+      {},
+      defaultChartSettings.timeSeriesChart,
+      {},
+      { first, second, unrelated },
+    )
+    expect(plotConfig.marks).toHaveLength(1)
+    const mark = plotConfig.marks![0]
+    if (!('data' in mark) || !('memberCount' in mark.data)) {
+      throw new Error('Expected a native ensemble mark')
+    }
+    expect(mark.options.get().resolved).toMatchObject({
+      id: '0:forecast',
+      x: 'x',
+      y: 'y1',
+      label: 'forecast',
+      members: { stroke: '#336699', width: 2, opacity: 1 },
+      spread: false,
+      mean: false,
+      median: false,
+    })
+    expect(mark.data.memberCount).toBe(2)
+    expect(mark.data.members).toMatchObject([
+      { id: 'first', label: '1' },
+      { id: 'second', label: '2' },
+    ])
+    expect(mark.data).toHaveLength(3)
+    expect(mark.data.xAt(1)).toBe(1000)
+    expect(mark.data.valueAt(0, 1)).toBeNaN()
+    expect(mark.data.valueAt(1, 1)).toBeNaN()
+    expect(mark.data.valueAt(0, 2)).toBe(3)
+    expect(mark.data.valueAt(1, 2)).toBe(6)
+  })
+
+  it('updates native ensemble data in place and rebuilds when membership changes', () => {
+    const handles = handleCache()
+    const item = createChartSeries('forecast', 'line', ['request'])
+    const config: ChartConfig = { id: 'subplot', title: '', series: [item] }
+    const member = createResource([{ x: new Date(0), y: 1 }])
+    member.ensemble = { requestKey: 'request', memberId: '1' }
+    const resources: Record<string, Series> = {}
+    const build = () =>
+      toPlotConfig(
+        config,
+        {},
+        defaultChartSettings.timeSeriesChart,
+        { handles },
+        resources,
+      )
+    expect(build().marks).toHaveLength(0)
+    resources.first = member
+    const first = build().marks![0]
+    if (!('data' in first) || !('memberCount' in first.data)) {
+      throw new Error('Expected a native ensemble mark')
+    }
+    const store = first.data
+    member.data = [
+      { x: new Date(0), y: 2 },
+      { x: new Date(1000), y: 3 },
+    ]
+    item.style.stroke = '#ff0000'
+    const updated = build().marks![0]
+    expect(updated).toBe(first)
+    expect(first.data).toBe(store)
+    expect(store).toHaveLength(2)
+    expect(store.valueAt(0, 0)).toBe(2)
+    expect(first.options.get().resolved).toMatchObject({
+      members: { stroke: '#ff0000' },
+    })
+    member.data[0].y = 5
+    expect(build().marks![0]).toBe(first)
+    expect(store.valueAt(0, 0)).toBe(5)
+    const second = createResource([{ x: new Date(0), y: 4 }])
+    second.ensemble = { requestKey: 'request', memberId: '2' }
+    resources.second = second
+    const rebuilt = build().marks![0]
+    expect(rebuilt).not.toBe(first)
+    if (!('data' in rebuilt) || !('memberCount' in rebuilt.data)) {
+      throw new Error('Expected a native ensemble mark')
+    }
+    expect(rebuilt.data.memberCount).toBe(2)
+    item.visibleInPlot = false
+    expect(build().marks).toHaveLength(0)
+  })
+
   it.each(['line', 'marker', 'area'] as const)(
     'preserves elevation order, gaps and legends for %s profiles with reversing x values',
     (type) => {
