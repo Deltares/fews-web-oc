@@ -63,6 +63,14 @@ useSystemTimeStore()
 
 onMounted(() => {
   userSettingsStore.initializeWithWebResources()
+
+  // Process mapLayerConfig if already loaded by router bootstrap.
+  // The router loads the config before App.vue mounts, so we need to
+  // explicitly call updateUserSettingBaseMaps() here rather than relying
+  // on the watcher, which only triggers on CHANGES, not initial values.
+  if (configStore.general.mapLayerConfig) {
+    updateUserSettingBaseMaps(configStore.general.mapLayerConfig)
+  }
 })
 
 const layoutComponent = computed(() => {
