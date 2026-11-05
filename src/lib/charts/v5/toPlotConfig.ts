@@ -4,8 +4,10 @@ import {
   band,
   bandScale,
   bar,
+  createEnsemble,
   createTable,
   degreesScale,
+  ensemble,
   handleCache,
   linearScale,
   line,
@@ -14,6 +16,9 @@ import {
   type AxisHandle,
   type BandMark,
   type BarMark,
+  type EnsembleInput,
+  type EnsembleMark,
+  type EnsembleMemberMetadata,
   type MarkerSymbol,
   type LineMark,
   type HandleCache,
@@ -278,8 +283,8 @@ function createMarks(
   yScales: YScale[],
   handles: HandleCache,
   verticalProfile = false,
-): (BandMark | BarMark | SeriesMark | LineMark)[] {
-  const marks: (BandMark | BarMark | SeriesMark | LineMark)[] = []
+): (BandMark | BarMark | EnsembleMark | SeriesMark | LineMark)[] {
+  const marks: (BandMark | BarMark | EnsembleMark | SeriesMark | LineMark)[] = []
   const mergedMarkerIndices = new Set<number>()
   const stackedBarAxes = new Set<string>()
 
@@ -288,6 +293,67 @@ function createMarks(
     if (item.visibleInPlot === false || item.type === 'dummy') continue
     const markId = `${seriesIndex}:${item.id}`
     const yScale = yScales[item.options.y.axisIndex]?.id ?? 'y0'
+
+    if (
+      !verticalProfile &&
+      item.type === 'line' &&
+      item.dataResources.length === 1
+    ) {
+      const members = Object.entries(resources).filter(
+        ([, resource]) =>
+          resource.ensemble?.requestKey === item.dataResources[0],
+      )
+      if (members.length > 0) {
+        const values = members.map(([, resource]) => {
+          const byTime = new Map<number, number>()
+          addDataToMap(byTime, resource.data ?? [])
+          return byTime
+        })
+        const x = [...new Set(values.flatMap((data) => [...data.keys()]))].sort(
+          (a, b) => a - b,
+        )
+        const rows: EnsembleInput = {
+          x,
+          members: values.map((data) =>
+            x.map((time) => data.get(time) ?? Number.NaN),
+          ),
+        }
+        const metadata = members.map(([id, resource]) => ({
+          id,
+          label: resource.ensemble!.memberId,
+        }))
+        const storeId = `${markId}:${JSON.stringify(metadata)}`
+        const data = handles.use(`ensemble:${storeId}`, createEnsembleStore, {
+          rows,
+          metadata,
+        })
+        marks.push(
+          handles.use(`mark:ensemble:${storeId}`, ensemble, data.store, {
+            id: markId,
+            x: 'x',
+            y: yScale,
+            label: item.name,
+            legendGroup:
+              item.visibleInLegend === false
+                ? undefined
+                : nonEmptyLabel(item.name),
+            visible: true,
+            renderer: 'svg',
+            members: {
+              stroke: styleValue(item, 'stroke'),
+              width: styleNumber(item, 'stroke-width', 1),
+              opacity: 1,
+            },
+            spread: false,
+            median: false,
+            mean: false,
+            control: false,
+            exceedance: false,
+          }),
+        )
+        continue
+      }
+    }
 
     if (item.type === 'area' && item.dataResources.length > 1) {
       const pairedData = getPairedData(item.dataResources, resources)
@@ -603,6 +669,26 @@ function getStackedBarData(
     rows[`y${index}`] = x.map((time) => byTime.get(time) ?? Number.NaN)
   }
   return rows
+}
+
+function createEnsembleStore({
+  rows,
+  metadata,
+}: {
+  rows: EnsembleInput
+  metadata: EnsembleMemberMetadata[]
+}) {
+  const store = createEnsemble(rows, { metadata, precision: 'float64' })
+  let currentRows = rows
+  return {
+    store,
+    update({ rows }: { rows?: Partial<EnsembleInput> }) {
+      if (rows) {
+        currentRows = { ...currentRows, ...rows }
+        store.replace(currentRows)
+      }
+    },
+  }
 }
 
 function createBarStore({ rows }: { rows: TableInput }) {

@@ -417,7 +417,12 @@ function getUnitForMark(markId: string | undefined) {
     if (resourceIndex === -1) continue
 
     const resourceId = item.dataResources[resourceIndex]
-    return item.unit || props.series[resourceId]?.header.unit || ''
+    const resource =
+      props.series[resourceId] ??
+      Object.values(props.series).find(
+        (candidate) => candidate.ensemble?.requestKey === resourceId,
+      )
+    return item.unit || resource?.header.unit || ''
   }
 
   return ''
