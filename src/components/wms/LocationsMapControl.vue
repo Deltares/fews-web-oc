@@ -127,6 +127,7 @@ import type { FeatureCollection, Geometry } from 'geojson'
 import LocationGeometryIcon from '@/components/wms/locations/LocationGeometryIcon.vue'
 import {
   getLocationCategory,
+  getLocationGroupName,
   isNonPointGeometry,
   isPointGeometry,
 } from '@/lib/map/locations'
@@ -213,14 +214,14 @@ const categories = computed(() => {
     { hasPointFeatures: boolean; hasNonPointFeatures: boolean }
   >()
   for (const feature of props.geojson.features) {
-    const iconLabel = feature.properties.iconLabel
-    const geometry = groupGeometry.get(iconLabel) ?? {
+    const groupName = getLocationGroupName(feature.properties)
+    const geometry = groupGeometry.get(groupName) ?? {
       hasPointFeatures: false,
       hasNonPointFeatures: false,
     }
     geometry.hasPointFeatures ||= isPointGeometry(feature.geometry)
     geometry.hasNonPointFeatures ||= isNonPointGeometry(feature.geometry)
-    groupGeometry.set(iconLabel, geometry)
+    groupGeometry.set(groupName, geometry)
   }
 
   const items = new Map<string, IconOption>()
@@ -230,17 +231,17 @@ const categories = computed(() => {
     const category = getLocationCategory(feature)
     if (!items.has(category)) {
       const featureIsPoint = isPointGeometry(feature.geometry)
-      const groupGeometryForLabel = groupGeometry.get(location.iconLabel)!
+      const geometry = groupGeometry.get(getLocationGroupName(location))!
       items.set(category, {
         category,
-        iconName: featureIsPoint ? location.iconName : undefined,
+        iconName: location.iconName,
         iconLabel: location.iconLabel,
         thresholdIconName: featureIsPoint
           ? location.thresholdIconName
           : undefined,
         value: category,
         isPointCategory: featureIsPoint,
-        ...groupGeometryForLabel,
+        ...geometry,
       })
     }
   })
@@ -253,7 +254,9 @@ const categories = computed(() => {
       (second.thresholdIconName !== undefined || second.iconName !== undefined)
     if (firstHasIcon && !secondHasIcon) return -1
     if (!firstHasIcon && secondHasIcon) return 1
-    return (first.iconLabel ?? '').localeCompare(second.iconLabel ?? '')
+    return (getLocationGroupName(first) ?? '').localeCompare(
+      getLocationGroupName(second) ?? '',
+    )
   })
 })
 

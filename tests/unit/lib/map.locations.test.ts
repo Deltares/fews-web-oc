@@ -405,6 +405,36 @@ describe('location map interactions', () => {
     )
   })
 
+  it('keeps icon-name groups separate even when they share a threshold', () => {
+    for (const geometry of [
+      { type: 'Point', coordinates: [0, 0] },
+      { type: 'Polygon', coordinates: [] },
+    ] satisfies Geometry[]) {
+      const feature = {
+        type: 'Feature' as const,
+        geometry,
+        properties: {
+          locationId: 'station',
+          iconName: 'station.svg',
+          thresholdIconName: 'warning.svg',
+        },
+      }
+      const differentIcon = {
+        ...feature,
+        properties: { ...feature.properties, iconName: 'other.svg' },
+      }
+      const noIcon = {
+        ...feature,
+        properties: { ...feature.properties, iconName: undefined },
+      }
+
+      expect(getLocationCategory(feature)).not.toBe(
+        getLocationCategory(differentIcon),
+      )
+      expect(getLocationCategory(feature)).not.toBe(getLocationCategory(noIcon))
+    }
+  })
+
   function getFilter(id: string) {
     const layer = layers.get(id)!()
     return 'filter' in layer ? layer.filter : undefined

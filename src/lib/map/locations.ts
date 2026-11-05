@@ -134,15 +134,24 @@ export interface LocationWithIconLabel extends Location {
   iconLabel?: string
 }
 
+export function getLocationGroupName(location: {
+  iconLabel?: string
+  iconName?: string
+}): string | undefined {
+  return location.iconLabel ?? location.iconName
+}
+
 export function getLocationCategory(
   feature: Feature<Geometry, LocationWithIconLabel>,
 ): string {
   const isPoint = isPointGeometry(feature.geometry)
   if (!isPoint) {
-    const iconLabel = JSON.stringify(feature.properties.iconLabel ?? null)
-    return `__non_point_location_group__:${iconLabel}`
+    const groupName = JSON.stringify(
+      getLocationGroupName(feature.properties) ?? null,
+    )
+    return `__non_point_location_group__:${groupName}`
   }
   const activeIcon =
     feature.properties.thresholdIconName ?? feature.properties.iconName
-  return `${feature.properties.iconLabel}-${activeIcon}`
+  return `${getLocationGroupName(feature.properties)}-${activeIcon}`
 }
