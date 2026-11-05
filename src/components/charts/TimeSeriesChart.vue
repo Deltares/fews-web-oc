@@ -420,8 +420,10 @@ watch(
     if (!axis) return
     const hasUncreatedChart = chartConfig.value.series.some(
       (s) =>
+        s.visibleInPlot &&
+        s.type !== 'dummy' &&
         s.dataResources.every((id) => props.series[id] !== undefined) &&
-        !axis.charts.some((c: any) => c.id === s.id),
+        !axis.charts.some((c) => c.id === s.id),
     )
     if (hasUncreatedChart || (!axis.options.automargin && isAllDataLoaded()))
       onValueChange()

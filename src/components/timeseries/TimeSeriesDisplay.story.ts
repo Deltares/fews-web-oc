@@ -3,6 +3,7 @@ import {
   defineComponent,
   getCurrentInstance,
   h,
+  onMounted,
   ref,
   watch,
 } from 'vue'
@@ -15,6 +16,7 @@ import { getDefaultSettings } from '@/lib/topology/componentSettings'
 import { configManager } from '@/services/application-config'
 import type { NavigateRoute } from '@/lib/router'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
+import { i18n, loadLocale } from '@/plugins/i18n'
 
 const TimeSeriesDisplay = defineAsyncComponent(
   () => import('./TimeSeriesDisplay.vue'),
@@ -44,9 +46,14 @@ export const SelectionMenu = defineComponent({
     nodeId: { type: String, default: 'selection-test' },
     plotId: { type: String, default: undefined },
     routePlotId: { type: String, default: undefined },
+    showCharts: { type: Boolean, default: false },
   },
   setup(props) {
     const settings = prepareSelectionMenu()
+    settings.charts.timeSeriesChart.enabled = props.showCharts
+    if (props.showCharts) {
+      onMounted(() => loadLocale(i18n.global.locale.value))
+    }
     const navigationCount = ref(0)
     const router = createRouter({
       history: createMemoryHistory(),

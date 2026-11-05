@@ -34,6 +34,183 @@ const displayItem = (page: Page, index: number) =>
     .locator('.v-list-item')
     .nth(index - 1)
 
+for (const gesture of ['rectangle', 'wheel', 'pan']) {
+  test(`preserves ${gesture} interactions after refetching data`, async ({
+    mount,
+    page,
+  }) => {
+    await page.route('**/test-fews/**', (route) =>
+      route.fulfill({ json: { permissions: [] } }),
+    )
+    await page.route('**/topology/actions**', (route) =>
+      route.fulfill({
+        json: {
+          results: [
+            {
+              requests: [
+                { key: 'observation', request: '/timeseries?test=1' },
+                { key: 'table-only', request: '/timeseries?test=2' },
+                { key: 'lower', request: '/timeseries?test=3' },
+                { key: 'upper', request: '/timeseries?test=4' },
+              ],
+              config: {
+                timeSeriesDisplay: {
+                  title: 'Interactions',
+                  plotId: 'plot-1',
+                  index: 0,
+                  period: {
+                    startDate: { date: '2026-01-01', time: '00:00:00' },
+                    endDate: { date: '2026-01-10', time: '00:00:00' },
+                  },
+                  subplots: [0, 1].map((index) => ({
+                    items: [
+                      {
+                        request: 'observation',
+                        type: 'line',
+                        lineStyle: 'solid',
+                        plotWeight: 1,
+                        color: 'black',
+                        legend: `Observation ${index}`,
+                        visibleInLegend: true,
+                        visibleInPlot: true,
+                        yAxis: {
+                          axisPosition: 'left',
+                          axisLabel: `Level ${index}`,
+                        },
+                      },
+                      {
+                        request: 'table-only',
+                        type: 'line',
+                        lineStyle: 'solid',
+                        visibleInPlot: false,
+                        visibleInTable: true,
+                      },
+                      ...['lower', 'upper'].map((request) => ({
+                        request,
+                        type: 'area',
+                        legend: 'Ensemble band',
+                        color: 'blue',
+                        plotWeight: 1,
+                        visibleInPlot: true,
+                        visibleInLegend: request === 'lower',
+                        yAxis: { axisPosition: 'left' },
+                      })),
+                    ],
+                  })),
+                },
+              },
+            },
+          ],
+        },
+      }),
+    )
+    let observationFetches = 0
+    await page.route('**/timeseries?**', (route) => {
+      const { searchParams } = new URL(route.request().url())
+      if (searchParams.get('test') === '1') {
+        observationFetches++
+      }
+      const start = Date.parse(
+        searchParams.get('startTime') ?? '2026-01-01T00:00:00Z',
+      )
+      const end = Date.parse(
+        searchParams.get('endTime') ?? '2026-01-10T00:00:00Z',
+      )
+      const middle = new Date((start + end) / 2).toISOString()
+      return route.fulfill({
+        json: {
+          version: '1.25',
+          timeZone: 0,
+          timeSeries: [
+            {
+              header: {
+                type: 'instantaneous',
+                locationId: 'test',
+                parameterId: 'level',
+                units: 'm',
+                missVal: '-999',
+                startDate: { date: '2026-01-01', time: '00:00:00' },
+                endDate: { date: '2026-01-10', time: '00:00:00' },
+              },
+              events: [
+                { date: '2026-01-01', time: '00:00:00', value: '1', flag: '0' },
+                {
+                  date: middle.slice(0, 10),
+                  time: middle.slice(11, 19),
+                  value: String(1 + observationFetches / 10),
+                  flag: '0',
+                },
+                { date: '2026-01-10', time: '00:00:00', value: '2', flag: '0' },
+              ],
+            },
+          ],
+        },
+      })
+    })
+    const component = await mount(
+      'timeseries/TimeSeriesDisplay/SelectionMenu',
+      {
+        showCharts: true,
+      },
+    )
+    const charts = component.locator('.chart-with-chips')
+    const ticks = charts.first().locator('.x-axis-0 .tick text')
+    const canvas = charts.first().locator('.mouse > rect')
+    const curve = charts.first().locator('.charts path').first()
+    await expect(charts).toHaveCount(2)
+    await expect(curve).toHaveAttribute('d', /^M.+L/)
+    async function interact(reversePan = false) {
+      const originalPath = await curve.getAttribute('d')
+      const bounds = (await canvas.boundingBox())!
+      const y = bounds.y + bounds.height / 2
+      const responses = Promise.all(
+        ['1', '2', '3', '4'].map((test) =>
+          page
+            .waitForResponse((response) => {
+              const url = new URL(response.url())
+              return (
+                url.pathname.endsWith('/timeseries') &&
+                url.searchParams.get('test') === test
+              )
+            })
+            .then((response) => response.finished()),
+        ),
+      )
+      const start = reversePan ? 0.75 : 0.25
+      const end = reversePan ? 0.25 : 0.75
+      await page.mouse.move(bounds.x + bounds.width * start, y)
+      if (gesture === 'wheel') {
+        await page.keyboard.down('Shift')
+        for (let step = 0; step < 3; step++) {
+          const previousPath = await curve.getAttribute('d')
+          await page.mouse.wheel(0, -600)
+          await expect(curve).not.toHaveAttribute('d', previousPath!)
+        }
+        await page.keyboard.up('Shift')
+      } else {
+        if (gesture === 'pan') await page.keyboard.down('Shift')
+        await page.mouse.down()
+        await page.mouse.move(bounds.x + bounds.width * end, y, { steps: 10 })
+        await page.mouse.up()
+        if (gesture === 'pan') await page.keyboard.up('Shift')
+      }
+      await expect(curve).not.toHaveAttribute('d', originalPath!)
+      const zoomedTicks = await ticks.allTextContents()
+      const zoomedPath = await curve.getAttribute('d')
+      await responses
+      await expect(curve).not.toHaveAttribute('d', zoomedPath!)
+      await page.evaluate(
+        () =>
+          new Promise((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(resolve)),
+          ),
+      )
+      await expect(ticks).toHaveText(zoomedTicks)
+    }
+    await interact(gesture === 'pan')
+  })
+}
+
 async function freezeClock(page: Page) {
   await page.clock.install({ time: new Date('2025-01-01T00:00:00Z') })
   await page.clock.pauseAt(new Date('2025-01-01T00:00:01Z'))
