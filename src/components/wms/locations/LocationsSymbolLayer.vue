@@ -1,7 +1,11 @@
 <template></template>
 
 <script setup lang="ts">
-import type { Source, SymbolLayerSpecification } from 'maplibre-gl'
+import type {
+  ExpressionSpecification,
+  Source,
+  SymbolLayerSpecification,
+} from 'maplibre-gl'
 import { shouldBehaveLikeChildFilter } from '@/lib/map'
 import { computed } from 'vue'
 import { useLayer } from '@/services/useLayer'
@@ -13,6 +17,8 @@ interface Props {
   isDark: boolean
   child?: boolean
   selectedLocationIds: string[]
+  visibilityFilter: ExpressionSpecification
+  showNames: boolean
 }
 
 const props = defineProps<Props>()
@@ -22,6 +28,7 @@ const filter = computed<SymbolLayerSpecification['filter']>(() => [
   ['has', 'webocIcon'],
   ['==', ['geometry-type'], 'Point'],
   shouldBehaveLikeChildFilter(props.child, props.selectedLocationIds),
+  props.visibilityFilter,
 ])
 
 const baseLayout: SymbolLayerSpecification['layout'] = {
@@ -32,18 +39,18 @@ const baseLayout: SymbolLayerSpecification['layout'] = {
 // This symbol layer is for the child locations and can't overlap other symbols.
 // It also contains its own text since we never want to show the text of the
 // child layer without the icon.
-const childLayout: SymbolLayerSpecification['layout'] = {
+const childLayout = computed<SymbolLayerSpecification['layout']>(() => ({
   ...baseLayout,
   'icon-overlap': 'never',
   'text-optional': true,
-  'text-field': ['get', 'locationName'],
+  'text-field': props.showNames ? ['get', 'locationName'] : '',
   'text-size': 12,
   'text-overlap': 'never',
   'text-justify': 'auto',
   'text-anchor': 'right',
   'text-max-width': 15,
   'text-offset': [-0.5, 0],
-}
+}))
 
 const parentLayout: SymbolLayerSpecification['layout'] = {
   ...baseLayout,
@@ -51,7 +58,7 @@ const parentLayout: SymbolLayerSpecification['layout'] = {
 }
 
 const layout = computed<SymbolLayerSpecification['layout']>(() => {
-  return props.child ? childLayout : parentLayout
+  return props.child ? childLayout.value : parentLayout
 })
 
 const paint = computed<SymbolLayerSpecification['paint']>(() => {

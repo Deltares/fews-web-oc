@@ -22,6 +22,7 @@ import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import { defaultMapSettings } from '@/lib/topology/componentSettings'
 import { mapIds } from '@/lib/map'
 import { getLocationCategory, isNonPointGeometry } from '@/lib/map/locations'
+import { mapIds, type LocationThresholdFilter } from '@/lib/map'
 
 const map = vi.hoisted(() => ({
   on: vi.fn(),
@@ -38,7 +39,9 @@ vi.mock('@/services/useMapIsDark', () => ({
   useMapIsDark: () => false,
 }))
 vi.mock('@/stores/userSettings', () => ({
-  useUserSettingsStore: () => ({ get: () => undefined }),
+  useUserSettingsStore: () => ({
+    get: () => ({ value: showLocationNames.value }),
+  }),
 }))
 vi.mock('@/lib/location-icons', () => ({
   addLocationIconsToMap: vi.fn(async () => {}),
@@ -53,6 +56,7 @@ vi.mock('vuetify/lib/components/VIcon/index.js', () => ({
   VIcon: { template: '<span />' },
 }))
 
+const showLocationNames = shallowRef(false)
 const source = shallowRef({ type: 'geojson' })
 const layers = new Map<string, () => AddLayerObject>()
 let sourceOptions: () => SourceSpecification | undefined
@@ -110,6 +114,8 @@ function mountLayer() {
   const props = reactive({
     locationsGeoJson: geojson,
     selectedLocationIds: ['child'],
+    selectedLocationCategories: [] as string[],
+    thresholdFilter: undefined as LocationThresholdFilter | undefined,
     settings: { ...defaultMapSettings.locationsLayer, singleClickAction: true },
     showLocations: true,
   })
@@ -141,6 +147,7 @@ function fillEvent(name: string, locationId?: string) {
 beforeEach(() => {
   vi.clearAllMocks()
   layers.clear()
+  showLocationNames.value = false
   source.value = { type: 'geojson' }
   map.style._loaded = true
   map.getSource.mockImplementation(() => source.value)
@@ -434,6 +441,71 @@ describe('location map interactions', () => {
       expect(getLocationCategory(feature)).not.toBe(getLocationCategory(noIcon))
     }
   })
+
+  it('hides locations with layer filters without changing the source', async () => {
+    const props = mountLayer()
+    const options = sourceOptions() as GeoJSONSourceSpecification
+    const data = options.data as FeatureCollection
+    expect(data.features).toHaveLength(2)
+
+    props.selectedLocationCategories = ['undefined-station']
+    await nextTick()
+    props.thresholdFilter = { severities: [1], crossingLocationIds: ['child'] }
+    await nextTick()
+
+    expect(sourceOptions()).toBe(options)
+    for (const layerId of [
+      mapIds.location.layer.fill,
+      mapIds.location.layer.circle,
+      mapIds.location.layer.symbol,
+      mapIds.location.layer.childSymbol,
+      mapIds.location.layer.text,
+    ]) {
+      const filter = JSON.stringify(getFilter(layerId))
+      expect(filter).toContain('undefined-station')
+      expect(filter).toContain('thresholdSeverity')
+    }
+  })
+
+  it('does not show a marker for a selected location that is hidden', async () => {
+    const props = mountLayer()
+    expect(container.querySelectorAll('.marker')).toHaveLength(1)
+
+    props.selectedLocationCategories = ['some-other-category']
+    await nextTick()
+
+    expect(container.querySelectorAll('.marker')).toHaveLength(0)
+  })
+
+  it('shows location names with a layout expression without changing the source', async () => {
+    mountLayer()
+    const originalOptions = sourceOptions()
+    const data = (originalOptions as GeoJSONSourceSpecification)
+      .data as FeatureCollection
+    expect(data.features[0].properties?.locationName).toBe('Child location')
+    expect(getLayout(mapIds.location.layer.text)?.['text-field']).toBe('')
+
+    showLocationNames.value = true
+    await nextTick()
+
+    for (const layerId of [
+      mapIds.location.layer.text,
+      mapIds.location.layer.childSymbol,
+    ]) {
+      expect(getLayout(layerId)?.['text-field']).toEqual([
+        'get',
+        'locationName',
+      ])
+    }
+    expect(sourceOptions()).toBe(originalOptions)
+  })
+
+  function getLayout(id: string) {
+    const layer = layers.get(id)!()
+    return 'layout' in layer
+      ? (layer.layout as Record<string, unknown>)
+      : undefined
+  }
 
   function getFilter(id: string) {
     const layer = layers.get(id)!()
