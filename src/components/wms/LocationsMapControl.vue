@@ -17,7 +17,11 @@
           >
             <template v-for="category in categories" :key="category.value">
               <v-tooltip
-                :text="category.iconLabel ?? category.iconName"
+                :text="
+                  category.iconLabel ??
+                  category.iconName ??
+                  t('search.otherLocations')
+                "
                 location="bottom"
               >
                 <template v-slot:activator="{ props }">
@@ -30,8 +34,16 @@
                     size="xsmall"
                     @click.stop="toggleIcon(category.value)"
                   >
+                    <LocationGeometryIcon
+                      v-if="!category.isPointCategory"
+                      :hasPointFeatures="false"
+                      :hasNonPointFeatures="true"
+                      :isDark="isDark"
+                    />
                     <v-icon
-                      v-if="category.thresholdIconName ?? category.iconName"
+                      v-else-if="
+                        category.thresholdIconName ?? category.iconName
+                      "
                       :icon="
                         toResourceIcon(
                           category.thresholdIconName ?? category.iconName ?? '',
@@ -73,6 +85,7 @@
           <LocationsLegend
             v-model="selectedLocationCategories"
             :items="categories"
+            :isDark="isDark"
           ></LocationsLegend>
           <v-divider class="my-2" />
           <v-list-subheader>{{
@@ -110,6 +123,14 @@ import LocationsLegend from './LocationsLegend.vue'
 import { toResourceIcon } from '@/lib/icons'
 import { useI18n } from 'vue-i18n'
 import { useStorage } from '@vueuse/core'
+import type { FeatureCollection, Geometry } from 'geojson'
+import LocationGeometryIcon from '@/components/wms/locations/LocationGeometryIcon.vue'
+import {
+  getLocationCategory,
+  isNonPointGeometry,
+  isPointGeometry,
+} from '@/lib/map/locations'
+import { useMapIsDark } from '@/services/useMapIsDark'
 
 type TreeNode = {
   id: string
@@ -128,12 +149,17 @@ type IconOption = {
   iconName?: string
   thresholdIconName?: string
   value: string
+  isPointCategory: boolean
+  hasPointFeatures: boolean
+  hasNonPointFeatures: boolean
 }
 
 const { t } = useI18n()
+const isDark = useMapIsDark()
 
 interface Props {
   locations?: Location[]
+  geojson: FeatureCollection<Geometry, Location>
   locationToChildrenMap?: Map<string, Location[]>
   selectedLocationIds: string[]
   maxWidth?: string | number
@@ -181,31 +207,50 @@ const selectedLocations = computed<Location[]>(() =>
 
 const hasLocations = computed(() => props.locations?.length)
 
-const getLocationCategory = (location: LocationWithIconLabel) => {
-  const activeIcon = location.thresholdIconName ?? location.iconName
-  return `${location.iconLabel}-${activeIcon}`
-}
-
 const categories = computed(() => {
-  const items = new Map<string | undefined, IconOption>()
+  const groupGeometry = new Map<
+    string | undefined,
+    { hasPointFeatures: boolean; hasNonPointFeatures: boolean }
+  >()
+  for (const feature of props.geojson.features) {
+    const iconLabel = feature.properties.iconLabel
+    const geometry = groupGeometry.get(iconLabel) ?? {
+      hasPointFeatures: false,
+      hasNonPointFeatures: false,
+    }
+    geometry.hasPointFeatures ||= isPointGeometry(feature.geometry)
+    geometry.hasNonPointFeatures ||= isNonPointGeometry(feature.geometry)
+    groupGeometry.set(iconLabel, geometry)
+  }
 
-  props.locations.forEach((location) => {
-    const locationWithIconLabel = location as LocationWithIconLabel
-    const category = getLocationCategory(locationWithIconLabel)
+  const items = new Map<string, IconOption>()
+
+  props.geojson.features.forEach((feature) => {
+    const location = feature.properties as LocationWithIconLabel
+    const category = getLocationCategory(feature)
     if (!items.has(category)) {
+      const featureIsPoint = isPointGeometry(feature.geometry)
+      const groupGeometryForLabel = groupGeometry.get(location.iconLabel)!
       items.set(category, {
         category,
-        iconName: location.iconName,
-        iconLabel:
-          locationWithIconLabel.iconLabel ?? locationWithIconLabel.iconName,
-        thresholdIconName: location.thresholdIconName,
+        iconName: featureIsPoint ? location.iconName : undefined,
+        iconLabel: location.iconLabel,
+        thresholdIconName: featureIsPoint
+          ? location.thresholdIconName
+          : undefined,
         value: category,
+        isPointCategory: featureIsPoint,
+        ...groupGeometryForLabel,
       })
     }
   })
   return Array.from(items.values()).toSorted((first, second) => {
-    const firstHasIcon = first.iconName !== undefined
-    const secondHasIcon = second.iconName !== undefined
+    const firstHasIcon =
+      first.isPointCategory &&
+      (first.thresholdIconName !== undefined || first.iconName !== undefined)
+    const secondHasIcon =
+      second.isPointCategory &&
+      (second.thresholdIconName !== undefined || second.iconName !== undefined)
     if (firstHasIcon && !secondHasIcon) return -1
     if (!firstHasIcon && secondHasIcon) return 1
     return (first.iconLabel ?? '').localeCompare(second.iconLabel ?? '')

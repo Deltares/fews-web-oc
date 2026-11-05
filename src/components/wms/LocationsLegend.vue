@@ -8,41 +8,25 @@
     @click="toggleAll(item.iconLabel)"
   >
     <template #prepend>
-      <v-icon
-        v-if="item.thresholdIconName ?? item.iconName"
-        :icon="toResourceIcon(item.thresholdIconName ?? item.iconName ?? '')"
+      <LocationGeometryIcon
         class="mr-2 location-icon"
         :class="{
           'location-icon-selected': isLabelSelected(item.iconLabel),
         }"
-        size="16"
+        :hasPointFeatures="item.hasPointFeatures"
+        :hasNonPointFeatures="item.hasNonPointFeatures"
+        :isDark="isDark"
       />
-      <svg
-        v-else
-        class="mr-2 location-icon"
-        :class="{
-          'location-icon-selected': isLabelSelected(item.iconLabel),
-        }"
-        viewBox="0 0 16 16"
-        width="16"
-        height="16"
-        aria-hidden="true"
-      >
-        <circle
-          cx="8"
-          cy="8"
-          r="7"
-          fill="#dfdfdf"
-          stroke="black"
-          stroke-width="2"
-        />
-      </svg>
     </template>
     <v-list-item-title>
       {{ item.iconLabel ?? t('search.otherLocations') }}
     </v-list-item-title>
     <template #append>
-      <template v-for="category in item.categories" :key="category.value">
+      <template
+        v-for="category in item.categories"
+        :key="category.value"
+        v-show="item.categories.length > 1"
+      >
         <v-btn
           size="xsmall"
           @click.stop="toggleItem(category.value)"
@@ -51,14 +35,20 @@
             'location-icon-selected': isSelected(category.value),
           }"
         >
+          <LocationGeometryIcon
+            v-if="!category.isPointCategory"
+            :hasPointFeatures="false"
+            :hasNonPointFeatures="true"
+            :isDark="isDark"
+          />
           <v-icon
-            v-if="category.thresholdIconName"
+            v-else-if="category.thresholdIconName"
             :icon="toResourceIcon(category.thresholdIconName)"
             :aria-label="`${item.iconLabel} - treshold`"
             size="16"
           />
           <svg
-            v-else-if="item.categories.length > 1"
+            v-else
             class="empty-threshold-icon"
             viewBox="0 0 16 16"
             width="16"
@@ -102,6 +92,7 @@
 import { computed } from 'vue'
 import { toResourceIcon } from '@/lib/icons'
 import { useI18n } from 'vue-i18n'
+import LocationGeometryIcon from '@/components/wms/locations/LocationGeometryIcon.vue'
 
 type LegendItem = {
   category: string
@@ -109,16 +100,21 @@ type LegendItem = {
   iconName?: string
   thresholdIconName?: string
   value: string
+  isPointCategory: boolean
+  hasPointFeatures: boolean
+  hasNonPointFeatures: boolean
 }
 
 type LegendItemGroup = {
   iconLabel?: string
-  iconName?: string
-  thresholdIconName?: string
   categories: LegendItem[]
+  hasPointFeatures: boolean
+  hasNonPointFeatures: boolean
 }
 
 const { t } = useI18n()
+
+defineProps<{ isDark: boolean }>()
 
 const items = defineModel<LegendItem[]>('items', { required: true })
 const modelValue = defineModel<string[]>({
@@ -138,10 +134,19 @@ const itemGroups = computed(() => {
 
     groupedByLabel.set(item.iconLabel, {
       iconLabel: item.iconLabel,
-      iconName: item.iconName,
-      thresholdIconName: item.thresholdIconName,
       categories: [item],
+      hasPointFeatures: item.hasPointFeatures,
+      hasNonPointFeatures: item.hasNonPointFeatures,
     })
+  })
+
+  groupedByLabel.forEach((group) => {
+    group.hasPointFeatures = group.categories.some(
+      (category) => category.hasPointFeatures,
+    )
+    group.hasNonPointFeatures = group.categories.some(
+      (category) => category.hasNonPointFeatures,
+    )
   })
 
   return Array.from(groupedByLabel.values())
