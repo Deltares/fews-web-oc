@@ -100,13 +100,14 @@
       <div v-html="informationContent" class="pa-4 h-100 w-100" />
     </v-window-item>
     <v-window-item
-      v-if="settings.dynamicReportDisplay.enabled && dynamicReport"
+      v-if="settings.dynamicReportDisplay.enabled"
       :transition="false"
       :reverse-transition="false"
       :value="DisplayType.DynamicReport"
       class="h-100"
     >
       <DynamicReportPanel
+        v-if="dynamicReport"
         :config="dynamicReport"
         :selectedDate="selectedDate"
       />
