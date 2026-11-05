@@ -9,6 +9,14 @@
     :hoveredStateId="hoveredStateId"
   />
 
+  <LocationsLineLayer
+    v-if="showLocations"
+    :layerId="mapIds.location.layer.line"
+    :sourceId="mapIds.location.source"
+    :source="source"
+    :isDark="isDark"
+  />
+
   <LocationsCircleLayer
     v-if="showLocations"
     :layerId="mapIds.location.layer.circle"
@@ -51,11 +59,12 @@
 
 <script setup lang="ts">
 import LocationsFillLayer from '@/components/wms/locations/LocationsFillLayer.vue'
+import LocationsLineLayer from '@/components/wms/locations/LocationsLineLayer.vue'
 import LocationsCircleLayer from '@/components/wms/locations/LocationsCircleLayer.vue'
 import LocationsSymbolLayer from '@/components/wms/locations/LocationsSymbolLayer.vue'
 import LocationsTextLayer from '@/components/wms/locations/LocationsTextLayer.vue'
 import LocationsMarkers from '@/components/wms/locations/LocationsMarkers.vue'
-import type { Feature, FeatureCollection, Geometry } from 'geojson'
+import type { FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
 import {
   type MapGeoJSONFeature,
@@ -70,6 +79,7 @@ import {
   mapIds,
   clickableLocationLayerIds,
   addPropertiesToLocationGeojson,
+  getLocationCategory,
 } from '@/lib/map'
 import { useMap } from '@/services/useMap'
 import { useSource } from '@/services/useLayer'
@@ -77,8 +87,6 @@ import {
   defaultMapSettings,
   type MapSettings,
 } from '@/lib/topology/componentSettings'
-
-type LocationWithIconLable = Location & { iconLabel?: string }
 
 const userSettings = useUserSettingsStore()
 const isDark = useMapIsDark()
@@ -116,14 +124,6 @@ const showDataAvailability = computed(() => {
 })
 
 const locationsClickable = computed(() => props.settings.singleClickAction)
-
-const getLocationCategory = (
-  feature: Feature<Geometry, LocationWithIconLable>,
-) => {
-  const activeIcon =
-    feature.properties.thresholdIconName ?? feature.properties.iconName
-  return `${feature.properties.iconLabel}-${activeIcon}`
-}
 
 const geojson = computed(() => {
   const filteredLocations = props.selectedLocationCategories?.length

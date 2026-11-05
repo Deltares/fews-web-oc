@@ -21,6 +21,7 @@ import type { Location } from '@deltares/fews-pi-requests'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import { defaultMapSettings } from '@/lib/topology/componentSettings'
 import { mapIds } from '@/lib/map'
+import { getLocationCategory, isNonPointGeometry } from '@/lib/map/locations'
 
 const map = vi.hoisted(() => ({
   on: vi.fn(),
@@ -324,6 +325,84 @@ describe('location map interactions', () => {
     for (const args of handlers) {
       expect(map.off).toHaveBeenCalledWith(...args)
     }
+  })
+
+  it('classifies multi-geometries as non-point locations', () => {
+    const nonPointGeometries: Geometry[] = [
+      { type: 'Polygon', coordinates: [] },
+      { type: 'MultiPolygon', coordinates: [] },
+      { type: 'LineString', coordinates: [] },
+      { type: 'MultiLineString', coordinates: [] },
+      { type: 'GeometryCollection', geometries: [] },
+    ]
+
+    expect(nonPointGeometries.map(isNonPointGeometry)).toEqual([
+      true,
+      true,
+      true,
+      true,
+      true,
+    ])
+    expect(isNonPointGeometry({ type: 'Point', coordinates: [] })).toBe(false)
+  })
+
+  it('uses a thinner line width for non-point outlines', () => {
+    mountLayer()
+
+    expect(getPaint(mapIds.location.layer.line)).toMatchObject({
+      'line-width': 0.5,
+    })
+  })
+
+  it('groups categories by icon label and gives thresholds only to points', () => {
+    const feature = (
+      geometry: Geometry,
+      properties: Partial<Location> = {},
+    ) => ({
+      type: 'Feature' as const,
+      geometry,
+      properties: { locationId: 'location', ...properties } as Location,
+    })
+    const polygon = feature(
+      { type: 'MultiPolygon', coordinates: [] },
+      { iconLabel: 'Warnings', thresholdIconName: 'high' },
+    )
+    const polygonWithDifferentThreshold = feature(
+      { type: 'Polygon', coordinates: [] },
+      { iconLabel: 'Warnings', thresholdIconName: 'low' },
+    )
+    const polygonWithDifferentLabel = feature(
+      { type: 'Polygon', coordinates: [] },
+      { iconLabel: 'Alerts' },
+    )
+    const point = feature(
+      { type: 'Point', coordinates: [0, 0] },
+      { iconLabel: 'Warnings', thresholdIconName: 'high' },
+    )
+    const pointWithDifferentThreshold = feature(
+      { type: 'Point', coordinates: [1, 1] },
+      { iconLabel: 'Warnings', thresholdIconName: 'low' },
+    )
+    const unlabeledPolygon = feature({ type: 'Polygon', coordinates: [] })
+    const secondUnlabeledPolygon = feature({
+      type: 'MultiPolygon',
+      coordinates: [],
+    })
+
+    expect(getLocationCategory(polygon)).toBe(
+      getLocationCategory(polygonWithDifferentThreshold),
+    )
+    expect(getLocationCategory(polygon)).not.toBe(
+      getLocationCategory(polygonWithDifferentLabel),
+    )
+    expect(getLocationCategory(polygon)).not.toBe(getLocationCategory(point))
+    expect(getLocationCategory(point)).toBe('Warnings-high')
+    expect(getLocationCategory(point)).not.toBe(
+      getLocationCategory(pointWithDifferentThreshold),
+    )
+    expect(getLocationCategory(unlabeledPolygon)).toBe(
+      getLocationCategory(secondUnlabeledPolygon),
+    )
   })
 
   function getFilter(id: string) {
