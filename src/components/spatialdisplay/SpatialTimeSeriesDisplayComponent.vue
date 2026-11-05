@@ -11,6 +11,7 @@
         :settings="settings.charts"
         :informationContent="tooltip"
         :dynamicReport="dynamicReport"
+        :downloadReport="settings.report.downloadReport"
       >
         <template #toolbar-append>
           <slot name="toolbar-append" />

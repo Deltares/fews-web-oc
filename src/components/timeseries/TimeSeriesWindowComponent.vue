@@ -32,26 +32,14 @@
       <v-spacer />
     </template>
     <template v-slot:toolbar-append>
-      <v-btn
-        size="small"
-        icon
-        v-if="displayActionItems.length"
-        name="Time series actions"
-      >
-        <v-icon size="small">mdi-dots-horizontal</v-icon>
-        <v-menu activator="parent" density="compact">
-          <v-list>
-            <v-list-item
-              v-for="item in displayActionItems"
-              :key="item.label"
-              @click="item.action"
-              :prepend-icon="item.icon"
-            >
-              {{ item.label }}
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </v-btn>
+      <TimeSeriesDisplayActions
+        :displayConfig="displayConfig"
+        :currentTime="currentTime"
+        :dynamicReport="dynamicReport"
+        :downloadReport="downloadReport"
+        :filter="filter"
+        :settings="settings"
+      />
       <slot name="toolbar-append" />
     </template>
     <TimeSeriesComponent
@@ -66,24 +54,16 @@
       :settings="settings"
     >
     </TimeSeriesComponent>
-    <TimeSeriesFileDownloadComponent
-      v-model="showDownloadDialog"
-      :config="displayConfig"
-      :options="options"
-      :filter="filter"
-    />
   </WindowComponent>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, StyleValue, watch, watchEffect } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { ref, StyleValue, watch, watchEffect } from 'vue'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
-import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
+import TimeSeriesDisplayActions from '@/components/timeseries/TimeSeriesDisplayActions.vue'
 import { DisplayConfig, DisplayType } from '@/lib/display/DisplayConfig'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
-import { useUserSettingsStore } from '@/stores/userSettings'
 import type { DynamicReportPanelConfig } from '@/services/useDynamicReport'
 import type {
   FilterActionsFilter,
@@ -98,24 +78,12 @@ interface Props {
   currentTime?: Date
   informationContent?: string | null
   dynamicReport?: DynamicReportPanelConfig | null
+  downloadReport?: boolean
   filter?: FilterActionsFilter | TimeSeriesGridActionsFilter
   settings: ChartsSettings
 }
 
-const props = defineProps<Props>()
-
-const { t } = useI18n()
-
-const userSettings = useUserSettingsStore()
-
-const options = computed<
-  Pick<FilterActionsFilter, 'useDisplayUnits' | 'convertDatum'>
->(() => {
-  return {
-    useDisplayUnits: userSettings.useDisplayUnits,
-    convertDatum: userSettings.convertDatum,
-  }
-})
+const props = withDefaults(defineProps<Props>(), { downloadReport: true })
 
 interface DisplayTypeItem {
   icon: string
@@ -124,23 +92,6 @@ interface DisplayTypeItem {
   iconStyle?: StyleValue
   disabled?: boolean
 }
-
-const showDownloadDialog = ref(false)
-
-const displayActionItems = computed(() => {
-  const dataDownloadEnabled = props.settings.actions.downloadData
-  return [
-    {
-      icon: 'mdi-download',
-      label: t('download.downloadTimeSeries') + ' ...',
-      action: () => {
-        showDownloadDialog.value = true
-      },
-      disabled: (props.displayConfig?.index ?? -1) === -1,
-      hidden: !dataDownloadEnabled,
-    },
-  ].filter((item) => !item.hidden)
-})
 
 function toDisplayType(
   value: typeof props.settings.general.startPanel,
