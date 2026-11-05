@@ -75,7 +75,7 @@ for (const gesture of ['rectangle', 'wheel', 'pan']) {
                         visibleInPlot: true,
                         yAxis: {
                           axisPosition: 'left',
-                          axisLabel: `Level ${index}`,
+                          axisLabel: 'Water level',
                         },
                       },
                       {
@@ -208,6 +208,23 @@ for (const gesture of ['rectangle', 'wheel', 'pan']) {
       await expect(ticks).toHaveText(zoomedTicks)
     }
     await interact(gesture === 'pan')
+
+    await charts.first().hover()
+    await charts.first().getByRole('button', { name: 'Maximize chart' }).click()
+    await expect(charts.first()).toHaveClass(/maximized/)
+    await expect(charts.nth(1)).toBeHidden()
+    await interact()
+    await charts.first().getByRole('button', { name: 'Restore chart' }).click()
+    await expect(charts.nth(1)).toBeVisible()
+    await expect(charts.nth(1).locator('.x-axis-0 .tick text')).toHaveText(
+      await ticks.allTextContents(),
+    )
+    await charts.nth(1).hover()
+    await charts.nth(1).getByRole('button', { name: 'Maximize chart' }).click()
+    await expect(charts.first()).toBeHidden()
+    await expect(charts.nth(1)).toHaveClass(/maximized/)
+    await charts.nth(1).getByRole('button', { name: 'Restore chart' }).click()
+    await expect(charts.first()).toBeVisible()
   })
 }
 
