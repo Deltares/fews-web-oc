@@ -69,6 +69,8 @@ Web OC will show a time series graph and a drop-down menu for selection of displ
 
 The period shown in the graph corresponds to the configured relative view period in `DisplayGroups.xml`.
 
+Changing the period in the time control updates the chart range and requested data, replacing any previous zoom selection. Ordinary data refreshes preserve the current zoom.
+
 With the v5 chart engine, bar series sharing a subplot and value axis are stacked in their configured order. Bars on different value axes are rendered separately.
 
 Ensemble line requests use the v5 native ensemble plot to draw the returned members. Hovering identifies the nearest member and shows its value with the configured unit.

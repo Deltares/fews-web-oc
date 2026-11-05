@@ -1,5 +1,5 @@
 import { debounce } from 'lodash-es'
-import { ref } from 'vue'
+import { onScopeDispose, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 
 // Ratio between old and new domain when zooming above which no refetch is
 // performed. Note: zooming out (i.e. zoom ratio > 1) will always refetch.
@@ -9,7 +9,9 @@ const MAX_ZOOM_RATIO_FOR_REFETCH = 0.8
 // unlikely that there is any effect of thinning.
 const MIN_HOURS_FOR_REFETCH = 12
 
-export function useFetchDomain() {
+export function useFetchDomain(
+  configuredDomain?: MaybeRefOrGetter<[Date, Date] | undefined>,
+) {
   const domain = ref<{ startTime?: Date; endTime?: Date }>({})
 
   function shouldRefetchAfterDomainUpdate(newDomain: [Date, Date]): boolean {
@@ -53,6 +55,21 @@ export function useFetchDomain() {
     domain.value = { startTime, endTime }
   }
   const debouncedRefetchChartTimeSeries = debounce(refetchChartTimeSeries, 500)
+
+  if (configuredDomain) {
+    watch(
+      () => toValue(configuredDomain)?.map(Number),
+      (next, previous) => {
+        if (next?.[0] === previous?.[0] && next?.[1] === previous?.[1]) {
+          return
+        }
+        debouncedRefetchChartTimeSeries.cancel()
+        domain.value = {}
+      },
+      { flush: 'sync' },
+    )
+    onScopeDispose(() => debouncedRefetchChartTimeSeries.cancel())
+  }
 
   return {
     debouncedRefetchChartTimeSeries,

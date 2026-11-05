@@ -281,7 +281,7 @@ const showBrush = computed(
   () =>
     userSettings.get('charts.brush')?.value === true && !props.disableThinning,
 )
-const { debouncedRefetchChartTimeSeries, domain } = useFetchDomain()
+const { debouncedRefetchChartTimeSeries, domain } = useFetchDomain(fullDomain)
 const chartOptions = computed<PiTimeSeriesQueryOptions>(() => {
   if (props.disableThinning) {
     return {

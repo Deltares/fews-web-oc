@@ -83,7 +83,7 @@ describe('v5 chart group synchronization', () => {
     expect(group.selection.selection.get()).toBe(before)
   })
 
-  it('keeps the first configured full domain as the reset domain', () => {
+  it('preserves zoom and the full domain when reapplying the same configured period', () => {
     const group = createV5ChartGroup()
     const firstDomain: [Date, Date] = [
       new Date('2025-01-01T00:00:00Z'),
@@ -105,4 +105,29 @@ describe('v5 chart group synchronization', () => {
       firstDomain.map((date) => date.getTime()),
     )
   })
+
+  it.each(['timeScale', 'brushTimeScale'] as const)(
+    'updates %s when the configured period changes, but preserves zoom on equivalent config refreshes',
+    (scale) => {
+      const group = createV5ChartGroup()
+      const initial: [Date, Date] = [new Date(1000), new Date(5000)]
+      const zoomed: [Date, Date] = [new Date(2000), new Date(3000)]
+      const next: [Date, Date] = [new Date(10000), new Date(20000)]
+
+      initializeV5TimeScale(group, scale, initial)
+      updateTimeScaleDomain(group[scale], zoomed)
+      initializeV5TimeScale(group, scale, [new Date(1000), new Date(5000)])
+      expect(group[scale].domain.get()).toEqual([2000, 3000])
+
+      initializeV5TimeScale(group, scale, next)
+      expect(group[scale].domain.get()).toEqual([10000, 20000])
+      expect(group[scale].options.get().resolved.defaultDomain).toEqual([
+        10000, 20000,
+      ])
+
+      updateTimeScaleDomain(group[scale], [new Date(12000), new Date(15000)])
+      initializeV5TimeScale(group, scale, next)
+      expect(group[scale].domain.get()).toEqual([12000, 15000])
+    },
+  )
 })
