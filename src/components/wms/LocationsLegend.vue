@@ -22,12 +22,9 @@
       {{ item.iconLabel ?? t('search.otherLocations') }}
     </v-list-item-title>
     <template #append>
-      <template
-        v-for="category in item.categories"
-        :key="category.value"
-        v-show="item.categories.length > 1"
-      >
+      <template v-for="category in item.categories" :key="category.value">
         <v-btn
+          v-show="item.categories.length > 1"
           size="xsmall"
           @click.stop="toggleItem(category.value)"
           class="location-icon h-100"
