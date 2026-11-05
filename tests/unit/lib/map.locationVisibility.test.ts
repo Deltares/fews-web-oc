@@ -40,14 +40,19 @@ function collection(
 }
 
 describe('location visibility', () => {
-  const { features } = addPropertiesToLocationGeojson(
-    collection(
-      {},
-      { iconName: 'station', thresholdSeverity: 0 },
-      { iconName: 'station', thresholdSeverity: 1, thresholdIconName: 'low' },
-      { iconName: 'station', thresholdSeverity: 2, thresholdIconName: 'high' },
-    ),
+  const locations = collection(
+    {},
+    { iconName: 'station', thresholdSeverity: 0 },
+    { iconName: 'station', thresholdSeverity: 1, thresholdIconName: 'low' },
+    { iconName: 'station', thresholdSeverity: 2, thresholdIconName: 'high' },
   )
+  const { features } = addPropertiesToLocationGeojson({
+    ...locations,
+    features: locations.features.map((feature) => ({
+      ...feature,
+      geometry: { type: 'Point', coordinates: [4, 52] },
+    })),
+  })
   const categories = features.map((f) => f.properties.locationCategory)
 
   const cases: [string, string[], LocationThresholdFilter | undefined][] = [
@@ -83,7 +88,7 @@ describe('location visibility', () => {
       )
       for (const feature of features) {
         const inLayer = filter.filter({ zoom: 0 }, {
-          type: 3,
+          type: 1,
           properties: feature.properties,
         } as never)
         expect(inLayer).toBe(
@@ -117,6 +122,32 @@ describe('location visibility', () => {
     expect(
       visibleIds([], { severities: [0], crossingLocationIds: ['location-3'] }),
     ).toEqual(['location-0', 'location-1', 'location-3'])
+  })
+
+  it('keeps polygons in the same icon group visible across threshold icons', () => {
+    const { features } = addPropertiesToLocationGeojson(locations)
+    const categories = [features[2].properties.locationCategory]
+    const filter = featureFilter(
+      getLocationVisibilityFilter(categories, undefined),
+      'layers[0].filter',
+    )
+
+    expect(
+      features
+        .filter((feature) =>
+          isLocationVisible(feature.properties, categories, undefined),
+        )
+        .map((feature) => feature.properties.locationId),
+    ).toEqual(['location-1', 'location-2', 'location-3'])
+
+    for (const feature of features) {
+      expect(
+        filter.filter({ zoom: 0 }, {
+          type: 3,
+          properties: feature.properties,
+        } as never),
+      ).toBe(isLocationVisible(feature.properties, categories, undefined))
+    }
   })
 })
 

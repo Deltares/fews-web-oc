@@ -20,7 +20,6 @@ import type { FeatureCollection, Geometry } from 'geojson'
 import type { Location } from '@deltares/fews-pi-requests'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import { defaultMapSettings } from '@/lib/topology/componentSettings'
-import { mapIds } from '@/lib/map'
 import { getLocationCategory, isNonPointGeometry } from '@/lib/map/locations'
 import { mapIds, type LocationThresholdFilter } from '@/lib/map'
 
@@ -456,6 +455,7 @@ describe('location map interactions', () => {
     expect(sourceOptions()).toBe(options)
     for (const layerId of [
       mapIds.location.layer.fill,
+      mapIds.location.layer.line,
       mapIds.location.layer.circle,
       mapIds.location.layer.symbol,
       mapIds.location.layer.childSymbol,
