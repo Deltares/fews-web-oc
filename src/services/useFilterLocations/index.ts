@@ -35,39 +35,52 @@ export function useFilterLocations(
   const isLoading = ref(false)
   const error = shallowRef<string | undefined>(undefined)
 
+  function resetState(hasFilters: boolean) {
+    geojson.value = emptyFeatureCollection
+    locations.value = []
+    error.value = undefined
+    isReady.value = !hasFilters
+    isLoading.value = hasFilters
+  }
+
+  async function loadLocations(
+    ids: string[],
+    options: Partial<LocationsFilter> | undefined,
+    controller: AbortController,
+  ) {
+    const { signal } = controller
+    try {
+      const result = await fetchLocationsAsGeoJson(
+        baseUrl,
+        ids,
+        options,
+        controller,
+      )
+      if (signal.aborted) return
+
+      geojson.value = result
+      locations.value = convertGeoJsonToFewsPiLocation(result)
+    } catch {
+      if (!signal.aborted) error.value = 'error-loading'
+    } finally {
+      if (!signal.aborted) {
+        isLoading.value = false
+        isReady.value = true
+      }
+    }
+  }
+
   watch(
     () => JSON.stringify([toValue(filterIds), toValue(filterOptions)]),
-    async (_filters, _previousFilters, onCleanup) => {
+    (_filters, _previousFilters, onCleanup) => {
       const ids = toValue(filterIds)
       const options = toValue(filterOptions)
-      let active = true
-      onCleanup(() => {
-        active = false
-      })
+      const controller = new AbortController()
+      onCleanup(() => controller.abort())
 
-      geojson.value = emptyFeatureCollection
-      locations.value = []
-      error.value = undefined
-      isReady.value = false
-      isLoading.value = ids.length > 0
-
-      try {
-        if (ids.length === 0) return
-
-        const result = await fetchLocationsAsGeoJson(baseUrl, ids, options)
-        if (!active) return
-
-        geojson.value = result
-        locations.value = convertGeoJsonToFewsPiLocation(result)
-      } catch {
-        if (!active) return
-        error.value = 'error-loading'
-      } finally {
-        if (active) {
-          isLoading.value = false
-          isReady.value = true
-        }
-      }
+      resetState(ids.length > 0)
+      if (ids.length === 0) return
+      return loadLocations(ids, options, controller)
     },
     { immediate: true },
   )
