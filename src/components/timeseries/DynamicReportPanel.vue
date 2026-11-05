@@ -1,16 +1,11 @@
 <template>
-  <ShadowFrame v-if="reportHtml" :htmlContent="reportHtml" />
-  <v-alert v-else-if="error" type="error" variant="tonal" class="ma-2">
-    {{ t('reports.loadFailed') }}
-  </v-alert>
-  <div v-else-if="isReady || isMissingTime" class="text-center mt-2">
-    {{ t('reports.noReportAvailable') }}
-  </div>
+  <DynamicReportContent :html="reportHtml" class="flex-1-1">
+  </DynamicReportContent>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import ShadowFrame from '@/components/general/ShadowFrame.vue'
+import DynamicReportContent from '@/components/reports/DynamicReportContent.vue'
 import { configManager } from '@/services/application-config'
 import {
   type DynamicReportPanelConfig,
