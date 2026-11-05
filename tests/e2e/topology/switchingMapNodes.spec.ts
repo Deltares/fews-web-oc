@@ -17,6 +17,7 @@ test.describe('Switching Nodes with TopologySpatialDisplayWithLocation', () => {
 
     await expect(page.getByText('Water Level (m + MSL)')).toBeVisible()
     await expect(page.getByText('Total Water Depth (m)')).toBeVisible()
+    await expect(page).toHaveURL(/\/location\/Umgeni_Mouth_level$/)
   })
 
   test('when switching nodes the location should not be displayed if the node does not have the selected location', async ({
@@ -38,6 +39,7 @@ test.describe('Switching Nodes with TopologySpatialDisplayWithLocation', () => {
     await expect(
       page.getByRole('button', { name: 'Chart', exact: true }),
     ).not.toBeVisible()
+    await expect(page).not.toHaveURL(/\/location\//)
   })
 })
 

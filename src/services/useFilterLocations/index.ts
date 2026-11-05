@@ -1,7 +1,7 @@
 import type { FeatureCollection, Geometry } from 'geojson'
 import type { Location, LocationsFilter } from '@deltares/fews-pi-requests'
 import type { Ref, MaybeRefOrGetter, ShallowRef } from 'vue'
-import { ref, watchEffect, shallowRef, toValue } from 'vue'
+import { ref, watch, shallowRef, toValue } from 'vue'
 import {
   convertGeoJsonToFewsPiLocation,
   fetchLocationsAsGeoJson,
@@ -35,34 +35,42 @@ export function useFilterLocations(
   const isLoading = ref(false)
   const error = shallowRef<string | undefined>(undefined)
 
-  watchEffect(async () => {
-    const _filterdIds = toValue(filterIds)
-    if (_filterdIds.length === 0) {
+  watch(
+    () => JSON.stringify([toValue(filterIds), toValue(filterOptions)]),
+    async (_filters, _previousFilters, onCleanup) => {
+      const ids = toValue(filterIds)
+      const options = toValue(filterOptions)
+      let active = true
+      onCleanup(() => {
+        active = false
+      })
+
       geojson.value = emptyFeatureCollection
-      locations.value = convertGeoJsonToFewsPiLocation(geojson.value)
-      return
-    }
-    await loadLocations(_filterdIds)
-  })
+      locations.value = []
+      error.value = undefined
+      isReady.value = false
+      isLoading.value = ids.length > 0
 
-  async function loadLocations(ids: string[]): Promise<void> {
-    isLoading.value = true
-    isReady.value = false
+      try {
+        if (ids.length === 0) return
 
-    try {
-      geojson.value = await fetchLocationsAsGeoJson(
-        baseUrl,
-        ids,
-        toValue(filterOptions),
-      )
-      locations.value = convertGeoJsonToFewsPiLocation(geojson.value)
-    } catch {
-      error.value = 'error-loading'
-    } finally {
-      isLoading.value = false
-      isReady.value = true
-    }
-  }
+        const result = await fetchLocationsAsGeoJson(baseUrl, ids, options)
+        if (!active) return
+
+        geojson.value = result
+        locations.value = convertGeoJsonToFewsPiLocation(result)
+      } catch {
+        if (!active) return
+        error.value = 'error-loading'
+      } finally {
+        if (active) {
+          isLoading.value = false
+          isReady.value = true
+        }
+      }
+    },
+    { immediate: true },
+  )
 
   return {
     locations,
