@@ -25,6 +25,7 @@
     <Teleport to="#app-bar-content-center">
       <DisplayTabs
         :nodeId="nodeId"
+        :settings="componentSettings"
         role="tablist"
         aria-label="Node tab selection"
       />
