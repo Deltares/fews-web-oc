@@ -3,11 +3,13 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { createApp, h, nextTick, reactive, type App } from 'vue'
 import { createI18n } from 'vue-i18n'
 import DownloadReportButton from '@/components/reports/DownloadReportButton.vue'
-import { downloadFileWithXhr } from '@/lib/download'
+import { downloadFileWithXhr } from '@/lib/download/downloadFiles'
 import { getRequestHeaders } from '@/lib/requests/transformRequest'
 import en from '@/locales/en.json'
 
-vi.mock('@/lib/download', () => ({ downloadFileWithXhr: vi.fn() }))
+vi.mock('@/lib/download/downloadFiles', () => ({
+  downloadFileWithXhr: vi.fn(),
+}))
 vi.mock('@/lib/requests/transformRequest', () => ({
   getRequestHeaders: vi.fn(),
 }))

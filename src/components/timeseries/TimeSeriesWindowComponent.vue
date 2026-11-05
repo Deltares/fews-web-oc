@@ -46,6 +46,7 @@
               :key="item.label"
               @click="item.action"
               :prepend-icon="item.icon"
+              :disabled="item.disabled"
             >
               {{ item.label }}
             </v-list-item>
@@ -63,7 +64,6 @@
       v-model:displayType="displayType"
       :information-content="informationContent"
       :dynamic-report="dynamicReport"
-      :downloadReport="downloadReport"
       :settings="settings"
     >
     </TimeSeriesComponent>
@@ -86,6 +86,9 @@ import { DisplayConfig, DisplayType } from '@/lib/display/DisplayConfig'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import type { DynamicReportPanelConfig } from '@/services/useDynamicReport'
+import { useSelectedDate } from '@/services/useSelectedDate'
+import { configManager } from '@/services/application-config'
+import { downloadDynamicReport } from '@/lib/download/downloadDynamicReport'
 import type {
   FilterActionsFilter,
   TimeSeriesGridActionsFilter,
@@ -107,6 +110,13 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), { downloadReport: true })
 
 const { t } = useI18n()
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const { selectedDate } = useSelectedDate(() => props.currentTime)
+const dynamicReportTime = computed(() =>
+  props.dynamicReport?.capabilities.dimension?.name === 'time'
+    ? selectedDate.value?.toISOString()
+    : undefined,
+)
 
 const userSettings = useUserSettingsStore()
 
@@ -134,12 +144,32 @@ const displayActionItems = computed(() => {
   return [
     {
       icon: 'mdi-download',
-      label: t('download.downloadTimeSeries') + ' ...',
+      label: t('download.downloadTimeSeries'),
       action: () => {
         showDownloadDialog.value = true
       },
       disabled: (props.displayConfig?.index ?? -1) === -1,
       hidden: !dataDownloadEnabled,
+    },
+    {
+      icon: 'mdi-download',
+      label: t('reports.downloadReport'),
+      action: async () => {
+        const report = props.dynamicReport
+        if (!report) return
+        await downloadDynamicReport(baseUrl, {
+          displayId: report.displayId,
+          locationId: report.locationId,
+          time: dynamicReportTime.value,
+        })
+      },
+      disabled:
+        props.dynamicReport?.capabilities.dimension?.name === 'time' &&
+        dynamicReportTime.value === undefined,
+      hidden:
+        !props.downloadReport ||
+        !props.settings.dynamicReportDisplay.enabled ||
+        !props.dynamicReport,
     },
   ].filter((item) => !item.hidden)
 })
