@@ -1,5 +1,5 @@
 import * as CSS from 'csstype'
-import { SymbolOptions } from '@deltares/fews-web-oc-charts'
+import type { ChartMarker } from './ChartMarker'
 import { ChartSeriesOptions } from './ChartSeriesOptions'
 import { TimeSeriesDisplaySubplotItem } from '@deltares/fews-pi-requests'
 import { ThresholdLine } from './ThresholdLine'
@@ -22,7 +22,7 @@ export interface ChartSeries extends SubplotItem {
   dataResources: string[]
   name: string
   label?: string
-  marker?: SymbolOptions
+  marker?: ChartMarker
   type: ChartSeriesType
   options: ChartSeriesOptions
   unit: string

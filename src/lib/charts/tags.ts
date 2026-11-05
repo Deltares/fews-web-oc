@@ -1,7 +1,6 @@
 import { getSeriesByLegend } from '../legend'
 import type { ChartConfig } from './types/ChartConfig'
 import type { ChartSeries } from './types/ChartSeries'
-import type { CartesianAxes } from '@deltares/fews-web-oc-charts'
 
 export interface Tag {
   id: string
@@ -23,7 +22,7 @@ export function getMatchingIndexedString(item: string, text?: string) {
 }
 
 export function getSeriesTags(
-  axis: CartesianAxes,
+  drawLegendSymbol: (seriesId: string) => SVGElement | undefined,
   series: ChartSeries[],
   forecastLegend?: string,
 ) {
@@ -36,12 +35,8 @@ export function getSeriesTags(
     // legend for the first series.
     const firstSeries = series[0]
 
-    for (const chart of axis.charts) {
-      if (chart.id === firstSeries.id) {
-        let node = chart.drawLegendSymbol(undefined, true)
-        svgGroup.appendChild(node)
-      }
-    }
+    const symbol = drawLegendSymbol(firstSeries.id)
+    if (symbol) svgGroup.appendChild(symbol)
     legendSvg.appendChild(svgGroup)
     const name = series.find((s) => s.id === firstSeries.id)?.name ?? ''
     return {
