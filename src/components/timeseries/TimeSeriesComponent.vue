@@ -2,6 +2,8 @@
   <v-window v-model="tab" class="h-100 w-100" :touch="false">
     <v-window-item
       v-if="settings.timeSeriesChart.enabled"
+      :transition="false"
+      :reverse-transition="false"
       :value="DisplayType.TimeSeriesChart"
       class="d-flex flex-column h-100 overflow-y-auto"
     >
@@ -40,6 +42,8 @@
     </v-window-item>
     <v-window-item
       v-if="settings.verticalProfileChart.enabled"
+      :transition="false"
+      :reverse-transition="false"
       :value="DisplayType.ElevationChart"
       class="d-flex flex-row h-100 overflow-x-auto"
     >
@@ -65,6 +69,8 @@
     </v-window-item>
     <v-window-item
       v-if="settings.timeSeriesTable.enabled"
+      :transition="false"
+      :reverse-transition="false"
       :value="DisplayType.TimeSeriesTable"
       class="d-flex flex-column h-100 overflow-y-hidden"
     >
@@ -86,17 +92,22 @@
     </v-window-item>
     <v-window-item
       v-if="settings.metaDataPanel.enabled"
+      :transition="false"
+      :reverse-transition="false"
       :value="DisplayType.Information"
       class="h-100"
     >
       <div v-html="informationContent" class="pa-4 h-100 w-100" />
     </v-window-item>
     <v-window-item
-      v-if="settings.dynamicReportDisplay.enabled && dynamicReport"
+      v-if="settings.dynamicReportDisplay.enabled"
+      :transition="false"
+      :reverse-transition="false"
       :value="DisplayType.DynamicReport"
       class="h-100"
     >
       <DynamicReportPanel
+        v-if="dynamicReport"
         :config="dynamicReport"
         :selectedDate="selectedDate"
       />

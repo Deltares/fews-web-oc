@@ -21,10 +21,12 @@ export async function fetchLocationsAsGeoJson(
   baseUrl: string,
   filterIds: string[],
   filterOptions?: Partial<LocationsFilter>,
+  controller?: AbortController,
 ): Promise<FeatureCollection<Geometry, Location>> {
+  controller?.signal.throwIfAborted()
   // Fetch GeoJSON for all filterIds.
   const provider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
+    transformRequestFn: createTransformRequestFn({ controller }),
   })
   const settledResponses = await Promise.allSettled(
     filterIds.map((filterId) =>
@@ -35,6 +37,7 @@ export async function fetchLocationsAsGeoJson(
       ),
     ),
   )
+  controller?.signal.throwIfAborted()
   const error = (
     settledResponses.find((res) => res.status === 'rejected') as
       PromiseRejectedResult | undefined

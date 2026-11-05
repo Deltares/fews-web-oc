@@ -200,9 +200,7 @@ watchEffect(() => {
   const tableEnabled = props.settings.timeSeriesTable.enabled
   const metaDataEnabled = props.settings.metaDataPanel.enabled && tooltipDefined
 
-  const dynamicReportEnabled =
-    props.settings.dynamicReportDisplay.enabled &&
-    props.dynamicReport !== undefined
+  const dynamicReportEnabled = props.settings.dynamicReportDisplay.enabled
   const noDynamicReport = props.dynamicReport === null
   const enabledItems = [
     {

@@ -1,7 +1,7 @@
 import type { FeatureCollection, Geometry } from 'geojson'
 import type { Location, LocationsFilter } from '@deltares/fews-pi-requests'
 import type { Ref, MaybeRefOrGetter, ShallowRef } from 'vue'
-import { ref, watchEffect, shallowRef, toValue } from 'vue'
+import { ref, watch, shallowRef, toValue } from 'vue'
 import {
   convertGeoJsonToFewsPiLocation,
   fetchLocationsAsGeoJson,
@@ -35,34 +35,55 @@ export function useFilterLocations(
   const isLoading = ref(false)
   const error = shallowRef<string | undefined>(undefined)
 
-  watchEffect(async () => {
-    const _filterdIds = toValue(filterIds)
-    if (_filterdIds.length === 0) {
-      geojson.value = emptyFeatureCollection
-      locations.value = convertGeoJsonToFewsPiLocation(geojson.value)
-      return
-    }
-    await loadLocations(_filterdIds)
-  })
+  function resetState(hasFilters: boolean) {
+    geojson.value = emptyFeatureCollection
+    locations.value = []
+    error.value = undefined
+    isReady.value = !hasFilters
+    isLoading.value = hasFilters
+  }
 
-  async function loadLocations(ids: string[]): Promise<void> {
-    isLoading.value = true
-    isReady.value = false
-
+  async function loadLocations(
+    ids: string[],
+    options: Partial<LocationsFilter> | undefined,
+    controller: AbortController,
+  ) {
+    const { signal } = controller
     try {
-      geojson.value = await fetchLocationsAsGeoJson(
+      const result = await fetchLocationsAsGeoJson(
         baseUrl,
         ids,
-        toValue(filterOptions),
+        options,
+        controller,
       )
-      locations.value = convertGeoJsonToFewsPiLocation(geojson.value)
+      if (signal.aborted) return
+
+      geojson.value = result
+      locations.value = convertGeoJsonToFewsPiLocation(result)
     } catch {
-      error.value = 'error-loading'
+      if (!signal.aborted) error.value = 'error-loading'
     } finally {
-      isLoading.value = false
-      isReady.value = true
+      if (!signal.aborted) {
+        isLoading.value = false
+        isReady.value = true
+      }
     }
   }
+
+  watch(
+    () => JSON.stringify([toValue(filterIds), toValue(filterOptions)]),
+    (_filters, _previousFilters, onCleanup) => {
+      const ids = toValue(filterIds)
+      const options = toValue(filterOptions)
+      const controller = new AbortController()
+      onCleanup(() => controller.abort())
+
+      resetState(ids.length > 0)
+      if (ids.length === 0) return
+      return loadLocations(ids, options, controller)
+    },
+    { immediate: true },
+  )
 
   return {
     locations,
