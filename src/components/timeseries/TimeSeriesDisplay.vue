@@ -4,6 +4,7 @@
     :elevationChartDisplayconfig="scalar1DDisplayConfig"
     :brushChartConfig="brushChartConfig"
     :settings="settings.charts"
+    :dynamicReport="null"
   >
     <template #toolbar-title>
       <v-menu

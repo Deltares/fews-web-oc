@@ -139,16 +139,17 @@ export interface DynamicReportPanelConfig {
 
 /**
  * Get the dynamic report panel config for the selected locations.
- * @returns `undefined` while the capabilities are not available,
- *   `null` if none of the selected locations is selectable in the report,
- *   otherwise the panel config.
+ * @returns `null` if no display is configured or no selected location is
+ *   selectable, `undefined` while a configured display's capabilities are
+ *   unavailable, otherwise the panel config.
  */
 export function getDynamicReportPanelConfig(
   displayId: string | undefined,
   capabilities: DynamicReportDisplayCapabilities | undefined,
   locationIds: string[],
 ): DynamicReportPanelConfig | null | undefined {
-  if (displayId === undefined || capabilities === undefined) return
+  if (displayId === undefined) return null
+  if (capabilities === undefined) return
   const selectableLocations = capabilities.selectableLocations
   if (!selectableLocations) return { displayId, capabilities }
 
