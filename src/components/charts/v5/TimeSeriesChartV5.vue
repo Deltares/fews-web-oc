@@ -142,12 +142,15 @@ function initializeSharedScale() {
     initializeV5TimeScale(
       chartGroup.v5,
       'timeScale',
-      domain.value ?? configuredDomain(),
+      configuredDomain() ?? domain.value,
     )
   }
 }
 
 initializeSharedScale()
+if (!props.verticalProfile && chartGroup.v5) {
+  updateTimeScaleDomain(chartGroup.v5.timeScale, domain.value)
+}
 
 const zoomInteraction = zoom({
   mode: 'auto',

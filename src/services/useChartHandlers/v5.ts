@@ -53,9 +53,14 @@ export function initializeV5TimeScale(
   if (!group || !domain) return
   const initializedKey =
     scale === 'timeScale' ? 'timeScaleInitialized' : 'brushTimeScaleInitialized'
-  if (group[initializedKey]) return
-
   const values: [number, number] = [Number(domain[0]), Number(domain[1])]
+  if (
+    group[initializedKey] &&
+    sameRange(group[scale].options.get().resolved.defaultDomain, values)
+  ) {
+    return
+  }
+
   group[scale].update({ domain: values, defaultDomain: values })
   group[initializedKey] = true
 }
