@@ -38,6 +38,7 @@ import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 function createAxis() {
   return {
     charts: [],
+    xInitialExtent: [],
     redraw: vi.fn(),
     removeAllCharts: vi.fn(),
     removeChart: vi.fn(),
@@ -161,6 +162,61 @@ describe('timeSeriesChart helpers', () => {
       { x: middle, y: [20, null], flag: ['B', undefined] },
       { x: end, y: [40, 30], flag: ['D', 'C'] },
     ])
+  })
+
+  it('does not reset the domain when refreshing a band and its dummy series', () => {
+    const axis = createAxis()
+    const band: ChartSeries = { ...createChartSeries(), type: 'rule' }
+    const dummy: ChartSeries = {
+      ...createChartSeries('upper-bound', ['resource-b']),
+      type: 'dummy',
+    }
+    const config = { ...createConfig(band), series: [band, dummy] }
+    refreshChart(axis, config, {
+      'resource-a': createSeries(1),
+      'resource-b': createSeries(2),
+    })
+
+    updateChartData(axis, config.series, {
+      'resource-a': createSeries(3),
+      'resource-b': createSeries(4),
+    })
+
+    expect(axis.charts).toHaveLength(1)
+    expect(axis.charts[0].data[0].y).toEqual([3, 4])
+    expect(axis.redraw).toHaveBeenCalledExactlyOnceWith({
+      y: { nice: false, domain: undefined, fullExtent: false },
+    })
+  })
+
+  it('does not redraw when only a dummy series is refreshed', () => {
+    const axis = createAxis()
+    const dummy: ChartSeries = { ...createChartSeries(), type: 'dummy' }
+
+    const needsAxisRescale = updateChartData(
+      axis,
+      [dummy],
+      { 'resource-a': createSeries(1), 'resource-b': createSeries(2) },
+      true,
+    )
+
+    expect(needsAxisRescale).toBe(true)
+    expect(axis.charts).toHaveLength(0)
+    expect(axis.redraw).not.toHaveBeenCalled()
+  })
+
+  it('preserves an initialized x-axis when empty series receive data after panning', () => {
+    const axis = createAxis()
+    const chartSeries = createChartSeries('observation', ['resource-a'])
+    refreshChart(axis, createConfig(chartSeries), {})
+    axis.xInitialExtent = [[new Date('2026-01-01'), new Date('2026-01-10')]]
+
+    updateChartData(axis, [chartSeries], { 'resource-a': createSeries(1) })
+
+    expect(axis.charts[0].data).toHaveLength(1)
+    expect(axis.redraw).toHaveBeenCalledExactlyOnceWith({
+      y: { autoScale: true },
+    })
   })
 
   it('reconciles a missing chart when its data resource updates', async () => {
