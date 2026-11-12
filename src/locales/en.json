@@ -29,6 +29,7 @@
     }
   },
   "reports": {
+    "downloadReport": "Download report",
     "loadFailed": "Failed to load report",
     "noReportAvailable": "No report available"
   },

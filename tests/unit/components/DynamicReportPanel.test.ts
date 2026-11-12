@@ -24,11 +24,11 @@ vi.mock('@/services/application-config', () => ({
   configManager: { get: () => 'http://fews' },
 }))
 
-vi.mock('@/components/general/ShadowFrame.vue', () => ({
+vi.mock('@/components/reports/DynamicReportContent.vue', () => ({
   default: {
-    props: ['htmlContent'],
-    render(this: { htmlContent: string }) {
-      return h('div', { class: 'report' }, this.htmlContent)
+    props: ['html'],
+    render(this: { html: string }) {
+      return h('div', { class: 'report' }, this.html)
     },
   },
 }))

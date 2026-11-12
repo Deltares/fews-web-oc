@@ -1,6 +1,11 @@
 <template>
-  <DynamicReportContent :html="reportHtml" class="flex-1-1">
-  </DynamicReportContent>
+  <DynamicReportContent v-if="reportHtml" :html="reportHtml" class="flex-1-1" />
+  <v-alert v-else-if="error" type="error" variant="tonal" class="ma-2">
+    {{ t('reports.loadFailed') }}
+  </v-alert>
+  <div v-else-if="isReady || isMissingTime" class="text-center mt-2">
+    {{ t('reports.noReportAvailable') }}
+  </div>
 </template>
 
 <script setup lang="ts">

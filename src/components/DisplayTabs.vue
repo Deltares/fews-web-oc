@@ -1,13 +1,13 @@
 <template>
   <div
-    v-if="displayTabs.length > 1"
+    v-if="visibleDisplayTabs.length > 1"
     class="overflow-visible d-flex position-relative"
   >
     <div class="icon-group__underlay"></div>
     <v-btn
       variant="text"
       size="small"
-      v-for="tab in displayTabs"
+      v-for="tab in visibleDisplayTabs"
       :key="tab.id"
       :value="tab.type"
       :href="tab.href"
@@ -26,15 +26,21 @@ import {
 } from '@/lib/topology/displayTabs.js'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { useMicroFrontEnd } from '@/composables/useMicroFrontEnd'
-import { ref, watchEffect } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
+import type { WebOCComponentSettingsClass } from '@deltares/fews-pi-requests'
+import { filterDisplayTabs } from '@/lib/topology/filterDisplayTabs'
 
 interface Props {
   nodeId?: string | string[]
+  settings?: WebOCComponentSettingsClass
 }
 
 const props = defineProps<Props>()
 
 const displayTabs = ref<DisplayTab[]>([])
+const visibleDisplayTabs = computed(() =>
+  filterDisplayTabs(displayTabs.value, props.settings),
+)
 const topologyNodesStore = useTopologyNodesStore()
 const { microFrontEndConfig } = useMicroFrontEnd()
 

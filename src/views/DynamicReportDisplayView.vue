@@ -1,6 +1,9 @@
 <template>
   <div class="d-flex flex-column h-100 w-100">
-    <v-toolbar v-if="locations.length" density="compact">
+    <v-toolbar
+      v-if="locations.length || settings.report.downloadReport"
+      density="compact"
+    >
       <v-autocomplete
         v-if="locations.length > 1"
         v-model="selectedLocation"
@@ -22,9 +25,22 @@
         :menu-props="{ width: 360 }"
         :list-props="{ density: 'compact' }"
       />
-      <span v-else class="mx-5">{{ selectedLocation?.name }}</span>
+      <span v-else-if="locations.length" class="mx-5">{{
+        selectedLocation?.name
+      }}</span>
+      <v-spacer />
+      <DownloadReportButton
+        v-if="
+          settings.report.downloadReport && topologyNode?.dynamicReportDisplay
+        "
+        :displayId="topologyNode.dynamicReportDisplay.id"
+        :locationId="filter.locationId"
+        :time="filter.time"
+        :disabled="!reportHtml || isLoading || !isReady || !!error"
+      />
     </v-toolbar>
     <DynamicReportContent
+      v-if="reportHtml"
       :html="reportHtml"
       :node-css="timeSeriesValueInputCss"
       class="flex-1-1"
@@ -33,6 +49,12 @@
         <TimeSeriesValueInput :node="node" @change="onEdit" />
       </template>
     </DynamicReportContent>
+    <span v-else-if="error" class="mx-auto mt-2">{{
+      t('reports.loadFailed')
+    }}</span>
+    <span v-else-if="isReady" class="mx-auto mt-2">{{
+      t('reports.noReportAvailable')
+    }}</span>
     <DateTimeSlider
       v-if="dateTimeSliderEnabled && times?.length"
       v-model:selectedDate="selectedDateOfSlider"
@@ -68,6 +90,7 @@ import DynamicReportContent from '@/components/reports/DynamicReportContent.vue'
 import TimeSeriesValueInput from '@/components/reports/dynamic/TimeSeriesValueInput.vue'
 import timeSeriesValueInputCss from '@/components/reports/dynamic/timeSeriesValueInput.css?inline'
 import { type DynamicReportEdit, getEditKey } from '@/lib/dynamic-report/nodes'
+import DownloadReportButton from '@/components/reports/DownloadReportButton.vue'
 import { useDynamicReport } from '@/services/useDynamicReport'
 import DateTimeSliderValues from '@/components/general/DateTimeSliderValues.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
@@ -104,11 +127,12 @@ const filter = computed(() => {
   }
 })
 
-const { reportHtml, capabilities, isReady, error } = useDynamicReport(
-  baseUrl,
-  () => props.topologyNode?.dynamicReportDisplay?.id,
-  filter,
-)
+const { reportHtml, capabilities, isReady, isLoading, error } =
+  useDynamicReport(
+    baseUrl,
+    () => props.topologyNode?.dynamicReportDisplay?.id,
+    filter,
+  )
 
 const locations = computed(() => {
   return capabilities.value?.selectableLocations ?? []
