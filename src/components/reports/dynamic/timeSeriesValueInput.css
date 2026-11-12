@@ -1,0 +1,31 @@
+/*
+ * Not a scoped style in the component, scoped styles do not reach a report
+ * with isolated styling in a shadow root. Adopted by DynamicReportContent.
+ */
+.time-series-value-input {
+  box-sizing: border-box;
+  width: 8ch;
+  height: 30px;
+  min-height: 30px;
+  padding: 0px 1px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 4px;
+  background-color: rgb(var(--v-theme-surface));
+  color: currentColor;
+  font: inherit;
+  line-height: 26px;
+  vertical-align: middle;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+.time-series-value-input:hover:not(:focus-visible) {
+  border-color: rgba(var(--v-theme-on-surface), 0.6);
+}
+
+.time-series-value-input:focus-visible {
+  border-color: transparent;
+  outline: 1px solid rgb(var(--v-theme-primary));
+  outline-offset: -1px;
+}

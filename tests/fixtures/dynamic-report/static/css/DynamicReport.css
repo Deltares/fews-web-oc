@@ -1,0 +1,54 @@
+/*
+ * Styles for the dynamic reports, loaded from the FEWS static resources
+ * (WebResourceFiles/css/DynamicReport.css).
+ *
+ * The WebOC scopes these rules to the report container, so they cannot affect
+ * the rest of the WebOC. Fonts, theme colours and dark mode come from the
+ * WebOC and its custom style sheet, use the Vuetify theme
+ * variables instead of fixed colours.
+ */
+
+.report-title {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.document-file-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: rgb(var(--v-theme-surface));
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.document-file-table thead {
+  background-color: rgb(var(--v-theme-primary));
+}
+
+.document-file-table th {
+  font-weight: 800;
+  color: rgb(var(--v-theme-on-primary));
+  text-align: center;
+  padding: 6px 15px;
+  white-space: nowrap;
+}
+
+.document-file-table th.number {
+  text-align: right;
+}
+
+/* Right aligned, use a fixed number of decimals per column to align the
+   decimal points */
+.document-file-table td.number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.document-file-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.document-file-table tbody tr:hover {
+  background-color: rgba(var(--v-theme-on-surface), 0.04);
+}

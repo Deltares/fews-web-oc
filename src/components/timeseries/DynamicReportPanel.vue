@@ -1,5 +1,5 @@
 <template>
-  <ShadowFrame v-if="reportHtml" :htmlContent="reportHtml" />
+  <DynamicReportContent v-if="reportHtml" :html="reportHtml" class="flex-1-1" />
   <v-alert v-else-if="error" type="error" variant="tonal" class="ma-2">
     {{ t('reports.loadFailed') }}
   </v-alert>
@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import ShadowFrame from '@/components/general/ShadowFrame.vue'
+import DynamicReportContent from '@/components/reports/DynamicReportContent.vue'
 import { configManager } from '@/services/application-config'
 import {
   type DynamicReportPanelConfig,
