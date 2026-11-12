@@ -283,7 +283,7 @@ Next to the Topology Display, three additional components can be configured in W
 
 **schematicStatusDisplay**: A tree view will list all SSD displayGroups including all displayPanels (configured permissions respected) available to FewsWebServices. Most click-actions on displayPanels are supported, see [SSD Service documentation](https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+Schematic+Status+Display+%28SSD%29+Web+Service).
 
-**HTML display**: Component, only available in Web OC, to either show static HTML pages stored in the FEWS Configuration (WebResourceFiles) or external web pages. See [WebOperatorClient.xml configuration](https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client).
+**HTML display**: Component, only available in Web OC, to either show static HTML pages stored in the FEWS Configuration (WebResourceFiles) or external web pages. Multiple HTML displays can be configured with distinct paths, including when the backend returns the same component ID for each. Use the paths in the help menu to open the corresponding pages. A default component is selected by ID, so repeated IDs cannot uniquely identify a default HTML display; the last matching display is used. See [WebOperatorClient.xml configuration](https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client).
 
 **Help menu**: Drop-down menu available on the bottom left side of Web OC. See [WebOperatorClient.xml configuration](https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client).
 
