@@ -70,6 +70,19 @@ describe('captureNodeScreenshot', () => {
     )
   })
 
+  it('does not capture a map that starts loading before it renders', async () => {
+    const { map, mocks, drawImage } = setupMap()
+    mocks.triggerRepaint.mockImplementation(() => {
+      mocks.loaded.mockReturnValue(false)
+      const callback = mocks.on.mock.calls[0]?.[1]
+      callback?.()
+    })
+    await expect(captureNodeScreenshot(map)).rejects.toThrow(
+      'The map is not ready for a screenshot',
+    )
+    expect(drawImage).not.toHaveBeenCalled()
+  })
+
   it('places an exported chart below the map within the size limit', async () => {
     const { map, mapCanvas, drawImage } = setupMap(800, 600)
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')

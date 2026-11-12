@@ -5,6 +5,7 @@
     :layer-name="layerName"
     :layer-capabilities="layerCapabilities"
   >
+    <slot name="map" />
     <AnimatedRasterLayer
       v-if="layerKind === LayerKind.Static && showLayer && layerOptions"
       v-model:isLoading="isLoading"

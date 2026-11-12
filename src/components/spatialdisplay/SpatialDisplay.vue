@@ -23,7 +23,9 @@
         @update:ensemble-selection="ensembleSelection = $event"
         @update:current-time="currentTime = $event"
         @coordinate-click="onCoordinateClick"
-      ></SpatialDisplayComponent>
+      >
+        <template #map><slot name="map" /></template>
+      </SpatialDisplayComponent>
     </div>
     <div v-if="showChartPanel" class="child-container flex-column d-flex">
       <SpatialTimeSeriesDisplay

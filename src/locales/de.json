@@ -319,6 +319,15 @@
   },
   "dynamicReport": {
     "valueInputLabel": "Wert um {time}",
-    "valueInputPlaceholder": "Wert"
+    "valueInputPlaceholder": "Wert",
+    "editReport": "Bericht bearbeiten",
+    "previewReport": "Berichtsvorschau",
+    "unsavedReport": "Änderungen und Screenshots sind temporär und werden nicht in FEWS gespeichert. Der Download enthält den ursprünglichen Bericht. Der Editor kann nicht unterstützte Formatierungen oder HTML verändern.",
+    "addScreenshot": "Screenshot hinzufügen",
+    "screenshotTitle": "Knoten-Screenshot erstellen",
+    "selectNode": "Knoten auswählen",
+    "screenshotMapFailed": "Die Knotenkarte konnte nicht geladen werden.",
+    "screenshotCaptureFailed": "Die Karte konnte nicht aufgenommen werden. Warten Sie, bis sie geladen ist, und versuchen Sie es erneut.",
+    "screenshotInsertFailed": "Der Screenshot konnte nicht hinzugefügt werden. Der Bericht wurde möglicherweise geändert oder das Screenshot-Limit erreicht."
   }
 }

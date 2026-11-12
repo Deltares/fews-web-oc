@@ -79,6 +79,9 @@ export async function captureNodeScreenshot(
     const onRender = () => {
       cleanup()
       try {
+        if (!map.loaded()) {
+          throw new Error('The map is not ready for a screenshot')
+        }
         context.drawImage(
           mapCanvas,
           0,

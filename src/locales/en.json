@@ -319,6 +319,15 @@
   },
   "dynamicReport": {
     "valueInputLabel": "Value at {time}",
-    "valueInputPlaceholder": "value"
+    "valueInputPlaceholder": "value",
+    "editReport": "Edit report",
+    "previewReport": "Preview report",
+    "unsavedReport": "Changes and screenshots are temporary and are not saved to FEWS. The download contains the original report. The editor may change unsupported report formatting or HTML.",
+    "addScreenshot": "Add screenshot",
+    "screenshotTitle": "Capture node screenshot",
+    "selectNode": "Select node",
+    "screenshotMapFailed": "Could not load the node map.",
+    "screenshotCaptureFailed": "Could not capture the map. Wait for it to load and try again.",
+    "screenshotInsertFailed": "Could not add the screenshot. The report may have changed or reached its screenshot limit."
   }
 }

@@ -110,6 +110,20 @@ The dynamic report module provides the ability to dynamically generate a report 
 The dynamic report can be linked to the topology using `<dynamicReportDisplayId>` in *Topology.xml*. Web OC displays a time slider to request the report for the selected time. 
 When `<selectedLocationVariable>` is configured in [DynamicReportDisplays.xml](https://publicwiki.deltares.nl/spaces/FEWSDOC/pages/352944402/37+Dynamic+Report+Displays+Web+OC+only), a location selection menu also becomes available.
 
+The report view can be edited temporarily, and node map screenshots can be added
+to the edited report. Select a location or coordinate in the screenshot preview
+to include its chart when available. Screenshots are embedded as PNG data URLs,
+with a maximum dimension of 1920 pixels and a limit of 20 screenshots and
+10 MiB of encoded screenshot data per report. Editing uses TipTap and may change
+HTML or formatting that its extensions do not support.
+The capture currently includes the first chart SVG, not additional charts or
+legends rendered outside that SVG. Wait for the map and its data to load before
+capturing.
+
+Edits and screenshots are not saved to FEWS and are discarded when the report,
+location, or time changes. Downloading the report still downloads the original
+backend report, not the edited version.
+
 *Styling a dynamic report*
 
 Style the report template with CSS classes. Put the CSS rules in a `<style>` element in the template, or in a style sheet in the FEWS static resources (`WebResourceFiles`) that is linked with a relative path:

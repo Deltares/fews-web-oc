@@ -41,6 +41,7 @@ interface Props {
   /** CSS for the Vue nodes, scoped styles do not reach an isolated report */
   nodeCss?: string
   editable?: boolean
+  initialEditorHtml?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -191,7 +192,11 @@ watch(
     ])
     if (editable) {
       const content = document.createElement('div')
-      content.appendChild(fragment)
+      content.appendChild(
+        props.initialEditorHtml
+          ? sanitizeDynamicReport(props.initialEditorHtml).fragment
+          : fragment,
+      )
       const nextEditor = new Editor({
         extensions: dynamicReportExtensions,
         content: content.innerHTML,
