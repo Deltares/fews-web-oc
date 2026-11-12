@@ -375,18 +375,20 @@ async function addDynamicRoutes() {
     defaultComponent = configuredComponents[0]
   }
   if (defaultComponent && router.hasRoute(defaultComponent.type)) {
-    const redirectTarget =
-      defaultComponent.type === 'TopologyDisplay'
-        ? {
-            name: 'TopologyDisplay',
-            params: { topologyId: defaultComponent.id },
-          }
-        : defaultComponent.type === 'HtmlDisplay'
-          ? {
-              name: 'HtmlDisplay',
-              params: { path: defaultComponent.path },
-            }
-          : { name: defaultComponent.type }
+    let redirectTarget: { name: string; params?: Record<string, string> } = {
+      name: defaultComponent.type,
+    }
+    if (defaultComponent.type === 'TopologyDisplay') {
+      redirectTarget = {
+        name: 'TopologyDisplay',
+        params: { topologyId: defaultComponent.id },
+      }
+    } else if (defaultComponent.type === 'HtmlDisplay') {
+      redirectTarget = {
+        name: 'HtmlDisplay',
+        params: { path: defaultComponent.path },
+      }
+    }
 
     router.removeRoute('Default')
     router.addRoute({
