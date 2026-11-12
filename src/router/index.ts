@@ -349,7 +349,10 @@ async function addDynamicRoutes() {
   await loadCustomStyleSheet()
   const configuredComponents = Object.values(store.components)
 
-  configuredComponents.forEach((component: any) => {
+  const configuredTypes = new Set<WebOcComponent['type']>()
+  configuredComponents.forEach((component) => {
+    if (configuredTypes.has(component.type)) return
+    configuredTypes.add(component.type)
     const route = dynamicRoutes.find((route) => route.name === component.type)
     if (route !== undefined) {
       router.addRoute({
@@ -372,14 +375,20 @@ async function addDynamicRoutes() {
     defaultComponent = configuredComponents[0]
   }
   if (defaultComponent && router.hasRoute(defaultComponent.type)) {
-    const isTopology = defaultComponent.type === 'TopologyDisplay'
-    // Ensure topologyId param is present for default topology display
-    const redirectTarget = isTopology
-      ? {
-          name: 'TopologyDisplay',
-          params: { topologyId: defaultComponent.id },
-        }
-      : { name: defaultComponent.type }
+    let redirectTarget: { name: string; params?: Record<string, string> } = {
+      name: defaultComponent.type,
+    }
+    if (defaultComponent.type === 'TopologyDisplay') {
+      redirectTarget = {
+        name: 'TopologyDisplay',
+        params: { topologyId: defaultComponent.id },
+      }
+    } else if (defaultComponent.type === 'HtmlDisplay') {
+      redirectTarget = {
+        name: 'HtmlDisplay',
+        params: { path: defaultComponent.path },
+      }
+    }
 
     router.removeRoute('Default')
     router.addRoute({
