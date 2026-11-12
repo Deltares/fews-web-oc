@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type {
   DynamicReportEdit,
@@ -20,7 +20,10 @@ import type {
 } from '@/lib/dynamic-report/nodes'
 
 interface Props {
-  node: DynamicReportNode
+  node: Pick<
+    DynamicReportNode,
+    'inputType' | 'timeSeriesIndex' | 'time' | 'value'
+  >
 }
 
 const props = defineProps<Props>()
@@ -32,6 +35,12 @@ const emit = defineEmits<{
 }>()
 
 const value = ref(props.node.value)
+watch(
+  () => props.node.value,
+  (newValue) => {
+    value.value = newValue
+  },
+)
 
 function onInput() {
   emit('change', {
