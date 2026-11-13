@@ -204,15 +204,14 @@ The report styles only apply to the report, they do not affect the rest of the W
 
 A report is shown with one of two stylings:
 
-- **Web OC styling** (default): the report is part of the Web OC page. The fonts, colours and other styles of the Web OC, including a configured `customStyleSheet`, also apply to the report. The report styles are added on top. Use this when the report should look like the rest of the Web OC.
-- **Isolated styling**: the styles of the Web OC do not apply to the report, only the report styles do. The report styles have to set the font, colours and so on themselves. Use this when the report has its own look, or when the Web OC styles get in the way.
+- **Isolated styling** (default): the styles of the Web OC do not apply to the report, only the report styles do. The report styles have to set the font, colours and so on themselves. Use this when the report has its own look, or when the Web OC styles get in the way.
+- **Web OC styling**: the report is part of the Web OC page. The fonts, colours and other styles of the Web OC, including a configured `customStyleSheet`, also apply to the report. The report styles are added on top. Use this when the report should look like the rest of the Web OC.
 
-Select isolated styling with a `<meta>` element in the `<head>` of the template:
+Isolated styling is the default. To opt in to Web OC styling, add a `<meta>` element in the `<head>` of the template:
 
 ```html
 <head>
-  <meta name="weboc-styling" content="isolated" />
-  <link rel="stylesheet" href="css/DynamicReportIsolated.css" />
+  <meta name="fews-dynamic-report-styling" content="weboc" />
 </head>
 ```
 

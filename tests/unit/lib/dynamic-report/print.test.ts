@@ -112,7 +112,7 @@ describe('printDynamicReport', () => {
       .spyOn(window, 'open')
       .mockReturnValue(tab as unknown as Window)
     const result = printDynamicReport(
-      '<meta name="weboc-styling" content="isolated"><p>Edited report</p><script>alert(1)</script>',
+      '<meta name="fews-dynamic-report-styling" content="isolated"><p>Edited report</p><script>alert(1)</script>',
       'Report',
     )
     await vi.waitFor(() =>
@@ -181,7 +181,7 @@ describe('printDynamicReport', () => {
     vi.spyOn(window, 'open').mockReturnValue(tab as unknown as Window)
     await expect(
       printDynamicReport(
-        '<meta name="weboc-styling" content="isolated"><img src="data:image/png;base64,test"><p>Source data and valid time</p>',
+        '<meta name="fews-dynamic-report-styling" content="isolated"><img src="data:image/png;base64,test"><p>Source data and valid time</p>',
         'Report',
       ),
     ).rejects.toThrow('Image failed')

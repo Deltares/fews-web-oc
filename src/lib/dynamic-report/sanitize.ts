@@ -12,9 +12,11 @@ export type DynamicReportStyle =
 
 /**
  * How the report is styled, set in the report template with
- * <meta name="weboc-styling" content="isolated">:
- * - weboc: the WebOC styles apply to the report (default)
+ * <meta name="fews-dynamic-report-styling" content="weboc">:
+ * - weboc: the WebOC styles apply to the report
  * - isolated: only the report styles apply to the report
+ *
+ * Reports default to isolated styling.
  */
 export type DynamicReportStyling = 'weboc' | 'isolated'
 
@@ -78,11 +80,11 @@ function getStyles(document: Document): DynamicReportStyle[] {
 
 function getStyling(document: Document): DynamicReportStyling {
   const content = document
-    .querySelector('meta[name="weboc-styling"]')
+    .querySelector('meta[name="fews-dynamic-report-styling"]')
     ?.getAttribute('content')
     ?.trim()
     .toLowerCase()
-  return content === 'isolated' ? 'isolated' : 'weboc'
+  return content === 'weboc' ? 'weboc' : 'isolated'
 }
 
 /**

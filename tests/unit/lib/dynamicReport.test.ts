@@ -88,23 +88,32 @@ describe('sanitizeDynamicReport', () => {
     expect(styles).toEqual([])
   })
 
-  it('uses the WebOC styling by default', () => {
-    expect(sanitizeDynamicReport('<p>x</p>').styling).toBe('weboc')
+  it('uses isolated styling by default', () => {
+    expect(sanitizeDynamicReport('<p>x</p>').styling).toBe('isolated')
+  })
+
+  it('reads the WebOC styling option from the meta element', () => {
+    expect(
+      sanitizeDynamicReport(
+        '<meta name="fews-dynamic-report-styling" content=" WebOC ">',
+      ).styling,
+    ).toBe('weboc')
   })
 
   it('reads the isolated styling option from the meta element', () => {
     const { fragment, styling } = sanitizeDynamicReport(
-      '<html><head><meta name="weboc-styling" content=" Isolated "></head><body><p>x</p></body></html>',
+      '<html><head><meta name="fews-dynamic-report-styling" content=" Isolated "></head><body><p>x</p></body></html>',
     )
     expect(styling).toBe('isolated')
     expect(fragment.querySelector('meta')).toBeNull()
   })
 
-  it('ignores unknown styling options', () => {
+  it('uses isolated styling for unknown styling options', () => {
     expect(
-      sanitizeDynamicReport('<meta name="weboc-styling" content="other">')
-        .styling,
-    ).toBe('weboc')
+      sanitizeDynamicReport(
+        '<meta name="fews-dynamic-report-styling" content="other">',
+      ).styling,
+    ).toBe('isolated')
   })
 
   it('returns no styles when there are none', () => {
