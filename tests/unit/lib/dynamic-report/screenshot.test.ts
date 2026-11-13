@@ -47,6 +47,40 @@ afterEach(() => {
 })
 
 describe('captureNodeScreenshot', () => {
+  it.each([16 / 9, 4 / 3, 1, 3 / 4])(
+    'sets the selected width for aspect ratio %s, including portrait output',
+    async (ratio) => {
+      const { map, mapCanvas, drawImage } = setupMap(
+        1920,
+        Math.round(1920 / ratio),
+      )
+      await captureNodeScreenshot(map, { width: 1280 })
+      expect(drawImage).toHaveBeenCalledWith(
+        mapCanvas,
+        0,
+        0,
+        1280,
+        Math.round((mapCanvas.height * 1280) / 1920),
+      )
+    },
+  )
+
+  it('sets the selected width even when the map source is smaller', async () => {
+    const { map, mapCanvas, drawImage } = setupMap(320, 240)
+    await captureNodeScreenshot(map, { width: 640 })
+    expect(drawImage).toHaveBeenCalledWith(mapCanvas, 0, 0, 640, 480)
+  })
+
+  it.each([0, -1, NaN, Infinity])(
+    'rejects invalid screenshot width %s',
+    async (width) => {
+      const { map } = setupMap()
+      await expect(captureNodeScreenshot(map, { width })).rejects.toThrow(
+        'Screenshot width must be positive',
+      )
+    },
+  )
+
   it('copies the map during its render event and returns a PNG', async () => {
     const { map, mocks, mapCanvas, drawImage } = setupMap(3840, 2160)
     const blob = await captureNodeScreenshot(map)

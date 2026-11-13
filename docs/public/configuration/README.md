@@ -112,20 +112,28 @@ When `<selectedLocationVariable>` is configured in [DynamicReportDisplays.xml](h
 
 The report view, including a dynamic report in a time series window, can be
 edited temporarily, and node map screenshots can be added to the edited report.
-Select a location or coordinate in the screenshot preview
-to include its chart when available. Choose a maximum dimension of 640 pixels
+Chart capture is currently disabled; screenshots contain only the map and its
+colour legend. Choose a map aspect ratio: 16:9 (the default), 4:3,
+1:1, or 3:4. The preview resizes before capture; the map is not stretched or
+cropped afterward. The aspect ratio selector is left of the size selector;
+size labels update to show width × height when the ratio changes.
+The dialog uses nearly the full viewport height and becomes fullscreen at the
+application's mobile breakpoint. The map preview is centered and constrained to
+the available dialog space, including portrait aspect ratios.
+Choose an output width of 640 pixels
 (small), 1280 pixels (medium), or 1920 pixels (large, the default). The aspect
-ratio is preserved and smaller images are not enlarged. Screenshots are embedded
+ratio is preserved and height follows the map aspect ratio. The output always
+uses the selected width; smaller map sources are enlarged without adding detail.
+Screenshots are embedded
 as PNG data URLs, with a limit of 20 screenshots and 5 MiB of encoded screenshot
 data per report. Editing uses TipTap and may change
 HTML or formatting that its extensions do not support.
 In particular, TipTap currently rewrites table sections such as `<thead>` and
 `<tbody>`. Styles that depend on those sections may therefore change while
 editing or after previewing an edited report.
-The capture includes the map's colour legend (categorical or gradient) and the
-first chart SVG, but not additional charts or chart legends outside that SVG.
-The capture dialog explains how to select a node, adjust the map and include a
-chart. Wait for the map, colour legend and chart to load before capturing.
+The capture includes the map's colour legend (categorical or gradient).
+The capture dialog explains how to select a node and adjust the map.
+Wait for the map and colour legend to load before capturing.
 Each screenshot has an editable caption containing the node name, the source
 data layer ID and its valid time in UTC. The caption is included in HTML and
 print/PDF exports.
@@ -133,7 +141,7 @@ The embedded PNG retains its captured pixel resolution. Screenshots shrink to
 fit the report width without stretching or enlarging smaller images, including
 in saved HTML and print/PDF. For print, aim for approximately 300 effective DPI:
 1920 pixels at 17 cm wide is about 287 DPI. Actual DPI depends on capture
-resolution and printed width; a smaller source is not upscaled.
+resolution and printed width; enlarging a smaller source does not improve detail.
 
 Edits and screenshots are not saved to FEWS and are discarded when the report,
 location, or time changes. In both the report view and the time series report

@@ -6,9 +6,12 @@ import NodeScreenshotDialog from '@/components/reports/dynamic/NodeScreenshotDia
 import { captureNodeScreenshot } from '@/lib/dynamic-report/screenshot'
 import { getLayerNameForNode } from '@/lib/topology/displayTabs'
 import { getDefaultSettings } from '@/lib/topology/componentSettings'
-import { fetchAndInlineCssAndFonts } from '@/lib/css/inline'
 
-const fakeMap = { name: 'map' }
+const fakeMap = { name: 'map', resize: vi.fn() }
+const mobile = ref(false)
+vi.mock('vuetify', () => ({
+  useDisplay: () => ({ mobile }),
+}))
 const screenshotContext = vi.hoisted(() => ({
   get: vi.fn(() => ({
     source: 'rainfall',
@@ -21,12 +24,6 @@ vi.mock('@/lib/dynamic-report/screenshot', () => ({
 vi.mock('@/lib/topology/displayTabs', () => ({
   getLayerNameForNode: vi.fn(async () => 'layer'),
 }))
-vi.mock('@/stores/config', () => ({
-  useConfigStore: () => ({ getCustomStyleSheet: async () => 'test.css' }),
-}))
-vi.mock('@/lib/css/inline', () => ({
-  fetchAndInlineCssAndFonts: vi.fn(async () => 'chart css'),
-}))
 vi.mock('@/stores/topologyNodes', () => ({
   useTopologyNodesStore: () => ({
     nodes: [
@@ -37,14 +34,24 @@ vi.mock('@/stores/topologyNodes', () => ({
 }))
 vi.mock('@/components/spatialdisplay/SpatialDisplay.vue', () => ({
   default: defineComponent({
-    props: { independentContext: Boolean },
+    props: {
+      independentContext: Boolean,
+      locationIds: String,
+      latitude: String,
+      longitude: String,
+    },
     emits: ['navigate'],
     setup(_props, { slots, emit, expose }) {
       expose({ getScreenshotContext: screenshotContext.get })
       return () =>
         h(
           'div',
-          { 'data-independent-context': String(_props.independentContext) },
+          {
+            'data-independent-context': String(_props.independentContext),
+            'data-location': _props.locationIds,
+            'data-latitude': _props.latitude,
+            'data-longitude': _props.longitude,
+          },
           [
             slots.map?.(),
             h(
@@ -74,9 +81,9 @@ vi.mock('@/components/map/MapCaptureTarget.vue', () => ({
 vi.mock('vuetify/lib/components/VDialog/index.mjs', () => ({
   VDialog: defineComponent({
     setup:
-      (_props, { slots }) =>
+      (_props, { slots, attrs }) =>
       () =>
-        h('div', slots.default?.()),
+        h('div', { ...attrs, class: 'capture-dialog' }, slots.default?.()),
   }),
 }))
 vi.mock('vuetify/lib/components/VCard/index.mjs', () => ({
@@ -117,11 +124,12 @@ vi.mock('vuetify/lib/components/VAutocomplete/index.mjs', () => ({
   VAutocomplete: defineComponent({
     props: ['items', 'modelValue'],
     emits: ['update:modelValue'],
-    setup(props, { emit }) {
+    setup(props, { emit, attrs }) {
       return () =>
         h(
           'select',
           {
+            ...attrs,
             value: props.modelValue,
             onChange: (event: Event) =>
               emit(
@@ -140,11 +148,12 @@ vi.mock('vuetify/lib/components/VSelect/index.mjs', () => ({
   VSelect: defineComponent({
     props: ['items', 'modelValue', 'disabled', 'label'],
     emits: ['update:modelValue'],
-    setup(props, { emit }) {
+    setup(props, { emit, attrs }) {
       return () =>
         h(
           'select',
           {
+            ...attrs,
             'aria-label': props.label,
             value: props.modelValue,
             disabled: props.disabled,
@@ -174,6 +183,7 @@ vi.mock('vuetify/lib/components/VGrid/index.mjs', () => ({
 }))
 
 afterEach(() => {
+  mobile.value = false
   vi.clearAllMocks()
   screenshotContext.get.mockReturnValue({
     source: 'rainfall',
@@ -212,9 +222,10 @@ function mountDialog() {
               'Choose a node, adjust the map and wait for the legend and chart to load.',
             selectNode: 'Node',
             screenshotSize: 'Screenshot size',
-            screenshotSizeSmall: 'Small (640 px)',
-            screenshotSizeMedium: 'Medium (1280 px)',
-            screenshotSizeLarge: 'Large (1920 px)',
+            screenshotSizeSmall: 'Small ({size} px)',
+            screenshotSizeMedium: 'Medium ({size} px)',
+            screenshotSizeLarge: 'Large ({size} px)',
+            screenshotAspectRatio: 'Map aspect ratio',
             addScreenshot: 'Add',
             screenshotMapFailed: 'Map failed',
             screenshotCaptureFailed: 'Capture failed',
@@ -233,6 +244,85 @@ function mountDialog() {
 }
 
 describe('node screenshot dialog', () => {
+  it('uses the full mobile viewport and expands desktop dialog height', async () => {
+    const { app, host, addButton } = mountDialog()
+    try {
+      await vi.waitFor(() => expect(addButton().disabled).toBe(false))
+      const dialog = host.querySelector('.capture-dialog')!
+      expect(dialog.getAttribute('height')).toBe('calc(100dvh - 48px)')
+      expect(dialog.getAttribute('max-width')).toBe('1200')
+      mobile.value = true
+      await nextTick()
+      expect(dialog.getAttribute('fullscreen')).toBe('true')
+      expect(dialog.hasAttribute('height')).toBe(false)
+      expect(dialog.hasAttribute('max-width')).toBe(false)
+    } finally {
+      app.unmount()
+    }
+  })
+
+  it.each([16 / 9, 4 / 3, 1, 3 / 4])(
+    'resizes the map preview for aspect ratio %s with compact tonal controls',
+    async (ratio) => {
+      const { app, host, addButton } = mountDialog()
+      try {
+        await vi.waitFor(() => expect(addButton().disabled).toBe(false))
+        const select = host.querySelector<HTMLSelectElement>(
+          'select[aria-label="Map aspect ratio"]',
+        )!
+        expect(select.options).toHaveLength(4)
+        select.value = String(ratio)
+        select.dispatchEvent(new Event('change'))
+        await nextTick()
+        await nextTick()
+        if (ratio !== 16 / 9) expect(fakeMap.resize).toHaveBeenCalledOnce()
+        const preview = host.querySelector<HTMLElement>('.preview')!
+        expect(preview.classList.contains('preview-fixed-ratio')).toBe(
+          ratio > 0,
+        )
+        if (ratio) {
+          expect(parseFloat(preview.style.aspectRatio)).toBe(ratio)
+          expect(preview.style.getPropertyValue('--preview-aspect-ratio')).toBe(
+            String(ratio),
+          )
+        } else {
+          expect(preview.style.aspectRatio).toBe('')
+        }
+        const sizeSelect = host.querySelector<HTMLSelectElement>(
+          'select[aria-label="Screenshot size"]',
+        )!
+        expect(
+          select.compareDocumentPosition(sizeSelect) &
+            Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy()
+        expect(select.parentElement).toBe(sizeSelect.parentElement)
+        expect(sizeSelect.value).toBe('1920')
+        if (ratio) {
+          expect(
+            Array.from(sizeSelect.options, (option) => option.textContent),
+          ).toEqual([
+            `Small (640 × ${Math.round(640 / ratio)} px)`,
+            `Medium (1280 × ${Math.round(1280 / ratio)} px)`,
+            `Large (1920 × ${Math.round(1920 / ratio)} px)`,
+          ])
+        }
+        for (const field of host.querySelectorAll('select')) {
+          expect(field.getAttribute('density')).toBe('compact')
+          expect(field.getAttribute('variant')).toBe('solo-filled')
+          expect(field.hasAttribute('flat')).toBe(true)
+        }
+        for (const button of Array.from(host.querySelectorAll('button')).filter(
+          (button) => ['Add', 'Cancel'].includes(button.textContent ?? ''),
+        )) {
+          expect(button.getAttribute('density')).toBe('compact')
+          expect(button.getAttribute('variant')).toBe('tonal')
+        }
+      } finally {
+        app.unmount()
+      }
+    },
+  )
+
   it('captures the selected node map and closes after success', async () => {
     const blob = new Blob(['map'], { type: 'image/png' })
     vi.mocked(captureNodeScreenshot).mockResolvedValue(blob)
@@ -260,9 +350,8 @@ describe('node screenshot dialog', () => {
         ),
       )
       expect(captureNodeScreenshot).toHaveBeenCalledWith(fakeMap, {
-        chart: undefined,
         legend: expect.any(HTMLElement),
-        maxDimension: 1920,
+        width: 1920,
       })
       expect(open.value).toBe(false)
     } finally {
@@ -292,9 +381,8 @@ describe('node screenshot dialog', () => {
         addButton().click()
         await vi.waitFor(() => expect(captured).toHaveBeenCalled())
         expect(captureNodeScreenshot).toHaveBeenCalledWith(fakeMap, {
-          chart: undefined,
           legend: expect.any(HTMLElement),
-          maxDimension: size,
+          width: size,
         })
       } finally {
         app.unmount()
@@ -376,11 +464,9 @@ describe('node screenshot dialog', () => {
     }
   })
 
-  it('includes the selected location chart in the capture', async () => {
-    const blob = new Blob(['map and chart'], { type: 'image/png' })
+  it('captures only the map even after location navigation', async () => {
+    const blob = new Blob(['map'], { type: 'image/png' })
     vi.mocked(captureNodeScreenshot).mockResolvedValueOnce(blob)
-    const bounds = vi.spyOn(SVGElement.prototype, 'getBoundingClientRect')
-    bounds.mockReturnValue({ width: 800, height: 400 } as DOMRect)
     const { app, captured, host, addButton } = mountDialog()
     try {
       await vi.waitFor(() => expect(addButton().disabled).toBe(false))
@@ -389,7 +475,11 @@ describe('node screenshot dialog', () => {
       )!
       locationButton.click()
       await nextTick()
-      const svg = host.querySelector('svg')
+      expect(
+        host.querySelector(
+          '[data-location], [data-latitude], [data-longitude]',
+        ),
+      ).toBeNull()
       addButton().click()
       await vi.waitFor(() =>
         expect(captured).toHaveBeenCalledWith(
@@ -398,20 +488,12 @@ describe('node screenshot dialog', () => {
           'Second - Source data: rainfall. Valid time: 2026-11-13T06:00:00.000Z (UTC).',
         ),
       )
-      expect(fetchAndInlineCssAndFonts).toHaveBeenCalledWith('test.css')
       expect(captureNodeScreenshot).toHaveBeenCalledWith(fakeMap, {
         legend: expect.any(HTMLElement),
-        chart: {
-          svg,
-          css: 'chart css',
-          width: 800,
-          height: 400,
-        },
-        maxDimension: 1920,
+        width: 1920,
       })
     } finally {
       app.unmount()
-      bounds.mockRestore()
     }
   })
 })

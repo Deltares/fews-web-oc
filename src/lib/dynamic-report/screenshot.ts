@@ -2,6 +2,8 @@ import type { Map as MapLibreMap } from 'maplibre-gl'
 import { convertSvgElementToImage, createExportableSvgElement } from '@/lib/svg'
 
 export interface ScreenshotOptions {
+  /** Exact output width; takes precedence over the maximum dimension. */
+  width?: number
   maxDimension?: number
   renderTimeoutMs?: number
   legend?: HTMLElement
@@ -29,6 +31,12 @@ export async function captureNodeScreenshot(
   if (!Number.isFinite(maxDimension) || maxDimension <= 0) {
     throw new Error('Screenshot maximum dimension must be positive')
   }
+  if (
+    options.width !== undefined &&
+    (!Number.isFinite(options.width) || options.width <= 0)
+  ) {
+    throw new Error('Screenshot width must be positive')
+  }
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
     throw new Error('Screenshot render timeout must be positive')
   }
@@ -54,10 +62,10 @@ export async function captureNodeScreenshot(
     throw new Error('The chart has no visible screenshot area')
   }
   const chartHeight = chart ? (chart.height * mapWidth) / chart.width : 0
-  const scale = Math.min(
-    1,
-    maxDimension / Math.max(mapWidth, mapHeight + chartHeight),
-  )
+  const scale =
+    options.width !== undefined
+      ? options.width / mapWidth
+      : Math.min(1, maxDimension / Math.max(mapWidth, mapHeight + chartHeight))
   const canvas = document.createElement('canvas')
   canvas.width = Math.max(1, Math.round(mapWidth * scale))
   canvas.height = Math.max(1, Math.round((mapHeight + chartHeight) * scale))

@@ -1,8 +1,14 @@
 <template>
-  <v-dialog v-model="open" max-width="1200" role="dialog">
-    <v-card>
+  <v-dialog
+    v-model="open"
+    :fullscreen="mobile"
+    :max-width="mobile ? undefined : 1200"
+    :height="mobile ? undefined : 'calc(100dvh - 48px)'"
+    role="dialog"
+  >
+    <v-card class="capture-card">
       <v-card-title>{{ t('dynamicReport.screenshotTitle') }}</v-card-title>
-      <v-card-text>
+      <v-card-text class="capture-content">
         <p class="mb-3">{{ t('dynamicReport.screenshotInstructions') }}</p>
         <v-autocomplete
           v-model="selectedNodeId"
@@ -10,45 +16,78 @@
           item-title="name"
           item-value="id"
           :label="t('dynamicReport.selectNode')"
+          density="compact"
+          variant="solo-filled"
+          flat
           hide-details
         />
-        <v-select
-          v-model="maxDimension"
-          :items="sizePresets"
-          :label="t('dynamicReport.screenshotSize')"
-          :disabled="busy"
+        <div class="d-flex ga-2 mt-2">
+          <v-select
+            v-model="aspectRatio"
+            :items="aspectRatioPresets"
+            :label="t('dynamicReport.screenshotAspectRatio')"
+            :disabled="busy"
+            density="compact"
+            variant="solo-filled"
+            flat
+            hide-details
+          />
+          <v-select
+            v-model="screenshotWidth"
+            :items="sizePresets"
+            :label="t('dynamicReport.screenshotSize')"
+            :disabled="busy"
+            density="compact"
+            variant="solo-filled"
+            flat
+            hide-details
+          />
+        </div>
+        <v-alert
+          v-if="error"
+          type="error"
+          density="compact"
+          variant="tonal"
           class="mt-2"
-          hide-details
-        />
-        <v-alert v-if="error" type="error" class="mt-2">{{ error }}</v-alert>
-        <div
-          v-if="selectedNode && layerName !== undefined"
-          ref="preview"
-          class="preview mt-2"
+          >{{ error }}</v-alert
         >
-          <SpatialDisplay
-            ref="spatialDisplay"
-            :key="selectedNode.id"
-            :topology-node="selectedNode"
-            :layer-name="layerName"
-            :location-ids="locationIds"
-            :latitude="latitude"
-            :longitude="longitude"
-            :settings="settings"
-            independent-context
-            @navigate="onNavigate"
+        <div ref="previewArea" class="preview-area mt-2">
+          <div
+            v-if="selectedNode && layerName !== undefined"
+            ref="preview"
+            class="preview preview-fixed-ratio"
+            :style="{
+              aspectRatio,
+              '--preview-aspect-ratio': aspectRatio,
+              '--preview-max-height': `${previewAreaHeight}px`,
+            }"
           >
-            <template #map>
-              <MapCaptureTarget @change="map = $event" />
-            </template>
-          </SpatialDisplay>
+            <SpatialDisplay
+              ref="spatialDisplay"
+              :key="selectedNode.id"
+              :topology-node="selectedNode"
+              :layer-name="layerName"
+              :settings="settings"
+              independent-context
+              @navigate="onNavigate"
+            >
+              <template #map>
+                <MapCaptureTarget @change="map = $event" />
+              </template>
+            </SpatialDisplay>
+          </div>
         </div>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn @click="open = false">{{ t('common.cancel') }}</v-btn>
+        <v-btn density="compact" variant="tonal" @click="open = false">{{
+          t('common.cancel')
+        }}</v-btn>
         <v-btn
           color="primary"
+          density="compact"
+          variant="tonal"
+          prepend-icon="mdi-camera"
           :disabled="!map || busy"
           :loading="busy"
           @click="capture"
@@ -60,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import type { Map } from 'maplibre-gl'
@@ -72,8 +111,8 @@ import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import SpatialDisplay from '@/components/spatialdisplay/SpatialDisplay.vue'
 import MapCaptureTarget from '@/components/map/MapCaptureTarget.vue'
 import type { NavigateRoute } from '@/lib/router'
-import { fetchAndInlineCssAndFonts } from '@/lib/css/inline'
-import { useConfigStore } from '@/stores/config'
+import { useElementSize } from '@vueuse/core'
+import { useDisplay } from 'vuetify'
 
 interface Props {
   settings: ComponentSettings
@@ -85,9 +124,11 @@ const emit = defineEmits<{
   capture: [image: Blob, label: string, caption: string]
 }>()
 const { t } = useI18n()
+const { mobile } = useDisplay()
 const store = useTopologyNodesStore()
-const configStore = useConfigStore()
 const preview = useTemplateRef<HTMLDivElement>('preview')
+const previewArea = useTemplateRef<HTMLDivElement>('previewArea')
+const { height: previewAreaHeight } = useElementSize(previewArea)
 const spatialDisplay =
   useTemplateRef<InstanceType<typeof SpatialDisplay>>('spatialDisplay')
 const selectedNodeId = ref<string>()
@@ -95,15 +136,27 @@ const map = shallowRef<Map>()
 const layerName = ref<string>()
 const busy = ref(false)
 const error = ref('')
-const locationIds = ref<string>()
-const latitude = ref<string>()
-const longitude = ref<string>()
-const maxDimension = ref(1920)
-const sizePresets = computed(() => [
-  { title: t('dynamicReport.screenshotSizeSmall'), value: 640 },
-  { title: t('dynamicReport.screenshotSizeMedium'), value: 1280 },
-  { title: t('dynamicReport.screenshotSizeLarge'), value: 1920 },
+const screenshotWidth = ref(1920)
+const aspectRatio = ref(16 / 9)
+const aspectRatioPresets = computed(() => [
+  { title: '16:9', value: 16 / 9 },
+  { title: '4:3', value: 4 / 3 },
+  { title: '1:1', value: 1 },
+  { title: '3:4', value: 3 / 4 },
 ])
+const sizePresets = computed(() => {
+  const ratio = aspectRatio.value
+  return [
+    { key: 'screenshotSizeSmall', width: 640 },
+    { key: 'screenshotSizeMedium', width: 1280 },
+    { key: 'screenshotSizeLarge', width: 1920 },
+  ].map(({ key, width }) => ({
+    title: t(`dynamicReport.${key}`, {
+      size: `${width} × ${Math.round(width / ratio)}`,
+    }),
+    value: width,
+  }))
+})
 
 const nodes = computed(() => {
   const result: TopologyNode[] = []
@@ -135,15 +188,17 @@ watch(open, (isOpen) => {
 })
 
 let selectionVersion = 0
+watch(aspectRatio, async () => {
+  selectionVersion++
+  await nextTick()
+  map.value?.resize()
+})
 watch(
   [selectedNode, open],
   async ([node, isOpen]) => {
     const version = ++selectionVersion
     map.value = undefined
     layerName.value = undefined
-    locationIds.value = undefined
-    latitude.value = undefined
-    longitude.value = undefined
     error.value = ''
     if (!node || !isOpen) return
     try {
@@ -162,12 +217,6 @@ function onNavigate(route: NavigateRoute) {
   selectionVersion++
   const params = route.params
   if (typeof params?.layerName === 'string') layerName.value = params.layerName
-  locationIds.value =
-    typeof params?.locationIds === 'string' ? params.locationIds : undefined
-  latitude.value =
-    typeof params?.latitude === 'string' ? params.latitude : undefined
-  longitude.value =
-    typeof params?.longitude === 'string' ? params.longitude : undefined
 }
 
 async function capture() {
@@ -175,7 +224,7 @@ async function capture() {
   const node = selectedNode.value
   if (!currentMap || !node) return
   const version = selectionVersion
-  const selectedMaxDimension = maxDimension.value
+  const selectedWidth = screenshotWidth.value
   busy.value = true
   error.value = ''
   try {
@@ -186,28 +235,11 @@ async function capture() {
       source: context.source,
       validTime: context.validTime,
     })
-    const wantsChart = !!(
-      locationIds.value ||
-      (latitude.value && longitude.value)
-    )
-    const svg = preview.value?.querySelector<SVGSVGElement>(
-      '.chart-container svg',
-    )
-    if (wantsChart && !svg) throw new Error('The selected chart is not ready')
-    let chart
-    if (wantsChart && svg) {
-      const bounds = svg.getBoundingClientRect()
-      const css = await fetchAndInlineCssAndFonts(
-        await configStore.getCustomStyleSheet(),
-      )
-      chart = { svg, css, width: bounds.width, height: bounds.height }
-    }
     const image = await captureNodeScreenshot(currentMap, {
-      chart,
       legend:
         preview.value?.querySelector<HTMLElement>('.colourbar-container') ??
         undefined,
-      maxDimension: selectedMaxDimension,
+      width: selectedWidth,
     })
     if (version !== selectionVersion || currentMap !== map.value || !open.value)
       return
@@ -233,11 +265,32 @@ async function capture() {
 </script>
 
 <style scoped>
-.preview {
-  height: min(60vh, 600px);
-  min-height: 300px;
+.capture-card {
+  height: 100%;
 }
-.preview :deep(.map-container.has-chart) {
+.capture-content {
   display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+.capture-content > :not(.preview-area) {
+  flex: 0 0 auto;
+}
+.preview-area {
+  flex: 1 0 160px;
+  min-height: 160px;
+}
+.preview {
+  height: 100%;
+  min-height: 0;
+  margin-inline: auto;
+}
+.preview-fixed-ratio {
+  height: auto;
+  width: min(
+    100%,
+    calc(var(--preview-max-height) * var(--preview-aspect-ratio))
+  );
 }
 </style>
