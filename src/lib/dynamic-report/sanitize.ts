@@ -35,7 +35,10 @@ export interface SanitizedDynamicReport {
  * report container and applied with constructable style sheets, which are
  * allowed by a strict style-src CSP, unlike inline <style> elements.
  */
-export function sanitizeDynamicReport(html: string): SanitizedDynamicReport {
+export function sanitizeDynamicReport(
+  html: string,
+  { includePrintStyles = false }: { includePrintStyles?: boolean } = {},
+): SanitizedDynamicReport {
   // The styles and the styling option are read from an inert document, which
   // does not load style sheets or run scripts. DOMPurify never returns
   // <style> and <link> elements, so they cannot end up in the WebOC.
@@ -53,14 +56,18 @@ export function sanitizeDynamicReport(html: string): SanitizedDynamicReport {
     })
   return {
     fragment,
-    styles: getStyles(document),
+    styles: getStyles(document, includePrintStyles),
     styling: getStyling(document),
   }
 }
 
-function getStyles(document: Document): DynamicReportStyle[] {
+function getStyles(
+  document: Document,
+  includePrintStyles: boolean,
+): DynamicReportStyle[] {
   const styles: DynamicReportStyle[] = []
   document.querySelectorAll('style, link').forEach((element) => {
+    if (!includePrintStyles && isPrintOnlyStyle(element)) return
     if (element instanceof HTMLStyleElement) {
       styles.push({ type: 'inline', css: element.textContent ?? '' })
     } else if (isStyleSheetLink(element)) {
@@ -76,6 +83,14 @@ function getStyles(document: Document): DynamicReportStyle[] {
     }
   })
   return styles
+}
+
+function isPrintOnlyStyle(element: Element): boolean {
+  const media = element.getAttribute('media')?.trim()
+  return Boolean(
+    media &&
+    media.split(',').every((query) => /^print(?:\s|$)/i.test(query.trim())),
+  )
 }
 
 function getStyling(document: Document): DynamicReportStyling {

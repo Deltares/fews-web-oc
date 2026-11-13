@@ -65,6 +65,21 @@ describe('sanitizeDynamicReport', () => {
     expect(fragment.querySelector('p')?.textContent).toBe('x')
   })
 
+  it('does not apply print-only styles to displayed reports', () => {
+    const source =
+      '<style>p { color: red; }</style><style media="print">@page { margin: 0; }</style><p>x</p>'
+
+    expect(sanitizeDynamicReport(source).styles).toEqual([
+      { type: 'inline', css: 'p { color: red; }' },
+    ])
+    expect(
+      sanitizeDynamicReport(source, { includePrintStyles: true }).styles,
+    ).toEqual([
+      { type: 'inline', css: 'p { color: red; }' },
+      { type: 'inline', css: '@page { margin: 0; }' },
+    ])
+  })
+
   it('never returns style and link elements, also when nested', () => {
     const { fragment, styles } = sanitizeDynamicReport(
       `<div><section>

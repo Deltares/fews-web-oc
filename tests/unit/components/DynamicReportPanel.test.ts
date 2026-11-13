@@ -513,7 +513,7 @@ describe('DynamicReportPanel', () => {
 
   it('exports the edited time series report as HTML with its styles and filter filename', async () => {
     getDynamicReportDisplay.mockResolvedValue(
-      '<html><head><style>p { color: red }</style></head><body><p>original</p></body></html>',
+      '<html><head><style>p { color: red }</style><style media="print">@page { margin: 0; }</style></head><body><p>original</p></body></html>',
     )
     mountPanel({
       config: { ...config('time'), locationId: 'location' },
@@ -539,6 +539,7 @@ describe('DynamicReportPanel', () => {
     })
     expect(html).toContain('<p>edited</p>')
     expect(html).toContain('<style>p { color: red }</style>')
+    expect(html).toContain('<style media="print">@page { margin: 0; }</style>')
     expect(html).not.toContain('original')
   })
 

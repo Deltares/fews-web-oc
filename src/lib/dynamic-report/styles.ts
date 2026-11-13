@@ -3,16 +3,18 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { type DynamicReportStyle, scopeCss } from './sanitize'
 
 /**
- * Create scoped constructable style sheets for the report styles. Style
- * sheets from the FEWS static resources are fetched, so authentication
- * headers are added, and use their own URL as base URL for relative url()s.
+ * Create constructable style sheets for reports. They are scoped by default;
+ * print documents can opt out because they contain only the report. Style
+ * sheets from FEWS static resources are fetched with authentication headers
+ * and use their own URL as the base for relative url()s.
  */
 export async function createDynamicReportStyleSheets(
   styles: DynamicReportStyle[],
   StyleSheet: typeof CSSStyleSheet = CSSStyleSheet,
+  scoped = true,
 ): Promise<CSSStyleSheet[]> {
   const sheets = await Promise.all(
-    styles.map((style) => createStyleSheet(style, StyleSheet)),
+    styles.map((style) => createStyleSheet(style, StyleSheet, scoped)),
   )
   return sheets.filter((sheet) => sheet !== undefined)
 }
@@ -20,12 +22,14 @@ export async function createDynamicReportStyleSheets(
 async function createStyleSheet(
   style: DynamicReportStyle,
   StyleSheet: typeof CSSStyleSheet,
+  scoped: boolean,
 ): Promise<CSSStyleSheet | undefined> {
   if (style.type === 'inline') {
     return createScopedStyleSheet(
       style.css,
       StyleSheet,
       getResourcesStaticUrl(''),
+      scoped,
     )
   }
 
@@ -36,7 +40,12 @@ async function createStyleSheet(
     if (!response.ok) {
       throw new Error(`${response.status} ${response.statusText}`)
     }
-    return createScopedStyleSheet(await response.text(), StyleSheet, url)
+    return createScopedStyleSheet(
+      await response.text(),
+      StyleSheet,
+      url,
+      scoped,
+    )
   } catch (error) {
     console.error(`Failed to load dynamic report style sheet: ${url}`, error)
     return undefined
@@ -52,6 +61,7 @@ function createScopedStyleSheet(
   css: string,
   StyleSheet: typeof CSSStyleSheet,
   baseURL?: string,
+  scoped = true,
 ): CSSStyleSheet {
   const parsed = new StyleSheet({ baseURL })
   parsed.replaceSync(css)
@@ -60,7 +70,7 @@ function createScopedStyleSheet(
     baseURL ?? document.baseURI,
   )
   const sheet = new StyleSheet({ baseURL })
-  sheet.replaceSync(scopeCss(rules))
+  sheet.replaceSync(scoped ? scopeCss(rules) : rules)
   return sheet
 }
 

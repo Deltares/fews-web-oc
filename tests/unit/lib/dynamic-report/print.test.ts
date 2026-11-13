@@ -17,11 +17,13 @@ afterEach(() => {
 })
 
 describe('printDynamicReport', () => {
-  it('uses CSS page margin boxes for title and page counts without HTML elements', () => {
-    const css = createPrintCss('Forecast "report"\nUTC')
+  it('uses report fonts for CSS page margin boxes', () => {
+    const css = createPrintCss('Forecast "report"\nUTC', 'Arial, sans-serif')
     expect(css).toContain('@top-center')
     expect(css).toContain('content: "Forecast \\"report\\" UTC"')
     expect(css).toContain('counter(page) " out of " counter(pages)')
+    expect(css.match(/font-family: Arial, sans-serif;/g)).toHaveLength(2)
+    expect(css).toContain('font-size: 10pt')
     expect(css).toContain('overflow: visible !important')
     expect(css).toContain('height: auto !important')
     expect(css).toContain('margin: 20mm 0')
@@ -36,7 +38,7 @@ describe('printDynamicReport', () => {
     )
   })
 
-  it('does not inherit the application layout and uses the HTML document title', async () => {
+  it('applies shared print styles to WebOC-styled reports', async () => {
     const application = document.createElement('div')
     const previousSheets = Object.getOwnPropertyDescriptor(
       document,
@@ -59,6 +61,7 @@ describe('printDynamicReport', () => {
         replaceSync = replaceSync
       },
       closed: false,
+      getComputedStyle: vi.fn(() => ({ fontFamily: 'Arial, sans-serif' })),
       focus: vi.fn(),
       print: vi.fn(),
       close: vi.fn(),
@@ -66,7 +69,7 @@ describe('printDynamicReport', () => {
     vi.spyOn(window, 'open').mockReturnValue(tab as unknown as Window)
     try {
       await printDynamicReport(
-        '<title>Forecast Bulletin</title><p>Report content</p>',
+        '<title>Forecast Bulletin</title><meta name="fews-dynamic-report-styling" content="weboc"><p>Report content</p>',
         'filename',
       )
       expect(target.title).toBe('Forecast Bulletin')
@@ -74,7 +77,12 @@ describe('printDynamicReport', () => {
       expect(target.body.textContent).toBe('Report content')
       expect(target.querySelector('header, footer')).toBeNull()
       expect(replaceSync).toHaveBeenLastCalledWith(
-        createPrintCss('Forecast Bulletin'),
+        createPrintCss('Forecast Bulletin', 'Arial, sans-serif'),
+      )
+      expect(createDynamicReportStyleSheets).toHaveBeenLastCalledWith(
+        [],
+        tab.CSSStyleSheet,
+        false,
       )
       expect(tab.print).toHaveBeenCalledOnce()
     } finally {
@@ -89,6 +97,7 @@ describe('printDynamicReport', () => {
 
   it('prints sanitized report HTML in a new tab after fonts are ready and leaves it open', async () => {
     const target = document.implementation.createHTMLDocument()
+    const replaceSync = vi.fn()
     let ready!: () => void
     Object.defineProperty(target, 'fonts', {
       value: {
@@ -100,7 +109,7 @@ describe('printDynamicReport', () => {
     const tab = {
       document: target,
       CSSStyleSheet: class {
-        replaceSync = vi.fn()
+        replaceSync = replaceSync
       },
       closed: false,
       opener: window,
@@ -111,8 +120,11 @@ describe('printDynamicReport', () => {
     const open = vi
       .spyOn(window, 'open')
       .mockReturnValue(tab as unknown as Window)
+    vi.mocked(createDynamicReportStyleSheets).mockResolvedValueOnce([
+      {} as CSSStyleSheet,
+    ])
     const result = printDynamicReport(
-      '<meta name="fews-dynamic-report-styling" content="isolated"><p>Edited report</p><script>alert(1)</script>',
+      '<meta name="fews-dynamic-report-styling" content="isolated"><style media="print">@page { margin: 0; }</style><p>Edited report</p><script>alert(1)</script>',
       'Report',
     )
     await vi.waitFor(() =>
@@ -125,6 +137,12 @@ describe('printDynamicReport', () => {
     expect(target.title).toBe('Report')
     expect(target.querySelector('script')).toBeNull()
     expect(tab.opener).toBeNull()
+    expect(createDynamicReportStyleSheets).toHaveBeenLastCalledWith(
+      [{ type: 'inline', css: '@page { margin: 0; }' }],
+      tab.CSSStyleSheet,
+      false,
+    )
+    expect(replaceSync).not.toHaveBeenCalled()
     expect(tab.print).toHaveBeenCalledOnce()
     expect(tab.close).not.toHaveBeenCalled()
   })
@@ -144,6 +162,7 @@ describe('printDynamicReport', () => {
     expect(createDynamicReportStyleSheets).toHaveBeenLastCalledWith(
       [{ type: 'inline', css: 'p {color: red}' }],
       tab.CSSStyleSheet,
+      false,
     )
     expect(tab.close).toHaveBeenCalledOnce()
   })

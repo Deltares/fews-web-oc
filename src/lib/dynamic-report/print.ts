@@ -13,11 +13,12 @@ export async function printDynamicReport(
     if (!hasStyleSheetConstructor(tab)) {
       throw new Error('The browser does not support report print styles')
     }
-    const report = sanitizeDynamicReport(html)
+    const report = sanitizeDynamicReport(html, { includePrintStyles: true })
     // Construct sheets in the print document, retaining each resource's URL base.
     const sheets = await createDynamicReportStyleSheets(
       report.styles,
       tab.CSSStyleSheet,
+      false,
     )
     if (sheets.length !== report.styles.length) {
       throw new Error('Could not load all report styles for printing')
@@ -51,10 +52,20 @@ export async function printDynamicReport(
         defaults.push(style)
       }
     }
-    const printSheet = new tab.CSSStyleSheet()
-    printSheet.replaceSync(createPrintCss(target.title))
-    target.adoptedStyleSheets = [...defaults, ...sheets, printSheet]
+    target.adoptedStyleSheets = [...defaults, ...sheets]
     container.getBoundingClientRect()
+    if (report.styling === 'weboc') {
+      const reportFontElement =
+        container.querySelector('.report-body, .report-header') ??
+        container.firstElementChild ??
+        container
+      const fontStyle = target.createElement('span').style
+      fontStyle.fontFamily = tab.getComputedStyle(reportFontElement).fontFamily
+      const fontFamily = fontStyle.fontFamily || 'sans-serif'
+      const printSheet = new tab.CSSStyleSheet()
+      printSheet.replaceSync(createPrintCss(target.title, fontFamily))
+      target.adoptedStyleSheets = [...target.adoptedStyleSheets, printSheet]
+    }
     await Promise.all(Array.from(target.images, (image) => image.decode()))
     await target.fonts.ready
     if (tab.closed) throw new Error('The report print tab was closed')
@@ -66,7 +77,10 @@ export async function printDynamicReport(
   }
 }
 
-export function createPrintCss(title: string): string {
+export function createPrintCss(
+  title: string,
+  fontFamily = 'sans-serif',
+): string {
   return `
 html, body {
   display: block !important;
@@ -81,11 +95,13 @@ html, body {
     margin: 20mm 0;
     @top-center {
       content: ${JSON.stringify(title.replace(/\s+/g, ' ').trim())};
-      font: 10pt sans-serif;
+      font-family: ${fontFamily};
+      font-size: 10pt;
     }
     @bottom-center {
       content: "Page " counter(page) " out of " counter(pages);
-      font: 10pt sans-serif;
+      font-family: ${fontFamily};
+      font-size: 10pt;
     }
   }
   @page :first {
