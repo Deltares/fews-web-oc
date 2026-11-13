@@ -142,7 +142,8 @@ screenshots, as HTML or through the browser print dialog as PDF.
 These export options respect the report download setting. In a time series
 window, choose **Export** from the dot menu to open the report and replace the
 window toolbar with editing and export controls. Close report export to restore
-the normal window toolbar. Local edits are retained until the report changes.
+the normal window toolbar and display the original report without local edits.
+Local edits are retained for reopening export mode until the report changes.
 Export mode fills the application's main content area, leaving the application
 header and navigation visible. Closing it restores the original time series
 window size.
@@ -153,6 +154,12 @@ The primary **Edit**/**Preview** button is first in the export toolbar.
 Printing opens the current report in a new browser tab and opens the print
 dialog after its styles, images and fonts load. Allow popups for this site.
 The tab remains open after printing or cancelling the dialog.
+The print tab contains only the report, without application layout constraints.
+Print CSS allows the report to flow across pages and uses page margin boxes for
+the document title and "Page n out of m" footer, without adding report elements.
+CSS page headers and footers require a browser supporting page margin boxes
+(current Chrome/Edge). Disable the browser's own headers and footers to avoid
+duplicates.
 While editing, a separate floating formatting toolbar above the report provides undo/redo, bold, italic,
 underline, highlighting, text color, and alignment.
 

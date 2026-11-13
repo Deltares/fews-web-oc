@@ -174,7 +174,7 @@ function buildReportHtml(): string {
 }
 
 const displayHtml = computed(() =>
-  editing.value ? props.html : buildReportHtml(),
+  !props.showToolbar || editing.value ? props.html : buildReportHtml(),
 )
 
 let reportVersion = 0

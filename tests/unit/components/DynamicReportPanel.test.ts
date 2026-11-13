@@ -412,7 +412,7 @@ describe('DynamicReportPanel', () => {
     expect(container.querySelector('[role="alert"]')).toBeNull()
   })
 
-  it('moves the export toolbar to the window toolbar and preserves edits when closed', async () => {
+  it('shows the original report outside export mode and restores local edits when reopened', async () => {
     const toolbarTarget = document.createElement('div')
     getDynamicReportDisplay.mockResolvedValue('<p>report</p>')
     const props = mountPanel({ config: config() })
@@ -426,11 +426,17 @@ describe('DynamicReportPanel', () => {
     props.exportMode = false
     await flushPromises()
     expect(toolbarTarget.textContent).toBe('')
-    expect(container.querySelector('.report')?.textContent).toContain('edited')
+    expect(container.querySelector('.report')?.textContent).toContain(
+      '<p>report</p>',
+    )
+    expect(container.querySelector('.report')?.textContent).not.toContain(
+      'edited',
+    )
 
     props.exportMode = true
     await flushPromises()
     expect(toolbarTarget.textContent).toContain(en.dynamicReport.saveHtml)
+    expect(container.querySelector('.report')?.textContent).toContain('edited')
   })
 
   it('opens report export from the dot menu, replaces the window toolbar and restores it on close', async () => {

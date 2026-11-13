@@ -24,7 +24,8 @@ export async function printDynamicReport(
     }
     if (tab.closed) throw new Error('The report print tab was closed')
     const target = tab.document
-    target.title = title
+    target.title =
+      new DOMParser().parseFromString(html, 'text/html').title || title
     const base = target.createElement('base')
     base.href = new URL(getResourcesStaticUrl(''), window.location.href).href
     target.head.appendChild(base)
@@ -34,8 +35,6 @@ export async function printDynamicReport(
     target.body.replaceChildren(container)
     const defaults: CSSStyleSheet[] = []
     if (report.styling === 'weboc') {
-      target.body.className =
-        document.querySelector('.v-application')?.className ?? ''
       for (const sheet of [
         ...document.styleSheets,
         ...document.adoptedStyleSheets,
@@ -52,7 +51,9 @@ export async function printDynamicReport(
         defaults.push(style)
       }
     }
-    target.adoptedStyleSheets = [...defaults, ...sheets]
+    const printSheet = new tab.CSSStyleSheet()
+    printSheet.replaceSync(createPrintCss(target.title))
+    target.adoptedStyleSheets = [...defaults, ...sheets, printSheet]
     container.getBoundingClientRect()
     await Promise.all(Array.from(target.images, (image) => image.decode()))
     await target.fonts.ready
@@ -63,6 +64,52 @@ export async function printDynamicReport(
     tab.close()
     throw error
   }
+}
+
+export function createPrintCss(title: string): string {
+  return `
+html, body {
+  display: block !important;
+  position: static !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+@media print {
+  @page {
+    margin: 20mm 15mm;
+    @top-center {
+      content: ${JSON.stringify(title.replace(/\s+/g, ' ').trim())};
+      font: 10pt sans-serif;
+    }
+    @bottom-center {
+      content: "Page " counter(page) " out of " counter(pages);
+      font: 10pt sans-serif;
+    }
+  }
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .dynamic-report,
+  .dynamic-report :is(div, section, article, main, header, footer) {
+    display: block !important;
+    position: static !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    contain: none !important;
+  }
+  .dynamic-report * {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+  .dynamic-report img, .dynamic-report tr {
+    break-inside: avoid;
+  }
+}`
 }
 
 function hasStyleSheetConstructor(
