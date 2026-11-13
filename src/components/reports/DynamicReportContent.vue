@@ -67,7 +67,7 @@ const isDark = useDark()
 
 const imageStorage = new InlineReportImageStorage()
 
-async function insertScreenshot(image: Blob, alt: string) {
+async function insertScreenshot(image: Blob, alt: string, caption?: string) {
   const activeEditor = editor.value
   if (!activeEditor) throw new Error('The report editor is not ready')
   const reference = await imageStorage.save(image)
@@ -87,10 +87,20 @@ async function insertScreenshot(image: Blob, alt: string) {
   const inserted = activeEditor
     .chain()
     .focus()
-    .insertContent({
-      type: 'image',
-      attrs: { src: url, alt, dataSet: { reportScreenshot: 'true' } },
-    })
+    .insertContent([
+      {
+        type: 'image',
+        attrs: { src: url, alt, dataSet: { reportScreenshot: 'true' } },
+      },
+      ...(caption
+        ? [
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: caption }],
+            },
+          ]
+        : []),
+    ])
     .run()
   if (!inserted)
     throw new Error('Could not insert the screenshot in the report')

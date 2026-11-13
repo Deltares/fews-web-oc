@@ -231,12 +231,12 @@ function onDocumentUpdate(html: string) {
     })
 }
 
-async function onScreenshot(image: Blob, label: string) {
+async function onScreenshot(image: Blob, label: string, caption?: string) {
   const version = reportVersion
   screenshotError.value = ''
   try {
     if (!reportContent.value) throw new Error('The report editor is not ready')
-    await reportContent.value.insertScreenshot(image, label)
+    await reportContent.value.insertScreenshot(image, label, caption)
   } catch (cause) {
     console.error('Failed to insert screenshot into dynamic report', cause)
     if (version === reportVersion) {

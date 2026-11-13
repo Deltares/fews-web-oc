@@ -5,6 +5,7 @@
       :class="{ 'force-hide': maximized, 'has-chart': showChartPanel }"
     >
       <SpatialDisplayComponent
+        ref="spatialDisplay"
         :layer-name="props.layerName"
         :location-ids="props.locationIds"
         :latitude="props.latitude"
@@ -102,6 +103,10 @@ interface Emits {
   navigate: [to: NavigateRoute]
 }
 const emit = defineEmits<Emits>()
+const spatialDisplay = ref<InstanceType<typeof SpatialDisplayComponent>>()
+defineExpose({
+  getScreenshotContext: () => spatialDisplay.value?.getScreenshotContext(),
+})
 
 const taskRunId = ref<string>()
 watch(

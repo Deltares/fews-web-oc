@@ -329,6 +329,7 @@
     "unsavedReport": "Changes and screenshots are temporary and are not saved to FEWS. Saved HTML and PDF files include them. The editor may change unsupported report formatting or HTML.",
     "addScreenshot": "Add screenshot",
     "screenshotTitle": "Capture node screenshot",
+    "screenshotCaption": "{node} - Source data: {source}. Valid time: {validTime} (UTC).",
     "screenshotInstructions": "Choose a node, then adjust the map and data layer in the preview. Select a location or coordinate to include its chart. Choose the screenshot size and wait for the map, colour legend and chart to finish loading before adding the screenshot. Repeat to add more screenshots.",
     "screenshotSize": "Screenshot size (maximum dimension)",
     "screenshotSizeSmall": "Small (640 px)",

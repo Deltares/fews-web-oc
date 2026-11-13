@@ -27,6 +27,7 @@
           class="preview mt-2"
         >
           <SpatialDisplay
+            ref="spatialDisplay"
             :key="selectedNode.id"
             :topology-node="selectedNode"
             :layer-name="layerName"
@@ -80,12 +81,14 @@ interface Props {
 const props = defineProps<Props>()
 const open = defineModel<boolean>({ required: true })
 const emit = defineEmits<{
-  capture: [image: Blob, label: string]
+  capture: [image: Blob, label: string, caption: string]
 }>()
 const { t } = useI18n()
 const store = useTopologyNodesStore()
 const configStore = useConfigStore()
 const preview = useTemplateRef<HTMLDivElement>('preview')
+const spatialDisplay =
+  useTemplateRef<InstanceType<typeof SpatialDisplay>>('spatialDisplay')
 const selectedNodeId = ref<string>()
 const map = shallowRef<Map>()
 const layerName = ref<string>()
@@ -175,6 +178,13 @@ async function capture() {
   busy.value = true
   error.value = ''
   try {
+    const context = spatialDisplay.value?.getScreenshotContext()
+    if (!context) throw new Error('The screenshot data layer is not ready')
+    const caption = t('dynamicReport.screenshotCaption', {
+      node: node.name ?? node.id,
+      source: context.source,
+      validTime: context.validTime,
+    })
     const wantsChart = !!(
       locationIds.value ||
       (latitude.value && longitude.value)
@@ -200,7 +210,15 @@ async function capture() {
     })
     if (version !== selectionVersion || currentMap !== map.value || !open.value)
       return
-    emit('capture', image, node.name ?? node.id)
+    const latestContext = spatialDisplay.value?.getScreenshotContext()
+    if (
+      latestContext?.source !== context.source ||
+      latestContext?.validTime !== context.validTime
+    )
+      throw new Error(
+        'The screenshot data layer or valid time changed during capture',
+      )
+    emit('capture', image, node.name ?? node.id, caption)
     open.value = false
   } catch (cause) {
     console.error('Failed to capture node screenshot', cause)

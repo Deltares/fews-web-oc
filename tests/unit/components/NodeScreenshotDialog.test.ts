@@ -9,6 +9,12 @@ import { getDefaultSettings } from '@/lib/topology/componentSettings'
 import { fetchAndInlineCssAndFonts } from '@/lib/css/inline'
 
 const fakeMap = { name: 'map' }
+const screenshotContext = vi.hoisted(() => ({
+  get: vi.fn(() => ({
+    source: 'rainfall',
+    validTime: '2026-11-13T06:00:00.000Z',
+  })),
+}))
 vi.mock('@/lib/dynamic-report/screenshot', () => ({
   captureNodeScreenshot: vi.fn(),
 }))
@@ -32,7 +38,8 @@ vi.mock('@/stores/topologyNodes', () => ({
 vi.mock('@/components/spatialdisplay/SpatialDisplay.vue', () => ({
   default: defineComponent({
     emits: ['navigate'],
-    setup(_props, { slots, emit }) {
+    setup(_props, { slots, emit, expose }) {
+      expose({ getScreenshotContext: screenshotContext.get })
       return () =>
         h('div', [
           slots.map?.(),
@@ -160,7 +167,13 @@ vi.mock('vuetify/lib/components/VGrid/index.mjs', () => ({
   VSpacer: defineComponent({ setup: () => () => h('div') }),
 }))
 
-afterEach(() => vi.clearAllMocks())
+afterEach(() => {
+  vi.clearAllMocks()
+  screenshotContext.get.mockReturnValue({
+    source: 'rainfall',
+    validTime: '2026-11-13T06:00:00.000Z',
+  })
+})
 
 function mountDialog() {
   const open = ref(false)
@@ -187,6 +200,8 @@ function mountDialog() {
           common: { cancel: 'Cancel' },
           dynamicReport: {
             screenshotTitle: 'Capture',
+            screenshotCaption:
+              '{node} - Source data: {source}. Valid time: {validTime} (UTC).',
             screenshotInstructions:
               'Choose a node, adjust the map and wait for the legend and chart to load.',
             selectNode: 'Node',
@@ -229,7 +244,11 @@ describe('node screenshot dialog', () => {
       await vi.waitFor(() => expect(add.disabled).toBe(false))
       add.click()
       await vi.waitFor(() =>
-        expect(captured).toHaveBeenCalledWith(blob, 'Second'),
+        expect(captured).toHaveBeenCalledWith(
+          blob,
+          'Second',
+          'Second - Source data: rainfall. Valid time: 2026-11-13T06:00:00.000Z (UTC).',
+        ),
       )
       expect(captureNodeScreenshot).toHaveBeenCalledWith(fakeMap, {
         chart: undefined,
@@ -319,6 +338,35 @@ describe('node screenshot dialog', () => {
     }
   })
 
+  it('does not insert a screenshot with a stale valid time', async () => {
+    let finish!: (image: Blob) => void
+    vi.mocked(captureNodeScreenshot).mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve
+      }),
+    )
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { app, open, captured, host, addButton } = mountDialog()
+    try {
+      await vi.waitFor(() => expect(addButton().disabled).toBe(false))
+      addButton().click()
+      await vi.waitFor(() => expect(captureNodeScreenshot).toHaveBeenCalled())
+      screenshotContext.get.mockReturnValue({
+        source: 'rainfall',
+        validTime: '2026-11-13T07:00:00.000Z',
+      })
+      finish(new Blob(['map'], { type: 'image/png' }))
+      await vi.waitFor(() =>
+        expect(host.textContent).toContain('Capture failed'),
+      )
+      expect(captured).not.toHaveBeenCalled()
+      expect(open.value).toBe(true)
+    } finally {
+      app.unmount()
+      log.mockRestore()
+    }
+  })
+
   it('includes the selected location chart in the capture', async () => {
     const blob = new Blob(['map and chart'], { type: 'image/png' })
     vi.mocked(captureNodeScreenshot).mockResolvedValueOnce(blob)
@@ -335,7 +383,11 @@ describe('node screenshot dialog', () => {
       const svg = host.querySelector('svg')
       addButton().click()
       await vi.waitFor(() =>
-        expect(captured).toHaveBeenCalledWith(blob, 'Second'),
+        expect(captured).toHaveBeenCalledWith(
+          blob,
+          'Second',
+          'Second - Source data: rainfall. Valid time: 2026-11-13T06:00:00.000Z (UTC).',
+        ),
       )
       expect(fetchAndInlineCssAndFonts).toHaveBeenCalledWith('test.css')
       expect(captureNodeScreenshot).toHaveBeenCalledWith(fakeMap, {

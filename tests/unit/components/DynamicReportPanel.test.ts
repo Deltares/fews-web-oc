@@ -644,7 +644,11 @@ describe('DynamicReportPanel', () => {
     await click(en.dynamicReport.addScreenshot)
     expect(dialogProps).toHaveBeenLastCalledWith('node-1', expect.any(Object))
     await click('Capture')
-    expect(insertScreenshot).toHaveBeenCalledWith(expect.any(Blob), 'Node')
+    expect(insertScreenshot).toHaveBeenCalledWith(
+      expect.any(Blob),
+      'Node',
+      undefined,
+    )
     await click(en.dynamicReport.previewReport)
     expect(container.querySelector('.report')?.textContent).toContain('edited')
   })

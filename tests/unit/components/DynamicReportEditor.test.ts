@@ -76,6 +76,7 @@ describe('editable dynamic report content', () => {
       await report.value!.insertScreenshot(
         new Blob(['screenshot'], { type: 'image/png' }),
         'Selected node',
+        'Source data: rainfall. Valid time: 2026-11-13T06:00:00Z (UTC).',
       )
       await report.value!.insertScreenshot(
         new Blob(['second'], { type: 'image/png' }),
@@ -91,6 +92,9 @@ describe('editable dynamic report content', () => {
       )
 
       const saved = updated.mock.lastCall?.[0]
+      expect(saved).toContain(
+        '<p>Source data: rainfall. Valid time: 2026-11-13T06:00:00Z (UTC).</p>',
+      )
       expect(saved).toContain('data-report-screenshot="true"')
       html.value = saved
       await nextTick()

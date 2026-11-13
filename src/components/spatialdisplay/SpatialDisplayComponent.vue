@@ -398,6 +398,14 @@ const { doShowAggregated, selectedAggregationLabel, aggregations } =
 watch([doShowAggregated, selectedAggregationLabel], () => setLayerOptions())
 
 const layerOptions = ref<AnimatedRasterLayerOptions>()
+defineExpose({
+  getScreenshotContext: () => {
+    const layer = layerOptions.value
+    return layer?.time
+      ? { source: layer.name, validTime: layer.time.toISOString() }
+      : undefined
+  },
+})
 const isLoading = ref(false)
 
 const legendLayerStyles = ref<Style[]>()

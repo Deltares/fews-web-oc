@@ -126,6 +126,9 @@ The capture includes the map's colour legend (categorical or gradient) and the
 first chart SVG, but not additional charts or chart legends outside that SVG.
 The capture dialog explains how to select a node, adjust the map and include a
 chart. Wait for the map, colour legend and chart to load before capturing.
+Each screenshot has an editable caption containing the node name, the source
+data layer ID and its valid time in UTC. The caption is included in HTML and
+print/PDF exports.
 
 Edits and screenshots are not saved to FEWS and are discarded when the report,
 location, or time changes. In both the report view and the time series report
