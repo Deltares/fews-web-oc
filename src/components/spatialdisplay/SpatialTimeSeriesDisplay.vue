@@ -7,6 +7,7 @@
     :locations-tooltip-filter="locationsTooltipFilter"
     :dynamic-report-display-id="dynamicReportDisplayId"
     :dynamic-report-location-ids="dynamicReportLocationIds"
+    :report-node-id="topologyNode?.id"
     :current-time="currentTime"
     :settings="settings"
   >

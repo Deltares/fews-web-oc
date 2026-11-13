@@ -26,7 +26,10 @@ const editableReportHtml = reportHtml
   )
 
 const isolatedReportHtml = editableReportHtml
-  .replace('<head>', '<head>\n<meta name="weboc-styling" content="isolated" />')
+  .replace(
+    '<head>',
+    '<head>\n<meta name="fews-dynamic-report-styling" content="isolated" />',
+  )
   .replace('css/DynamicReport.css', 'css/DynamicReportIsolated.css')
 
 function createStory(html: string) {

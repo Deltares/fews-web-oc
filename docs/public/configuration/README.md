@@ -110,6 +110,69 @@ The dynamic report module provides the ability to dynamically generate a report 
 The dynamic report can be linked to the topology using `<dynamicReportDisplayId>` in *Topology.xml*. Web OC displays a time slider to request the report for the selected time. 
 When `<selectedLocationVariable>` is configured in [DynamicReportDisplays.xml](https://publicwiki.deltares.nl/spaces/FEWSDOC/pages/352944402/37+Dynamic+Report+Displays+Web+OC+only), a location selection menu also becomes available.
 
+The report view, including a dynamic report in a time series window, can be
+edited temporarily, and node map screenshots can be added to the edited report.
+Chart capture is currently disabled; screenshots contain only the map and its
+colour legend. Choose a map aspect ratio: 16:9 (the default), 4:3,
+1:1, or 3:4. The preview resizes before capture; the map is not stretched or
+cropped afterward. The aspect ratio selector is left of the size selector;
+size labels update to show width × height when the ratio changes.
+The dialog uses nearly the full viewport height and becomes fullscreen at the
+application's mobile breakpoint. The map preview is centered and constrained to
+the available dialog space, including portrait aspect ratios.
+Choose an output width of 640 pixels
+(small), 1280 pixels (medium), or 1920 pixels (large, the default). The aspect
+ratio is preserved and height follows the map aspect ratio. The output always
+uses the selected width; smaller map sources are enlarged without adding detail.
+Screenshots are embedded
+as PNG data URLs, with a limit of 20 screenshots and 5 MiB of encoded screenshot
+data per report. Editing uses TipTap and may change
+HTML or formatting that its extensions do not support.
+In particular, TipTap currently rewrites table sections such as `<thead>` and
+`<tbody>`. Styles that depend on those sections may therefore change while
+editing or after previewing an edited report.
+The capture includes the map's colour legend (categorical or gradient).
+The capture dialog explains how to select a node and adjust the map.
+Wait for the map and colour legend to load before capturing.
+Each screenshot has an editable caption containing the node name, the source
+data layer ID and its valid time in UTC. The caption is included in HTML and
+print/PDF exports.
+The embedded PNG retains its captured pixel resolution. Screenshots shrink to
+fit the report width without stretching or enlarging smaller images, including
+in saved HTML and print/PDF. For print, aim for approximately 300 effective DPI:
+1920 pixels at 17 cm wide is about 287 DPI. Actual DPI depends on capture
+resolution and printed width; enlarging a smaller source does not improve detail.
+
+Edits and screenshots are not saved to FEWS and are discarded when the report,
+location, or time changes. In both the report view and the time series report
+panel, use **Export** to save the current report, including local edits and
+screenshots, as HTML or through the browser print dialog as PDF.
+These export options respect the report download setting. In a time series
+window, choose **Export** from the dot menu to open the report and replace the
+window toolbar with editing and export controls. Close report export to restore
+the normal window toolbar and display the original report without local edits.
+Local edits are retained for reopening export mode until the report changes.
+Export mode fills the application's main content area, leaving the application
+header and navigation visible. Closing it restores the original time series
+window size.
+The information icon in the export toolbar explains the local-only changes and
+editor formatting limitations in a tooltip.
+The primary **Edit**/**Preview** button is first in the export toolbar.
+**Save as HTML** and **Print or save as PDF** are separate buttons with icons.
+Printing opens the current report in a new browser tab and opens the print
+dialog after its styles, images and fonts load. Allow popups for this site.
+The tab remains open after printing or cancelling the dialog.
+The print tab contains only the report, without application layout constraints.
+Print CSS allows the report to flow across pages and uses page margin boxes for
+the document title and "Page n out of m" footer, without adding report elements.
+Print margins are zero on the left and right, with 20 mm at the top and bottom.
+The first page has no top margin or document-title header.
+CSS page headers and footers require a browser supporting page margin boxes
+(current Chrome/Edge). Disable the browser's own headers and footers to avoid
+duplicates.
+While editing, a separate floating formatting toolbar above the report provides undo/redo, bold, italic,
+underline, highlighting, text color, and alignment.
+
 *Styling a dynamic report*
 
 Style the report template with CSS classes. Put the CSS rules in a `<style>` element in the template, or in a style sheet in the FEWS static resources (`WebResourceFiles`) that is linked with a relative path:
@@ -141,15 +204,14 @@ The report styles only apply to the report, they do not affect the rest of the W
 
 A report is shown with one of two stylings:
 
-- **Web OC styling** (default): the report is part of the Web OC page. The fonts, colours and other styles of the Web OC, including a configured `customStyleSheet`, also apply to the report. The report styles are added on top. Use this when the report should look like the rest of the Web OC.
-- **Isolated styling**: the styles of the Web OC do not apply to the report, only the report styles do. The report styles have to set the font, colours and so on themselves. Use this when the report has its own look, or when the Web OC styles get in the way.
+- **Isolated styling** (default): the styles of the Web OC do not apply to the report, only the report styles do. The report styles have to set the font, colours and so on themselves. Use this when the report has its own look, or when the Web OC styles get in the way.
+- **Web OC styling**: the report is part of the Web OC page. The fonts, colours and other styles of the Web OC, including a configured `customStyleSheet`, also apply to the report. The report styles are added on top. Use this when the report should look like the rest of the Web OC.
 
-Select isolated styling with a `<meta>` element in the `<head>` of the template:
+Isolated styling is the default. To opt in to Web OC styling, add a `<meta>` element in the `<head>` of the template:
 
 ```html
 <head>
-  <meta name="weboc-styling" content="isolated" />
-  <link rel="stylesheet" href="css/DynamicReportIsolated.css" />
+  <meta name="fews-dynamic-report-styling" content="weboc" />
 </head>
 ```
 

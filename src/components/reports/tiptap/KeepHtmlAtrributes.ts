@@ -14,6 +14,7 @@ export const KeepHtmlAttributes = Extension.create({
           'section',
           'bold',
           'division',
+          'dynamicReportInput',
           'draggableItem',
           'header',
           'heading',

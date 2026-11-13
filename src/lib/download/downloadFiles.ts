@@ -104,7 +104,7 @@ async function downloadFileWithFetch(
   }
 }
 
-function clickDownloadBlob(blob: Blob, fileName: string) {
+export function clickDownloadBlob(blob: Blob, fileName: string) {
   const blobUrl = window.URL.createObjectURL(blob)
   clickDownloadUrl(blobUrl, fileName)
   window.URL.revokeObjectURL(blobUrl)

@@ -110,6 +110,12 @@
         v-if="dynamicReport"
         :config="dynamicReport"
         :selectedDate="selectedDate"
+        :settings="reportSettings"
+        :initial-node-id="reportNodeId"
+        :download-report="downloadReport"
+        :export-mode="reportExportMode"
+        :toolbar-target="reportToolbarTarget"
+        @close-export="emit('close-report-export')"
       />
     </v-window-item>
   </v-window>
@@ -158,6 +164,7 @@ import { useSelectedDate } from '@/services/useSelectedDate'
 import {
   getDefaultSettings,
   type ChartsSettings,
+  type ComponentSettings,
 } from '@/lib/topology/componentSettings'
 import { useChartHandlers } from '@/services/useChartHandlers'
 import { useFetchDomain } from '@/services/useFetchDomain/index.ts'
@@ -177,10 +184,17 @@ interface Props {
   currentTime?: Date
   informationContent?: string | null
   dynamicReport?: DynamicReportPanelConfig | null
+  reportSettings?: ComponentSettings
+  reportNodeId?: string
+  downloadReport?: boolean
+  reportExportMode?: boolean
+  reportToolbarTarget?: HTMLElement
   settings?: ChartsSettings
 }
 
+const emit = defineEmits<{ 'close-report-export': [] }>()
 const props = withDefaults(defineProps<Props>(), {
+  downloadReport: true,
   config: () => {
     return {
       title: '',

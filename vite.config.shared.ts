@@ -164,6 +164,11 @@ export function createWebOCConfig(
     },
     test: {
       include: ['**/*.test.?(c|m)[jt]s?(x)'],
+      server: {
+        deps: {
+          inline: ['vuetify'],
+        },
+      },
     },
   }
 }

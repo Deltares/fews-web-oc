@@ -5,6 +5,7 @@
     :layer-name="layerName"
     :layer-capabilities="layerCapabilities"
   >
+    <slot name="map" />
     <AnimatedRasterLayer
       v-if="layerKind === LayerKind.Static && showLayer && layerOptions"
       v-model:isLoading="isLoading"
@@ -205,7 +206,13 @@ import DateTimeSliderValues from '@/components/general/DateTimeSliderValues.vue'
 import MapComponent from '@/components/map/MapComponent.vue'
 import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 
-import { ref, computed, watch, watchEffect } from 'vue'
+import { ref, computed, watch, watchEffect, onScopeDispose } from 'vue'
+import {
+  createPinia,
+  disposePinia,
+  getActivePinia,
+  setActivePinia,
+} from 'pinia'
 import { useStorage } from '@vueuse/core'
 import {
   convertBoundingBoxToLngLatBounds,
@@ -294,6 +301,7 @@ interface Props {
   groupId?: string
   boundingBox?: BoundingBox
   settings: ComponentSettings['map']
+  independentContext?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -354,8 +362,10 @@ watch(
 )
 
 const selectedDateOfSlider = ref<Date>()
-const { selectedDate, dateTimeSliderEnabled } =
-  useSelectedDate(selectedDateOfSlider)
+const { selectedDate, dateTimeSliderEnabled } = useSelectedDate(
+  selectedDateOfSlider,
+  !props.independentContext,
+)
 const showTimeSnapshotFrames = ref(false)
 
 function onSnapshotSelectTime(date: Date): void {
@@ -397,6 +407,14 @@ const { doShowAggregated, selectedAggregationLabel, aggregations } =
 watch([doShowAggregated, selectedAggregationLabel], () => setLayerOptions())
 
 const layerOptions = ref<AnimatedRasterLayerOptions>()
+defineExpose({
+  getScreenshotContext: () => {
+    const layer = layerOptions.value
+    return layer?.time
+      ? { source: layer.name, validTime: layer.time.toISOString() }
+      : undefined
+  },
+})
 const isLoading = ref(false)
 
 const legendLayerStyles = ref<Style[]>()
@@ -405,7 +423,16 @@ const userSettings = useUserSettingsStore()
 const showLayer = ref<boolean>(true)
 const layerKind = ref(LayerKind.Static)
 
-const colourScalesStore = useColourScalesStore()
+const localPinia = props.independentContext ? createPinia() : undefined
+const parentPinia = getActivePinia()
+const colourScalesStore = useColourScalesStore(localPinia)
+if (localPinia) {
+  setActivePinia(parentPinia)
+  onScopeDispose(() => {
+    colourScalesStore.clearScales()
+    disposePinia(localPinia)
+  })
+}
 const currentColourScaleIds = ref<string[]>([])
 const { currentScale: currentColourScale, currentScales: currentColourScales } =
   useColourScales(currentColourScaleIds, () => colourScalesStore.scales)

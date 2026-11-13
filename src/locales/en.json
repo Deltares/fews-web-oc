@@ -319,6 +319,27 @@
   },
   "dynamicReport": {
     "valueInputLabel": "Value at {time}",
-    "valueInputPlaceholder": "value"
+    "valueInputPlaceholder": "value",
+    "editReport": "Edit",
+    "exportReport": "Export Report",
+    "closeExport": "Close report export",
+    "saveHtml": "Save as HTML",
+    "savePdf": "Print or save as PDF",
+    "printFailed": "Could not open the report for printing. Allow popups for this site and check that report images and styles are available.",
+    "previewReport": "Preview",
+    "unsavedReport": "Changes and screenshots are temporary and are not saved to FEWS. Saved HTML and PDF files include them. The editor may change unsupported report formatting or HTML.",
+    "addScreenshot": "Add screenshot",
+    "screenshotTitle": "Capture node screenshot",
+    "screenshotCaption": "{node} - Source data: {source}. Valid time: {validTime} (UTC).",
+    "screenshotInstructions": "Choose a node, then adjust the map and data layer in the preview. Choose the screenshot size and map aspect ratio, and wait for the map and colour legend to finish loading before adding the screenshot. Charts are not included. Repeat to add more screenshots.",
+    "screenshotAspectRatio": "Map aspect ratio",
+    "screenshotSize": "Screenshot size (width × height)",
+    "screenshotSizeSmall": "Small ({size} px)",
+    "screenshotSizeMedium": "Medium ({size} px)",
+    "screenshotSizeLarge": "Large ({size} px)",
+    "selectNode": "Select node",
+    "screenshotMapFailed": "Could not load the node map.",
+    "screenshotCaptureFailed": "Could not capture the map. Wait for it to load and try again.",
+    "screenshotInsertFailed": "Could not add the screenshot. The report may have changed or reached its screenshot limit."
   }
 }
