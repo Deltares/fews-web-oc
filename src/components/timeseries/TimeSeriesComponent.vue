@@ -110,6 +110,8 @@
         v-if="dynamicReport"
         :config="dynamicReport"
         :selectedDate="selectedDate"
+        :settings="reportSettings"
+        :initial-node-id="reportNodeId"
       />
     </v-window-item>
   </v-window>
@@ -158,6 +160,7 @@ import { useSelectedDate } from '@/services/useSelectedDate'
 import {
   getDefaultSettings,
   type ChartsSettings,
+  type ComponentSettings,
 } from '@/lib/topology/componentSettings'
 import { useChartHandlers } from '@/services/useChartHandlers'
 import { useFetchDomain } from '@/services/useFetchDomain/index.ts'
@@ -177,6 +180,8 @@ interface Props {
   currentTime?: Date
   informationContent?: string | null
   dynamicReport?: DynamicReportPanelConfig | null
+  reportSettings?: ComponentSettings
+  reportNodeId?: string
   settings?: ChartsSettings
 }
 

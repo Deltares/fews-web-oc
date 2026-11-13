@@ -38,6 +38,8 @@ import { checkScreenshotLimits } from '@/lib/dynamic-report/screenshotLimits'
 
 interface Props {
   html: string
+  /** Original report HTML supplying styles when the body has been edited. */
+  styleHtml?: string
   /** CSS for the Vue nodes, scoped styles do not reach an isolated report */
   nodeCss?: string
   editable?: boolean
@@ -162,8 +164,14 @@ onBeforeUnmount(() => {
 })
 
 watch(
-  [() => props.html, () => props.nodeCss, () => props.editable, host],
-  async ([html, nodeCss, editable, element]) => {
+  [
+    () => props.html,
+    () => props.styleHtml,
+    () => props.nodeCss,
+    () => props.editable,
+    host,
+  ],
+  async ([html, styleHtml, nodeCss, editable, element]) => {
     if (!element) return
     const currentRenderId = ++renderId
     // Unmount the Vue nodes before their target elements are removed
@@ -173,7 +181,11 @@ watch(
     editorTarget.value = undefined
     await nextTick()
     previousEditor?.destroy()
-    const { fragment, styles, styling } = sanitizeDynamicReport(html)
+    const report = sanitizeDynamicReport(html)
+    const { styles, styling } = styleHtml
+      ? sanitizeDynamicReport(styleHtml)
+      : report
+    const { fragment } = report
     // Load the style sheets before showing the report to prevent a flash of
     // unstyled content
     const reportStyleSheets = await createDynamicReportStyleSheets(styles)

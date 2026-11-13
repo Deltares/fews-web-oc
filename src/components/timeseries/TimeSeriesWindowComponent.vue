@@ -51,6 +51,8 @@
       v-model:displayType="displayType"
       :information-content="informationContent"
       :dynamic-report="dynamicReport"
+      :report-settings="reportSettings"
+      :report-node-id="reportNodeId"
       :settings="settings"
     >
     </TimeSeriesComponent>
@@ -63,7 +65,10 @@ import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import TimeSeriesDisplayActions from '@/components/timeseries/TimeSeriesDisplayActions.vue'
 import { DisplayConfig, DisplayType } from '@/lib/display/DisplayConfig'
-import { type ChartsSettings } from '@/lib/topology/componentSettings'
+import {
+  type ChartsSettings,
+  type ComponentSettings,
+} from '@/lib/topology/componentSettings'
 import type { DynamicReportPanelConfig } from '@/services/useDynamicReport'
 import type {
   FilterActionsFilter,
@@ -78,6 +83,8 @@ interface Props {
   currentTime?: Date
   informationContent?: string | null
   dynamicReport?: DynamicReportPanelConfig | null
+  reportSettings?: ComponentSettings
+  reportNodeId?: string
   downloadReport?: boolean
   filter?: FilterActionsFilter | TimeSeriesGridActionsFilter
   settings: ChartsSettings

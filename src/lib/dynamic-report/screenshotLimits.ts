@@ -5,7 +5,7 @@ export interface ScreenshotLimits {
 
 export const DEFAULT_SCREENSHOT_LIMITS: ScreenshotLimits = {
   maxCount: 20,
-  maxEncodedBytes: 10 * 1024 * 1024,
+  maxEncodedBytes: 5 * 1024 * 1024,
 }
 
 export function checkScreenshotLimits(

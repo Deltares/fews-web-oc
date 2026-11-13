@@ -1,16 +1,31 @@
 <template>
-  <DynamicReportContent v-if="reportHtml" :html="reportHtml" class="flex-1-1" />
-  <v-alert v-else-if="error" type="error" variant="tonal" class="ma-2">
-    {{ t('reports.loadFailed') }}
-  </v-alert>
-  <div v-else-if="isReady || isMissingTime" class="text-center mt-2">
-    {{ t('reports.noReportAvailable') }}
-  </div>
+  <DynamicReportWorkspace
+    :html="reportHtml"
+    :display-id="config.displayId"
+    :location-id="config.locationId"
+    :time="filter.time"
+    :initial-node-id="initialNodeId"
+    :settings="settings"
+    :can-edit="isReady && !isLoading && !error"
+  >
+    <template #empty>
+      <v-alert v-if="error" type="error" variant="tonal" class="ma-2">
+        {{ t('reports.loadFailed') }}
+      </v-alert>
+      <div v-else-if="isReady || isMissingTime" class="text-center mt-2">
+        {{ t('reports.noReportAvailable') }}
+      </div>
+    </template>
+  </DynamicReportWorkspace>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import DynamicReportContent from '@/components/reports/DynamicReportContent.vue'
+import DynamicReportWorkspace from '@/components/reports/DynamicReportWorkspace.vue'
+import {
+  getDefaultSettings,
+  type ComponentSettings,
+} from '@/lib/topology/componentSettings'
 import { configManager } from '@/services/application-config'
 import {
   type DynamicReportPanelConfig,
@@ -21,9 +36,13 @@ import { useI18n } from 'vue-i18n'
 interface Props {
   config: DynamicReportPanelConfig
   selectedDate?: Date
+  settings?: ComponentSettings
+  initialNodeId?: string
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  settings: () => getDefaultSettings(),
+})
 
 const { t } = useI18n()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -41,7 +60,7 @@ const filter = computed(() => ({
   time: hasTimeDimension.value ? props.selectedDate?.toISOString() : undefined,
 }))
 
-const { reportHtml, isReady, error } = useDynamicReportHtml(
+const { reportHtml, isReady, isLoading, error } = useDynamicReportHtml(
   baseUrl,
   () => props.config.displayId,
   () => props.config.capabilities,

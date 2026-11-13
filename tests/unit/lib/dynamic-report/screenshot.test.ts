@@ -57,6 +57,31 @@ describe('captureNodeScreenshot', () => {
     expect(mocks.off).toHaveBeenCalledWith('render', expect.any(Function))
   })
 
+  it.each([640, 1280, 1920])(
+    'limits the output to %i pixels without changing its aspect ratio',
+    async (maxDimension) => {
+      const { map, mapCanvas, drawImage } = setupMap(3840, 1920)
+      await captureNodeScreenshot(map, { maxDimension })
+      expect(drawImage).toHaveBeenCalledWith(
+        mapCanvas,
+        0,
+        0,
+        maxDimension,
+        maxDimension / 2,
+      )
+      const output = vi.mocked(HTMLCanvasElement.prototype.getContext).mock
+        .instances[0]
+      expect(output.width).toBe(maxDimension)
+      expect(output.height).toBe(maxDimension / 2)
+    },
+  )
+
+  it('does not enlarge a map smaller than the selected limit', async () => {
+    const { map, mapCanvas, drawImage } = setupMap(320, 240)
+    await captureNodeScreenshot(map, { maxDimension: 640 })
+    expect(drawImage).toHaveBeenCalledWith(mapCanvas, 0, 0, 320, 240)
+  })
+
   it('rejects unloaded and empty maps', async () => {
     const { map, mocks } = setupMap()
     mocks.loaded.mockReturnValue(false)
@@ -102,6 +127,38 @@ describe('captureNodeScreenshot', () => {
     expect(drawImage).toHaveBeenNthCalledWith(1, mapCanvas, 0, 0, 640, 480)
     expect(drawImage).toHaveBeenNthCalledWith(2, chartImage, 0, 480, 640, 320)
   })
+
+  it.each([640, 1280, 1920])(
+    'limits the combined map and chart to %i pixels',
+    async (maxDimension) => {
+      const { map, mapCanvas, drawImage } = setupMap(3840, 1920)
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+      await captureNodeScreenshot(map, {
+        maxDimension,
+        chart: { svg, css: '', width: 800, height: 400 },
+      })
+      const output = vi.mocked(HTMLCanvasElement.prototype.getContext).mock
+        .instances[0]
+      expect(output.width).toBe(maxDimension)
+      expect(output.height).toBe(maxDimension)
+      expect(drawImage).toHaveBeenNthCalledWith(
+        1,
+        mapCanvas,
+        0,
+        0,
+        maxDimension,
+        maxDimension / 2,
+      )
+      expect(drawImage).toHaveBeenNthCalledWith(
+        2,
+        expect.any(Image),
+        0,
+        maxDimension / 2,
+        maxDimension,
+        maxDimension / 2,
+      )
+    },
+  )
 
   it('removes its listener when rendering times out', async () => {
     vi.useFakeTimers()

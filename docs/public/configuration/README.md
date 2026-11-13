@@ -110,12 +110,18 @@ The dynamic report module provides the ability to dynamically generate a report 
 The dynamic report can be linked to the topology using `<dynamicReportDisplayId>` in *Topology.xml*. Web OC displays a time slider to request the report for the selected time. 
 When `<selectedLocationVariable>` is configured in [DynamicReportDisplays.xml](https://publicwiki.deltares.nl/spaces/FEWSDOC/pages/352944402/37+Dynamic+Report+Displays+Web+OC+only), a location selection menu also becomes available.
 
-The report view can be edited temporarily, and node map screenshots can be added
-to the edited report. Select a location or coordinate in the screenshot preview
-to include its chart when available. Screenshots are embedded as PNG data URLs,
-with a maximum dimension of 1920 pixels and a limit of 20 screenshots and
-10 MiB of encoded screenshot data per report. Editing uses TipTap and may change
+The report view, including a dynamic report in a time series window, can be
+edited temporarily, and node map screenshots can be added to the edited report.
+Select a location or coordinate in the screenshot preview
+to include its chart when available. Choose a maximum dimension of 640 pixels
+(small), 1280 pixels (medium, the default), or 1920 pixels (large). The aspect
+ratio is preserved and smaller images are not enlarged. Screenshots are embedded
+as PNG data URLs, with a limit of 20 screenshots and 5 MiB of encoded screenshot
+data per report. Editing uses TipTap and may change
 HTML or formatting that its extensions do not support.
+In particular, TipTap currently rewrites table sections such as `<thead>` and
+`<tbody>`. Styles that depend on those sections may therefore change while
+editing or after previewing an edited report.
 The capture currently includes the first chart SVG, not additional charts or
 legends rendered outside that SVG. Wait for the map and its data to load before
 capturing.

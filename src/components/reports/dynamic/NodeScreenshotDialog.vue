@@ -11,6 +11,14 @@
           :label="t('dynamicReport.selectNode')"
           hide-details
         />
+        <v-select
+          v-model="maxDimension"
+          :items="sizePresets"
+          :label="t('dynamicReport.screenshotSize')"
+          :disabled="busy"
+          class="mt-2"
+          hide-details
+        />
         <v-alert v-if="error" type="error" class="mt-2">{{ error }}</v-alert>
         <div
           v-if="selectedNode && layerName !== undefined"
@@ -85,6 +93,12 @@ const error = ref('')
 const locationIds = ref<string>()
 const latitude = ref<string>()
 const longitude = ref<string>()
+const maxDimension = ref(1280)
+const sizePresets = computed(() => [
+  { title: t('dynamicReport.screenshotSizeSmall'), value: 640 },
+  { title: t('dynamicReport.screenshotSizeMedium'), value: 1280 },
+  { title: t('dynamicReport.screenshotSizeLarge'), value: 1920 },
+])
 
 const nodes = computed(() => {
   const result: TopologyNode[] = []
@@ -156,6 +170,7 @@ async function capture() {
   const node = selectedNode.value
   if (!currentMap || !node) return
   const version = selectionVersion
+  const selectedMaxDimension = maxDimension.value
   busy.value = true
   error.value = ''
   try {
@@ -175,7 +190,10 @@ async function capture() {
       )
       chart = { svg, css, width: bounds.width, height: bounds.height }
     }
-    const image = await captureNodeScreenshot(currentMap, { chart })
+    const image = await captureNodeScreenshot(currentMap, {
+      chart,
+      maxDimension: selectedMaxDimension,
+    })
     if (version !== selectionVersion || currentMap !== map.value || !open.value)
       return
     emit('capture', image, node.name ?? node.id)

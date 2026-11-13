@@ -122,6 +122,31 @@ vi.mock('vuetify/lib/components/VAutocomplete/index.mjs', () => ({
     },
   }),
 }))
+vi.mock('vuetify/lib/components/VSelect/index.mjs', () => ({
+  VSelect: defineComponent({
+    props: ['items', 'modelValue', 'disabled', 'label'],
+    emits: ['update:modelValue'],
+    setup(props, { emit }) {
+      return () =>
+        h(
+          'select',
+          {
+            'aria-label': props.label,
+            value: props.modelValue,
+            disabled: props.disabled,
+            onChange: (event: Event) =>
+              emit(
+                'update:modelValue',
+                Number((event.target as HTMLSelectElement).value),
+              ),
+          },
+          props.items.map((item: { title: string; value: number }) =>
+            h('option', { value: item.value }, item.title),
+          ),
+        )
+    },
+  }),
+}))
 vi.mock('vuetify/lib/components/VAlert/index.mjs', () => ({
   VAlert: defineComponent({
     setup:
@@ -162,6 +187,10 @@ function mountDialog() {
           dynamicReport: {
             screenshotTitle: 'Capture',
             selectNode: 'Node',
+            screenshotSize: 'Screenshot size',
+            screenshotSizeSmall: 'Small (640 px)',
+            screenshotSizeMedium: 'Medium (1280 px)',
+            screenshotSizeLarge: 'Large (1920 px)',
             addScreenshot: 'Add',
             screenshotMapFailed: 'Map failed',
             screenshotCaptureFailed: 'Capture failed',
@@ -198,12 +227,44 @@ describe('node screenshot dialog', () => {
       )
       expect(captureNodeScreenshot).toHaveBeenCalledWith(fakeMap, {
         chart: undefined,
+        maxDimension: 1280,
       })
       expect(open.value).toBe(false)
     } finally {
       app.unmount()
     }
   })
+
+  it.each([640, 1280, 1920])(
+    'captures with the selected %i pixel size limit',
+    async (size) => {
+      const blob = new Blob(['map'], { type: 'image/png' })
+      vi.mocked(captureNodeScreenshot).mockResolvedValueOnce(blob)
+      const { app, captured, host, addButton } = mountDialog()
+      try {
+        await vi.waitFor(() => expect(addButton().disabled).toBe(false))
+        const select = host.querySelector<HTMLSelectElement>(
+          'select[aria-label="Screenshot size"]',
+        )!
+        expect(Array.from(select.options, (option) => option.value)).toEqual([
+          '640',
+          '1280',
+          '1920',
+        ])
+        select.value = String(size)
+        select.dispatchEvent(new Event('change'))
+        await nextTick()
+        addButton().click()
+        await vi.waitFor(() => expect(captured).toHaveBeenCalled())
+        expect(captureNodeScreenshot).toHaveBeenCalledWith(fakeMap, {
+          chart: undefined,
+          maxDimension: size,
+        })
+      } finally {
+        app.unmount()
+      }
+    },
+  )
 
   it('discards a capture if the selected node changes before it completes', async () => {
     let finish!: (image: Blob) => void
@@ -276,6 +337,7 @@ describe('node screenshot dialog', () => {
           width: 800,
           height: 400,
         },
+        maxDimension: 1280,
       })
     } finally {
       app.unmount()

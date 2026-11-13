@@ -3,6 +3,7 @@ import { createApp, h, nextTick, ref } from 'vue'
 import { createI18n } from 'vue-i18n'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import DynamicReportContent from '@/components/reports/DynamicReportContent.vue'
+import { createDynamicReportStyleSheets } from '@/lib/dynamic-report/styles'
 
 vi.mock('@/services/useDark', () => ({ useDark: () => ref(false) }))
 vi.mock('@/lib/dynamic-report/styles', () => ({
@@ -158,6 +159,44 @@ describe('editable dynamic report content', () => {
           '',
         ),
       ).rejects.toThrow('The report editor is not ready')
+    } finally {
+      app.unmount()
+      if (previousSheets) {
+        Object.defineProperty(document, 'adoptedStyleSheets', previousSheets)
+      } else {
+        Reflect.deleteProperty(document, 'adoptedStyleSheets')
+      }
+    }
+  })
+
+  it('uses the original report styles when displaying an edited body', async () => {
+    vi.stubGlobal('CSSStyleSheet', TestStyleSheet)
+    const previousSheets = Object.getOwnPropertyDescriptor(
+      document,
+      'adoptedStyleSheets',
+    )
+    Object.defineProperty(document, 'adoptedStyleSheets', {
+      configurable: true,
+      writable: true,
+      value: [],
+    })
+    const host = document.createElement('div')
+    const app = createApp({
+      render: () =>
+        h(DynamicReportContent, {
+          html: '<p>Edited report</p>',
+          styleHtml:
+            '<body><style>.report { color: red }</style><p>Original</p></body>',
+        }),
+    })
+    try {
+      app.mount(host)
+      await vi.waitFor(() =>
+        expect(host.textContent).toContain('Edited report'),
+      )
+      expect(createDynamicReportStyleSheets).toHaveBeenLastCalledWith([
+        { type: 'inline', css: '.report { color: red }' },
+      ])
     } finally {
       app.unmount()
       if (previousSheets) {
