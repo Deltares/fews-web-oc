@@ -325,6 +325,7 @@
     "closeExport": "Berichtexport schließen",
     "saveHtml": "Als HTML speichern",
     "savePdf": "Drucken oder als PDF speichern",
+    "printFailed": "Der Bericht konnte nicht zum Drucken geöffnet werden. Erlauben Sie Popups für diese Website und prüfen Sie, ob Bilder und Stile verfügbar sind.",
     "previewReport": "Vorschau",
     "unsavedReport": "Änderungen und Screenshots sind temporär und werden nicht in FEWS gespeichert. Gespeichertes HTML und PDF enthalten sie. Der Editor kann nicht unterstützte Formatierungen oder HTML verändern.",
     "addScreenshot": "Screenshot hinzufügen",

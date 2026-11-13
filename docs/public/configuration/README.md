@@ -145,6 +145,9 @@ The information icon in the export toolbar explains the local-only changes and
 editor formatting limitations in a tooltip.
 The primary **Edit**/**Preview** button is first in the export toolbar.
 **Save as HTML** and **Print or save as PDF** are separate buttons with icons.
+Printing opens the current report in a new browser tab and opens the print
+dialog after its styles, images and fonts load. Allow popups for this site.
+The tab remains open after printing or cancelling the dialog.
 While editing, a separate floating formatting toolbar above the report provides undo/redo, bold, italic,
 underline, highlighting, text color, and alignment.
 

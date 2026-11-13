@@ -12,6 +12,7 @@ import {
 import { createI18n } from 'vue-i18n'
 import DynamicReportPanel from '@/components/timeseries/DynamicReportPanel.vue'
 import TimeSeriesWindowComponent from '@/components/timeseries/TimeSeriesWindowComponent.vue'
+import { printDynamicReport } from '@/lib/dynamic-report/print'
 import en from '@/locales/en.json'
 import type { DynamicReportPanelConfig } from '@/services/useDynamicReport'
 import {
@@ -29,6 +30,9 @@ const { getDynamicReportDisplay, insertScreenshot, dialogProps, downloadBlob } =
 
 vi.mock('@/lib/download/downloadFiles', () => ({
   clickDownloadBlob: downloadBlob,
+}))
+vi.mock('@/lib/dynamic-report/print', () => ({
+  printDynamicReport: vi.fn(async () => {}),
 }))
 
 vi.mock('@deltares/fews-pi-requests', () => ({
@@ -355,9 +359,6 @@ describe('DynamicReportPanel', () => {
       formattingToolbar.querySelector('[data-button-density="compact"]'),
     ).not.toBeNull()
     expect(
-      formattingToolbar.classList.contains('dynamic-report-no-print'),
-    ).toBe(true)
-    expect(
       formattingToolbar.closest('.dynamic-report-editor-area'),
     ).not.toBeNull()
 
@@ -535,22 +536,40 @@ describe('DynamicReportPanel', () => {
     expect(html).not.toContain('original')
   })
 
-  it('opens the browser print path for the time series report', async () => {
-    const print = vi.spyOn(window, 'print').mockImplementation(() => {
-      expect(document.body.classList.contains('dynamic-report-printing')).toBe(
-        true,
-      )
-      window.dispatchEvent(new Event('afterprint'))
-    })
-    getDynamicReportDisplay.mockResolvedValue('<p>report</p>')
+  it('prints the current edited report with its original styles', async () => {
+    vi.mocked(printDynamicReport).mockClear()
+    getDynamicReportDisplay.mockResolvedValue(
+      '<html><head><style>p { color: red }</style></head><body><p>original</p></body></html>',
+    )
     mountPanel({ config: config() })
     await flushPromises()
 
+    await click(en.dynamicReport.editReport)
+    await click('Change')
     await click(en.dynamicReport.savePdf)
 
-    expect(print).toHaveBeenCalledOnce()
-    expect(document.body.classList.contains('dynamic-report-printing')).toBe(
-      false,
+    expect(printDynamicReport).toHaveBeenCalledWith(
+      expect.stringContaining('<p>edited</p>'),
+      'display',
+    )
+    expect(vi.mocked(printDynamicReport).mock.calls[0][0]).toContain(
+      '<style>p { color: red }</style>',
+    )
+  })
+
+  it('shows a notification if the print tab cannot be opened', async () => {
+    vi.mocked(printDynamicReport).mockRejectedValueOnce(
+      new Error('Popup blocked'),
+    )
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    getDynamicReportDisplay.mockResolvedValue('<p>report</p>')
+    mountPanel({ config: config() })
+    await flushPromises()
+    await click(en.dynamicReport.savePdf)
+    expect(container.textContent).toContain(en.dynamicReport.printFailed)
+    expect(error).toHaveBeenCalledWith(
+      'Failed to print dynamic report',
+      expect.any(Error),
     )
   })
 

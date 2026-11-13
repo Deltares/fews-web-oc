@@ -1,10 +1,9 @@
 <template>
-  <div class="d-flex flex-column h-100 w-100 dynamic-report-print-target">
+  <div class="d-flex flex-column h-100 w-100">
     <Teleport :to="toolbarTarget ?? 'body'" :disabled="!toolbarTarget">
       <v-toolbar
         v-if="showToolbar && (html || $slots['toolbar-start'] || toolbarTarget)"
         density="compact"
-        class="dynamic-report-no-print"
       >
         <v-btn
           v-if="html"
@@ -74,7 +73,7 @@
     >
       <div
         v-if="editing && reportContent?.editor"
-        class="dynamic-report-formatting-toolbar dynamic-report-no-print bg-surface elevation-4 rounded pa-1"
+        class="dynamic-report-formatting-toolbar bg-surface elevation-4 rounded pa-1"
       >
         <v-defaults-provider
           :defaults="{
@@ -104,6 +103,7 @@
       </DynamicReportContent>
     </div>
     <v-alert v-if="screenshotError" type="error">{{ screenshotError }}</v-alert>
+    <v-alert v-if="printError" type="error">{{ printError }}</v-alert>
     <slot v-if="!html" name="empty" />
     <NodeScreenshotDialog
       v-if="editing"
@@ -123,6 +123,7 @@ import { type DynamicReportEdit, getEditKey } from '@/lib/dynamic-report/nodes'
 import { sanitizeDynamicReport } from '@/lib/dynamic-report/sanitize'
 import { getDynamicReportFileName } from '@/lib/download/downloadDynamicReport'
 import { clickDownloadBlob } from '@/lib/download/downloadFiles'
+import { printDynamicReport } from '@/lib/dynamic-report/print'
 import DynamicReportContent from './DynamicReportContent.vue'
 import BaseMenu from './tiptap/BaseMenu.vue'
 import TimeSeriesValueInput from './dynamic/TimeSeriesValueInput.vue'
@@ -150,6 +151,7 @@ const editing = ref(false)
 const editedHtml = ref('')
 const showScreenshotDialog = ref(false)
 const screenshotError = ref('')
+const printError = ref('')
 const reportContent = ref<InstanceType<typeof DynamicReportContent>>()
 
 watch(
@@ -190,6 +192,7 @@ watch(
     editing.value = false
     showScreenshotDialog.value = false
     screenshotError.value = ''
+    printError.value = ''
   },
   { flush: 'sync' },
 )
@@ -257,16 +260,17 @@ function saveAsHtml() {
   )
 }
 
-const printingClass = 'dynamic-report-printing'
-
-function onAfterPrint() {
-  document.body.classList.remove(printingClass)
-}
-
-function saveAsPdf() {
-  document.body.classList.add(printingClass)
-  window.addEventListener('afterprint', onAfterPrint, { once: true })
-  window.print()
+async function saveAsPdf() {
+  const version = reportVersion
+  printError.value = ''
+  try {
+    await printDynamicReport(buildReportHtml(), getDynamicReportFileName(props))
+  } catch (cause) {
+    console.error('Failed to print dynamic report', cause)
+    if (version === reportVersion) {
+      printError.value = t('dynamicReport.printFailed')
+    }
+  }
 }
 </script>
 
@@ -289,44 +293,5 @@ function saveAsPdf() {
 
 .dynamic-report-with-formatting {
   padding-top: 64px !important;
-}
-
-@media print {
-  .dynamic-report-with-formatting {
-    padding-top: 0 !important;
-  }
-}
-</style>
-
-<style>
-@media print {
-  body.dynamic-report-printing * {
-    visibility: hidden;
-  }
-
-  body.dynamic-report-printing .dynamic-report-print-target,
-  body.dynamic-report-printing .dynamic-report-print-target * {
-    visibility: visible;
-  }
-
-  body.dynamic-report-printing .dynamic-report-print-target {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: auto !important;
-    overflow: visible !important;
-    background: white;
-  }
-
-  body.dynamic-report-printing .dynamic-report-no-print {
-    display: none !important;
-  }
-
-  body.dynamic-report-printing .dynamic-report-root {
-    contain: none !important;
-    height: auto !important;
-    overflow: visible !important;
-  }
 }
 </style>

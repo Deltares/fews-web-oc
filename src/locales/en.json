@@ -325,6 +325,7 @@
     "closeExport": "Close report export",
     "saveHtml": "Save as HTML",
     "savePdf": "Print or save as PDF",
+    "printFailed": "Could not open the report for printing. Allow popups for this site and check that report images and styles are available.",
     "previewReport": "Preview",
     "unsavedReport": "Changes and screenshots are temporary and are not saved to FEWS. Saved HTML and PDF files include them. The editor may change unsupported report formatting or HTML.",
     "addScreenshot": "Add screenshot",
