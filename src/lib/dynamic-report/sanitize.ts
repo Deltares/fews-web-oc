@@ -1,6 +1,8 @@
 import DOMPurify from 'dompurify'
 
 export const DYNAMIC_REPORT_SCOPE = '.dynamic-report'
+export const REPORT_SCREENSHOT_STYLE =
+  'width: auto !important; max-width: 100% !important; height: auto !important;'
 
 export type DynamicReportStyle =
   /** CSS of a <style> element */
@@ -40,6 +42,13 @@ export function sanitizeDynamicReport(html: string): SanitizedDynamicReport {
     FORBID_TAGS: ['style', 'link'],
     RETURN_DOM_FRAGMENT: true,
   })
+  fragment
+    .querySelectorAll<HTMLImageElement>('img[data-report-screenshot="true"]')
+    .forEach((image) => {
+      image.style.setProperty('width', 'auto', 'important')
+      image.style.setProperty('max-width', '100%', 'important')
+      image.style.setProperty('height', 'auto', 'important')
+    })
   return {
     fragment,
     styles: getStyles(document),

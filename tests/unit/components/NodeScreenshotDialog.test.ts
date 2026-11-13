@@ -262,7 +262,7 @@ describe('node screenshot dialog', () => {
       expect(captureNodeScreenshot).toHaveBeenCalledWith(fakeMap, {
         chart: undefined,
         legend: expect.any(HTMLElement),
-        maxDimension: 1280,
+        maxDimension: 1920,
       })
       expect(open.value).toBe(false)
     } finally {
@@ -407,7 +407,7 @@ describe('node screenshot dialog', () => {
           width: 800,
           height: 400,
         },
-        maxDimension: 1280,
+        maxDimension: 1920,
       })
     } finally {
       app.unmount()

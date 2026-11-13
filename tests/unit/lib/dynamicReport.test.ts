@@ -21,6 +21,23 @@ function toContainer(html: string): HTMLDivElement {
 }
 
 describe('sanitizeDynamicReport', () => {
+  it('fits screenshots without changing their encoded pixels or other images', () => {
+    const source = 'data:image/png;base64,eA=='
+    const container = toContainer(
+      `<img data-report-screenshot="true" src="${source}" width="1920" height="1080" style="width: 1920px !important; height: 1080px; border: 1px solid red"><img src="${source}" width="200">`,
+    )
+    const [screenshot, other] = container.querySelectorAll('img')
+    expect(screenshot.src).toBe(source)
+    expect(screenshot.style.width).toBe('auto')
+    expect(screenshot.style.maxWidth).toBe('100%')
+    expect(screenshot.style.height).toBe('auto')
+    expect(screenshot.style.getPropertyPriority('max-width')).toBe('important')
+    expect(screenshot.style.border).toBe('1px solid red')
+    expect(screenshot.getAttribute('width')).toBe('1920')
+    expect(other.getAttribute('width')).toBe('200')
+    expect(other.getAttribute('style')).toBeNull()
+  })
+
   it('removes scripts and event handlers but keeps data attributes', () => {
     const container = toContainer(
       '<script>alert(1)</script><span data-input-type="number" onclick="alert(1)">1</span>',

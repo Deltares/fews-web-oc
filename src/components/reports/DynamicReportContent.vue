@@ -22,6 +22,7 @@ import {
 import {
   type DynamicReportStyling,
   DYNAMIC_REPORT_SCOPE,
+  REPORT_SCREENSHOT_STYLE,
   sanitizeDynamicReport,
   scopeCss,
 } from '@/lib/dynamic-report/sanitize'
@@ -90,7 +91,12 @@ async function insertScreenshot(image: Blob, alt: string, caption?: string) {
     .insertContent([
       {
         type: 'image',
-        attrs: { src: url, alt, dataSet: { reportScreenshot: 'true' } },
+        attrs: {
+          src: url,
+          alt,
+          style: REPORT_SCREENSHOT_STYLE,
+          dataSet: { reportScreenshot: 'true' },
+        },
       },
       ...(caption
         ? [

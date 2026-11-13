@@ -96,6 +96,15 @@ describe('editable dynamic report content', () => {
         '<p>Source data: rainfall. Valid time: 2026-11-13T06:00:00Z (UTC).</p>',
       )
       expect(saved).toContain('data-report-screenshot="true"')
+      const savedImage = new DOMParser()
+        .parseFromString(saved, 'text/html')
+        .querySelector('img')!
+      expect(savedImage.getAttribute('src')).toBe(
+        `data:image/png;base64,${btoa('screenshot')}`,
+      )
+      expect(savedImage.style.width).toBe('auto')
+      expect(savedImage.style.maxWidth).toBe('100%')
+      expect(savedImage.style.height).toBe('auto')
       html.value = saved
       await nextTick()
       await vi.waitFor(() =>

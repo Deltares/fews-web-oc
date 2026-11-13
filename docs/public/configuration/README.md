@@ -114,7 +114,7 @@ The report view, including a dynamic report in a time series window, can be
 edited temporarily, and node map screenshots can be added to the edited report.
 Select a location or coordinate in the screenshot preview
 to include its chart when available. Choose a maximum dimension of 640 pixels
-(small), 1280 pixels (medium, the default), or 1920 pixels (large). The aspect
+(small), 1280 pixels (medium), or 1920 pixels (large, the default). The aspect
 ratio is preserved and smaller images are not enlarged. Screenshots are embedded
 as PNG data URLs, with a limit of 20 screenshots and 5 MiB of encoded screenshot
 data per report. Editing uses TipTap and may change
@@ -129,6 +129,11 @@ chart. Wait for the map, colour legend and chart to load before capturing.
 Each screenshot has an editable caption containing the node name, the source
 data layer ID and its valid time in UTC. The caption is included in HTML and
 print/PDF exports.
+The embedded PNG retains its captured pixel resolution. Screenshots shrink to
+fit the report width without stretching or enlarging smaller images, including
+in saved HTML and print/PDF. For print, aim for approximately 300 effective DPI:
+1920 pixels at 17 cm wide is about 287 DPI. Actual DPI depends on capture
+resolution and printed width; a smaller source is not upscaled.
 
 Edits and screenshots are not saved to FEWS and are discarded when the report,
 location, or time changes. In both the report view and the time series report

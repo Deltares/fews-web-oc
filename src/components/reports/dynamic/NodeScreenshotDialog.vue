@@ -98,7 +98,7 @@ const error = ref('')
 const locationIds = ref<string>()
 const latitude = ref<string>()
 const longitude = ref<string>()
-const maxDimension = ref(1280)
+const maxDimension = ref(1920)
 const sizePresets = computed(() => [
   { title: t('dynamicReport.screenshotSizeSmall'), value: 640 },
   { title: t('dynamicReport.screenshotSizeMedium'), value: 1280 },
