@@ -9,6 +9,17 @@ export interface ExtendedLocation extends Location {
   sortKey: number
   invertedSortKey: number
   isNonPointLocation?: boolean
+  locationCategory: string
+}
+
+export interface LocationWithIconLabel extends Location {
+  iconLabel?: string
+}
+
+/** Which locations remain visible for the selected warning levels. */
+export interface LocationThresholdFilter {
+  severities: number[]
+  crossingLocationIds: string[]
 }
 
 export const locationLayerIds = Object.values(mapIds.location.layer)
@@ -23,8 +34,6 @@ export const clickableLocationLayerIds = [
 
 export function addPropertiesToLocationGeojson(
   geojson: FeatureCollection<Geometry, Location>,
-  showNames: boolean,
-  showDataAvailability: boolean,
 ): FeatureCollection<Geometry, ExtendedLocation> {
   const features = geojson.features.map((feature) => {
     const iconName =
@@ -34,12 +43,13 @@ export function addPropertiesToLocationGeojson(
       ...feature,
       properties: {
         ...feature.properties,
-        locationName: showNames ? feature.properties.locationName : '',
+        locationName: feature.properties.locationName,
         ...(iconName === undefined ? {} : { iconName }),
         webocIcon: getIconName(feature),
         sortKey: getSortKey(feature),
         invertedSortKey: getInvertedSortKey(feature),
         isNonPointLocation: isNonPointGeometry(feature.geometry),
+        locationCategory: getLocationCategory(feature),
       },
     }
   })
@@ -48,6 +58,59 @@ export function addPropertiesToLocationGeojson(
     ...geojson,
     features,
   }
+}
+
+/**
+ * Layer filter that hides locations without changing the source data, so the
+ * geometry does not have to be sent to the worker again. It has to give the same
+ * result as isLocationVisible.
+ */
+export function getLocationVisibilityFilter(
+  categories: string[],
+  thresholdFilter: LocationThresholdFilter | undefined,
+): ExpressionSpecification {
+  const conditions: ExpressionSpecification[] = []
+  if (categories.length > 0) {
+    conditions.push([
+      'in',
+      ['get', 'locationCategory'],
+      ['literal', [...categories]],
+    ])
+  }
+  if (thresholdFilter) {
+    conditions.push([
+      'any',
+      [
+        'in',
+        ['get', 'locationId'],
+        ['literal', [...thresholdFilter.crossingLocationIds]],
+      ],
+      [
+        'in',
+        ['coalesce', ['get', 'thresholdSeverity'], 0],
+        ['literal', [...thresholdFilter.severities]],
+      ],
+    ])
+  }
+  return ['all', ...conditions]
+}
+
+export function isLocationVisible(
+  location: ExtendedLocation,
+  categories: string[],
+  thresholdFilter: LocationThresholdFilter | undefined,
+): boolean {
+  if (
+    categories.length > 0 &&
+    !categories.includes(location.locationCategory)
+  ) {
+    return false
+  }
+  if (!thresholdFilter) return true
+  return (
+    thresholdFilter.crossingLocationIds.includes(location.locationId) ||
+    thresholdFilter.severities.includes(location.thresholdSeverity ?? 0)
+  )
 }
 
 function getIconName({ properties }: Feature<Geometry, Location>) {
