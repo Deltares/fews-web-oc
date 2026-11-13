@@ -78,7 +78,7 @@ html, body {
 }
 @media print {
   @page {
-    margin: 20mm 15mm;
+    margin: 20mm 0;
     @top-center {
       content: ${JSON.stringify(title.replace(/\s+/g, ' ').trim())};
       font: 10pt sans-serif;
@@ -86,6 +86,12 @@ html, body {
     @bottom-center {
       content: "Page " counter(page) " out of " counter(pages);
       font: 10pt sans-serif;
+    }
+  }
+  @page :first {
+    margin-top: 0;
+    @top-center {
+      content: none;
     }
   }
   html, body {

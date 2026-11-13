@@ -157,6 +157,8 @@ The tab remains open after printing or cancelling the dialog.
 The print tab contains only the report, without application layout constraints.
 Print CSS allows the report to flow across pages and uses page margin boxes for
 the document title and "Page n out of m" footer, without adding report elements.
+Print margins are zero on the left and right, with 20 mm at the top and bottom.
+The first page has no top margin or document-title header.
 CSS page headers and footers require a browser supporting page margin boxes
 (current Chrome/Edge). Disable the browser's own headers and footers to avoid
 duplicates.

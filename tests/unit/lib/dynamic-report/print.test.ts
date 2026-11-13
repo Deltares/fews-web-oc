@@ -24,6 +24,10 @@ describe('printDynamicReport', () => {
     expect(css).toContain('counter(page) " out of " counter(pages)')
     expect(css).toContain('overflow: visible !important')
     expect(css).toContain('height: auto !important')
+    expect(css).toContain('margin: 20mm 0')
+    expect(css).toContain('@page :first')
+    expect(css).toContain('margin-top: 0')
+    expect(css).toContain('content: none')
   })
   it('reports blocked popups', async () => {
     vi.spyOn(window, 'open').mockReturnValue(null)
