@@ -37,22 +37,28 @@ vi.mock('@/stores/topologyNodes', () => ({
 }))
 vi.mock('@/components/spatialdisplay/SpatialDisplay.vue', () => ({
   default: defineComponent({
+    props: { independentContext: Boolean },
     emits: ['navigate'],
     setup(_props, { slots, emit, expose }) {
       expose({ getScreenshotContext: screenshotContext.get })
       return () =>
-        h('div', [
-          slots.map?.(),
-          h(
-            'button',
-            {
-              onClick: () => emit('navigate', { params: { locationIds: 'x' } }),
-            },
-            'Select location',
-          ),
-          h('div', { class: 'chart-container' }, [h('svg')]),
-          h('div', { class: 'colourbar-container' }, 'Colour legend'),
-        ])
+        h(
+          'div',
+          { 'data-independent-context': String(_props.independentContext) },
+          [
+            slots.map?.(),
+            h(
+              'button',
+              {
+                onClick: () =>
+                  emit('navigate', { params: { locationIds: 'x' } }),
+              },
+              'Select location',
+            ),
+            h('div', { class: 'chart-container' }, [h('svg')]),
+            h('div', { class: 'colourbar-container' }, 'Colour legend'),
+          ],
+        )
     },
   }),
 }))
@@ -237,6 +243,9 @@ describe('node screenshot dialog', () => {
       )
       await vi.waitFor(() => expect(getLayerNameForNode).toHaveBeenCalled())
       await nextTick()
+      expect(
+        host.querySelector('[data-independent-context="true"]'),
+      ).not.toBeNull()
       expect(host.textContent).toContain(
         'Choose a node, adjust the map and wait for the legend and chart to load.',
       )

@@ -20,6 +20,7 @@
         :bounding-box="boundingBox"
         :times="times"
         :settings="settings.map"
+        :independent-context="independentContext"
         v-model:elevation="elevation"
         @update:ensemble-selection="ensembleSelection = $event"
         @update:current-time="currentTime = $event"
@@ -92,6 +93,7 @@ interface Props {
   longitude?: string
   topologyNode?: TopologyNode
   settings?: ComponentSettings
+  independentContext?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -143,6 +145,7 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
   baseUrl,
   () => props.layerName,
   taskRunId,
+  !props.independentContext,
 )
 
 function getDisplayEnabledFromLocationAttributes(
@@ -271,7 +274,7 @@ const filteredGeojson = computed(() => {
   }
 })
 
-useDateRegistry(() => times.value ?? [])
+if (!props.independentContext) useDateRegistry(() => times.value ?? [])
 
 const onlyCoverageLayersAvailable = computed(() => {
   const capabilities = layerCapabilities.value

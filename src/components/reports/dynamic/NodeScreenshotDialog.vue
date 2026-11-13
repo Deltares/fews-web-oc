@@ -35,6 +35,7 @@
             :latitude="latitude"
             :longitude="longitude"
             :settings="settings"
+            independent-context
             @navigate="onNavigate"
           >
             <template #map>
