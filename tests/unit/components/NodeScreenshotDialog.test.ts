@@ -44,6 +44,7 @@ vi.mock('@/components/spatialdisplay/SpatialDisplay.vue', () => ({
             'Select location',
           ),
           h('div', { class: 'chart-container' }, [h('svg')]),
+          h('div', { class: 'colourbar-container' }, 'Colour legend'),
         ])
     },
   }),
@@ -186,6 +187,8 @@ function mountDialog() {
           common: { cancel: 'Cancel' },
           dynamicReport: {
             screenshotTitle: 'Capture',
+            screenshotInstructions:
+              'Choose a node, adjust the map and wait for the legend and chart to load.',
             selectNode: 'Node',
             screenshotSize: 'Screenshot size',
             screenshotSizeSmall: 'Small (640 px)',
@@ -219,6 +222,9 @@ describe('node screenshot dialog', () => {
       )
       await vi.waitFor(() => expect(getLayerNameForNode).toHaveBeenCalled())
       await nextTick()
+      expect(host.textContent).toContain(
+        'Choose a node, adjust the map and wait for the legend and chart to load.',
+      )
       const add = addButton()
       await vi.waitFor(() => expect(add.disabled).toBe(false))
       add.click()
@@ -227,6 +233,7 @@ describe('node screenshot dialog', () => {
       )
       expect(captureNodeScreenshot).toHaveBeenCalledWith(fakeMap, {
         chart: undefined,
+        legend: expect.any(HTMLElement),
         maxDimension: 1280,
       })
       expect(open.value).toBe(false)
@@ -258,6 +265,7 @@ describe('node screenshot dialog', () => {
         await vi.waitFor(() => expect(captured).toHaveBeenCalled())
         expect(captureNodeScreenshot).toHaveBeenCalledWith(fakeMap, {
           chart: undefined,
+          legend: expect.any(HTMLElement),
           maxDimension: size,
         })
       } finally {
@@ -331,6 +339,7 @@ describe('node screenshot dialog', () => {
       )
       expect(fetchAndInlineCssAndFonts).toHaveBeenCalledWith('test.css')
       expect(captureNodeScreenshot).toHaveBeenCalledWith(fakeMap, {
+        legend: expect.any(HTMLElement),
         chart: {
           svg,
           css: 'chart css',

@@ -122,13 +122,28 @@ HTML or formatting that its extensions do not support.
 In particular, TipTap currently rewrites table sections such as `<thead>` and
 `<tbody>`. Styles that depend on those sections may therefore change while
 editing or after previewing an edited report.
-The capture currently includes the first chart SVG, not additional charts or
-legends rendered outside that SVG. Wait for the map and its data to load before
-capturing.
+The capture includes the map's colour legend (categorical or gradient) and the
+first chart SVG, but not additional charts or chart legends outside that SVG.
+The capture dialog explains how to select a node, adjust the map and include a
+chart. Wait for the map, colour legend and chart to load before capturing.
 
 Edits and screenshots are not saved to FEWS and are discarded when the report,
-location, or time changes. Downloading the report still downloads the original
-backend report, not the edited version.
+location, or time changes. In both the report view and the time series report
+panel, use **Export** to save the current report, including local edits and
+screenshots, as HTML or through the browser print dialog as PDF.
+These export options respect the report download setting. In a time series
+window, choose **Export** from the dot menu to open the report and replace the
+window toolbar with editing and export controls. Close report export to restore
+the normal window toolbar. Local edits are retained until the report changes.
+Export mode fills the application's main content area, leaving the application
+header and navigation visible. Closing it restores the original time series
+window size.
+The information icon in the export toolbar explains the local-only changes and
+editor formatting limitations in a tooltip.
+The primary **Edit**/**Preview** button is first in the export toolbar.
+**Save as HTML** and **Print or save as PDF** are separate buttons with icons.
+While editing, a separate floating formatting toolbar above the report provides undo/redo, bold, italic,
+underline, highlighting, text color, and alignment.
 
 *Styling a dynamic report*
 

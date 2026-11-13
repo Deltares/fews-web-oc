@@ -7,6 +7,10 @@
     :initial-node-id="initialNodeId"
     :settings="settings"
     :can-edit="isReady && !isLoading && !error"
+    :show-export="downloadReport && settings.report.downloadReport"
+    :show-toolbar="exportMode"
+    :toolbar-target="toolbarTarget"
+    @close-export="emit('close-export')"
   >
     <template #empty>
       <v-alert v-if="error" type="error" variant="tonal" class="ma-2">
@@ -38,11 +42,16 @@ interface Props {
   selectedDate?: Date
   settings?: ComponentSettings
   initialNodeId?: string
+  downloadReport?: boolean
+  exportMode?: boolean
+  toolbarTarget?: HTMLElement
 }
 
 const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
+  downloadReport: true,
 })
+const emit = defineEmits<{ 'close-export': [] }>()
 
 const { t } = useI18n()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')

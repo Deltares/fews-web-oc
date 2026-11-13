@@ -1,66 +1,87 @@
 <template>
-  <WindowComponent :toolBar="settings.general.toolBar">
-    <template v-slot:toolbar>
-      <v-toolbar-items
-        class="flex-0-0"
-        v-model="displayType"
-        mandatory
-        size="small"
-      >
-        <template v-if="displayTypeItems.length > 1">
-          <v-btn
-            v-for="item in displayTypeItems"
-            :key="item.value"
-            :value="item.value"
-            :aria-label="item.label"
-            :text="item.label"
-            :active="displayType === item.value"
-            :disabled="item.disabled"
-            variant="text"
-            min-width="48"
-            class="pa-0"
-            @click="onDisplayTypeClick(item.value)"
-          >
-            <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>
-          </v-btn>
-        </template>
-      </v-toolbar-items>
-
-      <slot name="toolbar-title">
-        <span class="ml-5">{{ displayConfig?.title }}</span>
-      </slot>
-      <v-spacer />
-    </template>
-    <template v-slot:toolbar-append>
-      <TimeSeriesDisplayActions
-        :displayConfig="displayConfig"
-        :currentTime="currentTime"
-        :dynamicReport="dynamicReport"
-        :downloadReport="downloadReport"
-        :filter="filter"
-        :settings="settings"
-      />
-      <slot name="toolbar-append" />
-    </template>
-    <TimeSeriesComponent
-      :config="displayConfig ?? undefined"
-      :elevation-chart-config="elevationChartDisplayconfig ?? undefined"
-      :brush-chart-config="brushChartConfig ?? undefined"
-      :disable-thinning="disableThinning"
-      :current-time="currentTime"
-      v-model:displayType="displayType"
-      :information-content="informationContent"
-      :dynamic-report="dynamicReport"
-      :report-settings="reportSettings"
-      :report-node-id="reportNodeId"
-      :settings="settings"
+  <Teleport to="#main" :disabled="!reportExportMode">
+    <div
+      class="d-flex flex-column h-100 w-100"
+      :class="{ 'report-export-main bg-surface': reportExportMode }"
     >
-    </TimeSeriesComponent>
-  </WindowComponent>
+      <WindowComponent
+        :toolBar="reportExportMode ? 'true' : settings.general.toolBar"
+      >
+        <template v-slot:toolbar>
+          <div
+            v-if="reportExportMode"
+            ref="reportToolbarTarget"
+            class="d-flex w-100"
+          />
+          <template v-else>
+            <v-toolbar-items
+              class="flex-0-0"
+              v-model="displayType"
+              mandatory
+              size="small"
+            >
+              <template v-if="displayTypeItems.length > 1">
+                <v-btn
+                  v-for="item in displayTypeItems"
+                  :key="item.value"
+                  :value="item.value"
+                  :aria-label="item.label"
+                  :text="item.label"
+                  :active="displayType === item.value"
+                  :disabled="item.disabled"
+                  variant="text"
+                  min-width="48"
+                  class="pa-0"
+                  @click="onDisplayTypeClick(item.value)"
+                >
+                  <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>
+                </v-btn>
+              </template>
+            </v-toolbar-items>
+
+            <slot name="toolbar-title">
+              <span class="ml-5">{{ displayConfig?.title }}</span>
+            </slot>
+            <v-spacer />
+          </template>
+        </template>
+        <template v-if="!reportExportMode" v-slot:toolbar-append>
+          <TimeSeriesDisplayActions
+            :displayConfig="displayConfig"
+            :currentTime="currentTime"
+            :dynamicReport="dynamicReport"
+            :downloadReport="reportDownloadEnabled"
+            :filter="filter"
+            :settings="settings"
+            @export-report="openReportExport"
+          />
+          <slot name="toolbar-append" />
+        </template>
+        <TimeSeriesComponent
+          :config="displayConfig ?? undefined"
+          :elevation-chart-config="elevationChartDisplayconfig ?? undefined"
+          :brush-chart-config="brushChartConfig ?? undefined"
+          :disable-thinning="disableThinning"
+          :current-time="currentTime"
+          v-model:displayType="displayType"
+          :information-content="informationContent"
+          :dynamic-report="dynamicReport"
+          :report-settings="reportSettings"
+          :report-node-id="reportNodeId"
+          :download-report="reportDownloadEnabled"
+          :report-export-mode="reportExportMode"
+          :report-toolbar-target="reportToolbarTarget"
+          @close-report-export="reportExportMode = false"
+          :settings="settings"
+        >
+        </TimeSeriesComponent>
+      </WindowComponent>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, StyleValue, watch, watchEffect } from 'vue'
+import { computed, ref, StyleValue, watch, watchEffect } from 'vue'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import TimeSeriesDisplayActions from '@/components/timeseries/TimeSeriesDisplayActions.vue'
@@ -91,6 +112,13 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), { downloadReport: true })
+const reportExportMode = ref(false)
+const reportToolbarTarget = ref<HTMLElement>()
+const reportDownloadEnabled = computed(
+  () =>
+    props.downloadReport &&
+    (props.reportSettings?.report.downloadReport ?? true),
+)
 
 interface DisplayTypeItem {
   icon: string
@@ -141,6 +169,24 @@ function onDisplayTypeClick(value: DisplayType) {
   displayType.value = value
   userSelectedDisplayType.value = true
 }
+
+function openReportExport() {
+  onDisplayTypeClick(DisplayType.DynamicReport)
+  reportExportMode.value = true
+}
+
+watch(
+  [
+    () => props.dynamicReport?.displayId,
+    () => props.dynamicReport?.locationId,
+    displayType,
+    reportDownloadEnabled,
+  ],
+  () => {
+    reportExportMode.value = false
+  },
+  { flush: 'sync' },
+)
 
 const displayTypeItems = ref<DisplayTypeItem[]>([])
 
@@ -211,3 +257,23 @@ watchEffect(() => {
   displayTypeItems.value = enabledItems
 })
 </script>
+
+<style scoped>
+.report-export-main {
+  position: fixed;
+  top: var(--v-layout-top, 0px);
+  right: var(--v-layout-right, 0px);
+  bottom: var(--v-layout-bottom, 0px);
+  left: var(--v-layout-left, 0px);
+  width: auto !important;
+  height: auto !important;
+  /* Above map controls (1000), below Vuetify overlays (2000). */
+  z-index: 1001;
+}
+
+@media print {
+  .report-export-main {
+    position: static;
+  }
+}
+</style>

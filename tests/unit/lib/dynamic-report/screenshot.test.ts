@@ -82,6 +82,76 @@ describe('captureNodeScreenshot', () => {
     expect(drawImage).toHaveBeenCalledWith(mapCanvas, 0, 0, 320, 240)
   })
 
+  it('overlays a categorical colour legend at its map position, including labels and colours', async () => {
+    const { map, mapCanvas, drawImage } = setupMap(1600, 1200)
+    vi.spyOn(mapCanvas, 'getBoundingClientRect').mockReturnValue(
+      new DOMRect(100, 50, 800, 600),
+    )
+    const legend = document.createElement('div')
+    legend.innerHTML =
+      '<p>Flood probability</p><div class="box" style="background-color: red"></div><div class="legend-label">High</div>'
+    vi.spyOn(legend, 'getBoundingClientRect').mockReturnValue(
+      new DOMRect(110, 550, 200, 80),
+    )
+    for (const element of legend.querySelectorAll('*')) {
+      vi.spyOn(element, 'getBoundingClientRect').mockReturnValue(
+        new DOMRect(110, 550, 100, 20),
+      )
+    }
+    const image = new Image()
+    vi.mocked(convertSvgElementToImage).mockResolvedValueOnce(image)
+
+    await captureNodeScreenshot(map, { legend, maxDimension: 800 })
+
+    const svg = vi.mocked(convertSvgElementToImage).mock.calls[0][0]
+    expect(svg.textContent).toContain('Flood probability')
+    expect(svg.textContent).toContain('High')
+    expect(svg.querySelector('rect')?.getAttribute('fill')).toBe(
+      'rgb(255, 0, 0)',
+    )
+    expect(convertSvgElementToImage).toHaveBeenCalledWith(svg, [200, 80])
+    expect(drawImage).toHaveBeenNthCalledWith(1, mapCanvas, 0, 0, 800, 600)
+    expect(drawImage).toHaveBeenNthCalledWith(2, image, 10, 500, 200, 80)
+  })
+
+  it('includes an SVG gradient legend with its styles and leaves the original unchanged', async () => {
+    const { map, mapCanvas, drawImage } = setupMap()
+    vi.spyOn(mapCanvas, 'getBoundingClientRect').mockReturnValue(
+      new DOMRect(0, 0, 800, 600),
+    )
+    const legend = document.createElement('div')
+    legend.innerHTML =
+      '<svg><defs><linearGradient id="scale"><stop stop-color="red"/></linearGradient></defs><rect fill="url(#scale)"/><text style="fill: white; font-size: 13px">Rainfall (mm)</text></svg>'
+    vi.spyOn(legend, 'getBoundingClientRect').mockReturnValue(
+      new DOMRect(5, 530, 300, 60),
+    )
+    const original = legend.innerHTML
+    await captureNodeScreenshot(map, { legend })
+
+    const svg = vi.mocked(convertSvgElementToImage).mock.calls[0][0]
+    expect(svg.querySelector('linearGradient')).not.toBeNull()
+    expect(svg.querySelector('rect')?.getAttribute('fill')).toBe('url(#scale)')
+    expect(svg.querySelector('text')?.style.fill).toBe('rgb(255, 255, 255)')
+    expect(svg.textContent).toContain('Rainfall (mm)')
+    expect(legend.innerHTML).toBe(original)
+    expect(drawImage).toHaveBeenNthCalledWith(
+      2,
+      expect.any(Image),
+      5,
+      530,
+      300,
+      60,
+    )
+  })
+
+  it('reports a legend that is not ready rather than silently omitting it', async () => {
+    const { map } = setupMap()
+    const legend = document.createElement('div')
+    await expect(captureNodeScreenshot(map, { legend })).rejects.toThrow(
+      'legend has no visible screenshot area',
+    )
+  })
+
   it('rejects unloaded and empty maps', async () => {
     const { map, mocks } = setupMap()
     mocks.loaded.mockReturnValue(false)

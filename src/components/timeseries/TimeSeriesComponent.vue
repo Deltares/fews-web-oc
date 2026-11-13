@@ -112,6 +112,10 @@
         :selectedDate="selectedDate"
         :settings="reportSettings"
         :initial-node-id="reportNodeId"
+        :download-report="downloadReport"
+        :export-mode="reportExportMode"
+        :toolbar-target="reportToolbarTarget"
+        @close-export="emit('close-report-export')"
       />
     </v-window-item>
   </v-window>
@@ -182,10 +186,15 @@ interface Props {
   dynamicReport?: DynamicReportPanelConfig | null
   reportSettings?: ComponentSettings
   reportNodeId?: string
+  downloadReport?: boolean
+  reportExportMode?: boolean
+  reportToolbarTarget?: HTMLElement
   settings?: ChartsSettings
 }
 
+const emit = defineEmits<{ 'close-report-export': [] }>()
 const props = withDefaults(defineProps<Props>(), {
+  downloadReport: true,
   config: () => {
     return {
       title: '',

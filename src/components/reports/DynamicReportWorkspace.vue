@@ -1,71 +1,108 @@
 <template>
   <div class="d-flex flex-column h-100 w-100 dynamic-report-print-target">
-    <v-toolbar
-      v-if="html || $slots['toolbar-start']"
-      density="compact"
-      class="dynamic-report-no-print"
-    >
-      <slot name="toolbar-start" />
-      <v-spacer />
-      <v-btn v-if="html && !editing" :disabled="!canEdit" @click="startEditing">
-        {{ t('dynamicReport.editReport') }}
-      </v-btn>
-      <template v-if="editing">
-        <v-btn @click="showScreenshotDialog = true">
-          {{ t('dynamicReport.addScreenshot') }}
+    <Teleport :to="toolbarTarget ?? 'body'" :disabled="!toolbarTarget">
+      <v-toolbar
+        v-if="showToolbar && (html || $slots['toolbar-start'] || toolbarTarget)"
+        density="compact"
+        class="dynamic-report-no-print"
+      >
+        <v-btn
+          v-if="html"
+          color="primary"
+          variant="flat"
+          :disabled="!canEdit"
+          @click="editing ? (editing = false) : startEditing()"
+        >
+          {{
+            t(
+              editing
+                ? 'dynamicReport.previewReport'
+                : 'dynamicReport.editReport',
+            )
+          }}
         </v-btn>
-        <v-btn @click="editing = false">
-          {{ t('dynamicReport.previewReport') }}
-        </v-btn>
-      </template>
-      <v-menu v-if="showExport && html">
-        <template #activator="{ props: menuProps }">
-          <v-btn
-            v-bind="menuProps"
-            :disabled="!canEdit"
-            prepend-icon="mdi-export-variant"
-          >
-            {{ t('dynamicReport.export') }}
+        <slot name="toolbar-start" />
+        <v-tooltip
+          v-if="html"
+          :text="t('dynamicReport.unsavedReport')"
+          location="bottom"
+          max-width="400"
+        >
+          <template #activator="{ props: tooltipProps }">
+            <v-btn
+              v-bind="tooltipProps"
+              icon="mdi-information-outline"
+              variant="text"
+              :aria-label="t('dynamicReport.unsavedReport')"
+            />
+          </template>
+        </v-tooltip>
+        <v-spacer />
+        <template v-if="editing">
+          <v-btn prepend-icon="mdi-camera" @click="showScreenshotDialog = true">
+            {{ t('dynamicReport.addScreenshot') }}
           </v-btn>
         </template>
-        <v-list density="compact">
-          <v-list-item
+        <template v-if="showExport && html">
+          <v-btn
+            :disabled="!canEdit"
             prepend-icon="mdi-file-code-outline"
-            :title="t('dynamicReport.saveHtml')"
             @click="saveAsHtml"
-          />
-          <v-list-item
-            prepend-icon="mdi-file-pdf-box"
-            :title="t('dynamicReport.savePdf')"
+          >
+            {{ t('dynamicReport.saveHtml') }}
+          </v-btn>
+          <v-btn
+            :disabled="!canEdit"
+            prepend-icon="mdi-printer"
             @click="saveAsPdf"
-          />
-        </v-list>
-      </v-menu>
-      <slot name="toolbar-end" />
-    </v-toolbar>
-    <v-alert
-      v-if="editing || editedHtml"
-      type="info"
-      density="compact"
-      class="dynamic-report-no-print"
-    >
-      {{ t('dynamicReport.unsavedReport') }}
-    </v-alert>
-    <DynamicReportContent
+          >
+            {{ t('dynamicReport.savePdf') }}
+          </v-btn>
+        </template>
+        <slot name="toolbar-end" />
+        <v-btn
+          v-if="toolbarTarget"
+          icon="mdi-close"
+          :aria-label="t('dynamicReport.closeExport')"
+          @click="emit('close-export')"
+        />
+      </v-toolbar>
+    </Teleport>
+    <div
       v-if="html"
-      ref="reportContent"
-      :html="displayHtml"
-      :style-html="html"
-      :initial-editor-html="editedHtml || undefined"
-      :editable="editing"
-      :node-css="timeSeriesValueInputCss"
-      class="flex-1-1"
-      @update="onDocumentUpdate"
+      class="dynamic-report-editor-area d-flex flex-column flex-1-1"
     >
-      <template #node="{ node }">
-        <TimeSeriesValueInput :node="node" @change="onEdit" />
-      </template>
-    </DynamicReportContent>
+      <div
+        v-if="editing && reportContent?.editor"
+        class="dynamic-report-formatting-toolbar dynamic-report-no-print bg-surface elevation-4 rounded pa-1"
+      >
+        <v-defaults-provider
+          :defaults="{
+            VBtn: { density: 'compact' },
+            VBtnGroup: { density: 'compact' },
+            VBtnToggle: { density: 'compact' },
+          }"
+        >
+          <BaseMenu :editor="reportContent.editor" />
+        </v-defaults-provider>
+      </div>
+      <DynamicReportContent
+        v-if="html"
+        ref="reportContent"
+        :html="displayHtml"
+        :style-html="html"
+        :initial-editor-html="editedHtml || undefined"
+        :editable="editing"
+        :node-css="timeSeriesValueInputCss"
+        class="flex-1-1"
+        :class="{ 'dynamic-report-with-formatting': editing }"
+        @update="onDocumentUpdate"
+      >
+        <template #node="{ node }">
+          <TimeSeriesValueInput :node="node" @change="onEdit" />
+        </template>
+      </DynamicReportContent>
+    </div>
     <v-alert v-if="screenshotError" type="error">{{ screenshotError }}</v-alert>
     <slot v-if="!html" name="empty" />
     <NodeScreenshotDialog
@@ -87,6 +124,7 @@ import { sanitizeDynamicReport } from '@/lib/dynamic-report/sanitize'
 import { getDynamicReportFileName } from '@/lib/download/downloadDynamicReport'
 import { clickDownloadBlob } from '@/lib/download/downloadFiles'
 import DynamicReportContent from './DynamicReportContent.vue'
+import BaseMenu from './tiptap/BaseMenu.vue'
 import TimeSeriesValueInput from './dynamic/TimeSeriesValueInput.vue'
 import NodeScreenshotDialog from './dynamic/NodeScreenshotDialog.vue'
 import timeSeriesValueInputCss from './dynamic/timeSeriesValueInput.css?inline'
@@ -100,9 +138,12 @@ interface Props {
   settings: ComponentSettings
   canEdit: boolean
   showExport?: boolean
+  showToolbar?: boolean
+  toolbarTarget?: HTMLElement
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { showToolbar: true })
+const emit = defineEmits<{ 'close-export': [] }>()
 const { t } = useI18n()
 const edits = ref(new Map<string, DynamicReportEdit>())
 const editing = ref(false)
@@ -110,6 +151,16 @@ const editedHtml = ref('')
 const showScreenshotDialog = ref(false)
 const screenshotError = ref('')
 const reportContent = ref<InstanceType<typeof DynamicReportContent>>()
+
+watch(
+  () => props.showToolbar,
+  (visible) => {
+    if (!visible) {
+      editing.value = false
+      showScreenshotDialog.value = false
+    }
+  },
+)
 
 function buildReportHtml(): string {
   if (!editedHtml.value) return props.html
@@ -218,6 +269,34 @@ function saveAsPdf() {
   window.print()
 }
 </script>
+
+<style scoped>
+.dynamic-report-editor-area {
+  position: relative;
+  min-height: 0;
+}
+
+.dynamic-report-formatting-toolbar {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  max-width: calc(100% - 16px);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.dynamic-report-with-formatting {
+  padding-top: 64px !important;
+}
+
+@media print {
+  .dynamic-report-with-formatting {
+    padding-top: 0 !important;
+  }
+}
+</style>
 
 <style>
 @media print {

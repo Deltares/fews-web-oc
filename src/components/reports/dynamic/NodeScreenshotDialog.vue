@@ -3,6 +3,7 @@
     <v-card>
       <v-card-title>{{ t('dynamicReport.screenshotTitle') }}</v-card-title>
       <v-card-text>
+        <p class="mb-3">{{ t('dynamicReport.screenshotInstructions') }}</p>
         <v-autocomplete
           v-model="selectedNodeId"
           :items="nodes"
@@ -192,6 +193,9 @@ async function capture() {
     }
     const image = await captureNodeScreenshot(currentMap, {
       chart,
+      legend:
+        preview.value?.querySelector<HTMLElement>('.colourbar-container') ??
+        undefined,
       maxDimension: selectedMaxDimension,
     })
     if (version !== selectionVersion || currentMap !== map.value || !open.value)
