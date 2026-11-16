@@ -166,6 +166,7 @@ test.describe('DynamicReportContent styling', () => {
 for (const story of ['GovernorateTableEditing', 'DistrictTableEditing']) {
   test(`${story}: table headers stay styled while editing and after an edit`, async ({
     mount,
+    page,
   }) => {
     const component = await mount(`reports/DynamicReportContent/${story}`)
     const header = component.locator('.report-body table th').first()
@@ -179,8 +180,9 @@ for (const story of ['GovernorateTableEditing', 'DistrictTableEditing']) {
     await expect(component.locator('.tiptap')).toBeVisible()
     await expectHeaderStyle()
     await header.click()
-    await header.press('End')
-    await header.press('!')
+    // Locator.press() would blur the editor, as a header cell is not focusable
+    await page.keyboard.press('End')
+    await page.keyboard.type('!')
     await expect(header).toContainText('!')
     await component.getByRole('button', { name: 'Preview' }).click()
     await expect(component.locator('.tiptap')).toHaveCount(0)
