@@ -27,12 +27,25 @@ const editableReportHtml = reportHtml
     '<style>} [data-testid="outside"] { color: rgb(255, 0, 0); }</style>\n</body>',
   )
 
+// Reports are isolated by default
+const webocReportHtml = editableReportHtml.replace(
+  '<head>',
+  '<head>\n<meta name="fews-dynamic-report-styling" content="weboc" />',
+)
+
 const isolatedReportHtml = editableReportHtml
   .replace(
     '<head>',
     '<head>\n<meta name="fews-dynamic-report-styling" content="isolated" />',
   )
   .replace('css/DynamicReport.css', 'css/DynamicReportIsolated.css')
+
+// The report style sheets are resolved against the FEWS static resources
+function configureFewsWebServices() {
+  configManager.update({
+    VITE_FEWS_WEBSERVICES_URL: `${window.location.origin}/test-fews/`,
+  })
+}
 
 function createStory(html: string) {
   return defineComponent({
@@ -41,9 +54,7 @@ function createStory(html: string) {
       theme: { type: String as PropType<'light' | 'dark'>, default: undefined },
     },
     setup(props) {
-      configManager.update({
-        VITE_FEWS_WEBSERVICES_URL: `${window.location.origin}/test-fews/`,
-      })
+      configureFewsWebServices()
       const lastEdit = ref<DynamicReportEdit>()
 
       const theme = useTheme()
@@ -105,14 +116,15 @@ function withOverlay(html: string) {
   )
 }
 
-export const WebOc = createStory(editableReportHtml)
+export const WebOc = createStory(webocReportHtml)
 export const Isolated = createStory(isolatedReportHtml)
-export const WebOcOverlay = createStory(withOverlay(editableReportHtml))
+export const WebOcOverlay = createStory(withOverlay(webocReportHtml))
 export const IsolatedOverlay = createStory(withOverlay(isolatedReportHtml))
 
 function createTableEditingStory(html: string) {
   return defineComponent({
     setup() {
+      configureFewsWebServices()
       const editing = ref(false)
       const editedHtml = ref('')
       return () =>

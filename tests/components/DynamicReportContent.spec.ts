@@ -170,7 +170,7 @@ for (const story of ['GovernorateTableEditing', 'DistrictTableEditing']) {
     const component = await mount(`reports/DynamicReportContent/${story}`)
     const header = component.locator('.report-body table th').first()
     const expectHeaderStyle = async () => {
-      await expect(header).toHaveCSS('background-color', 'rgb(23, 54, 93)')
+      await expect(header).toHaveCSS('background-color', 'rgb(36, 90, 129)')
       await expect(header).toHaveCSS('color', 'rgb(255, 255, 255)')
     }
 
@@ -282,21 +282,19 @@ test('district print table uses neutral rows and emphasizes threshold status', a
       <tr><td>Member 2</td><td>100</td><td>No</td></tr>`,
     ),
   )
-  const table = page.locator('.report-body .ensemble-table')
+  // The district report also has a report body with the flooded areas
+  const body = page
+    .locator('.report-body')
+    .filter({ has: page.locator('.ensemble-table') })
+  const table = body.locator('.ensemble-table')
 
-  await expect(page.locator('.report-body')).toHaveCSS(
-    'background-color',
-    'rgb(255, 255, 255)',
-  )
+  await expect(body).toHaveCSS('background-color', 'rgb(255, 255, 255)')
   await expect(table.locator('th').first()).toHaveCSS(
     'background-color',
     'rgb(36, 90, 129)',
   )
   await page.emulateMedia({ media: 'print' })
-  await expect(page.locator('.report-body')).toHaveCSS(
-    'background-color',
-    'rgb(255, 255, 255)',
-  )
+  await expect(body).toHaveCSS('background-color', 'rgb(255, 255, 255)')
   await expect(table.locator('th').first()).toHaveCSS(
     'background-color',
     'rgb(36, 90, 129)',
