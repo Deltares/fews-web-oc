@@ -261,6 +261,7 @@ import { useColourScales } from '@/services/useColourScales'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import { useBaseMap } from '@/services/useBaseMap'
 import { isInDatesRange } from '@/lib/date'
+import { roundCoordinateToString } from '@/lib/coordinates'
 import { getLocationWithChilds, mapIds } from '@/lib/map'
 import { createLocationToChildrenMap } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
@@ -722,13 +723,17 @@ function onCoordinateClick(
 
   emit(
     'coordinateClick',
-    +event.lngLat.lat.toFixed(5),
-    +event.lngLat.lng.toFixed(5),
+    +roundCoordinateToString(event.lngLat.lat),
+    +roundCoordinateToString(event.lngLat.lng),
   )
 }
 
 function onCoordinateMoved(lat: number, lng: number): void {
-  emit('coordinateClick', +lat.toFixed(5), +lng.toFixed(5))
+  emit(
+    'coordinateClick',
+    +roundCoordinateToString(lat),
+    +roundCoordinateToString(lng),
+  )
 }
 </script>
 

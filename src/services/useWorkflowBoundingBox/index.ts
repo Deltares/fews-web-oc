@@ -10,6 +10,7 @@ import {
   isCoordinateInFormData,
 } from '@/lib/workflows'
 import { ScenarioData } from '@/lib/whatif'
+import { roundCoordinateToString } from '@/lib/coordinates'
 
 export function useWorkflowBoundingBox(data: Ref<ScenarioData>) {
   const {
@@ -120,8 +121,12 @@ export function useWorkflowBoundingBox(data: Ref<ScenarioData>) {
         data.value.latitude = undefined
         data.value.longitude = undefined
       } else {
-        data.value.latitude = +workflowsStore.coordinate.lat.toFixed(5)
-        data.value.longitude = +workflowsStore.coordinate.lng.toFixed(5)
+        data.value.latitude = +roundCoordinateToString(
+          workflowsStore.coordinate.lat,
+        )
+        data.value.longitude = +roundCoordinateToString(
+          workflowsStore.coordinate.lng,
+        )
       }
     },
   )
