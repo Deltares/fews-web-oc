@@ -87,10 +87,8 @@ function getStyles(
 
 function isPrintOnlyStyle(element: Element): boolean {
   const media = element.getAttribute('media')?.trim()
-  return Boolean(
-    media &&
-    media.split(',').every((query) => /^print(?:\s|$)/i.test(query.trim())),
-  )
+  if (!media) return false
+  return media.split(',').every((query) => /^print(?:\s|$)/i.test(query.trim()))
 }
 
 function getStyling(document: Document): DynamicReportStyling {

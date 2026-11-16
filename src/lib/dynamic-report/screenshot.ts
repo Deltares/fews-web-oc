@@ -28,18 +28,7 @@ export async function captureNodeScreenshot(
 ): Promise<Blob> {
   const maxDimension = options.maxDimension ?? DEFAULT_MAX_SCREENSHOT_DIMENSION
   const timeoutMs = options.renderTimeoutMs ?? 10000
-  if (!Number.isFinite(maxDimension) || maxDimension <= 0) {
-    throw new Error('Screenshot maximum dimension must be positive')
-  }
-  if (
-    options.width !== undefined &&
-    (!Number.isFinite(options.width) || options.width <= 0)
-  ) {
-    throw new Error('Screenshot width must be positive')
-  }
-  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
-    throw new Error('Screenshot render timeout must be positive')
-  }
+  validateScreenshotOptions(maxDimension, options.width, timeoutMs)
   if (!map.loaded()) {
     throw new Error('The map is not ready for a screenshot')
   }
@@ -78,22 +67,6 @@ export async function captureNodeScreenshot(
       : undefined
   if (legendImage && (mapBounds.width <= 0 || mapBounds.height <= 0)) {
     throw new Error('The map legend has no visible screenshot area')
-  }
-
-  function getChartHeight(
-    chart: ScreenshotOptions['chart'],
-    mapWidth: number,
-  ): number {
-    if (!chart) return 0
-    if (
-      !Number.isFinite(chart.width) ||
-      !Number.isFinite(chart.height) ||
-      chart.width <= 0 ||
-      chart.height <= 0
-    ) {
-      throw new Error('The chart has no visible screenshot area')
-    }
-    return (chart.height * mapWidth) / chart.width
   }
 
   await new Promise<void>((resolve, reject) => {
@@ -155,86 +128,118 @@ export async function captureNodeScreenshot(
     )
   }
 
-  async function createLegendImage(
-    legend: HTMLElement,
-    width: number,
-    height: number,
-  ): Promise<HTMLImageElement> {
-    if (width <= 0 || height <= 0) {
-      throw new Error('The map legend has no visible screenshot area')
-    }
-    const namespace = 'http://www.w3.org/2000/svg'
-    const svg = document.createElementNS(namespace, 'svg')
-    svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
-    const sourceSvg = legend.querySelector('svg')
-    if (sourceSvg) {
-      const clone = sourceSvg.cloneNode(true) as SVGSVGElement
-      const sources = [sourceSvg, ...sourceSvg.querySelectorAll('*')]
-      const targets = [clone, ...clone.querySelectorAll('*')]
-      sources.forEach((source, index) => {
-        const style = getComputedStyle(source)
-        const target = targets[index]
-        if (!(target instanceof SVGElement)) return
-        for (const property of [
-          'fill',
-          'stroke',
-          'stroke-width',
-          'font-family',
-          'font-size',
-          'font-weight',
-          'text-anchor',
-          'dominant-baseline',
-          'opacity',
-          'stop-color',
-          'stop-opacity',
-          'text-shadow',
-        ]) {
-          target.style.setProperty(property, style.getPropertyValue(property))
-        }
-      })
-      clone.setAttribute('width', String(width))
-      clone.setAttribute('height', String(height))
-      svg.appendChild(clone)
-    } else {
-      const bounds = legend.getBoundingClientRect()
-      for (const element of legend.querySelectorAll<HTMLElement>(
-        '.box, .legend-label, p',
-      )) {
-        const rect = element.getBoundingClientRect()
-        const style = getComputedStyle(element)
-        const x = rect.left - bounds.left
-        const y = rect.top - bounds.top
-        if (element.classList.contains('box')) {
-          const box = document.createElementNS(namespace, 'rect')
-          box.setAttribute('x', String(x))
-          box.setAttribute('y', String(y))
-          box.setAttribute('width', String(rect.width))
-          box.setAttribute('height', String(rect.height))
-          box.setAttribute('fill', style.backgroundColor)
-          box.setAttribute('stroke', style.borderTopColor)
-          svg.appendChild(box)
-        } else {
-          const text = document.createElementNS(namespace, 'text')
-          text.setAttribute('x', String(x))
-          text.setAttribute('y', String(y + rect.height / 2))
-          text.setAttribute('dominant-baseline', 'central')
-          text.setAttribute('fill', style.color)
-          text.setAttribute('font-family', style.fontFamily)
-          text.setAttribute('font-size', style.fontSize)
-          text.setAttribute('font-weight', style.fontWeight)
-          text.style.textShadow = style.textShadow
-          text.textContent = element.textContent
-          svg.appendChild(text)
-        }
-      }
-    }
-    return convertSvgElementToImage(svg, [width, height])
-  }
-
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) resolve(blob)
       else reject(new Error('Could not encode screenshot as PNG'))
     }, 'image/png')
   })
+}
+
+function validateScreenshotOptions(
+  maxDimension: number,
+  width: number | undefined,
+  timeoutMs: number,
+): void {
+  if (!Number.isFinite(maxDimension) || maxDimension <= 0) {
+    throw new Error('Screenshot maximum dimension must be positive')
+  }
+  if (width !== undefined && (!Number.isFinite(width) || width <= 0)) {
+    throw new Error('Screenshot width must be positive')
+  }
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+    throw new Error('Screenshot render timeout must be positive')
+  }
+}
+
+function getChartHeight(
+  chart: ScreenshotOptions['chart'],
+  mapWidth: number,
+): number {
+  if (!chart) return 0
+  if (
+    !Number.isFinite(chart.width) ||
+    !Number.isFinite(chart.height) ||
+    chart.width <= 0 ||
+    chart.height <= 0
+  ) {
+    throw new Error('The chart has no visible screenshot area')
+  }
+  return (chart.height * mapWidth) / chart.width
+}
+
+async function createLegendImage(
+  legend: HTMLElement,
+  width: number,
+  height: number,
+): Promise<HTMLImageElement> {
+  if (width <= 0 || height <= 0) {
+    throw new Error('The map legend has no visible screenshot area')
+  }
+  const namespace = 'http://www.w3.org/2000/svg'
+  const svg = document.createElementNS(namespace, 'svg')
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
+  const sourceSvg = legend.querySelector('svg')
+  if (sourceSvg) {
+    const clone = sourceSvg.cloneNode(true) as SVGSVGElement
+    const sources = [sourceSvg, ...sourceSvg.querySelectorAll('*')]
+    const targets = [clone, ...clone.querySelectorAll('*')]
+    sources.forEach((source, index) => {
+      const style = getComputedStyle(source)
+      const target = targets[index]
+      if (!(target instanceof SVGElement)) return
+      for (const property of [
+        'fill',
+        'stroke',
+        'stroke-width',
+        'font-family',
+        'font-size',
+        'font-weight',
+        'text-anchor',
+        'dominant-baseline',
+        'opacity',
+        'stop-color',
+        'stop-opacity',
+        'text-shadow',
+      ]) {
+        target.style.setProperty(property, style.getPropertyValue(property))
+      }
+    })
+    clone.setAttribute('width', String(width))
+    clone.setAttribute('height', String(height))
+    svg.appendChild(clone)
+  } else {
+    const bounds = legend.getBoundingClientRect()
+    for (const element of legend.querySelectorAll<HTMLElement>(
+      '.box, .legend-label, p',
+    )) {
+      const rect = element.getBoundingClientRect()
+      const style = getComputedStyle(element)
+      const x = rect.left - bounds.left
+      const y = rect.top - bounds.top
+      if (element.classList.contains('box')) {
+        const box = document.createElementNS(namespace, 'rect')
+        box.setAttribute('x', String(x))
+        box.setAttribute('y', String(y))
+        box.setAttribute('width', String(rect.width))
+        box.setAttribute('height', String(rect.height))
+        box.setAttribute('fill', style.backgroundColor)
+        box.setAttribute('stroke', style.borderTopColor)
+        svg.appendChild(box)
+      } else {
+        const text = document.createElementNS(namespace, 'text')
+        text.setAttribute('x', String(x))
+        text.setAttribute('y', String(y + rect.height / 2))
+        text.setAttribute('dominant-baseline', 'central')
+        text.setAttribute('fill', style.color)
+        text.setAttribute('font-family', style.fontFamily)
+        text.setAttribute('font-size', style.fontSize)
+        text.setAttribute('font-weight', style.fontWeight)
+        text.style.textShadow = style.textShadow
+        text.textContent = element.textContent
+        svg.appendChild(text)
+      }
+    }
+  }
+  return convertSvgElementToImage(svg, [width, height])
 }

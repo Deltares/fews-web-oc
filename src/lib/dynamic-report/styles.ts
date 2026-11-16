@@ -123,20 +123,27 @@ function readCssUrl(
 ): { value?: string; end: number } | undefined {
   if (css.slice(start, start + 4).toLowerCase() !== 'url(') return undefined
   if (start > 0 && /[\w-]/.test(css[start - 1])) return undefined
-  let index = start + 4
-  while (/\s/.test(css[index] ?? '') && index < css.length) index++
+  let index = skipCssWhitespace(css, start + 4)
   const quoted = css[index] === '"' || css[index] === "'"
   const valueStart = quoted ? index + 1 : index
-  if (quoted) {
-    index = cssStringEnd(css, index)
-  } else {
-    while (index < css.length && css[index] !== ')' && !/\s/.test(css[index])) {
-      index += css[index] === '\\' ? 2 : 1
-    }
-  }
+  index = quoted ? cssStringEnd(css, index) : cssUnquotedUrlEnd(css, index)
   const value = css.slice(valueStart, quoted ? index - 1 : index)
-  while (/\s/.test(css[index] ?? '') && index < css.length) index++
+  index = skipCssWhitespace(css, index)
   return css[index] === ')' ? { value, end: index + 1 } : { end: index }
+}
+
+function skipCssWhitespace(css: string, start: number): number {
+  let index = start
+  while (/\s/.test(css[index] ?? '') && index < css.length) index++
+  return index
+}
+
+function cssUnquotedUrlEnd(css: string, start: number): number {
+  let index = start
+  while (index < css.length && css[index] !== ')' && !/\s/.test(css[index])) {
+    index += css[index] === '\\' ? 2 : 1
+  }
+  return index
 }
 
 function decodeCssUrl(value: string): string {
