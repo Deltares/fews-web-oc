@@ -1,8 +1,10 @@
 <template>
   <Teleport to="#main" :disabled="!reportExportMode">
     <div
-      class="d-flex flex-column h-100 w-100"
-      :class="{ 'report-export-main bg-surface': reportExportMode }"
+      class="d-flex flex-column"
+      :class="
+        reportExportMode ? 'report-export-main bg-surface' : 'h-100 w-100'
+      "
     >
       <WindowComponent
         :toolBar="reportExportMode ? 'true' : settings.general.toolBar"
@@ -265,8 +267,8 @@ watchEffect(() => {
   right: var(--v-layout-right, 0px);
   bottom: var(--v-layout-bottom, 0px);
   left: var(--v-layout-left, 0px);
-  width: auto !important;
-  height: auto !important;
+  width: auto;
+  height: auto;
   /* Above map controls (1000), below Vuetify overlays (2000). */
   z-index: 1001;
 }

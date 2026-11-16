@@ -12,21 +12,12 @@ export async function createDynamicReportStyleSheets(
   styles: DynamicReportStyle[],
   StyleSheet: typeof CSSStyleSheet = CSSStyleSheet,
   scoped = true,
-  transform?: (css: string[]) => string[],
 ): Promise<CSSStyleSheet[]> {
   const loaded = (await Promise.all(styles.map(loadStyle))).filter(
     (style) => style !== undefined,
   )
-  const css = transform
-    ? transform(loaded.map((style) => style.css))
-    : undefined
-  return loaded.map((style, index) =>
-    createScopedStyleSheet(
-      css ? css[index] : style.css,
-      StyleSheet,
-      style.baseURL,
-      scoped,
-    ),
+  return loaded.map((style) =>
+    createScopedStyleSheet(style.css, StyleSheet, style.baseURL, scoped),
   )
 }
 
@@ -78,24 +69,80 @@ function createScopedStyleSheet(
  * constructable sheet baseURL option. Leave strings and comments untouched.
  */
 export function resolveCssUrls(css: string, baseURL: string): string {
-  return css.replace(
-    /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\/\*[\s\S]*?\*\/)|\burl\(\s*(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|([^)\s]*))\s*\)/gi,
-    (
-      match: string,
-      literal: string | undefined,
-      doubleQuoted: string | undefined,
-      singleQuoted: string | undefined,
-      unquoted: string | undefined,
-    ) => {
-      if (literal) return match
-      const url = (doubleQuoted ?? singleQuoted ?? unquoted ?? '').replace(
-        /\\([0-9a-f]{1,6}\s?|[\s\S])/gi,
-        (_, escaped: string) =>
-          /^[0-9a-f]/i.test(escaped)
-            ? String.fromCodePoint(parseInt(escaped.trim(), 16) || 0xfffd)
-            : escaped,
-      )
-      return `url(${JSON.stringify(new URL(url, new URL(baseURL, document.baseURI)).href)})`
-    },
+  const base = new URL(baseURL, document.baseURI)
+  const chunks: string[] = []
+  let start = 0
+  let index = 0
+  while (index < css.length) {
+    const end = cssTokenEnd(css, index)
+    if (end !== index) {
+      index = end
+      continue
+    }
+    const url = readCssUrl(css, index)
+    if (url) {
+      if (url.value !== undefined) {
+        chunks.push(
+          css.slice(start, index),
+          `url(${JSON.stringify(new URL(decodeCssUrl(url.value), base).href)})`,
+        )
+        start = url.end
+      }
+      index = url.end
+    } else {
+      index++
+    }
+  }
+  chunks.push(css.slice(start))
+  return chunks.join('')
+}
+
+function cssTokenEnd(css: string, index: number): number {
+  if (css.startsWith('/*', index)) {
+    const end = css.indexOf('*/', index + 2)
+    return end < 0 ? css.length : end + 2
+  }
+  if (css[index] === '"' || css[index] === "'") {
+    return cssStringEnd(css, index)
+  }
+  return index
+}
+
+function cssStringEnd(css: string, start: number): number {
+  let index = start + 1
+  while (index < css.length) {
+    if (css[index] === css[start]) return index + 1
+    index += css[index] === '\\' ? 2 : 1
+  }
+  return css.length
+}
+
+function readCssUrl(
+  css: string,
+  start: number,
+): { value?: string; end: number } | undefined {
+  if (css.slice(start, start + 4).toLowerCase() !== 'url(') return undefined
+  if (start > 0 && /[\w-]/.test(css[start - 1])) return undefined
+  let index = start + 4
+  while (/\s/.test(css[index] ?? '') && index < css.length) index++
+  const quoted = css[index] === '"' || css[index] === "'"
+  const valueStart = quoted ? index + 1 : index
+  if (quoted) {
+    index = cssStringEnd(css, index)
+  } else {
+    while (index < css.length && css[index] !== ')' && !/\s/.test(css[index])) {
+      index += css[index] === '\\' ? 2 : 1
+    }
+  }
+  const value = css.slice(valueStart, quoted ? index - 1 : index)
+  while (/\s/.test(css[index] ?? '') && index < css.length) index++
+  return css[index] === ')' ? { value, end: index + 1 } : { end: index }
+}
+
+function decodeCssUrl(value: string): string {
+  return value.replace(/\\([0-9a-f]{1,6}\s?|[\s\S])/gi, (_, escaped: string) =>
+    /^[0-9a-f]/i.test(escaped)
+      ? String.fromCodePoint(Number.parseInt(escaped.trim(), 16) || 0xfffd)
+      : escaped,
   )
 }

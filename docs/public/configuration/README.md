@@ -169,14 +169,10 @@ Print margins are zero on the left and right, with 20 mm at the top and bottom.
 The first page has no top margin or document-title header.
 CSS page headers and footers require a browser supporting page margin boxes
 (current Chrome/Edge). Disable the browser's own headers and footers to avoid
-duplicates. For report-defined print styles, browsers without CSS named-string
-support get a fallback for `string-set: name content(text)` (or `content()`)
-and `string(name)` in page margin content. The fallback uses the first matching
-element's text throughout the report; it cannot change the string between
-pages. Use one value per name and report, and avoid page-dependent named
-strings or other `string-set` expressions. This fallback applies only when
-printing from Web OC; saved HTML retains the original CSS. The first-page margin
-is still controlled by the report's own `@page :first` rule.
+duplicates. For dynamic page-header values in Chrome/Edge, generate literal
+CSS content in the FEWS report template; these browsers do not support CSS
+named strings (`string-set` and `string()`). The first-page margin is controlled
+by the report's own `@page :first` rule.
 While editing, a separate floating formatting toolbar above the report provides undo/redo, bold, italic,
 underline, highlighting, text color, and alignment.
 
@@ -207,6 +203,10 @@ Do not use inline `style` attributes, such as `<td style="text-align: right">`. 
 
 The report styles only apply to the report, they do not affect the rest of the Web OC.
 
+When a report is edited, Tiptap converts table rows to a single `<tbody>` and
+does not preserve `<thead>`. To keep header cells styled in the editor and in
+edited exports, target `th` directly instead of relying on `thead th` selectors.
+
 *Web OC and isolated styling*
 
 A report is shown with one of two stylings:
@@ -223,6 +223,8 @@ Isolated styling is the default. To opt in to Web OC styling, add a `<meta>` ele
 ```
 
 In the report styles, `:scope` is the element that contains the report, and the Web OC adds the `dark` class to an element around it in dark mode. This works in both stylings. Use it to set the colours of the report, for example with CSS variables:
+
+Use `:scope` instead of `:root` for report-level variables. `:root` targets the document root, not the embedded report, so its variables are unavailable inside the report scope and colours using them will not render. `:scope` also works when the report is opened as a standalone HTML document.
 
 ```css
 :scope {

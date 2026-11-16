@@ -41,7 +41,7 @@ const ReportAttributes = Extension.create({
             renderHTML: (attributes) =>
               Object.fromEntries(
                 Object.entries(attributes.dataSet ?? {}).map(([key, value]) => [
-                  `data-${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`,
+                  `data-${key.replace(/[A-Z]/g, (letter) => '-' + letter.toLowerCase())}`,
                   value,
                 ]),
               ),
@@ -65,7 +65,11 @@ export const dynamicReportExtensions = [
   ...extensions.filter(
     (extension) => extension.name !== 'image' && extension.name !== 'header',
   ),
-  CustomImage.configure({ inline: true, allowBase64: true }),
+  CustomImage.configure({
+    inline: true,
+    allowBase64: true,
+    resize: { enabled: true },
+  }),
   DynamicReportInput,
   ReportSpan,
   ReportHeader,

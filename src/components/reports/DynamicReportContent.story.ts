@@ -9,6 +9,8 @@ import DynamicReportContent from './DynamicReportContent.vue'
 import TimeSeriesValueInput from './dynamic/TimeSeriesValueInput.vue'
 import timeSeriesValueInputCss from './dynamic/timeSeriesValueInput.css?inline'
 import reportHtml from '../../../tests/fixtures/dynamic-report/dynamic-report-desalination-plants.html?raw'
+import governorateReport from '../../../tests/fixtures/dynamic-report/DynamicReportGovernoratePerLocationTemplate.html?raw'
+import districtReport from '../../../tests/fixtures/dynamic-report/DynamicReportDistrictInundationPerLocationTemplate.html?raw'
 
 // Make the water level of the first location editable
 const editableReportHtml = reportHtml
@@ -107,3 +109,31 @@ export const WebOc = createStory(editableReportHtml)
 export const Isolated = createStory(isolatedReportHtml)
 export const WebOcOverlay = createStory(withOverlay(editableReportHtml))
 export const IsolatedOverlay = createStory(withOverlay(isolatedReportHtml))
+
+function createTableEditingStory(html: string) {
+  return defineComponent({
+    setup() {
+      const editing = ref(false)
+      const editedHtml = ref('')
+      return () =>
+        h('div', [
+          h(
+            'button',
+            { onClick: () => (editing.value = !editing.value) },
+            editing.value ? 'Preview' : 'Edit',
+          ),
+          h(DynamicReportContent, {
+            html: editing.value || !editedHtml.value ? html : editedHtml.value,
+            styleHtml: html,
+            editable: editing.value,
+            initialEditorHtml: editedHtml.value || undefined,
+            onUpdate: (value: string) => (editedHtml.value = value),
+          }),
+        ])
+    },
+  })
+}
+
+export const GovernorateTableEditing =
+  createTableEditingStory(governorateReport)
+export const DistrictTableEditing = createTableEditingStory(districtReport)

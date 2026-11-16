@@ -13,68 +13,10 @@ vi.mock('@/lib/fews-config', () => ({
 
 afterEach(() => {
   vi.restoreAllMocks()
-  vi.unstubAllGlobals()
   Reflect.deleteProperty(HTMLImageElement.prototype, 'decode')
 })
 
 describe('printDynamicReport', () => {
-  it('lets browsers with native named strings use the original styles', async () => {
-    vi.stubGlobal('CSS', { supports: () => true })
-    const target = document.implementation.createHTMLDocument()
-    Object.defineProperty(target, 'fonts', {
-      value: { ready: Promise.resolve() },
-    })
-    const tab = {
-      document: target,
-      CSSStyleSheet: class {},
-      closed: false,
-      focus: vi.fn(),
-      print: vi.fn(),
-      close: vi.fn(),
-    }
-    vi.spyOn(window, 'open').mockReturnValue(tab as unknown as Window)
-    await printDynamicReport('<p>Report</p>', 'Report')
-    expect(createDynamicReportStyleSheets).toHaveBeenLastCalledWith(
-      [],
-      tab.CSSStyleSheet,
-      false,
-      undefined,
-    )
-    expect(tab.print).toHaveBeenCalledOnce()
-  })
-
-  it('resolves named strings from sanitized report content before printing', async () => {
-    vi.stubGlobal('CSS', { supports: () => false })
-    const target = document.implementation.createHTMLDocument()
-    Object.defineProperty(target, 'fonts', {
-      value: { ready: Promise.resolve() },
-    })
-    const tab = {
-      document: target,
-      CSSStyleSheet: class {},
-      closed: false,
-      focus: vi.fn(),
-      print: vi.fn(),
-      close: vi.fn(),
-    }
-    vi.spyOn(window, 'open').mockReturnValue(tab as unknown as Window)
-    vi.mocked(createDynamicReportStyleSheets).mockImplementationOnce(
-      async (styles, _constructor, _scoped, transform) => {
-        expect(transform).toBeDefined()
-        const css = styles.map((style) =>
-          style.type === 'inline' ? style.css : '',
-        )
-        expect(transform?.(css)[0]).toContain('content: "Edited title"')
-        return [{} as CSSStyleSheet]
-      },
-    )
-    await printDynamicReport(
-      '<style>#running-title { string-set: title content(text) } @page { @top-center { content: string(title) } }</style><h1 id="running-title">Edited title</h1>',
-      'Report',
-    )
-    expect(tab.print).toHaveBeenCalledOnce()
-  })
-
   it('uses report fonts for CSS page margin boxes', () => {
     const css = createPrintCss('Forecast "report"\nUTC', 'Arial, sans-serif')
     expect(css).toContain('@top-center')
@@ -141,7 +83,6 @@ describe('printDynamicReport', () => {
         [],
         tab.CSSStyleSheet,
         false,
-        expect.any(Function),
       )
       expect(tab.print).toHaveBeenCalledOnce()
     } finally {
@@ -183,7 +124,7 @@ describe('printDynamicReport', () => {
       {} as CSSStyleSheet,
     ])
     const result = printDynamicReport(
-      '<meta name="fews-dynamic-report-styling" content="isolated"><style media="print">@page { margin: 0; }</style><p>Edited report</p><script>alert(1)</script>',
+      '<meta name="fews-dynamic-report-styling" content="isolated"><style media="print">@page { @top-left { content: "Governorate: Kafr El Sheikh"; } @bottom-center { content: "Page " counter(page); } }</style><p>Edited report</p><script>alert(1)</script>',
       'Report',
     )
     await vi.waitFor(() =>
@@ -197,10 +138,14 @@ describe('printDynamicReport', () => {
     expect(target.querySelector('script')).toBeNull()
     expect(tab.opener).toBeNull()
     expect(createDynamicReportStyleSheets).toHaveBeenLastCalledWith(
-      [{ type: 'inline', css: '@page { margin: 0; }' }],
+      [
+        {
+          type: 'inline',
+          css: '@page { @top-left { content: "Governorate: Kafr El Sheikh"; } @bottom-center { content: "Page " counter(page); } }',
+        },
+      ],
       tab.CSSStyleSheet,
       false,
-      expect.any(Function),
     )
     expect(replaceSync).not.toHaveBeenCalled()
     expect(tab.print).toHaveBeenCalledOnce()
@@ -223,7 +168,6 @@ describe('printDynamicReport', () => {
       [{ type: 'inline', css: 'p {color: red}' }],
       tab.CSSStyleSheet,
       false,
-      expect.any(Function),
     )
     expect(tab.close).toHaveBeenCalledOnce()
   })

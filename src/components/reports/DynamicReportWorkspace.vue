@@ -291,7 +291,7 @@ async function saveAsPdf() {
   white-space: nowrap;
 }
 
-.dynamic-report-with-formatting {
-  padding-top: 64px !important;
+.dynamic-report-root.dynamic-report-with-formatting {
+  padding-top: 64px;
 }
 </style>

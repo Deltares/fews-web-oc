@@ -1,5 +1,5 @@
 <template>
-  <div class="dynamic-report-root overflow-y-auto pa-2">
+  <div class="dynamic-report-root overflow-y-auto">
     <!-- Content is managed outside of Vue, Vue nodes are teleported into it -->
     <div ref="host" />
     <Teleport v-if="editor && editorTarget" :to="editorTarget">
@@ -243,6 +243,7 @@ watch(
 
 <style scoped>
 .dynamic-report-root {
+  padding: 8px;
   /* Keep the report inside its box: fixed positioned report content is
      positioned and clipped relative to the root, so it cannot cover the
      rest of the WebOC */

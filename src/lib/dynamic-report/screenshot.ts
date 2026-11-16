@@ -52,16 +52,7 @@ export async function captureNodeScreenshot(
   }
 
   const chart = options.chart
-  if (
-    chart &&
-    (!Number.isFinite(chart.width) ||
-      !Number.isFinite(chart.height) ||
-      chart.width <= 0 ||
-      chart.height <= 0)
-  ) {
-    throw new Error('The chart has no visible screenshot area')
-  }
-  const chartHeight = chart ? (chart.height * mapWidth) / chart.width : 0
+  const chartHeight = getChartHeight(chart, mapWidth)
   const scale =
     options.width !== undefined
       ? options.width / mapWidth
@@ -87,6 +78,22 @@ export async function captureNodeScreenshot(
       : undefined
   if (legendImage && (mapBounds.width <= 0 || mapBounds.height <= 0)) {
     throw new Error('The map legend has no visible screenshot area')
+  }
+
+  function getChartHeight(
+    chart: ScreenshotOptions['chart'],
+    mapWidth: number,
+  ): number {
+    if (!chart) return 0
+    if (
+      !Number.isFinite(chart.width) ||
+      !Number.isFinite(chart.height) ||
+      chart.width <= 0 ||
+      chart.height <= 0
+    ) {
+      throw new Error('The chart has no visible screenshot area')
+    }
+    return (chart.height * mapWidth) / chart.width
   }
 
   await new Promise<void>((resolve, reject) => {

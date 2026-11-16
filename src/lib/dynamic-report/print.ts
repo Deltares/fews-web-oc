@@ -1,6 +1,5 @@
 import { sanitizeDynamicReport } from './sanitize'
 import { createDynamicReportStyleSheets, resolveCssUrls } from './styles'
-import { resolvePrintNamedStrings } from './printNamedStrings'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 
 export async function printDynamicReport(
@@ -16,18 +15,10 @@ export async function printDynamicReport(
     }
     const report = sanitizeDynamicReport(html, { includePrintStyles: true })
     // Construct sheets in the print document, retaining each resource's URL base.
-    const supportsNamedStrings =
-      typeof CSS !== 'undefined' &&
-      typeof CSS.supports === 'function' &&
-      CSS.supports('string-set', 'report-title content(text)') &&
-      CSS.supports('content', 'string(report-title)')
     const sheets = await createDynamicReportStyleSheets(
       report.styles,
       tab.CSSStyleSheet,
       false,
-      supportsNamedStrings
-        ? undefined
-        : (styles) => resolvePrintNamedStrings(styles, report.fragment),
     )
     if (sheets.length !== report.styles.length) {
       throw new Error('Could not load all report styles for printing')
