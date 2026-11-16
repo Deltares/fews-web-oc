@@ -1,13 +1,53 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest'
-import { resolveCssUrls } from '@/lib/dynamic-report/styles'
+import {
+  createDynamicReportStyleSheets,
+  resolveCssUrls,
+} from '@/lib/dynamic-report/styles'
 
 vi.mock('@/lib/fews-config', () => ({
-  getResourcesStaticUrl: () => 'https://fews.example/resources/',
+  getResourcesStaticUrl: (path = '') =>
+    `https://fews.example/resources/${path}`,
 }))
 vi.mock('@/lib/requests/transformRequest', () => ({
   createTransformRequestFn: () => (request: Request) => request,
 }))
+
+describe('createDynamicReportStyleSheets', () => {
+  it('transforms inline and linked CSS together before parsing and retains each URL base', async () => {
+    const fetch = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(
+        new Response('.linked { background: url(legend.png) }'),
+      )
+    const parsed: string[] = []
+    class StyleSheet {
+      cssRules: { cssText: string }[] = []
+      replaceSync(css: string) {
+        parsed.push(css)
+        this.cssRules = [{ cssText: css }]
+      }
+    }
+    try {
+      await createDynamicReportStyleSheets(
+        [
+          { type: 'inline', css: '#title { string-set: title content(text) }' },
+          { type: 'resource', resource: 'css/report.css' },
+        ],
+        StyleSheet as typeof CSSStyleSheet,
+        false,
+        (styles) => styles.map((css) => css.replace('string-set', '--test')),
+      )
+      expect(fetch).toHaveBeenCalledOnce()
+      expect(parsed[0]).toContain('--test: title')
+      expect(parsed.at(-1)).toContain(
+        'url("https://fews.example/resources/css/legend.png")',
+      )
+    } finally {
+      fetch.mockRestore()
+    }
+  })
+})
 
 describe('resolveCssUrls', () => {
   it('preserves relative stylesheet assets when CSS is serialized into another document', () => {

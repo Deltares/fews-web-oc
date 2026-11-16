@@ -169,7 +169,14 @@ Print margins are zero on the left and right, with 20 mm at the top and bottom.
 The first page has no top margin or document-title header.
 CSS page headers and footers require a browser supporting page margin boxes
 (current Chrome/Edge). Disable the browser's own headers and footers to avoid
-duplicates.
+duplicates. For report-defined print styles, browsers without CSS named-string
+support get a fallback for `string-set: name content(text)` (or `content()`)
+and `string(name)` in page margin content. The fallback uses the first matching
+element's text throughout the report; it cannot change the string between
+pages. Use one value per name and report, and avoid page-dependent named
+strings or other `string-set` expressions. This fallback applies only when
+printing from Web OC; saved HTML retains the original CSS. The first-page margin
+is still controlled by the report's own `@page :first` rule.
 While editing, a separate floating formatting toolbar above the report provides undo/redo, bold, italic,
 underline, highlighting, text color, and alignment.
 

@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="fews-dynamic-report-styling" content="isolated" />
+    <title>Inundation Forecast Report</title>
+    <style>
+      :scope {
+        --font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+
+        --color-primary: #245a81;
+        --color-primary-dark: #17365d;
+        --color-primary-light: #eaf2f8;
+
+        --color-green: #279653;
+        --color-green-dot: #2e9e4f;
+
+        --color-yellow: #f4d03f;
+        --color-yellow-dot: #f2c230;
+
+        --color-orange: #e98b27;
+        --color-orange-dot: #f08a24;
+
+        --color-red: #d64545;
+        --color-red-dot: #d93a2f;
+
+        --color-text: #263445;
+        --color-border: #d5dee8;
+        --color-row-alt: #f8fafc;
+      }
+
+      .report-header,
+      .report-body {
+        font-family: var(--font-family);
+        font-size: 14px;
+
+        * {
+          box-sizing: border-box;
+        }
+      }
+
+      .report-header {
+        padding: 28px 32px;
+        background: var(--color-primary);
+        color: #fff;
+        border-bottom: 4px solid #4b91c5;
+        line-height: 1.45;
+
+        .report-title {
+          margin: 0 0 6px;
+          font-size: 25px;
+          font-weight: 650;
+          letter-spacing: 0.2px;
+        }
+
+        #running-title {
+          string-set: report-title content(text);
+        }
+
+        #running-governorate {
+          string-set: governorate content(text);
+        }
+
+        #running-district {
+          string-set: district content(text);
+        }
+
+        #running-forecast-time {
+          string-set: forecast-time content(text);
+        }
+
+        .report-info,
+        .forecast-time {
+          margin: 0;
+        }
+
+        .forecast-time {
+          margin-top: 5px;
+          font-style: italic;
+        }
+
+        &.green {
+          background: var(--color-green);
+        }
+
+        &.yellow {
+          background: var(--color-yellow);
+          color: #000;
+        }
+
+        &.orange {
+          background: var(--color-orange);
+        }
+
+        &.red {
+          background: var(--color-red);
+        }
+      }
+
+      .report-body {
+        padding: 24px 32px 32px;
+        background: #f4f7fa;
+        color: var(--color-text);
+        line-height: 1.55;
+
+        p {
+          margin: 0 0 18px;
+        }
+
+        .table-intro {
+          margin-top: 24px;
+        }
+
+        .report-description {
+          font-style: italic;
+
+          ul {
+            margin: 0 0 18px;
+            padding: 0;
+            list-style: none;
+            font-size: 0.85rem;
+            line-height: 1.5;
+          }
+
+          li {
+            margin: 0;
+          }
+        }
+
+        .legend-dot {
+          display: inline-block;
+          width: 10px;
+          margin-right: 5px;
+
+          &.green {
+            color: var(--color-green-dot);
+          }
+
+          &.yellow {
+            color: var(--color-yellow-dot);
+          }
+
+          &.orange {
+            color: var(--color-orange-dot);
+          }
+
+          &.red {
+            color: var(--color-red-dot);
+          }
+        }
+
+        .section {
+          margin: 28px 0;
+        }
+
+        .section-title {
+          margin: 0 0 12px;
+          padding: 10px 14px;
+          color: var(--color-primary-dark);
+          background: var(--color-primary-light);
+          border-left: 4px solid var(--color-primary);
+          font-size: 16px;
+          font-weight: 650;
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          border: 1px solid var(--color-border);
+
+          th,
+          td {
+            padding: 9px 12px;
+            text-align: left;
+            vertical-align: top;
+            border: 1px solid var(--color-border);
+          }
+
+          thead th {
+            background: var(--color-primary-dark);
+            color: #fff;
+            font-weight: 600;
+          }
+
+          tbody tr:nth-child(even) td {
+            background: var(--color-row-alt);
+          }
+        }
+
+        .number {
+          text-align: right;
+          font-variant-numeric: tabular-nums;
+        }
+
+        .ensemble-table {
+          width: 90%;
+          margin: 0 auto;
+
+          th,
+          td {
+            padding: 8px 16px;
+          }
+
+          th:first-child,
+          td:first-child {
+            text-align: left;
+          }
+
+          .number {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+          }
+        }
+
+        .area-table {
+          th:nth-child(1),
+          td:nth-child(1) {
+            width: 60%;
+          }
+
+          th:nth-child(2),
+          td:nth-child(2),
+          th:nth-child(3),
+          td:nth-child(3) {
+            width: 20%;
+          }
+        }
+
+        .warning-cell {
+          &.yellow {
+            background: var(--color-yellow);
+            color: #000;
+          }
+
+          &.orange {
+            background: var(--color-orange);
+            color: #000;
+          }
+
+          &.red {
+            background: var(--color-red);
+            color: #fff;
+          }
+        }
+      }
+
+      @media (max-width: 640px) {
+        .report-header {
+          padding: 22px 18px;
+
+          .report-title {
+            font-size: 21px;
+          }
+        }
+
+        .report-body {
+          padding: 18px 12px;
+
+          .ensemble-table {
+            width: 100%;
+          }
+
+          th,
+          td {
+            padding: 8px;
+          }
+        }
+      }
+    </style>
+    <style media="print">
+      @page {
+        margin: 20mm 0;
+
+        @top-left {
+          content: 'Gov: ' string(governorate) ' | District: ' string(district);
+          padding: 0 4mm;
+          font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+          font-size: 10pt;
+        }
+
+        @top-center {
+          content: string(report-title);
+          padding: 0 4mm;
+          font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+          font-size: 10pt;
+          font-weight: 600;
+        }
+
+        @top-right {
+          content: string(forecast-time);
+          padding: 0 4mm;
+          font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+          font-size: 10pt;
+        }
+
+        @bottom-center {
+          content: 'Page ' counter(page) ' of ' counter(pages);
+          font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+          font-size: 10pt;
+        }
+      }
+
+      @page :first {
+        margin-top: 0;
+
+        @top-center {
+          content: none;
+        }
+      }
+
+      html,
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .report,
+      .report-header,
+      .report-body,
+      .report :is(div, section, article, main, header, footer),
+      .report-header :is(div, section, article, main, header, footer),
+      .report-body :is(div, section, article, main, header, footer) {
+        display: block !important;
+        position: static !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+        contain: none !important;
+      }
+
+      .report *,
+      .report-header *,
+      .report-body * {
+        overflow: visible !important;
+        max-height: none !important;
+      }
+
+      .report img,
+      .report tr,
+      .report-header img,
+      .report-header tr,
+      .report-body img,
+      .report-body tr {
+        break-inside: avoid;
+      }
+
+      .report-header {
+        margin: 0;
+        break-after: avoid;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .report-body {
+        padding: 0 20mm;
+        background: #fff;
+      }
+
+      .report-body thead th,
+      .report-body tbody td,
+      .report-body .section-title {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .report-body .section,
+      .report-body tr {
+        break-inside: avoid;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div
+      th:with="warningLevel=${eventRecord.event_probability == 0 ? 'Green' :
+                (eventRecord.event_probability <= 15 ? 'Yellow' :
+                (eventRecord.event_probability < 25 ? 'Orange' : 'Red'))}"
+      class="report-header"
+      th:classappend="${warningLevel.toLowerCase()}"
+    >
+      <h1 id="running-title" class="report-title">
+        District inundation forecast report
+      </h1>
+
+      <p class="report-info">
+        Governorate:
+        <span id="running-governorate">[[${eventRecord.governorate_name}]]</span
+        ><br />
+
+        District:
+        <span id="running-district">[[${eventRecord.district_name}]]</span
+        ><br />
+
+        Warning level: [[${warningLevel}]]
+      </p>
+
+      <p class="forecast-time" th:each="timeRecord : ${Time}">
+        <strong>Forecast time:</strong>
+        <span id="running-forecast-time">[[${timeRecord.t0}]]</span>
+      </p>
+    </div>
+
+    <div class="report-body" th:each="record : ${event}">
+      <div class="report-description">
+        <p class="report-intro">
+          A coastal flooding event in
+          <strong>[[${record.district_name}]]</strong>
+          is defined as covering at least
+          <strong>[[${record.flood_area_threshold}]] hectares</strong>
+          of land not normally covered by water, caused by coastal processes,
+          with an inundation depth of at least 5 centimeters in the coming 5
+          days.
+        </p>
+        <p>
+          The probability of such an event occurring in the next 5 days is
+          <strong>[[${record.event_probability}]]%</strong>.
+        </p>
+        <ul class="legend">
+          <li>
+            <strong class="legend-dot green">●</strong> Green
+            <strong>P = 0%</strong>
+          </li>
+          <li>
+            <strong class="legend-dot yellow">●</strong> Yellow
+            <strong>0% &lt; P &le; 15%</strong>
+          </li>
+          <li>
+            <strong class="legend-dot orange">●</strong> Orange
+            <strong>15% &lt; P &lt; 25%</strong>
+          </li>
+          <li>
+            <strong class="legend-dot red">●</strong> Red
+            <strong>P &ge; 25%</strong>
+          </li>
+        </ul>
+      </div>
+
+      <p class="table-intro">
+        The table below shows the ensemble members for which flooding is
+        forecasted, sorted by the maximum flooded area.
+      </p>
+
+      <table class="ensemble-table">
+        <thead>
+          <tr>
+            <th scope="col">Ensemble member</th>
+            <th scope="col">Area flooded (ha)</th>
+            <th scope="col">Threshold exceeded</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            th:each="record : ${event_ensemble}"
+            th:if="${record.max_area_flooded != null and record.max_area_flooded > 0}"
+          >
+            <td th:text="${record.ensembleMemberId}"></td>
+            <td
+              th:text="${#numbers.formatDecimal(record.max_area_flooded, 1, 0)}"
+            ></td>
+            <td
+              th:text="${record.max_area_flooded >= threshold ? 'Yes' : 'No'}"
+            ></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="report-body">
+      <div class="section">
+        <h2 class="section-title">District assessment</h2>
+
+        <table class="area-table">
+          <thead>
+            <tr>
+              <th scope="col">Area category</th>
+              <th scope="col" class="number">Area (ha)</th>
+              <th scope="col" class="number">Percentage (%)</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr th:each="record : ${event}">
+              <td>District total area</td>
+              <td
+                class="number"
+                th:text="${#numbers.formatDecimal(@java.lang.Double@parseDouble(record.district_area_total), 1, 0)}"
+              ></td>
+              <td class="number">100</td>
+            </tr>
+
+            <tr th:each="record : ${event}">
+              <td>Category 1 — Residential &amp; Commercial</td>
+              <td
+                class="number"
+                th:text="${#numbers.formatDecimal(@java.lang.Double@parseDouble(record.district_area_1), 1, 0)}"
+              ></td>
+              <td
+                class="number"
+                th:text="${#numbers.formatDecimal(@java.lang.Double@parseDouble(record.district_percentage_1), 1, 0)}"
+              ></td>
+            </tr>
+
+            <tr th:each="record : ${event}">
+              <td>Category 2 — Agriculture</td>
+              <td
+                class="number"
+                th:text="${#numbers.formatDecimal(@java.lang.Double@parseDouble(record.district_area_2), 1, 0)}"
+              ></td>
+              <td
+                class="number"
+                th:text="${#numbers.formatDecimal(@java.lang.Double@parseDouble(record.district_percentage_2), 1, 0)}"
+              ></td>
+            </tr>
+
+            <tr th:each="record : ${event}">
+              <td>Category 3 — Critical Infrastructure</td>
+              <td
+                class="number"
+                th:text="${#numbers.formatDecimal(@java.lang.Double@parseDouble(record.district_area_3), 1, 0)}"
+              ></td>
+              <td
+                class="number"
+                th:text="${#numbers.formatDecimal(@java.lang.Double@parseDouble(record.district_percentage_3), 1, 0)}"
+              ></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>

@@ -12,25 +12,29 @@ export async function createDynamicReportStyleSheets(
   styles: DynamicReportStyle[],
   StyleSheet: typeof CSSStyleSheet = CSSStyleSheet,
   scoped = true,
+  transform?: (css: string[]) => string[],
 ): Promise<CSSStyleSheet[]> {
-  const sheets = await Promise.all(
-    styles.map((style) => createStyleSheet(style, StyleSheet, scoped)),
+  const loaded = (await Promise.all(styles.map(loadStyle))).filter(
+    (style) => style !== undefined,
   )
-  return sheets.filter((sheet) => sheet !== undefined)
+  const css = transform
+    ? transform(loaded.map((style) => style.css))
+    : undefined
+  return loaded.map((style, index) =>
+    createScopedStyleSheet(
+      css ? css[index] : style.css,
+      StyleSheet,
+      style.baseURL,
+      scoped,
+    ),
+  )
 }
 
-async function createStyleSheet(
+async function loadStyle(
   style: DynamicReportStyle,
-  StyleSheet: typeof CSSStyleSheet,
-  scoped: boolean,
-): Promise<CSSStyleSheet | undefined> {
+): Promise<{ css: string; baseURL: string } | undefined> {
   if (style.type === 'inline') {
-    return createScopedStyleSheet(
-      style.css,
-      StyleSheet,
-      getResourcesStaticUrl(''),
-      scoped,
-    )
+    return { css: style.css, baseURL: getResourcesStaticUrl('') }
   }
 
   const url = getResourcesStaticUrl(style.resource)
@@ -40,12 +44,7 @@ async function createStyleSheet(
     if (!response.ok) {
       throw new Error(`${response.status} ${response.statusText}`)
     }
-    return createScopedStyleSheet(
-      await response.text(),
-      StyleSheet,
-      url,
-      scoped,
-    )
+    return { css: await response.text(), baseURL: url }
   } catch (error) {
     console.error(`Failed to load dynamic report style sheet: ${url}`, error)
     return undefined
