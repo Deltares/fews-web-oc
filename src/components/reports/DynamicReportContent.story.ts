@@ -9,6 +9,8 @@ import DynamicReportContent from './DynamicReportContent.vue'
 import TimeSeriesValueInput from './dynamic/TimeSeriesValueInput.vue'
 import timeSeriesValueInputCss from './dynamic/timeSeriesValueInput.css?inline'
 import reportHtml from '../../../tests/fixtures/dynamic-report/dynamic-report-desalination-plants.html?raw'
+import governorateReport from '../../../tests/fixtures/dynamic-report/DynamicReportGovernoratePerLocationTemplate.html?raw'
+import districtReport from '../../../tests/fixtures/dynamic-report/DynamicReportDistrictInundationPerLocationTemplate.html?raw'
 
 // Make the water level of the first location editable
 const editableReportHtml = reportHtml
@@ -25,9 +27,25 @@ const editableReportHtml = reportHtml
     '<style>} [data-testid="outside"] { color: rgb(255, 0, 0); }</style>\n</body>',
   )
 
+// Reports are isolated by default
+const webocReportHtml = editableReportHtml.replace(
+  '<head>',
+  '<head>\n<meta name="fews-dynamic-report-styling" content="weboc" />',
+)
+
 const isolatedReportHtml = editableReportHtml
-  .replace('<head>', '<head>\n<meta name="weboc-styling" content="isolated" />')
+  .replace(
+    '<head>',
+    '<head>\n<meta name="fews-dynamic-report-styling" content="isolated" />',
+  )
   .replace('css/DynamicReport.css', 'css/DynamicReportIsolated.css')
+
+// The report style sheets are resolved against the FEWS static resources
+function configureFewsWebServices() {
+  configManager.update({
+    VITE_FEWS_WEBSERVICES_URL: `${window.location.origin}/test-fews/`,
+  })
+}
 
 function createStory(html: string) {
   return defineComponent({
@@ -36,9 +54,7 @@ function createStory(html: string) {
       theme: { type: String as PropType<'light' | 'dark'>, default: undefined },
     },
     setup(props) {
-      configManager.update({
-        VITE_FEWS_WEBSERVICES_URL: `${window.location.origin}/test-fews/`,
-      })
+      configureFewsWebServices()
       const lastEdit = ref<DynamicReportEdit>()
 
       const theme = useTheme()
@@ -100,7 +116,36 @@ function withOverlay(html: string) {
   )
 }
 
-export const WebOc = createStory(editableReportHtml)
+export const WebOc = createStory(webocReportHtml)
 export const Isolated = createStory(isolatedReportHtml)
-export const WebOcOverlay = createStory(withOverlay(editableReportHtml))
+export const WebOcOverlay = createStory(withOverlay(webocReportHtml))
 export const IsolatedOverlay = createStory(withOverlay(isolatedReportHtml))
+
+function createTableEditingStory(html: string) {
+  return defineComponent({
+    setup() {
+      configureFewsWebServices()
+      const editing = ref(false)
+      const editedHtml = ref('')
+      return () =>
+        h('div', [
+          h(
+            'button',
+            { onClick: () => (editing.value = !editing.value) },
+            editing.value ? 'Preview' : 'Edit',
+          ),
+          h(DynamicReportContent, {
+            html: editing.value || !editedHtml.value ? html : editedHtml.value,
+            styleHtml: html,
+            editable: editing.value,
+            initialEditorHtml: editedHtml.value || undefined,
+            onUpdate: (value: string) => (editedHtml.value = value),
+          }),
+        ])
+    },
+  })
+}
+
+export const GovernorateTableEditing =
+  createTableEditingStory(governorateReport)
+export const DistrictTableEditing = createTableEditingStory(districtReport)

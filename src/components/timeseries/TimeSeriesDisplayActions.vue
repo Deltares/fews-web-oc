@@ -38,8 +38,6 @@ import type {
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import type { DisplayConfig } from '@/lib/display/DisplayConfig'
 import type { ChartsSettings } from '@/lib/topology/componentSettings'
-import { downloadDynamicReport } from '@/lib/download/downloadDynamicReport'
-import { configManager } from '@/services/application-config'
 import type { DynamicReportPanelConfig } from '@/services/useDynamicReport'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import { useUserSettingsStore } from '@/stores/userSettings'
@@ -54,8 +52,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), { downloadReport: true })
+const emit = defineEmits<{ 'export-report': [] }>()
 const { t } = useI18n()
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { selectedDate } = useSelectedDate(() => props.currentTime)
 const dynamicReportTime = computed(() =>
   props.dynamicReport?.capabilities.dimension?.name === 'time'
@@ -86,17 +84,9 @@ const displayActionItems = computed(() => {
       hidden: !dataDownloadEnabled,
     },
     {
-      icon: 'mdi-file-download-outline',
-      label: t('reports.downloadReport'),
-      action: async () => {
-        const report = props.dynamicReport
-        if (!report) return
-        await downloadDynamicReport(baseUrl, {
-          displayId: report.displayId,
-          locationId: report.locationId,
-          time: dynamicReportTime.value,
-        })
-      },
+      icon: 'mdi-export-variant',
+      label: t('dynamicReport.exportReport'),
+      action: () => emit('export-report'),
       disabled:
         props.dynamicReport?.capabilities.dimension?.name === 'time' &&
         dynamicReportTime.value === undefined,

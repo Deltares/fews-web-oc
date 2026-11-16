@@ -52,10 +52,11 @@ export function useWmsLayerCapabilities(
   baseUrl: string,
   layerName: MaybeRefOrGetter<string>,
   taskRunId: MaybeRefOrGetter<string | undefined>,
+  inheritCapabilities = true,
 ): UseWmsReturn {
   // If a parent component has already provided WMS layer capabilities, use those instead of fetching them again.
   const parent = inject(WMS_LAYER_CAPABILITIES_KEY, undefined)
-  if (parent) {
+  if (inheritCapabilities && parent) {
     return parent
   }
 

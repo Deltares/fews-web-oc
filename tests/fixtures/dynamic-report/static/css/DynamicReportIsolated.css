@@ -1,6 +1,6 @@
 /*
  * Styles for a dynamic report with isolated styling
- * (<meta name="weboc-styling" content="isolated">), loaded from the FEWS
+ * (<meta name="fews-dynamic-report-styling" content="isolated">), loaded from the FEWS
  * static resources (WebResourceFiles/css/DynamicReportIsolated.css).
  *
  * The WebOC styles do not apply to an isolated report, so this style sheet

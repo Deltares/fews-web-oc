@@ -1,6 +1,8 @@
 import DOMPurify from 'dompurify'
 
 export const DYNAMIC_REPORT_SCOPE = '.dynamic-report'
+export const REPORT_SCREENSHOT_STYLE =
+  'width: auto !important; max-width: 100% !important; height: auto !important;'
 
 export type DynamicReportStyle =
   /** CSS of a <style> element */
@@ -10,9 +12,11 @@ export type DynamicReportStyle =
 
 /**
  * How the report is styled, set in the report template with
- * <meta name="weboc-styling" content="isolated">:
- * - weboc: the WebOC styles apply to the report (default)
+ * <meta name="fews-dynamic-report-styling" content="weboc">:
+ * - weboc: the WebOC styles apply to the report
  * - isolated: only the report styles apply to the report
+ *
+ * Reports default to isolated styling.
  */
 export type DynamicReportStyling = 'weboc' | 'isolated'
 
@@ -31,7 +35,10 @@ export interface SanitizedDynamicReport {
  * report container and applied with constructable style sheets, which are
  * allowed by a strict style-src CSP, unlike inline <style> elements.
  */
-export function sanitizeDynamicReport(html: string): SanitizedDynamicReport {
+export function sanitizeDynamicReport(
+  html: string,
+  { includePrintStyles = false }: { includePrintStyles?: boolean } = {},
+): SanitizedDynamicReport {
   // The styles and the styling option are read from an inert document, which
   // does not load style sheets or run scripts. DOMPurify never returns
   // <style> and <link> elements, so they cannot end up in the WebOC.
@@ -40,16 +47,27 @@ export function sanitizeDynamicReport(html: string): SanitizedDynamicReport {
     FORBID_TAGS: ['style', 'link'],
     RETURN_DOM_FRAGMENT: true,
   })
+  fragment
+    .querySelectorAll<HTMLImageElement>('img[data-report-screenshot="true"]')
+    .forEach((image) => {
+      image.style.setProperty('width', 'auto', 'important')
+      image.style.setProperty('max-width', '100%', 'important')
+      image.style.setProperty('height', 'auto', 'important')
+    })
   return {
     fragment,
-    styles: getStyles(document),
+    styles: getStyles(document, includePrintStyles),
     styling: getStyling(document),
   }
 }
 
-function getStyles(document: Document): DynamicReportStyle[] {
+function getStyles(
+  document: Document,
+  includePrintStyles: boolean,
+): DynamicReportStyle[] {
   const styles: DynamicReportStyle[] = []
   document.querySelectorAll('style, link').forEach((element) => {
+    if (!includePrintStyles && isPrintOnlyStyle(element)) return
     if (element instanceof HTMLStyleElement) {
       styles.push({ type: 'inline', css: element.textContent ?? '' })
     } else if (isStyleSheetLink(element)) {
@@ -67,13 +85,19 @@ function getStyles(document: Document): DynamicReportStyle[] {
   return styles
 }
 
+function isPrintOnlyStyle(element: Element): boolean {
+  const media = element.getAttribute('media')?.trim()
+  if (!media) return false
+  return media.split(',').every((query) => /^print(?:\s|$)/i.test(query.trim()))
+}
+
 function getStyling(document: Document): DynamicReportStyling {
   const content = document
-    .querySelector('meta[name="weboc-styling"]')
+    .querySelector('meta[name="fews-dynamic-report-styling"]')
     ?.getAttribute('content')
     ?.trim()
     .toLowerCase()
-  return content === 'isolated' ? 'isolated' : 'weboc'
+  return content === 'weboc' ? 'weboc' : 'isolated'
 }
 
 /**

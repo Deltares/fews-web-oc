@@ -5,6 +5,7 @@
       :class="{ 'force-hide': maximized, 'has-chart': showChartPanel }"
     >
       <SpatialDisplayComponent
+        ref="spatialDisplay"
         :layer-name="props.layerName"
         :location-ids="props.locationIds"
         :latitude="props.latitude"
@@ -19,11 +20,14 @@
         :bounding-box="boundingBox"
         :times="times"
         :settings="settings.map"
+        :independent-context="independentContext"
         v-model:elevation="elevation"
         @update:ensemble-selection="ensembleSelection = $event"
         @update:current-time="currentTime = $event"
         @coordinate-click="onCoordinateClick"
-      ></SpatialDisplayComponent>
+      >
+        <template #map><slot name="map" /></template>
+      </SpatialDisplayComponent>
     </div>
     <div v-if="showChartPanel" class="child-container flex-column d-flex">
       <SpatialTimeSeriesDisplay
@@ -90,6 +94,7 @@ interface Props {
   longitude?: string
   topologyNode?: TopologyNode
   settings?: ComponentSettings
+  independentContext?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -101,6 +106,10 @@ interface Emits {
   navigate: [to: NavigateRoute]
 }
 const emit = defineEmits<Emits>()
+const spatialDisplay = ref<InstanceType<typeof SpatialDisplayComponent>>()
+defineExpose({
+  getScreenshotContext: () => spatialDisplay.value?.getScreenshotContext(),
+})
 
 const taskRunId = ref<string>()
 watch(
@@ -137,6 +146,7 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
   baseUrl,
   () => props.layerName,
   taskRunId,
+  !props.independentContext,
 )
 
 function getDisplayEnabledFromLocationAttributes(
@@ -265,7 +275,7 @@ const filteredGeojson = computed(() => {
   }
 })
 
-useDateRegistry(() => times.value ?? [])
+if (!props.independentContext) useDateRegistry(() => times.value ?? [])
 
 const onlyCoverageLayersAvailable = computed(() => {
   const capabilities = layerCapabilities.value

@@ -11,6 +11,8 @@
         :settings="settings.charts"
         :informationContent="tooltip"
         :dynamicReport="dynamicReport"
+        :report-settings="settings"
+        :report-node-id="reportNodeId"
         :downloadReport="settings.report.downloadReport"
       >
         <template #toolbar-append>
@@ -47,6 +49,7 @@ interface Props {
   locationsTooltipFilter?: LocationsTooltipFilter
   dynamicReportDisplayId?: string
   dynamicReportLocationIds?: string[]
+  reportNodeId?: string
   currentTime?: Date
   settings: ComponentSettings
   hideFullscreenButton?: boolean
