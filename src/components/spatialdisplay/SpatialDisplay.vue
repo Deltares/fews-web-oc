@@ -77,6 +77,7 @@ import {
   filterFeaturesByThresholds,
   filterLocationsByThresholds,
 } from '@/lib/thresholds/utils'
+import { roundCoordinateToString } from '@/lib/coordinates'
 
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
@@ -336,8 +337,8 @@ function onCoordinateClick(latitude: number, longitude: number): void {
 function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
   if (!onlyCoverageLayersAvailable.value) return
 
-  const _latitude = latitude.toFixed(3)
-  const _longitude = longitude.toFixed(3)
+  const _latitude = roundCoordinateToString(latitude)
+  const _longitude = roundCoordinateToString(longitude)
 
   const to = {
     name: 'SpatialDisplayWithCoordinates',
