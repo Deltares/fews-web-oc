@@ -60,6 +60,18 @@ type YScale = {
   axis: ChartAxis
 }
 
+type PlotMark = BandMark | BarMark | EnsembleMark | SeriesMark | LineMark
+
+type MarkContext = {
+  chartSeries: ChartSeries[]
+  stores: Readonly<Record<string, SeriesStore>>
+  resources: Record<string, Series>
+  yScales: YScale[]
+  handles: HandleCache
+  verticalProfile: boolean
+  stackedBarAxes: Set<string>
+}
+
 export function toPlotConfig(
   config: ChartConfig,
   stores: Readonly<Record<string, SeriesStore>>,
@@ -230,58 +242,72 @@ function createAxes(
   const axes: AxisHandle[] = []
 
   if (settings.xAxis.enabled) {
-    axes.push(
-      handles.use('axis:x', axis, 'x', {
-        position: xAxis.position === 'top' ? 'top' : 'bottom',
-        label: settings.xAxis.xLabel ? (xAxis.label ?? '') : '',
-        unit: xAxis.unit ?? '',
-        // Gridlines only on the value axis: a time x-axis gets none by default.
-        grid:
-          !options.isBrush &&
-          settings.xAxis.xTicks &&
-          (xAxis.showGrid ?? xAxis.kind !== 'time'),
-        tickCount: settings.xAxis.xTicks ? 6 : 1,
-        style: 'classic',
-        locale: xAxis.locale ?? options.locale,
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        ...(!settings.xAxis.xTicks ? { format: () => '' } : {}),
-      }),
-    )
+    axes.push(createXAxis(xAxis, settings, options, handles))
   }
 
-  if (settings.yAxis.enabled && !options.isBrush) {
-    const positions = yScales.map(({ axis: yAxis }, index) =>
-      yAxis.position === 'right'
-        ? 'right'
-        : yAxis.position === 'left'
-          ? 'left'
-          : index === 0
-            ? 'left'
-            : 'right',
-    )
-    // The grid follows the left axis, or the first right axis when there is
-    // no left one.
-    const hasLeftAxis = positions.includes('left')
-    for (const [index, { id, axis: yAxis }] of yScales.entries()) {
-      const position = positions[index]
-      const isPrimary = position === 'left' || (!hasLeftAxis && index === 0)
-      axes.push(
-        handles.use(`axis:${id}`, axis, id, {
-          position,
-          label: settings.yAxis.yLabel ? (yAxis.label ?? '') : '',
-          unit: yAxis.unit ?? '',
-          grid: settings.yAxis.yTicks && (yAxis.showGrid ?? isPrimary),
-          tickCount: settings.yAxis.yTicks ? 6 : 1,
-          style: 'classic',
-          locale: yAxis.locale ?? options.locale,
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          ...(!settings.yAxis.yTicks ? { format: () => '' } : {}),
-        }),
-      )
-    }
-  }
+  if (!settings.yAxis.enabled || options.isBrush) return axes
 
+  axes.push(...createYAxes(yScales, settings, options, handles))
   return axes
+}
+
+function createXAxis(
+  xAxis: ChartAxis,
+  settings:
+    ChartsSettings['timeSeriesChart'] | ChartsSettings['verticalProfileChart'],
+  options: ToPlotConfigOptions,
+  handles: HandleCache,
+): AxisHandle {
+  return handles.use('axis:x', axis, 'x', {
+    position: xAxis.position === 'top' ? 'top' : 'bottom',
+    label: settings.xAxis.xLabel ? (xAxis.label ?? '') : '',
+    unit: xAxis.unit ?? '',
+    // Gridlines only on the value axis: a time x-axis gets none by default.
+    grid:
+      !options.isBrush &&
+      settings.xAxis.xTicks &&
+      (xAxis.showGrid ?? xAxis.kind !== 'time'),
+    tickCount: settings.xAxis.xTicks ? 6 : 1,
+    style: 'classic',
+    locale: xAxis.locale ?? options.locale,
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    ...(!settings.xAxis.xTicks ? { format: () => '' } : {}),
+  })
+}
+
+function createYAxes(
+  yScales: YScale[],
+  settings:
+    ChartsSettings['timeSeriesChart'] | ChartsSettings['verticalProfileChart'],
+  options: ToPlotConfigOptions,
+  handles: HandleCache,
+): AxisHandle[] {
+  const positions = yScales.map(({ axis }, index) =>
+    getYAxisPosition(axis, index),
+  )
+  const hasLeftAxis = positions.includes('left')
+  return yScales.map(({ id, axis: yAxis }, index) => {
+    const position = positions[index]
+    const isPrimary = position === 'left' || (!hasLeftAxis && index === 0)
+    return handles.use(`axis:${id}`, axis, id, {
+      position,
+      label: settings.yAxis.yLabel ? (yAxis.label ?? '') : '',
+      unit: yAxis.unit ?? '',
+      grid: settings.yAxis.yTicks && (yAxis.showGrid ?? isPrimary),
+      tickCount: settings.yAxis.yTicks ? 6 : 1,
+      style: 'classic',
+      locale: yAxis.locale ?? options.locale,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      ...(!settings.yAxis.yTicks ? { format: () => '' } : {}),
+    })
+  })
+}
+
+function getYAxisPosition(yAxis: ChartAxis, index: number): 'left' | 'right' {
+  if (yAxis.position === 'left' || yAxis.position === 'right') {
+    return yAxis.position
+  }
+  return index === 0 ? 'left' : 'right'
 }
 
 function createMarks(
@@ -291,291 +317,343 @@ function createMarks(
   yScales: YScale[],
   handles: HandleCache,
   verticalProfile = false,
-): (BandMark | BarMark | EnsembleMark | SeriesMark | LineMark)[] {
-  const marks: (BandMark | BarMark | EnsembleMark | SeriesMark | LineMark)[] =
-    []
-  const mergedMarkerIndices = new Set<number>()
-  const stackedBarAxes = new Set<string>()
+): PlotMark[] {
+  const marks: PlotMark[] = []
+  const context: MarkContext = {
+    chartSeries,
+    stores,
+    resources,
+    yScales,
+    handles,
+    verticalProfile,
+    stackedBarAxes: new Set<string>(),
+  }
 
   for (const [seriesIndex, item] of chartSeries.entries()) {
-    if (mergedMarkerIndices.has(seriesIndex)) continue
-    if (item.visibleInPlot === false || item.type === 'dummy') continue
-    const markId = `${seriesIndex}:${item.id}`
-    const yScale = yScales[item.options.y.axisIndex]?.id ?? 'y0'
-
-    if (
-      !verticalProfile &&
-      item.type === 'line' &&
-      item.dataResources.length === 1
-    ) {
-      const members = Object.entries(resources).filter(
-        ([, resource]) =>
-          resource.ensemble?.requestKey === item.dataResources[0],
-      )
-      if (members.length > 0) {
-        const values = members.map(([, resource]) => {
-          const byTime = new Map<number, number>()
-          addDataToMap(byTime, resource.data ?? [])
-          return byTime
-        })
-        const x = [...new Set(values.flatMap((data) => [...data.keys()]))].sort(
-          (a, b) => a - b,
-        )
-        const rows: EnsembleInput = {
-          x,
-          members: values.map((data) =>
-            x.map((time) => data.get(time) ?? Number.NaN),
-          ),
-        }
-        const metadata = members.map(([id, resource]) => ({
-          id,
-          label: resource.ensemble!.memberId,
-        }))
-        const storeId = `${markId}:${JSON.stringify(metadata)}`
-        const data = handles.use(`ensemble:${storeId}`, createEnsembleStore, {
-          rows,
-          metadata,
-        })
-        marks.push(
-          handles.use(`mark:ensemble:${storeId}`, ensemble, data.store, {
-            id: markId,
-            x: 'x',
-            y: yScale,
-            label: item.name,
-            legendGroup:
-              item.visibleInLegend === false
-                ? undefined
-                : nonEmptyLabel(item.name),
-            visible: true,
-            renderer: 'svg',
-            members: {
-              stroke: styleValue(item, 'stroke'),
-              width: styleNumber(item, 'stroke-width', 1),
-              opacity: 1,
-            },
-            spread: false,
-            median: false,
-            mean: false,
-            control: false,
-            exceedance: false,
-          }),
-        )
-        continue
-      }
-    }
-
-    if (item.type === 'area' && item.dataResources.length > 1) {
-      const pairedData = getPairedData(item.dataResources, resources)
-      if (!pairedData) continue
-      marks.push(
-        handles.use(`mark:${markId}`, band, {
-          id: markId,
-          x: 'x',
-          y: yScale,
-          label: item.visibleInLegend === false ? undefined : item.name,
-          legendGroup:
-            item.visibleInLegend === false
-              ? undefined
-              : nonEmptyLabel(item.name),
-          visible: true,
-          xValues: pairedData.x,
-          yValues: pairedData.y,
-          fill: styleValue(item, 'fill'),
-        }),
-      )
-      continue
-    }
-
-    if (item.type === 'bar') {
-      if (stackedBarAxes.has(yScale)) continue
-      const barSeries = chartSeries.filter(
-        (candidate) =>
-          candidate.type === 'bar' &&
-          candidate.visibleInPlot !== false &&
-          (yScales[candidate.options.y.axisIndex]?.id ?? 'y0') === yScale &&
-          resources[candidate.dataResources[0]]?.data !== undefined,
-      )
-      if (barSeries.length > 1) {
-        stackedBarAxes.add(yScale)
-        const stackId = `stack:${yScale}:${barSeries.map((series) => series.id).join(':')}`
-        const rows = getStackedBarData(barSeries, resources)
-        const data = handles.use(`table:${stackId}`, createBarStore, { rows })
-        marks.push(
-          handles.use(`mark:${stackId}`, bar, data.store, {
-            id: `${yScales.find(({ id }) => id === yScale)?.axis.label || 'Stacked bars'} (${yScale})`,
-            x: 'x',
-            scales: { x: 'x', y: yScale },
-            renderer: 'svg',
-            orientation: 'vertical',
-            interval: { start: 'start', end: 'x' },
-            layout: 'stacked',
-            layers: barSeries.map((series, index) => ({
-              id: `${index}:${series.id}`,
-              y: `y${index}`,
-              label: series.visibleInLegend === false ? undefined : series.name,
-              fill: styleValue(series, 'fill'),
-              stroke: styleValue(series, 'stroke'),
-              strokeWidth: styleNumber(series, 'stroke-width', 1),
-            })),
-            groupPadding: 0.1,
-            layerPadding: 0,
-            visible: true,
-            label: '',
-            opacity: 1,
-          }),
-        )
-        continue
-      }
-      const rows = getBarData(item, resources)
-      if (!rows) continue
-      const data = handles.use(`table:${markId}`, createBarStore, { rows })
-      marks.push(
-        handles.use(`mark:${markId}`, bar, data.store, {
-          id: markId,
-          x: 'x',
-          y: 'y',
-          scales: { x: 'x', y: yScale },
-          renderer: 'svg',
-          orientation: 'vertical',
-          interval: { start: 'start', end: 'x' },
-          groupPadding: 0.1,
-          layerPadding: 0,
-          visible: true,
-          label: item.visibleInLegend === false ? '' : item.name,
-          legendGroup:
-            item.visibleInLegend === false
-              ? undefined
-              : nonEmptyLabel(item.name),
-          fill: styleValue(item, 'fill'),
-          opacity: 1,
-          stroke: styleValue(item, 'stroke'),
-          strokeWidth: styleNumber(item, 'stroke-width', 1),
-        }),
-      )
-      continue
-    }
-
-    const pairedMarker = getPairedMarkerSeries(chartSeries, seriesIndex)
-    if (pairedMarker) mergedMarkerIndices.add(seriesIndex + 1)
-    const markerItem =
-      pairedMarker ??
-      (item.type === 'marker' || item.marker !== undefined ? item : undefined)
-
-    const resourceIds = item.dataResources
-    for (const [index, resourceId] of resourceIds.entries()) {
-      const store = stores[resourceId]
-      const resource = resources[resourceId]
-      if (verticalProfile ? !resource : !store) continue
-
-      const isArea = item.type === 'area'
-      const options = {
-        id: `${markId}:${index}`,
-        x: 'x',
-        y: yScale,
-        label: item.visibleInLegend === false ? '' : item.name,
-        legendGroup:
-          item.visibleInLegend === false ? undefined : nonEmptyLabel(item.name),
-        visible: true,
-        line:
-          item.type === 'line' || item.type === 'rule'
-            ? {
-                stroke: styleValue(item, 'stroke'),
-                width: styleNumber(item, 'stroke-width', 1),
-                strokeDasharray: styleValue(item, 'stroke-dasharray'),
-                strokeLinecap:
-                  styleValue(item, 'stroke-linecap') === 'round'
-                    ? 'round'
-                    : 'butt',
-                strokeLinejoin: 'round',
-              }
-            : false,
-        markers: markerItem
-          ? {
-              symbol: markerSymbol(markerItem.marker?.shape),
-              size: markerItem.marker?.size ?? 9,
-              fill: styleValue(markerItem, 'fill'),
-              stroke: styleValue(markerItem, 'stroke'),
-              strokeWidth: styleNumber(markerItem, 'stroke-width', 1),
-            }
-          : false,
-        area: isArea
-          ? {
-              to: 0,
-              fill: styleValue(item, 'fill'),
-              opacity: 1,
-            }
-          : false,
-      } satisfies SeriesOptions
-      if (verticalProfile) {
-        // Profile values can reverse with elevation; SeriesStore requires sorted x.
-        const data = resource.data ?? []
-        marks.push(
-          line({
-            ...options,
-            xValues: data.map((event) =>
-              event.x !== null && Number.isFinite(Number(event.x))
-                ? Number(event.x)
-                : null,
-            ),
-            yValues: data.map((event) =>
-              event.y !== null &&
-              Number.isFinite(event.y) &&
-              isReliableData(event)
-                ? event.y
-                : null,
-            ),
-            line: options.line !== false,
-            stroke: options.line ? options.line.stroke : undefined,
-            strokeWidth: options.line ? options.line.width : undefined,
-            strokeDasharray: options.line
-              ? options.line.strokeDasharray
-              : undefined,
-            strokeLinecap: options.line
-              ? options.line.strokeLinecap
-              : undefined,
-            strokeLinejoin: options.line
-              ? options.line.strokeLinejoin
-              : undefined,
-            area: options.area || undefined,
-          }),
-        )
-      } else {
-        marks.push(
-          handles.use(`mark:${markId}:${index}`, seriesMark, store, options),
-        )
-      }
-    }
+    marks.push(...createMarksForItem(item, seriesIndex, context))
   }
 
   return marks
 }
 
-/**
- * FEWS items with both a line and a marker style are split into a line series
- * directly followed by a marker series; v5 can draw both in a single mark.
- *
- * FIXME: Remove this function once the line/marker split in
- * timeSeriesDisplayToChartConfig.ts is applied to the v4 path only, so v5
- * receives a single series with both line and marker styles.
- */
-function getPairedMarkerSeries(
-  chartSeries: ChartSeries[],
+function createMarksForItem(
+  item: ChartSeries,
   seriesIndex: number,
-): ChartSeries | undefined {
-  const item = chartSeries[seriesIndex]
-  const next = chartSeries[seriesIndex + 1]
+  context: MarkContext,
+): PlotMark[] {
+  const { resources, yScales, handles, verticalProfile } = context
+  if (item.visibleInPlot === false || item.type === 'dummy') return []
+  const markId = `${seriesIndex}:${item.id}`
+  const yScale = yScales[item.options.y.axisIndex]?.id ?? 'y0'
+
   if (
-    item.type !== 'line' ||
-    next?.type !== 'marker' ||
-    next.id !== item.id ||
-    next.visibleInPlot !== item.visibleInPlot ||
-    next.options.y.axisIndex !== item.options.y.axisIndex ||
-    next.dataResources.length !== item.dataResources.length ||
-    next.dataResources.some((id, index) => id !== item.dataResources[index])
+    !verticalProfile &&
+    item.type === 'line' &&
+    item.dataResources.length === 1
   ) {
-    return undefined
+    const mark = createEnsembleMark(item, markId, yScale, resources, handles)
+    if (mark) return createEnsembleMarks(item, mark, markId, yScale, context)
   }
-  return next
+  if (item.type === 'area' && item.dataResources.length > 1) {
+    const mark = createBandMark(item, markId, yScale, resources, handles)
+    return mark ? [mark] : []
+  }
+  if (item.type === 'bar') {
+    const mark = createBarMark(item, markId, yScale, context)
+    return mark ? [mark] : []
+  }
+
+  const markerItem =
+    item.type === 'marker' || item.marker !== undefined ? item : undefined
+  return createSeriesMarks(
+    item,
+    markerItem,
+    markId,
+    yScale,
+    context,
+  )
+}
+
+function createEnsembleMarks(
+  item: ChartSeries,
+  mark: EnsembleMark,
+  markId: string,
+  yScale: string,
+  context: MarkContext,
+): PlotMark[] {
+  if (!item.marker) return [mark]
+  const markerItem: ChartSeries = {
+    ...item,
+    type: 'marker',
+    style: item.markerStyle ?? item.style,
+  }
+  return [
+    mark,
+    ...createSeriesMarks(markerItem, markerItem, markId, yScale, context),
+  ]
+}
+
+function createEnsembleMark(
+  item: ChartSeries,
+  markId: string,
+  yScale: string,
+  resources: Record<string, Series>,
+  handles: HandleCache,
+): EnsembleMark | undefined {
+  const members = Object.entries(resources).filter(
+    ([, resource]) => resource.ensemble?.requestKey === item.dataResources[0],
+  )
+  if (members.length === 0) return undefined
+
+  const values = members.map(([, resource]) => {
+    const byTime = new Map<number, number>()
+    addDataToMap(byTime, resource.data ?? [])
+    return byTime
+  })
+  const x = [...new Set(values.flatMap((data) => [...data.keys()]))].sort(
+    (a, b) => a - b,
+  )
+  const rows: EnsembleInput = {
+    x,
+    members: values.map((data) =>
+      x.map((time) => data.get(time) ?? Number.NaN),
+    ),
+  }
+  const metadata = members.map(([id, resource]) => ({
+    id,
+    label: resource.ensemble!.memberId,
+  }))
+  const storeId = `${markId}:${JSON.stringify(metadata)}`
+  const data = handles.use(`ensemble:${storeId}`, createEnsembleStore, {
+    rows,
+    metadata,
+  })
+  return handles.use(`mark:ensemble:${storeId}`, ensemble, data.store, {
+    id: markId,
+    x: 'x',
+    y: yScale,
+    label: item.name,
+    legendGroup:
+      item.visibleInLegend === false ? undefined : nonEmptyLabel(item.name),
+    visible: true,
+    renderer: 'svg',
+    members: {
+      stroke: styleValue(item, 'stroke'),
+      width: styleNumber(item, 'stroke-width', 1),
+      opacity: 1,
+    },
+    spread: false,
+    median: false,
+    mean: false,
+    control: false,
+    exceedance: false,
+  })
+}
+
+function createBandMark(
+  item: ChartSeries,
+  markId: string,
+  yScale: string,
+  resources: Record<string, Series>,
+  handles: HandleCache,
+): BandMark | undefined {
+  const pairedData = getPairedData(item.dataResources, resources)
+  if (!pairedData) return undefined
+  return handles.use(`mark:${markId}`, band, {
+    id: markId,
+    x: 'x',
+    y: yScale,
+    label: item.visibleInLegend === false ? undefined : item.name,
+    legendGroup:
+      item.visibleInLegend === false ? undefined : nonEmptyLabel(item.name),
+    visible: true,
+    xValues: pairedData.x,
+    yValues: pairedData.y,
+    fill: styleValue(item, 'fill'),
+  })
+}
+
+function createBarMark(
+  item: ChartSeries,
+  markId: string,
+  yScale: string,
+  context: MarkContext,
+): BarMark | undefined {
+  const { chartSeries, resources, yScales, handles, stackedBarAxes } = context
+  if (stackedBarAxes.has(yScale)) return undefined
+  const barSeries = chartSeries.filter(
+    (candidate) =>
+      candidate.type === 'bar' &&
+      candidate.visibleInPlot !== false &&
+      (yScales[candidate.options.y.axisIndex]?.id ?? 'y0') === yScale &&
+      resources[candidate.dataResources[0]]?.data !== undefined,
+  )
+  if (barSeries.length > 1) {
+    stackedBarAxes.add(yScale)
+    return createStackedBarMark(barSeries, yScale, resources, yScales, handles)
+  }
+  const rows = getBarData(item, resources)
+  if (!rows) return undefined
+  const data = handles.use(`table:${markId}`, createBarStore, { rows })
+  return handles.use(`mark:${markId}`, bar, data.store, {
+    id: markId,
+    x: 'x',
+    y: 'y',
+    scales: { x: 'x', y: yScale },
+    renderer: 'svg',
+    orientation: 'vertical',
+    interval: { start: 'start', end: 'x' },
+    groupPadding: 0.1,
+    layerPadding: 0,
+    visible: true,
+    label: item.visibleInLegend === false ? '' : item.name,
+    legendGroup:
+      item.visibleInLegend === false ? undefined : nonEmptyLabel(item.name),
+    fill: styleValue(item, 'fill'),
+    opacity: 1,
+    stroke: styleValue(item, 'stroke'),
+    strokeWidth: styleNumber(item, 'stroke-width', 1),
+  })
+}
+
+function createStackedBarMark(
+  barSeries: ChartSeries[],
+  yScale: string,
+  resources: Record<string, Series>,
+  yScales: YScale[],
+  handles: HandleCache,
+): BarMark {
+  const stackId = `stack:${yScale}:${barSeries.map((series) => series.id).join(':')}`
+  const rows = getStackedBarData(barSeries, resources)
+  const data = handles.use(`table:${stackId}`, createBarStore, { rows })
+  return handles.use(`mark:${stackId}`, bar, data.store, {
+    id: `${yScales.find(({ id }) => id === yScale)?.axis.label || 'Stacked bars'} (${yScale})`,
+    x: 'x',
+    scales: { x: 'x', y: yScale },
+    renderer: 'svg',
+    orientation: 'vertical',
+    interval: { start: 'start', end: 'x' },
+    layout: 'stacked',
+    layers: barSeries.map((series, index) => ({
+      id: `${index}:${series.id}`,
+      y: `y${index}`,
+      label: series.visibleInLegend === false ? undefined : series.name,
+      fill: styleValue(series, 'fill'),
+      stroke: styleValue(series, 'stroke'),
+      strokeWidth: styleNumber(series, 'stroke-width', 1),
+    })),
+    groupPadding: 0.1,
+    layerPadding: 0,
+    visible: true,
+    label: '',
+    opacity: 1,
+  })
+}
+
+function createSeriesMarks(
+  item: ChartSeries,
+  markerItem: ChartSeries | undefined,
+  markId: string,
+  yScale: string,
+  context: MarkContext,
+): (SeriesMark | LineMark)[] {
+  const { stores, resources, handles, verticalProfile } = context
+  const marks: (SeriesMark | LineMark)[] = []
+  for (const [index, resourceId] of item.dataResources.entries()) {
+    const store = stores[resourceId]
+    const resource = resources[resourceId]
+    if (verticalProfile ? !resource : !store) continue
+
+    const options = createSeriesOptions(
+      item,
+      markerItem,
+      `${markId}:${index}`,
+      yScale,
+    )
+    if (verticalProfile) {
+      marks.push(createProfileMark(resource, options))
+    } else {
+      marks.push(
+        handles.use(`mark:${markId}:${index}`, seriesMark, store, options),
+      )
+    }
+  }
+  return marks
+}
+
+function createSeriesOptions(
+  item: ChartSeries,
+  markerItem: ChartSeries | undefined,
+  id: string,
+  yScale: string,
+) {
+  return {
+    id,
+    x: 'x',
+    y: yScale,
+    label: item.visibleInLegend === false ? '' : item.name,
+    legendGroup:
+      item.visibleInLegend === false ? undefined : nonEmptyLabel(item.name),
+    visible: true,
+    line: createLineOptions(item),
+    markers: markerItem
+      ? {
+          symbol: markerSymbol(markerItem.marker?.shape),
+          size: markerItem.marker?.size ?? 9,
+          fill: markerStyleValue(markerItem, 'fill'),
+          stroke: markerStyleValue(markerItem, 'stroke'),
+          strokeWidth: markerStyleNumber(markerItem, 'stroke-width', 1),
+        }
+      : false,
+    area:
+      item.type === 'area'
+        ? {
+            to: 0,
+            fill: styleValue(item, 'fill'),
+            opacity: 1,
+          }
+        : false,
+  } satisfies SeriesOptions
+}
+
+function createLineOptions(item: ChartSeries) {
+  if (item.type !== 'line' && item.type !== 'rule') return false
+  return {
+    stroke: styleValue(item, 'stroke'),
+    width: styleNumber(item, 'stroke-width', 1),
+    strokeDasharray: styleValue(item, 'stroke-dasharray'),
+    strokeLinecap:
+      styleValue(item, 'stroke-linecap') === 'round' ? 'round' : 'butt',
+    strokeLinejoin: 'round',
+  } satisfies Exclude<SeriesOptions['line'], boolean | undefined>
+}
+
+function createProfileMark(
+  resource: Series,
+  options: ReturnType<typeof createSeriesOptions>,
+): LineMark {
+  // Profile values can reverse with elevation; SeriesStore requires sorted x.
+  const data = resource.data ?? []
+  return line({
+    ...options,
+    xValues: data.map((event) =>
+      event.x !== null && Number.isFinite(Number(event.x))
+        ? Number(event.x)
+        : null,
+    ),
+    yValues: data.map((event) =>
+      event.y !== null && Number.isFinite(event.y) && isReliableData(event)
+        ? event.y
+        : null,
+    ),
+    line: options.line !== false,
+    stroke: options.line ? options.line.stroke : undefined,
+    strokeWidth: options.line ? options.line.width : undefined,
+    strokeDasharray: options.line ? options.line.strokeDasharray : undefined,
+    strokeLinecap: options.line ? options.line.strokeLinecap : undefined,
+    strokeLinejoin: options.line ? options.line.strokeLinejoin : undefined,
+    area: options.area || undefined,
+  })
 }
 
 function getPairedData(
@@ -742,6 +820,17 @@ function styleValue(item: ChartSeries, key: string) {
 
 function styleNumber(item: ChartSeries, key: string, fallback: number) {
   const value = Number.parseFloat(styleValue(item, key) ?? '')
+  return Number.isFinite(value) ? value : fallback
+}
+
+function markerStyleValue(item: ChartSeries, key: string) {
+  const style = item.markerStyle ?? item.style
+  const value = style[key as keyof typeof style]
+  return typeof value === 'string' ? value : undefined
+}
+
+function markerStyleNumber(item: ChartSeries, key: string, fallback: number) {
+  const value = Number.parseFloat(markerStyleValue(item, key) ?? '')
   return Number.isFinite(value) ? value : fallback
 }
 

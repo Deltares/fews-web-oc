@@ -162,6 +162,36 @@ describe('v5 static chart config', () => {
     expect(build().marks).toHaveLength(0)
   })
 
+  it('preserves the marker series alongside an ensemble when its store exists', () => {
+    const item = createChartSeries('forecast', 'line', ['request'], 0, {
+      shape: 'diamond',
+      size: 16,
+      skip: 1,
+    })
+    item.markerStyle = { fill: '#ff0000' }
+    const member = createResource([{ x: new Date(0), y: 1 }])
+    member.ensemble = { requestKey: 'request', memberId: '1' }
+
+    const plotConfig = toPlotConfig(
+      { id: 'subplot', title: '', series: [item] },
+      { request: createSeries({ x: [0], y: [1] }) },
+      defaultChartSettings.timeSeriesChart,
+      {},
+      { member },
+    )
+
+    expect(plotConfig.marks?.map((mark) => mark.id)).toEqual([
+      '0:forecast',
+      '0:forecast:0',
+    ])
+    const marker = plotConfig.marks?.[1]
+    if (!marker || !('options' in marker)) throw new Error('Expected a marker')
+    expect(marker.options.get().resolved).toMatchObject({
+      line: false,
+      markers: { symbol: 'diamond', fill: '#ff0000' },
+    })
+  })
+
   it.each(['line', 'marker', 'area'] as const)(
     'preserves elevation order, gaps and legends for %s profiles with reversing x values',
     (type) => {
@@ -630,13 +660,12 @@ describe('v5 static chart config', () => {
     expect(config.series.every((item) => item.id === 'shared')).toBe(true)
   })
 
-  it('merges a line and its paired marker series into a single mark', () => {
+  it('renders a combined line and marker with their separate styles', () => {
     const config: ChartConfig = {
       id: 'subplot',
       title: '',
       series: [
-        createChartSeries('observed', 'line', ['observed']),
-        createChartSeries('observed', 'marker', ['observed'], 0, {
+        createChartSeries('observed', 'line', ['observed'], 0, {
           shape: 'diamond',
           size: 16,
           skip: 1,
@@ -644,7 +673,7 @@ describe('v5 static chart config', () => {
         createChartSeries('other', 'marker', ['observed']),
       ],
     }
-    config.series[1].style = { fill: '#ff0000', stroke: '#ff0000' }
+    config.series[0].markerStyle = { fill: '#ff0000', stroke: '#ff0000' }
 
     const plotConfig = toPlotConfig(
       config,
@@ -654,7 +683,7 @@ describe('v5 static chart config', () => {
 
     expect(plotConfig.marks?.map((mark) => mark.id)).toEqual([
       '0:observed:0',
-      '2:other:0',
+      '1:other:0',
     ])
     const merged = plotConfig.marks?.[0]
     if (!merged || !('options' in merged)) {

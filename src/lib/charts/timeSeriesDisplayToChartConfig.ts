@@ -58,13 +58,10 @@ function generateChartSeriesArray(
       )
     } else if (item.type === 'horizontalColorCode') {
       handleHorizontalColorCodeType(item, chartSeriesArray, config)
-    } else {
-      if (item.type === 'line' && isValidLineStyle(item.lineStyle)) {
-        handleLineType(item, chartSeriesArray, config)
-      }
-      if (isValidMarkerStyle(item.markerStyle)) {
-        handleMarkerType(item, chartSeriesArray, config)
-      }
+    } else if (item.type === 'line' && isValidLineStyle(item.lineStyle)) {
+      handleLineType(item, chartSeriesArray, config)
+    } else if (isValidMarkerStyle(item.markerStyle)) {
+      handleMarkerType(item, chartSeriesArray, config)
     }
   }
   return chartSeriesArray
@@ -121,6 +118,13 @@ function handleLineType(
       : 'line'
   const chartSeries: ChartSeries = getChartSeries([item], chartType, config)
   chartSeriesArray.push(chartSeries)
+  if (!isValidMarkerStyle(item.markerStyle)) return
+  if (chartType !== 'line') {
+    handleMarkerType(item, chartSeriesArray, config)
+    return
+  }
+  chartSeries.marker = chartMarkerFromFews(item.markerStyle, item.markerSize)
+  chartSeries.markerStyle = cssStyleFromFewsMarker(item)
 }
 
 function handleMarkerType(
@@ -139,7 +143,7 @@ function isValidLineStyle(lineStyle?: string): boolean {
   return lineStyle !== undefined && !lineStyle.startsWith('none')
 }
 
-function isValidMarkerStyle(markerStyle?: string): boolean {
+function isValidMarkerStyle(markerStyle?: string): markerStyle is string {
   return markerStyle !== undefined && markerStyle !== 'none'
 }
 

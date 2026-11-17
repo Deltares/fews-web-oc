@@ -23,6 +23,7 @@ export interface ChartSeries extends SubplotItem {
   name: string
   label?: string
   marker?: ChartMarker
+  markerStyle?: CSS.SvgPropertiesHyphen
   type: ChartSeriesType
   options: ChartSeriesOptions
   unit: string

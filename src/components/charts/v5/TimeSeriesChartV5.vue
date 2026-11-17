@@ -184,8 +184,10 @@ const tooltipInteraction = tooltip({
   position: props.verticalProfile ? 'top' : 'right',
   crosshair: crosshairInteraction,
   formatValue: (_value, context) => context.defaultText,
-  formatUnit: ({ axis, mark }) =>
-    axis === (props.verticalProfile ? 'x' : 'y') ? getUnitForMark(mark.id) : '',
+  formatUnit: ({ axis, mark }) => {
+    const valueAxis = props.verticalProfile ? 'x' : 'y'
+    return axis === valueAxis ? getUnitForMark(mark.id) : ''
+  },
 })
 const interactions = [
   zoomInteraction,

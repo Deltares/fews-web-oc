@@ -217,9 +217,6 @@ export function chartMarkerFromFews(
     case 'triangledown':
       shape = 'triangle-down'
       break
-    case 'circle':
-      shape = 'circle'
-      break
     case 'x':
       shape = 'wye'
       break

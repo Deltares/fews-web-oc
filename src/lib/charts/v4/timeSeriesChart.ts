@@ -137,6 +137,17 @@ function addToChart(
   }
   if (chart === undefined) return
   chart.addTo(axis, chartSeries.options, id, chartSeries.style)
+  if (chartSeries.type === 'line' && chartSeries.marker) {
+    addToChart(
+      axis,
+      {
+        ...chartSeries,
+        type: 'marker',
+        style: chartSeries.markerStyle ?? chartSeries.style,
+      },
+      series,
+    )
+  }
 }
 
 function hasMissingDataResource(
@@ -153,15 +164,14 @@ export function refreshChart(
 ) {
   /* Adds charts to the axis if not yet present, and removes charts that should no longer be there */
   const ids: Set<string> = new Set(axis.charts.map((c: any) => c.id))
-  const removeIds: string[] = axis.charts.map((c: any) => c.id)
+  const removeIds = new Set<string>(axis.charts.map((c: any) => c.id))
   if (config?.series === undefined) return
   for (const seriesData of config.series) {
     if (!seriesData.visibleInPlot) continue
     if (!ids.has(seriesData.id)) {
       addToChart(axis, seriesData, series)
     }
-    const index = removeIds.indexOf(seriesData.id)
-    if (index >= 0) removeIds.splice(index, 1)
+    removeIds.delete(seriesData.id)
   }
   for (const id of removeIds) {
     axis.removeChart(id)

@@ -5,6 +5,27 @@ import { isReliableData } from '@/lib/charts/dataFromResources'
 
 export type SeriesStores = Readonly<Record<string, SeriesStore>>
 
+function updateStore(
+  existing: SeriesStore,
+  x: (Date | number)[],
+  y: (number | null)[],
+) {
+  let preservesPrefix = x.length >= existing.length
+  for (let index = 0; preservesPrefix && index < existing.length; index++) {
+    preservesPrefix =
+      Number(x[index]) === existing.xAt(index) &&
+      Object.is(y[index] ?? Number.NaN, existing.yAt(index))
+  }
+  if (!preservesPrefix) {
+    existing.replace({ x, y })
+  } else if (x.length > existing.length) {
+    existing.append({
+      x: x.slice(existing.length),
+      y: y.slice(existing.length),
+    })
+  }
+}
+
 export function useSeriesStores(
   series: MaybeRefOrGetter<Record<string, Series>>,
 ) {
@@ -39,24 +60,7 @@ export function useSeriesStores(
 
         if (existing) {
           // Replacement snapshots may include corrections, not just new points.
-          let preservesPrefix = x.length >= existing.length
-          for (
-            let index = 0;
-            preservesPrefix && index < existing.length;
-            index++
-          ) {
-            preservesPrefix =
-              Number(x[index]) === existing.xAt(index) &&
-              Object.is(y[index] ?? Number.NaN, existing.yAt(index))
-          }
-          if (!preservesPrefix) {
-            existing.replace({ x, y })
-          } else if (x.length > existing.length) {
-            existing.append({
-              x: x.slice(existing.length),
-              y: y.slice(existing.length),
-            })
-          }
+          updateStore(existing, x, y)
           nextStores[id] = existing
         } else {
           nextStores[id] = markRaw(createSeries({ x, y }))
