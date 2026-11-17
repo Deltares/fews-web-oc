@@ -46,7 +46,6 @@ export const extensions = [
   HardBreak,
   Heading,
   HorizontalRule,
-  // FIXME: Remove when using the Collabaration extension
   Highlight,
   Italic,
   Link.configure({
