@@ -153,7 +153,7 @@ onMounted(() => {
 })
 
 // Reattach the CSS to HTML when saving
-async function onSave() {
+function onSave() {
   if (!editor.value) return
 
   let html = editor.value.getHTML()

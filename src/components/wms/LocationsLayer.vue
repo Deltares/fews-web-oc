@@ -192,7 +192,7 @@ watch(locationsClickable, () => {
   addHooksToMapObject()
 })
 
-async function addLocationIcons() {
+function addLocationIcons() {
   if (!map) return
 
   addLocationIconsToMap(map, geojson.value).catch((error) =>

@@ -206,7 +206,7 @@ async function selectRelative(
 
 // Arrow keys select the previous or next item, and in a grid also the item in
 // the row above or below. Focus moves along so the selection stays visible.
-function onKeydown(event: KeyboardEvent): void {
+async function onKeydown(event: KeyboardEvent): Promise<void> {
   const rowStep = isGrid.value ? props.columns : undefined
   const steps: Record<string, number | undefined> = {
     ArrowLeft: -1,
@@ -219,7 +219,7 @@ function onKeydown(event: KeyboardEvent): void {
 
   // Also prevent scrolling the page when there is no item in this direction.
   event.preventDefault()
-  selectRelative(step, { focus: true })
+  await selectRelative(step, { focus: true })
 }
 
 // Scroll distance in pixels for a single step through the grid. A mouse wheel
@@ -244,7 +244,7 @@ function getWheelDelta(event: WheelEvent, pageSize: number): number {
 // In a grid, the wheel walks through the items in order. In a row, the wheel
 // scrolls the row horizontally. In both cases the wheel event does not reach
 // the map below.
-function onWheel(event: WheelEvent): void {
+async function onWheel(event: WheelEvent): Promise<void> {
   const container = buttonContainer.value
   if (container === null) return
   event.preventDefault()
@@ -260,7 +260,7 @@ function onWheel(event: WheelEvent): void {
   wheelDistance += delta
   if (Math.abs(wheelDistance) < WHEEL_STEP_DISTANCE) return
   wheelDistance = 0
-  selectRelative(Math.sign(delta), { focus: focused.value })
+  await selectRelative(Math.sign(delta), { focus: focused.value })
 }
 </script>
 

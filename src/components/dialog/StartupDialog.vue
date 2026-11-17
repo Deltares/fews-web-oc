@@ -22,7 +22,7 @@ import { computedAsync, useStorage } from '@vueuse/core'
 
 const configStore = useConfigStore()
 
-const splashSrc = computedAsync(async () => {
+const splashSrc = computedAsync(() => {
   if (!configStore.general.splashScreen) return
 
   return getResourcesStaticUrl(configStore.general.splashScreen)

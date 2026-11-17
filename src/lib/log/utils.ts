@@ -9,6 +9,11 @@ import { WorkflowItem } from '../workflows'
 import { TaskRun } from '@/lib/taskruns'
 import { hasEqualIdentity } from '@/lib/auth/identityEquality'
 
+export function cleanTaskRunId(taskRunId: string): string {
+  // Log responses can append a sentinel to the task-run ID.
+  return taskRunId.replace(/ -1$/, '')
+}
+
 export function getTitleForLog(
   log: LogMessage,
   userName: string,

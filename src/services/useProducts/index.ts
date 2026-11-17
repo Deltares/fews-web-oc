@@ -118,8 +118,6 @@ export async function getArchiveProducts(
     filter.versionKey = product.versionKeys
       ? ['productId', ...product.versionKeys]
       : ['productId']
-    // FIXME: Configure correct versionKey
-    // filterValue.versionKey = product.versionKeys
     // Set all attributes from the product
     let attributes: Record<string, string> = {}
 

@@ -230,7 +230,7 @@ function getTargetIndex(event: KeyboardEvent, index: number) {
   }
 }
 
-function onKeydown(event: KeyboardEvent) {
+async function onKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape' && pendingIndex.value !== undefined) {
     // Cancel the first picked cell, without closing the menu
     event.preventDefault()
@@ -243,7 +243,7 @@ function onKeydown(event: KeyboardEvent) {
   const target = getTargetIndex(event, index)
   if (target === undefined) return
   event.preventDefault()
-  focusCell(target)
+  await focusCell(target)
 }
 
 // Move to the page of the cell when it is on another page

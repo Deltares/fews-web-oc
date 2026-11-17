@@ -264,12 +264,14 @@ const rules = {
 }
 
 onMounted(async () => {
-  loadLocations()
-  loadParameters()
-  loadTimeSeriesHeaders()
   if (attributes) {
     selectedAttributes.value = attributes.map(() => [])
   }
+  await Promise.all([
+    loadLocations(),
+    loadParameters(),
+    loadTimeSeriesHeaders(),
+  ])
 })
 
 async function loadLocations() {
@@ -520,7 +522,9 @@ function getAttributeValues(locations: Location[]): string[][] {
     })
   })
 
-  attributeValuesMap.forEach((values) => values.sort())
+  attributeValuesMap.forEach((values) => {
+    values.sort((left, right) => left.localeCompare(right))
+  })
   return attributeValuesMap
 }
 

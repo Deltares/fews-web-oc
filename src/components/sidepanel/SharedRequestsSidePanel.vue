@@ -282,8 +282,17 @@ function drawRequestHistoryChart(): void {
       path: getUrlMetadata(entry.key).path,
     }))
 
-  const firstTime = points[0].startedAt.getTime()
-  const lastTime = points[points.length - 1].startedAt.getTime()
+  const svg = select(svgElement)
+    .attr('width', width)
+    .attr('height', chartHeight)
+  svg.selectAll('*').remove()
+
+  const firstPoint = points[0]
+  const lastPoint = points.at(-1)
+  if (!firstPoint || !lastPoint) return
+
+  const firstTime = firstPoint.startedAt.getTime()
+  const lastTime = lastPoint.startedAt.getTime()
   const timePadding = Math.max((lastTime - firstTime) * 0.05, 1000)
   const x = scaleTime()
     .domain([
@@ -292,11 +301,6 @@ function drawRequestHistoryChart(): void {
     ])
     .range([0, innerWidth])
   const y = scaleLinear().domain([0, 1.2]).range([innerHeight, 0])
-  const svg = select(svgElement)
-    .attr('width', width)
-    .attr('height', chartHeight)
-  svg.selectAll('*').remove()
-
   const plot = svg
     .append('g')
     .attr('transform', `translate(${margin.left},${margin.top})`)

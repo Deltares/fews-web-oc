@@ -164,7 +164,7 @@ function getFilters(items: FilterSubplotItem[]) {
   const moduleInstanceIds = getModuleInstanceIds(items)
 
   const parameters = parameterIds
-    .map(parametersStore.byId)
+    .map((parameterId) => parametersStore.byId(parameterId))
     .filter((parameter) => parameter !== undefined)
 
   // Group by parameterGroup

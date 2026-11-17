@@ -103,7 +103,7 @@ watch(
     // Avoid replacing the array when nothing changes, to prevent a re-render.
     const missing = stackPath.value.filter((id) => !open.value.includes(id))
     if (missing.length > 0) open.value = [...open.value, ...missing]
-    scrollToActive()
+    return scrollToActive()
   },
   { immediate: true },
 )

@@ -97,7 +97,7 @@ watch(
 watch(
   () => configStore.general.icons,
   (icons) => {
-    if (icons && icons.favicon) {
+    if (icons?.favicon) {
       const faviconUrl: string = getResourcesStaticUrl(icons.favicon).toString()
       const currentFavicon = document.querySelector("link[rel='icon']")
       currentFavicon?.setAttribute('href', faviconUrl.toString())
@@ -107,7 +107,7 @@ watch(
 
 watch(
   () => configStore.general.mapLayerConfig,
-  async () => {
+  () => {
     if (configStore.general.mapLayerConfig) {
       updateUserSettingBaseMaps(configStore.general.mapLayerConfig)
     }
