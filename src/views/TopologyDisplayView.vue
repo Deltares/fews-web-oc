@@ -136,7 +136,8 @@ const topologyNode = computed(() => {
   const nodeId = props.nodeId
   if (!nodeId) return
 
-  const id = Array.isArray(nodeId) ? nodeId[nodeId.length - 1] : nodeId
+  const id = Array.isArray(nodeId) ? nodeId.at(-1) : nodeId
+  if (id === undefined) return
   return topologyNodesStore.getNodeById(id)
 })
 

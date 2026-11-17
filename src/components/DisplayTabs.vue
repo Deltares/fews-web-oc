@@ -50,12 +50,8 @@ watchEffect(async () => {
   // Check if the current displayTab already matches the active node.
   if (!props.nodeId) return
   const nodeId = props.nodeId
-  let activeNodeId: string
-  if (Array.isArray(nodeId)) {
-    activeNodeId = nodeId.length > 1 ? nodeId[nodeId.length - 1] : nodeId[0]
-  } else {
-    activeNodeId = nodeId
-  }
+  const activeNodeId = Array.isArray(nodeId) ? nodeId.at(-1) : nodeId
+  if (activeNodeId === undefined) return
 
   const parentNodeIdNodeId =
     Array.isArray(props.nodeId) && props.nodeId.length > 1
