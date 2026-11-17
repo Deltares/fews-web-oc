@@ -33,7 +33,7 @@ const map = vi.hoisted(() => ({
   style: { _loaded: true },
 }))
 
-vi.mock('@/services/useMap', () => ({ useMap: () => ({ map }) }))
+vi.mock('@/services/useMap', () => ({ useMap: () => ({ map, zoom }) }))
 vi.mock('@/services/useMapIsDark', () => ({
   useMapIsDark: () => false,
 }))
@@ -54,6 +54,7 @@ vi.mock('vuetify/lib/components/VIcon/index.js', () => ({
 }))
 
 const source = shallowRef({ type: 'geojson' })
+const zoom = shallowRef(0)
 const layers = new Map<string, () => AddLayerObject>()
 let sourceOptions: () => SourceSpecification | undefined
 
@@ -142,6 +143,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   layers.clear()
   source.value = { type: 'geojson' }
+  zoom.value = 0
   map.style._loaded = true
   map.getSource.mockImplementation(() => source.value)
   container = document.createElement('div')
@@ -153,6 +155,23 @@ afterEach(() => {
 })
 
 describe('location map interactions', () => {
+  it('filters locations using the configured zoom range', async () => {
+    const props = mountLayer()
+    const options = () => sourceOptions() as GeoJSONSourceSpecification
+    const features = () =>
+      (options().data as FeatureCollection<Geometry, Location>).features
+
+    expect(features()).toHaveLength(2)
+
+    props.settings.minZoom = { level: 1, levelLocationAttribute: '' }
+    await nextTick()
+    expect(features()).toHaveLength(0)
+
+    zoom.value = 1
+    await nextTick()
+    expect(features()).toHaveLength(2)
+  })
+
   it('updates selection without rebuilding the source, preserving markers and symbol filters', async () => {
     const props = mountLayer()
     const originalOptions = sourceOptions() as GeoJSONSourceSpecification

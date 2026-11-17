@@ -131,6 +131,8 @@ const filterOptions = computed(() => {
     props.settings.charts.timeSeriesTable.locationEnabledAttribute,
     props.settings.charts.verticalProfileChart.locationEnabledAttribute,
     props.settings.charts.metaDataPanel.locationEnabledAttribute,
+    props.settings.map.locationsLayer.minZoom.levelLocationAttribute,
+    props.settings.map.locationsLayer.maxZoom.levelLocationAttribute,
     props.settings.charts.dynamicReportDisplay.locationEnabledAttribute,
   ].filter((id): id is string => !!id)
   return {

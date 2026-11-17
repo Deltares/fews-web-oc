@@ -65,7 +65,7 @@ import LocationsSymbolLayer from '@/components/wms/locations/LocationsSymbolLaye
 import LocationsTextLayer from '@/components/wms/locations/LocationsTextLayer.vue'
 import LocationsMarkers from '@/components/wms/locations/LocationsMarkers.vue'
 import type { FeatureCollection, Geometry } from 'geojson'
-import { type Location } from '@deltares/fews-pi-requests'
+import type { Location } from '@deltares/fews-pi-requests'
 import {
   type MapGeoJSONFeature,
   type MapLayerMouseEvent,
@@ -85,19 +85,19 @@ import { useMap } from '@/services/useMap'
 import { useSource } from '@/services/useLayer'
 import {
   defaultMapSettings,
-  type MapSettings,
+  type DeepRequiredMapSettings,
 } from '@/lib/topology/componentSettings'
 
 const userSettings = useUserSettingsStore()
 const isDark = useMapIsDark()
-const { map } = useMap()
+const { map, zoom } = useMap()
 
 interface Props {
   locationsGeoJson?: FeatureCollection<Geometry, Location>
   selectedLocationIds?: string[]
   selectedLocationCategories?: string[]
   showLocations?: boolean
-  settings?: MapSettings['locationsLayer']
+  settings?: DeepRequiredMapSettings['locationsLayer']
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -137,6 +137,9 @@ const geojson = computed(() => {
     { ...props.locationsGeoJson, features: filteredLocations },
     showNames.value,
     showDataAvailability.value,
+    zoom.value,
+    props.settings.minZoom,
+    props.settings.maxZoom,
   )
 })
 
