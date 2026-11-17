@@ -263,13 +263,15 @@ const rules = {
   },
 }
 
-onMounted(() => {
-  loadLocations()
-  loadParameters()
-  loadTimeSeriesHeaders()
+onMounted(async () => {
   if (attributes) {
     selectedAttributes.value = attributes.map(() => [])
   }
+  await Promise.all([
+    loadLocations(),
+    loadParameters(),
+    loadTimeSeriesHeaders(),
+  ])
 })
 
 async function loadLocations() {

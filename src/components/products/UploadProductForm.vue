@@ -125,7 +125,7 @@ async function onSubmit() {
 
   const { valid } = await formRef.value.validate()
   if (valid) {
-    onSave()
+    await onSave()
   }
 }
 

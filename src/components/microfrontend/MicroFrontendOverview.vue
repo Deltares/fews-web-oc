@@ -182,6 +182,6 @@ async function checkAllRemotes(): Promise<void> {
 }
 
 onMounted(() => {
-  if (remotes.value.length > 0) checkAllRemotes()
+  if (remotes.value.length > 0) return checkAllRemotes()
 })
 </script>

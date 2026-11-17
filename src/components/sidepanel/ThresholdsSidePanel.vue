@@ -171,14 +171,10 @@ async function scrollToSelectedItem() {
   }
 }
 
-watch([() => props.locationIds, groupedCrossings], () => {
-  scrollToSelectedItem()
-})
+watch([() => props.locationIds, groupedCrossings], scrollToSelectedItem)
 
 // Scroll to the selected item when we directly navigate to the page
-onMounted(() => {
-  scrollToSelectedItem()
-})
+onMounted(scrollToSelectedItem)
 
 function showSeverityZeroSeparator(index: number): boolean {
   if (index <= 0) return false

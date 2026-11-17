@@ -172,7 +172,9 @@ const showActiveThresholdCrossingsForFilters = computed(
 )
 
 // Pre-fetch WMS capabilities headers for better performance later on.
-fetchWmsCapabilitiesHeaders()
+fetchWmsCapabilitiesHeaders().catch((error) => {
+  console.error('Failed to pre-fetch WMS capabilities headers', error)
+})
 
 const subNodes = computed(() =>
   topologyNodesStore.getSubNodesForIds(topologyDisplayNodes.value),

@@ -265,15 +265,22 @@ async function downloadFile(downloadFormat: DocumentFormat) {
     ? filters.value
     : [getTopologyActionsFilter()]
   const headers = await getRequestHeaders()
-  filterList.forEach((filter, index) => {
-    const url = getDownloadFileUrl(baseUrl, filter, downloadFormat, viewPeriod)
-    const fileName =
-      filterList.length > 1
-        ? `${fileNameInput.value}_${getFileNameSuffix(filter, index)}`
-        : fileNameInput.value
+  await Promise.all(
+    filterList.map((filter, index) => {
+      const url = getDownloadFileUrl(
+        baseUrl,
+        filter,
+        downloadFormat,
+        viewPeriod,
+      )
+      const fileName =
+        filterList.length > 1
+          ? `${fileNameInput.value}_${getFileNameSuffix(filter, index)}`
+          : fileNameInput.value
 
-    downloadFileSafe(url.href, fileName, downloadFormat, headers)
-  })
+      return downloadFileSafe(url.href, fileName, downloadFormat, headers)
+    }),
+  )
 }
 
 async function downloadFileSafe(
