@@ -274,7 +274,8 @@
     "id": "charts.colorContrast",
     "type": "oneOfMultiple",
     "label": "Color contrast (v5 only)",
-    "value": "auto",
+    "value": "none",
+    "disabled": true,
     "items": [
       {
         "value": "auto",

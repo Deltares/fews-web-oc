@@ -49,13 +49,32 @@ describe('userSettings store – restoreDefaults', () => {
     vi.unstubAllGlobals()
   })
 
-  it('defaults to v4 while hiding the chart engine setting', () => {
+  it('defaults to v4 without color contrast while hiding both settings', () => {
     const store = useUserSettingsStore()
 
     expect(store.chartEngine).toBe('v4')
-    expect(store.listByGroup('Charts').map((item) => item.id)).not.toContain(
-      'charts.engine',
-    )
+    expect(store.chartColorContrast).toBe('none')
+    const chartSettings = store.listByGroup('Charts').map((item) => item.id)
+    expect(chartSettings).not.toContain('charts.engine')
+    expect(chartSettings).not.toContain('charts.colorContrast')
+  })
+
+  it('lets the FEWS config enable v5 and color contrast', async () => {
+    mockFewsConfigFile({
+      settings: [
+        { id: 'charts.engine', value: 'v5', enabled: true },
+        { id: 'charts.colorContrast', value: 'auto', enabled: true },
+      ],
+    })
+
+    const store = useUserSettingsStore()
+    await store.initializeWithWebResources()
+
+    expect(store.chartEngine).toBe('v5')
+    expect(store.chartColorContrast).toBe('auto')
+    const chartSettings = store.listByGroup('Charts').map((item) => item.id)
+    expect(chartSettings).toContain('charts.engine')
+    expect(chartSettings).toContain('charts.colorContrast')
   })
 
   it('restores values from the FEWS config, discarding user changes', async () => {
