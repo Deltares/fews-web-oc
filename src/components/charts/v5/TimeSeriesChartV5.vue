@@ -516,22 +516,6 @@ defineExpose({ getSvgElement, exportImage })
   flex: 0 0 auto;
 }
 
-/*
- * The hovered ensemble member is traced as a 1px path in the member colour;
- * widen it and add a halo in the background colour so it stands out from the
- * other members.
- */
-.chart-container
-  :deep([data-layer='highlight'] path[data-highlight='ensemble']) {
-  --ensemble-trace-halo: var(
-    --fews-chart-background,
-    rgb(var(--v-theme-surface))
-  );
-  stroke-width: 1.5px;
-  filter: drop-shadow(0 0 0.75px var(--ensemble-trace-halo))
-    drop-shadow(0 0 0.75px var(--ensemble-trace-halo));
-}
-
 .chart-maximize-btn {
   position: absolute;
   right: 0;

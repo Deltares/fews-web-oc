@@ -152,18 +152,6 @@ function buildPlotConfig(
   }
 }
 
-const ensembleMarkKeys = new WeakMap<EnsembleMark, number>()
-let nextEnsembleMarkKey = 0
-
-function ensembleMarkKey(mark: EnsembleMark): number {
-  let key = ensembleMarkKeys.get(mark)
-  if (key === undefined) {
-    key = nextEnsembleMarkKey++
-    ensembleMarkKeys.set(mark, key)
-  }
-  return key
-}
-
 /** Adds a highlight of the hovered ensemble member when the chart has ensembles. */
 function createPlugins(
   ensembleMarks: EnsembleMark[],
@@ -171,17 +159,16 @@ function createPlugins(
   handles: HandleCache,
 ): PlotConfig['plugins'] {
   if (options.isBrush || ensembleMarks.length === 0) return options.plugins
-  // An installed highlight validates its marks against the plot's current
-  // marks on every update, before setConfig() hands the plot new marks. So
-  // a changed set of ensemble marks gets a new highlight instead of an update.
-  const marksKey = ensembleMarks.map(ensembleMarkKey).join(',')
   const ensembleHighlight = handles.use(
-    `plugin:ensemble-highlight:${marksKey}`,
+    'plugin:ensemble-highlight',
     highlight,
     {
       axis: options.verticalProfile ? 'y' : 'x',
       marks: ensembleMarks,
       crosshair: options.crosshair,
+      // Make the traced member stand out from the other members
+      width: 1.5,
+      halo: 1,
     },
   )
   return [...(options.plugins ?? []), ensembleHighlight]
