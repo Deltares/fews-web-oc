@@ -185,7 +185,7 @@ function getImageSourceOptions(
 }
 
 watch(() => props.layer, debouncedUpdate, { immediate: true })
-async function updateSource() {
+function updateSource() {
   if (!map || map.isMoving()) return
 
   sourceOptions.value = getImageSourceOptions()

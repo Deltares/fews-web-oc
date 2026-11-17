@@ -263,7 +263,7 @@ const rules = {
   },
 }
 
-onMounted(async () => {
+onMounted(() => {
   loadLocations()
   loadParameters()
   loadTimeSeriesHeaders()

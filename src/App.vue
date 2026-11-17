@@ -107,7 +107,7 @@ watch(
 
 watch(
   () => configStore.general.mapLayerConfig,
-  async () => {
+  () => {
     if (configStore.general.mapLayerConfig) {
       updateUserSettingBaseMaps(configStore.general.mapLayerConfig)
     }

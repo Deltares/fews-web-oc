@@ -283,7 +283,7 @@ const disseminations = computed(
   () => props.logDisplay.logDissemination?.disseminationActions ?? [],
 )
 
-async function refreshLogs() {
+function refreshLogs() {
   // Set endDate to now + 5 seconds to ensure the backend will return the latest logs
   endDate.value = toWallClockDate(new Date(Date.now() + 5000))
 }
