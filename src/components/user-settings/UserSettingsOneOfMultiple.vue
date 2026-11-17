@@ -18,6 +18,7 @@
           :key="item.value"
           :value="item.value"
           :disabled="item.disabled"
+          height="36"
           :aria-label="`${settingLabel} ${item.title}`"
           v-tooltip:top="item.title"
         >
@@ -107,10 +108,6 @@ const subtitle = computed(() => {
 .multi-line-toggle {
   width: 200px;
   flex-wrap: wrap;
-}
-
-.multi-line-toggle .v-btn {
-  height: 36px;
 }
 
 :deep(.v-btn-group--density-compact.v-btn-group) {

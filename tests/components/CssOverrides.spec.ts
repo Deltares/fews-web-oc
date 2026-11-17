@@ -108,6 +108,11 @@ test('table headers, editable cells, and highlighted borders override Vuetify', 
     '24px',
   )
 
+  await header.getByRole('button').click()
+  await expect(
+    component.locator('td:has(.table-cell-editable)').first(),
+  ).toHaveCSS('padding', '0px')
+
   const firstRow = component.locator('tbody tr[data-row-date]').first()
   await firstRow.locator('td').first().click()
   await expect(firstRow).toHaveClass(/highlighted/)
@@ -123,9 +128,4 @@ test('table headers, editable cells, and highlighted borders override Vuetify', 
     'border-bottom-width',
     '2px',
   )
-
-  await header.getByRole('button').click()
-  await expect(
-    component.locator('td:has(.table-cell-editable)').first(),
-  ).toHaveCSS('padding', '0px')
 })
