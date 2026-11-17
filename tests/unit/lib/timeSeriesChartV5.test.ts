@@ -111,6 +111,38 @@ describe('v5 static chart config', () => {
     expect(mark.data.valueAt(1, 2)).toBe(6)
   })
 
+  it('highlights the hovered ensemble member only on ensemble marks', () => {
+    const forecast = createChartSeries('forecast', 'line', ['request'])
+    const observation = createChartSeries('observation', 'line', ['obs'])
+    const member = createResource([
+      { x: new Date(0), y: 1 },
+      { x: new Date(1000), y: 2 },
+    ])
+    member.ensemble = { requestKey: 'request', memberId: '1' }
+    const obs = createResource([{ x: new Date(0), y: 1 }])
+    const plugins = [{ update: () => {} }] as never[]
+    const build = (series: ChartSeries[], isBrush = false) =>
+      toPlotConfig(
+        { id: 'subplot', title: '', series },
+        { obs: createSeries({ x: [0], y: [1] }) },
+        defaultChartSettings.timeSeriesChart,
+        { plugins, isBrush },
+        { member, obs },
+      )
+
+    const config = build([forecast, observation])
+    expect(config.plugins).toHaveLength(2)
+    const highlight = config.plugins![1] as unknown as {
+      options: { get(): { resolved: { axis: string; marks: unknown[] } } }
+    }
+    const { axis, marks } = highlight.options.get().resolved
+    expect(axis).toBe('x')
+    expect(marks).toEqual([config.marks![0]])
+
+    expect(build([observation]).plugins).toBe(plugins)
+    expect(build([forecast, observation], true).plugins).toBe(plugins)
+  })
+
   it('updates native ensemble data in place and rebuilds when membership changes', () => {
     const handles = handleCache()
     const item = createChartSeries('forecast', 'line', ['request'])

@@ -10,6 +10,14 @@ import { i18n, loadLocale } from '@/plugins/i18n'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useRoute, useRouter } from 'vue-router'
 
+function useStoryChartEngine(engine: string) {
+  const userSettings = useUserSettingsStore()
+  const setting = userSettings.get('charts.engine')
+  if (setting?.type === 'oneOfMultiple') {
+    userSettings.add({ ...setting, value: engine })
+  }
+}
+
 export const ThresholdSwitching = defineComponent({
   props: {
     engine: { type: String, default: 'v4' },
@@ -24,16 +32,9 @@ export const ThresholdSwitching = defineComponent({
     plotWeight: Number,
   },
   setup(props) {
-    const userSettings = useUserSettingsStore()
+    useStoryChartEngine(props.engine)
     const route = useRoute()
     const router = useRouter()
-    const chartEngineSetting = userSettings.get('charts.engine')
-    if (chartEngineSetting?.type === 'oneOfMultiple') {
-      userSettings.add({
-        ...chartEngineSetting,
-        value: props.engine,
-      })
-    }
     const query = { ...route.query }
     if (props.queryEngine) {
       query['charts.engine'] = props.queryEngine
@@ -142,11 +143,13 @@ export const ThresholdSwitching = defineComponent({
 
 export const EnsembleMembers = defineComponent({
   props: {
+    engine: { type: String, default: 'v4' },
     dataReady: { type: Boolean, default: false },
     memberCount: { type: Number, default: 3 },
     offset: { type: Number, default: 0 },
   },
   setup(props) {
+    useStoryChartEngine(props.engine)
     onMounted(() => loadLocale(i18n.global.locale.value))
     const start = new Date('2026-01-01T00:00:00Z')
     const end = new Date('2026-01-02T00:00:00Z')

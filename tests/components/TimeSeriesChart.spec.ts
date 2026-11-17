@@ -231,3 +231,36 @@ test('vertical profile charts are not limited by the regular chart heights', asy
     .poll(async () => (await svg.boundingBox())?.height ?? 0)
     .toBeGreaterThan(initialHeight + 50)
 })
+
+test('traces the hovered ensemble member in the v5 chart', async ({
+  mount,
+  page,
+}) => {
+  const component = await mount('charts/TimeSeriesChart/EnsembleMembers', {
+    dataReady: true,
+    engine: 'v5',
+  })
+  const members = component.locator(
+    '.chart-container svg [data-mark="ensemble"] path',
+  )
+  await expect(members.first()).toHaveAttribute('d', /^M.+L/)
+  const point = await members.first().evaluate((element: SVGPathElement) => {
+    const middle = element.getPointAtLength(element.getTotalLength() / 2)
+    return new DOMPoint(middle.x, middle.y).matrixTransform(
+      element.getScreenCTM()!,
+    )
+  })
+  await page.mouse.move(point.x, point.y)
+
+  const trace = component.locator(
+    '[data-layer="highlight"] path[data-highlight="ensemble"]',
+  )
+  await expect(trace).toHaveCount(1)
+  await expect(trace).toHaveCSS('stroke-width', '1.5px')
+  // The trace follows the hovered member line on screen
+  const box = (element: Element) => {
+    const { x, y, width, height } = element.getBoundingClientRect()
+    return [x, y, width, height].map(Math.round)
+  }
+  expect(await trace.evaluate(box)).toEqual(await members.first().evaluate(box))
+})

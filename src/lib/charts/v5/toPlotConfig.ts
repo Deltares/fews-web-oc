@@ -9,6 +9,7 @@ import {
   degreesScale,
   ensemble,
   handleCache,
+  highlight,
   linearScale,
   line,
   series as seriesMark,
@@ -16,6 +17,7 @@ import {
   type AxisHandle,
   type BandMark,
   type BarMark,
+  type CrosshairHandle,
   type EnsembleInput,
   type EnsembleMark,
   type EnsembleMemberMetadata,
@@ -46,6 +48,8 @@ export interface ToPlotConfigOptions {
   themeElement?: Element
   verticalProfile?: boolean
   plugins?: PlotConfig['plugins']
+  /** Crosshair the ensemble member highlight follows, including its snapping. */
+  crosshair?: CrosshairHandle
   sharedTimeScale?: ScaleHandle<'time'>
   sharedElevationScale?: ScaleHandle<'linear'>
   align?: AlignGroup
@@ -70,6 +74,7 @@ type MarkContext = {
   handles: HandleCache
   verticalProfile: boolean
   stackedBarAxes: Set<string>
+  ensembleMarks: EnsembleMark[]
 }
 
 export function toPlotConfig(
@@ -119,6 +124,15 @@ function buildPlotConfig(
     directions[id] = 'y'
   }
 
+  const { marks, ensembleMarks } = createMarks(
+    config.series,
+    stores,
+    resources,
+    yScales,
+    handles,
+    options.verticalProfile,
+  )
+
   return {
     title: config.title,
     autoMargins: options.autoMargins ?? true,
@@ -133,16 +147,28 @@ function buildPlotConfig(
     scales,
     directions,
     axes: createAxes(xAxis, yScales, settings, options, handles),
-    marks: createMarks(
-      config.series,
-      stores,
-      resources,
-      yScales,
-      handles,
-      options.verticalProfile,
-    ),
-    plugins: options.plugins,
+    marks,
+    plugins: createPlugins(ensembleMarks, options, handles),
   }
+}
+
+/** Adds a highlight of the hovered ensemble member when the chart has ensembles. */
+function createPlugins(
+  ensembleMarks: EnsembleMark[],
+  options: ToPlotConfigOptions,
+  handles: HandleCache,
+): PlotConfig['plugins'] {
+  if (options.isBrush || ensembleMarks.length === 0) return options.plugins
+  const ensembleHighlight = handles.use(
+    'plugin:ensemble-highlight',
+    highlight,
+    {
+      axis: options.verticalProfile ? 'y' : 'x',
+      marks: ensembleMarks,
+      crosshair: options.crosshair,
+    },
+  )
+  return [...(options.plugins ?? []), ensembleHighlight]
 }
 
 export function getV5PlotMargins(
@@ -317,7 +343,7 @@ function createMarks(
   yScales: YScale[],
   handles: HandleCache,
   verticalProfile = false,
-): PlotMark[] {
+): { marks: PlotMark[]; ensembleMarks: EnsembleMark[] } {
   const marks: PlotMark[] = []
   const context: MarkContext = {
     chartSeries,
@@ -327,13 +353,14 @@ function createMarks(
     handles,
     verticalProfile,
     stackedBarAxes: new Set<string>(),
+    ensembleMarks: [],
   }
 
   for (const [seriesIndex, item] of chartSeries.entries()) {
     marks.push(...createMarksForItem(item, seriesIndex, context))
   }
 
-  return marks
+  return { marks, ensembleMarks: context.ensembleMarks }
 }
 
 function createMarksForItem(
@@ -352,7 +379,10 @@ function createMarksForItem(
     item.dataResources.length === 1
   ) {
     const mark = createEnsembleMark(item, markId, yScale, resources, handles)
-    if (mark) return createEnsembleMarks(item, mark, markId, yScale, context)
+    if (mark) {
+      context.ensembleMarks.push(mark)
+      return createEnsembleMarks(item, mark, markId, yScale, context)
+    }
   }
   if (item.type === 'area' && item.dataResources.length > 1) {
     const mark = createBandMark(item, markId, yScale, resources, handles)
