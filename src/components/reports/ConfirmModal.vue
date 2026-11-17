@@ -27,7 +27,6 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 
 interface Props {
-  modelValue: boolean
   title?: string
   message?: string
   confirmText?: string

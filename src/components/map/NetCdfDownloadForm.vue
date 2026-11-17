@@ -8,7 +8,7 @@
       <v-card-title class="text-h6">{{
         t('download.downloadData')
       }}</v-card-title>
-      <v-card-text>
+      <v-card-text class="pb-0">
         <v-select
           v-model="downloadType"
           :items="downloadOptions"
@@ -122,24 +122,19 @@
           density="compact"
           variant="outlined"
           hide-details
-          class="mb-3"
         />
-
-        <v-alert
-          v-if="errorMessage"
-          type="error"
-          density="compact"
-          class="mb-3"
-        >
-          {{ errorMessage }}
-        </v-alert>
       </v-card-text>
-
+      <div class="d-flex mx-6 my-2">
+        <CopyUrlLink :url="url" :disabled="!canDownload" />
+      </div>
+      <div class="d-flex mx-6">
+        <DownloadDisclaimerAcceptance />
+      </div>
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" @click="dialogOpen = false">{{
-          t('common.cancel')
-        }}</v-btn>
+        <v-btn variant="text" @click="dialogOpen = false">
+          {{ t('common.cancel') }}
+        </v-btn>
         <v-btn
           color="primary"
           variant="flat"
@@ -159,15 +154,26 @@ import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { configManager } from '@/services/application-config'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles'
-import { authenticationManager } from '@/services/authentication/AuthenticationManager'
-import { convertDateToDateTimeString } from '@/lib/date'
-import { toMercator } from '@turf/projection'
+import {
+  fromDisplayDateTimeInputValue,
+  getDisplayTimeZone,
+  SYSTEM_TIME_ZONE,
+  toDisplayDateTimeInputValue,
+} from '@/lib/date/timeZone'
+import CopyUrlLink from '@/components/share/CopyUrlLink.vue'
 import DrawBoundingBoxControl from './DrawBoundingBoxControl.vue'
 import type { BoundingBox } from '@/services/useBoundingBox'
-import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
+import {
+  PiWebserviceProvider,
+  TimeSeriesGridFilter,
+} from '@deltares/fews-pi-requests'
+import { useDownloadDisclaimerStore } from '@/stores/downloadDisclaimer'
+import { useAlertsStore } from '@/stores/alerts'
+import DownloadDisclaimerAcceptance from '@/components/download/DownloadDisclaimerAcceptance.vue'
+import { getRequestHeaders } from '@/lib/requests/transformRequest.ts'
 
 interface Props {
-  layerName?: string
+  layerName: string
   defaultStartTime?: string | null
   defaultEndTime?: string | null
 }
@@ -177,18 +183,24 @@ const dialogOpen = defineModel<boolean>({ default: false })
 const { t } = useI18n()
 const bbox = ref<BoundingBox | null>(null)
 const downloadType = ref<'fullGrid' | 'pointCloud'>('fullGrid')
-const fileFormat = ref<'netcdf3' | 'netcdf4'>('netcdf4')
+const fileFormat = ref<NetCdfFormat>('netcdf4')
 const startTimeInput = ref('')
 const endTimeInput = ref('')
 const isDownloading = ref(false)
-const errorMessage = ref('')
+const downloadDisclaimerStore = useDownloadDisclaimerStore()
+const alertStore = useAlertsStore()
 
 const downloadOptions = computed(() => [
   { title: t('download.fullGrid'), value: 'fullGrid' },
   { title: t('download.pointCloud'), value: 'pointCloud' },
 ])
 
-const fileFormatOptions = [
+interface FileFormatOption {
+  title: string
+  value: NetCdfFormat
+}
+
+const fileFormatOptions: FileFormatOption[] = [
   { title: 'netcdf4', value: 'netcdf4' },
   { title: 'netcdf3', value: 'netcdf3' },
 ]
@@ -229,12 +241,12 @@ watch(
   () => [props.defaultStartTime, props.defaultEndTime],
   () => {
     if (props.defaultStartTime && props.defaultStartTime !== null) {
-      startTimeInput.value = convertDateToDateTimeString(
+      startTimeInput.value = toDisplayDateTimeInputValue(
         new Date(props.defaultStartTime),
       )
     }
     if (props.defaultEndTime && props.defaultEndTime !== null) {
-      endTimeInput.value = convertDateToDateTimeString(
+      endTimeInput.value = toDisplayDateTimeInputValue(
         new Date(props.defaultEndTime),
       )
     }
@@ -242,12 +254,32 @@ watch(
   { immediate: true },
 )
 
+// Keep the entered times on a change of the display time zone
+watch(getDisplayTimeZone, (_, oldTimeZone) => {
+  startTimeInput.value = convertInputValue(startTimeInput.value, oldTimeZone)
+  endTimeInput.value = convertInputValue(endTimeInput.value, oldTimeZone)
+})
+
+function convertInputValue(
+  value: string,
+  oldTimeZone: string | undefined,
+): string {
+  const date = fromDisplayDateTimeInputValue(
+    value,
+    oldTimeZone ?? SYSTEM_TIME_ZONE,
+  )
+  if (Number.isNaN(date.getTime())) return value
+  return toDisplayDateTimeInputValue(date)
+}
+
 const canDownload = computed(() => {
   const basicRequirements =
     !!props.layerName &&
     !!startTimeInput.value &&
     !!endTimeInput.value &&
-    !isDownloading.value
+    !isDownloading.value &&
+    (!downloadDisclaimerStore.isConfigured ||
+      downloadDisclaimerStore.hasAccepted)
 
   // For point cloud, also require a bounding box
   if (downloadType.value === 'pointCloud') {
@@ -257,6 +289,15 @@ const canDownload = computed(() => {
   return basicRequirements
 })
 
+watch(
+  dialogOpen,
+  (newValue) => {
+    if (!newValue) return
+    downloadDisclaimerStore.ensureShown()
+  },
+  { immediate: true },
+)
+
 function toggleDrawingMode() {
   if (bbox.value && !isDrawingBbox.value) {
     bbox.value = null
@@ -264,57 +305,80 @@ function toggleDrawingMode() {
   isDrawingBbox.value = !isDrawingBbox.value
 }
 
-async function download() {
-  if (!props.layerName) return
+type NetCdfFormat = 'netcdf3' | 'netcdf4'
 
-  errorMessage.value = ''
+interface NetCdfFilter extends Omit<TimeSeriesGridFilter, 'documentFormat'> {
+  documentFormat: 'PI_NETCDF'
+  netcdfFormat?: NetCdfFormat
+  pointCloud?: boolean
+  crs?: 'EPSG:3857' | 'EPSG:4326'
+}
+
+const url = computed(() => {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const piProvider = new PiWebserviceProvider(baseUrl)
+
+  const startTime = fromDisplayDateTimeInputValue(
+    startTimeInput.value,
+  ).toISOString()
+  const endTime = fromDisplayDateTimeInputValue(
+    endTimeInput.value,
+  ).toISOString()
+
+  // Build the filter for the grid timeseries request
+  const filter: NetCdfFilter = {
+    documentFormat: 'PI_NETCDF',
+    layers: props.layerName,
+    importFromExternalDataSource: false,
+    useDisplayUnits: false,
+    netcdfFormat: fileFormat.value === 'netcdf3' ? fileFormat.value : undefined,
+    startTime,
+    endTime,
+  }
+
+  if (downloadType.value === 'pointCloud') {
+    filter.pointCloud = true
+    filter.crs = 'EPSG:4326' // https://epsg.io/?q=4326
+    if (bbox.value) {
+      const [minX, minY] = [bbox.value.lonMin, bbox.value.latMin]
+      const [maxX, maxY] = [bbox.value.lonMax, bbox.value.latMax]
+      filter.bbox = [minX, minY, maxX, maxY]
+    }
+  }
+
+  // @ts-expect-error PI_NETCDF is not yet in documentFormat type
+  return piProvider.timeSeriesGridUrl(filter).toString()
+})
+
+async function download() {
+  if (!url.value || !canDownload.value) return
+
   isDownloading.value = true
 
   try {
-    const startTime = new Date(startTimeInput.value).toISOString()
-    const endTime = new Date(endTimeInput.value).toISOString()
+    const headers = await getRequestHeaders()
 
-    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-
-    const piProvider = new PiWebserviceProvider(baseUrl)
-
-    // Build the filter for the grid timeseries request
-    const filter: Record<string, any> = {
-      documentFormat: 'PI_NETCDF',
-      layers: props.layerName,
-      importFromExternalDataSource: false,
-      useDisplayUnits: false,
-      netcdfFormat:
-        fileFormat.value === 'netcdf3' ? fileFormat.value : undefined,
-      startTime,
-      endTime,
-    }
-
-    if (downloadType.value === 'pointCloud') {
-      filter.pointCloud = true
-
-      if (bbox.value) {
-        const [minX, minY] = toMercator([bbox.value.lonMin, bbox.value.latMin])
-        const [maxX, maxY] = toMercator([bbox.value.lonMax, bbox.value.latMax])
-        filter.bbox = [minX, minY, maxX, maxY]
-      }
-    }
-
-    const headers = await authenticationManager.getAuthorizationHeaders()
-
-    const url = piProvider.timeSeriesGridUrl(filter)
+    const startTime = fromDisplayDateTimeInputValue(
+      startTimeInput.value,
+    ).toISOString()
+    const endTime = fromDisplayDateTimeInputValue(
+      endTimeInput.value,
+    ).toISOString()
 
     await downloadFileAttachment(
-      url.toString(),
+      url.value,
       `${props.layerName}_${startTime}_${endTime}`,
       // @ts-expect-error enum value should be added to fews-pi-requests
       'PI_NETCDF',
       headers,
     )
-    dialogOpen.value = false
   } catch (error) {
-    console.error('NetCDF download error:', error)
-    errorMessage.value = t('download.errors.failed')
+    const message =
+      error instanceof Error ? error.message : t('download.errors.failed')
+    alertStore.addAlert({
+      type: 'error',
+      message,
+    })
   } finally {
     isDownloading.value = false
   }

@@ -1,41 +1,29 @@
 <template>
-  <SidePanelContent :title="t('sidePanel.documentFile')" @close="emit('close')">
-    <template #prepend>
-      <v-btn icon="mdi-home" @click="goHome" />
-    </template>
+  <Teleport to="#sidepanel-prepend-teleport-target" defer>
+    <v-btn icon="mdi-home" @click="goHome" />
+  </Teleport>
 
-    <iframe
-      ref="frame"
-      v-if="url !== null"
-      :src="url"
-      title="Information Document"
-      class="w-100 h-100 ma-0 pa-0 border-none"
-    ></iframe>
-    <div v-else class="pa-4">
-      <span>No information document configured</span>
-    </div>
-  </SidePanelContent>
+  <iframe
+    ref="frame"
+    v-if="url !== null"
+    :src="url"
+    title="Information Document"
+    class="w-100 h-100 ma-0 pa-0 border-none"
+  ></iframe>
+  <div v-else class="pa-4">
+    <span>No information document configured</span>
+  </div>
 </template>
 <script setup lang="ts">
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { computed, useTemplateRef } from 'vue'
-import { useI18n } from 'vue-i18n'
 
 import { getResourcesStaticUrl } from '@/lib/fews-config'
-
-import SidePanelContent from './SidePanelContent.vue'
-
-const { t } = useI18n()
 
 interface Props {
   topologyNode?: TopologyNode
 }
 const props = defineProps<Props>()
-
-interface Emits {
-  close: []
-}
-const emit = defineEmits<Emits>()
 
 const frame = useTemplateRef('frame')
 

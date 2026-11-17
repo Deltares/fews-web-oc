@@ -19,7 +19,7 @@ import type { IControl } from 'maplibre-gl'
 import NetCdfDownloadForm from './NetCdfDownloadForm.vue'
 
 interface Props {
-  layerName?: string
+  layerName: string
   layerCapabilities?: {
     firstValueTime?: string | null
     lastValueTime?: string | null

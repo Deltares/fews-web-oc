@@ -68,7 +68,7 @@ function addToChart(
     case 'bar':
       chart = new ChartBar(data, { tooltip })
       break
-    case 'horizontalColorCode':
+    case 'horizontalColorCode': {
       const matrixData = horizontalColorCodeDataFromData(chartSeries, data)
       chart = new ChartMatrix(matrixData, {
         y: {
@@ -80,6 +80,7 @@ function addToChart(
         tooltip,
       })
       break
+    }
     default:
       chart = new ChartMarker(data, {
         symbol: chartSeries.marker,
@@ -90,23 +91,28 @@ function addToChart(
   chart.addTo(axis, chartSeries.options, id, chartSeries.style)
 }
 
+function hasMissingDataResource(
+  chartSeries: ChartSeries,
+  series: Record<string, Series>,
+) {
+  return chartSeries.dataResources.some((id) => series[id] === undefined)
+}
+
 export function refreshChart(
   axis: CartesianAxes,
   config: ChartConfig,
   series: Record<string, Series>,
 ) {
   /* Adds charts to the axis if not yet present, and removes charts that should no longer be there */
-  const ids: string[] = axis.charts.map((c: any) => c.id)
+  const ids: Set<string> = new Set(axis.charts.map((c: any) => c.id))
   const removeIds: string[] = axis.charts.map((c: any) => c.id)
   if (config?.series === undefined) return
   for (const seriesData of config.series) {
     if (!seriesData.visibleInPlot) continue
-    if (!ids.includes(seriesData.id)) {
+    if (!ids.has(seriesData.id)) {
       addToChart(axis, seriesData, series)
     }
-    const index = removeIds.findIndex((item) => {
-      return item === seriesData.id
-    })
+    const index = removeIds.indexOf(seriesData.id)
     if (index >= 0) removeIds.splice(index, 1)
   }
   for (const id of removeIds) {
@@ -130,15 +136,25 @@ export function updateChartData(
   series: Record<string, Series>,
   hasResetAxes: boolean = false,
 ) {
-  let allMissingData = true
-  chartSeries.forEach((chartSeries) => {
-    const charts = axis.charts.filter((chart) => chart.id == chartSeries.id)
-    if (charts.length === 0) return
+  const plottedSeries = chartSeries.filter((s) => s.type !== 'dummy')
+  if (plottedSeries.length === 0) return hasResetAxes
 
-    const hasMissingResource = chartSeries.dataResources.some(
-      (id) => series[id] === undefined,
-    )
-    if (hasMissingResource) return
+  let allMissingData = true
+  let hasAddedChart = false
+  const emptyCharts = new Set(
+    axis.charts.filter(
+      (chart) => chart.data === undefined || chart.data.length === 0,
+    ),
+  )
+  plottedSeries.forEach((chartSeries) => {
+    const charts = axis.charts.filter((chart) => chart.id == chartSeries.id)
+    if (hasMissingDataResource(chartSeries, series)) return
+
+    if (charts.length === 0) {
+      addToChart(axis, chartSeries, series)
+      hasAddedChart = true
+      return
+    }
 
     const rawData = dataFromResources(chartSeries.dataResources, series)
     const data = removeUnreliableData(rawData)
@@ -153,30 +169,23 @@ export function updateChartData(
       // Keep track of whether all charts had missing data before this data
       // update, in that case we should reset the y-axes as the domain is
       // probably [NaN, NaN].
-      allMissingData &&= chart.data === undefined || chart.data.length === 0
+      allMissingData &&= emptyCharts.has(chart)
       chart.data = matrixData ?? data
     })
   })
-  const needsAxisRescale = allMissingData || hasResetAxes
+  const needsInitialScale = allMissingData || hasAddedChart
+  const needsAxisRescale = needsInitialScale || hasResetAxes
   if (needsAxisRescale) {
-    // Autoscale only the y-axis, the x-axis should keep the domain set from
-    // the start and end time or zooming.
-    axis.redraw({
-      x: {
-        nice: false,
-        domain: undefined,
-        fullExtent: false,
-      },
+    const options = {
       y: { autoScale: true },
-    })
+      ...(needsInitialScale && axis.xInitialExtent[0] === undefined
+        ? { x: { autoScale: true } }
+        : {}),
+    }
+    axis.redraw(options)
   } else {
     // Ensure the current zoom, which might be user-selected, does not change
     axis.redraw({
-      x: {
-        nice: false,
-        domain: undefined,
-        fullExtent: false,
-      },
       y: {
         nice: false,
         domain: undefined,

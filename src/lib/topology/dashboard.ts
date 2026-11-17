@@ -56,6 +56,7 @@ export const componentTypeToComponentMap = {
   'data-analysis-display': DataAnalysisDisplay,
   'documents-display': Empty,
   'embed-url': WebDisplay,
+  'micro-frontend-display': Empty, // Placeholder for micro-frontend display
 } satisfies Record<ComponentType, Component>
 
 export type PropsForComponentType<T extends ComponentType> = ComponentProps<
@@ -88,6 +89,7 @@ export async function getComponentPropsForNode(
     const result: PropsForComponentType<'charts'> = {
       nodeId: node.id,
       plotId:
+        routeParams?.plotId ??
         actionParams?.charts?.displayId ??
         actionParams?.charts?.chartsLocationId,
     }

@@ -4,13 +4,14 @@ import {
   LocationsFilter,
   PiWebserviceProvider,
 } from '@deltares/fews-pi-requests'
-import { FeatureCollection, Geometry } from 'geojson'
+import { Feature, FeatureCollection, Geometry } from 'geojson'
 import { createTransformRequestFn } from '../requests/transformRequest'
 
 /**
  * Fetch locations for a list of filterIds as GeoJSON.
  *
  * This merges the results for all filterIds into a single GeoJSON object.
+ * Locations returned by multiple filterIds are only included once.
  *
  * @param provider FEWS PI Webservices provider.
  * @param filterIds List of filterIds for which to fetch locations as GeoJSON.
@@ -20,10 +21,12 @@ export async function fetchLocationsAsGeoJson(
   baseUrl: string,
   filterIds: string[],
   filterOptions?: Partial<LocationsFilter>,
+  controller?: AbortController,
 ): Promise<FeatureCollection<Geometry, Location>> {
+  controller?.signal.throwIfAborted()
   // Fetch GeoJSON for all filterIds.
   const provider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
+    transformRequestFn: createTransformRequestFn({ controller }),
   })
   const settledResponses = await Promise.allSettled(
     filterIds.map((filterId) =>
@@ -34,6 +37,7 @@ export async function fetchLocationsAsGeoJson(
       ),
     ),
   )
+  controller?.signal.throwIfAborted()
   const error = (
     settledResponses.find((res) => res.status === 'rejected') as
       PromiseRejectedResult | undefined
@@ -43,18 +47,21 @@ export async function fetchLocationsAsGeoJson(
     console.error('Error fetching locations:', error)
   }
 
-  // Merge them into a single GeoJSON.
-  const response = settledResponses
-    .filter((res) => res.status === 'fulfilled')
-    .map((res) => res.value)
-  const geojson = response.reduce(
-    (acc: FeatureCollection<Geometry, Location>, item) => {
-      acc.features = acc.features.concat(item.features)
-      return acc
-    },
-    { type: 'FeatureCollection', features: [] },
-  )
-  return geojson
+  // Merge them into a single GeoJSON, keeping the first occurrence of each location.
+  const seenLocationIds = new Set<string>()
+  const features: Feature<Geometry, Location>[] = []
+  for (const res of settledResponses) {
+    if (res.status !== 'fulfilled') continue
+    for (const feature of res.value.features) {
+      const locationId = feature.properties?.locationId
+      if (locationId !== undefined) {
+        if (seenLocationIds.has(locationId)) continue
+        seenLocationIds.add(locationId)
+      }
+      features.push(feature)
+    }
+  }
+  return { type: 'FeatureCollection', features }
 }
 
 /**
@@ -99,7 +106,7 @@ async function fetchLocationsAsGeoJsonForSingleFilterId(
 }
 
 function isFeatureCollection(
-  geojson: FeatureCollection<Geometry, Location> | unknown,
+  geojson: unknown,
 ): geojson is FeatureCollection<Geometry, Location> {
   return (
     (geojson as FeatureCollection<Geometry, Location>).type ===

@@ -56,7 +56,7 @@ cases.forEach(({ name, url }) => {
       const headerColumns = lines[0].split(',').length
       // Check a few lines to make sure they have the same number of columns
       if (lines.length > 1) {
-        expect(lines[1].split(',').length).toBe(headerColumns)
+        expect(lines[1].split(',')).toHaveLength(headerColumns)
       }
     })
 

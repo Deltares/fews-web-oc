@@ -58,7 +58,7 @@ import {
   getDefaultSettings,
   type ComponentSettings,
 } from '@/lib/topology/componentSettings'
-import { useDateRegistry } from '@/services/useDateRegistry'
+import { useDateRegistry } from '@deltares/fews-web-oc-composables'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import type { NavigateRoute } from '@/lib/router'
 import { convertJSDateToFewsPiParameter, isInDatesRange } from '@/lib/date'

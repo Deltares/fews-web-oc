@@ -1,20 +1,27 @@
 <template>
   <div
     class="chart-with-chips d-flex flex-column"
-    :class="{ 'vertical-profile': verticalProfile, maximized: maximized }"
+    :class="{
+      'vertical-profile': verticalProfile,
+      maximized: maximized,
+      'default-plot-height': config.plotWeight === undefined,
+    }"
     :style="getPlotContainerStyle()"
   >
-    <ChartLegend
+    <div
       v-if="
         settings.legend.placement === 'above chart' ||
         settings.legend.placement === 'under chart'
       "
-      :tags="legendTags"
-      :margin="margin"
-      :settings="settings.legend"
-      @toggle-line="toggleLine"
       ref="legendContainer"
-    />
+    >
+      <ChartLegend
+        :tags="legendTags"
+        :margin="margin"
+        :settings="settings.legend"
+        @toggle-line="toggleLine"
+      />
+    </div>
     <ChartLegendOverlay
       v-else
       :tags="legendTags"
@@ -59,11 +66,11 @@ import {
   watch,
   onMounted,
   onBeforeUnmount,
-  nextTick,
   computed,
   useTemplateRef,
   type CSSProperties,
 } from 'vue'
+import { useResizeObserver } from '@vueuse/core'
 import {
   AlertLines,
   CrossSectionSelect,
@@ -95,13 +102,19 @@ import {
   type Tag,
 } from '@/lib/charts/tags'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
-import { getAxisOptions } from '@/lib/charts/axisOptions'
+import {
+  getAxisOptions,
+  getAxisTimeZone,
+  setAxisTimeZone,
+} from '@/lib/charts/axisOptions'
 import { useUserSettingsStore } from '@/stores/userSettings'
 
 import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
 import { getThresholdValues, isUniqueThreshold } from '@/lib/charts/thresholds'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 import { useI18n } from 'vue-i18n'
+import { useEnsembleChartConfig } from '@/services/useEnsembleChartConfig'
+import { EnsembleMouseOver } from '@/lib/charts/ensembleMouseOver'
 
 interface Props {
   config: ChartConfig
@@ -116,6 +129,10 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const chartConfig = useEnsembleChartConfig(
+  () => props.config,
+  () => props.series,
+)
 const domain = defineModel<[Date, Date]>('domain')
 
 const userSettingsStore = useUserSettingsStore()
@@ -127,7 +144,7 @@ defineExpose({
   axisAccept,
 })
 
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
@@ -144,15 +161,14 @@ const legendContainerHeight = ref(0)
 const brushContainerHeight = ref(0)
 const axisTime = ref<CrossSectionSelect<Date>>()
 let zoomedY = false
-let legendResizeObserver: ResizeObserver | undefined
-let brushResizeObserver: ResizeObserver | undefined
 
 onMounted(() => {
   if (!chartContainer.value) return
 
-  const axisOptions = getAxisOptions(props.config, props.settings, {
+  const axisOptions = getAxisOptions(chartConfig.value, props.settings, {
     isVerticalProfile: props.verticalProfile,
     locale: locale.value,
+    timeZone: getAxisTimeZone(),
   })
   axis = new CartesianAxes(
     chartContainer.value,
@@ -172,11 +188,18 @@ onMounted(() => {
   })
   margin.value = { ...axis.margin }
 
-  const mouseOver = new MouseOver({
-    direction: props.verticalProfile
-      ? MouseOverDirection.Vertical
-      : MouseOverDirection.Horizontal,
-  })
+  const mouseOver = props.verticalProfile
+    ? new MouseOver({ direction: MouseOverDirection.Vertical })
+    : new EnsembleMouseOver(
+        axis,
+        () => chartConfig.value,
+        () => props.series,
+        (summary) =>
+          t('ensembles.hoverSummary', {
+            ...summary,
+            unit: summary.unit ? ` ${summary.unit}` : '',
+          }),
+      )
 
   const wheelMode = userSettingsStore.scrollZoomMode
   const scrollModifierKey = ModifierKey.Shift
@@ -195,14 +218,26 @@ onMounted(() => {
   attachAxisVisitors(mouseOver, currentTime)
   resize()
   onValueChange()
-  setupLegendMeasurement()
-  setupBrushMeasurement()
-  globalThis.addEventListener('resize', resize)
+})
+
+// Resizes whenever the chart's own container changes size (e.g. maximize toggle, window resize, layout shifts)
+useResizeObserver(chartContainer, () => resize())
+useResizeObserver(
+  legendContainer,
+  ([entry]) => (legendContainerHeight.value = entry.contentRect.height),
+)
+useResizeObserver(
+  brushContainer,
+  ([entry]) => (brushContainerHeight.value = entry.contentRect.height),
+)
+
+watch(getAxisTimeZone, (timeZone) => {
+  if (axis && !props.verticalProfile) setAxisTimeZone(axis, timeZone)
 })
 
 watch(
   () => userSettingsStore.scrollZoomMode,
-  (scrollZoomMode) => zoom.updateOptions({ wheelMode: scrollZoomMode }),
+  (scrollZoomMode) => zoom?.updateOptions({ wheelMode: scrollZoomMode }),
 )
 
 const xTicksDisplay = computed(() =>
@@ -219,14 +254,8 @@ watch(
   },
 )
 
-watch(
-  () => props.settings.legend.placement,
-  () => {
-    setupLegendMeasurement()
-  },
-)
-
 function onUpdateXDomain(event: DomainChangeEvent): void {
+  if (!chartContainer.value?.clientWidth) return
   domain.value = event.new as [Date, Date]
 }
 
@@ -248,8 +277,12 @@ function onResetZoom() {
 }
 
 function setThresholdLines() {
-  const series = props.config.series
-  if (!series.some((s) => s.thresholds?.length)) return
+  const series = chartConfig.value.series
+  thresholdLinesVisitor.options = []
+  if (!series.some((s) => s.thresholds?.length)) {
+    axis.options.y?.forEach((y) => delete y.defaultDomain)
+    return { y: props.config.yAxis }
+  }
 
   const yDomains = props.config.yAxis?.map((y) => y.defaultDomain)
 
@@ -297,7 +330,7 @@ function setThresholdLines() {
 }
 
 function setTags() {
-  const series = props.config?.series ?? []
+  const series = chartConfig.value.series
   const isHorizontalColorCode = series.some(
     (s) => s.type === 'horizontalColorCode',
   )
@@ -323,47 +356,81 @@ const toggleLine = (tag: Tag) => {
   }
 }
 
+// The svg has a fixed pixel width/height (set by axis.resize()), so while a resize is in
+// flight it still occupies its old size and can skew the surrounding flex layout (e.g. when
+// siblings are toggling visibility). Take it out of flow (rather than hiding it, which would
+// flash) so the container is sized by pure flexbox rules, then resize once that has settled.
 const resize = () => {
-  nextTick(() => {
-    axis.resize()
+  const svgNode = axis?.svg.node()
+  svgNode?.style.setProperty('position', 'absolute')
+  requestAnimationFrame(() => {
+    axis?.resize()
+    svgNode?.style.removeProperty('position')
   })
+}
+
+function isAllDataLoaded() {
+  return chartConfig.value.series.every((s) =>
+    s.dataResources.every((id) => props.series[id] !== undefined),
+  )
 }
 
 const onValueChange = () => {
   clearChart(axis)
 
-  refreshChart(axis, props.config, props.series)
-  redraw(axis, props.config)
+  refreshChart(axis, chartConfig.value, props.series)
   const zoomOptions = setThresholdLines()
   if (zoomOptions) {
     axis.setOptions(zoomOptions)
   }
+  // Delay automatic margin calculation until thresholds and all series data are present
+  axis.options.automargin = isAllDataLoaded()
+  redraw(axis, chartConfig.value)
   resetAxes(false)
   setTags()
 }
 
 const beforeDestroy = () => {
-  globalThis.removeEventListener('resize', resize)
-  zoom.removeEventListener('zoom', onZoom)
-  zoom.removeEventListener('reset-zoom', onResetZoom)
-  legendResizeObserver?.disconnect()
-  legendResizeObserver = undefined
-  brushResizeObserver?.disconnect()
-  brushResizeObserver = undefined
+  zoom?.removeEventListener('zoom', onZoom)
+  zoom?.removeEventListener('reset-zoom', onResetZoom)
 }
 
 watch(domain, (newDomain) => {
+  if (!axis) return
   axis.redraw({ x: { domain: newDomain } })
   resetAxes(!zoomedY)
 })
 
 const { resetAxes } = useSeriesUpdateChartData(
   () => props.series,
-  () => props.config,
+  chartConfig,
   () => axis,
 )
 
-watch(() => props.config, onValueChange)
+watch(chartConfig, () => {
+  if (!axis) return
+  onValueChange()
+})
+
+// KeepAlive can reuse this component for a subplot whose requests changed;
+// when the config update ran before the new data resources had arrived,
+// re-run the full refresh once they become available.
+watch(
+  () => props.series,
+  () => {
+    if (!axis) return
+    const hasUncreatedChart = chartConfig.value.series.some(
+      (s) =>
+        s.visibleInPlot &&
+        s.type !== 'dummy' &&
+        s.dataResources.every((id) => props.series[id] !== undefined) &&
+        !axis.charts.some((c) => c.id === s.id),
+    )
+    if (hasUncreatedChart || (!axis.options.automargin && isAllDataLoaded()))
+      onValueChange()
+  },
+)
+
 onBeforeUnmount(() => {
   beforeDestroy()
 })
@@ -379,10 +446,6 @@ function axisAccept(visitor: Visitor) {
 const plotWeight = computed(() => {
   return props.config.plotWeight
 })
-
-function updateBrushContainerHeight() {
-  brushContainerHeight.value = brushContainer.value?.offsetHeight ?? 0
-}
 
 function attachAxisVisitors(mouseOver: MouseOver, currentTime: CurrentTime) {
   if (props.highlightTime !== undefined) {
@@ -405,38 +468,6 @@ function attachAxisVisitors(mouseOver: MouseOver, currentTime: CurrentTime) {
   axis.accept(currentTime)
 }
 
-function setupBrushMeasurement() {
-  updateBrushContainerHeight()
-  if (!brushContainer.value) return
-
-  brushResizeObserver = new ResizeObserver(() => {
-    updateBrushContainerHeight()
-  })
-  brushResizeObserver.observe(brushContainer.value)
-}
-
-function updateLegendContainerHeight() {
-  legendContainerHeight.value = legendContainer.value?.offsetHeight ?? 0
-}
-
-function setupLegendMeasurement() {
-  nextTick(() => {
-    legendResizeObserver?.disconnect()
-    legendResizeObserver = undefined
-
-    if (legendContainer.value) {
-      updateLegendContainerHeight()
-      legendResizeObserver = new ResizeObserver(() => {
-        updateLegendContainerHeight()
-      })
-      legendResizeObserver.observe(legendContainer.value)
-      return
-    }
-
-    legendContainerHeight.value = 0
-  })
-}
-
 function getPlotContainerStyle(): CSSProperties {
   if (plotWeight.value === undefined) {
     return {
@@ -452,7 +483,7 @@ function getPlotContainerStyle(): CSSProperties {
       : 'column',
     flexBasis: `${plotContainerBasis}px`,
     flexGrow: plotWeight.value,
-    minHeight: `${plotContainerBasis + plotWeight.value}px`,
+    minHeight: `${plotContainerBasis}px`,
     flexShrink: 0,
   }
 }
@@ -467,7 +498,7 @@ function getChartLayoutStyle() {
   const grow = plotWeight.value
   if (grow === undefined) {
     return {
-      flex: '1 1 332px',
+      flex: '1 1 100%',
     }
   }
   const flexbasis = 25 + 40 // axis.top + axis.bottom
@@ -481,7 +512,7 @@ function getChartLayoutStyle() {
 .chart-container {
   display: flex;
   position: relative;
-  flex: 1 1 332px;
+  flex: 1 1 100%;
   width: 100%;
   fill: currentColor;
   margin: 0px auto;
@@ -497,17 +528,37 @@ function getChartLayoutStyle() {
 }
 
 .chart-with-chips {
+  --plot-height: max(50%, 275px);
   display: flex;
   position: relative;
   flex: 1 1 80%;
-  max-height: max(50%, 400px);
   width: 100%;
+}
+
+.chart-with-chips.default-plot-height:not(.vertical-profile):not(.maximized) {
+  min-height: var(--plot-height);
+  max-height: var(--plot-height);
+}
+
+@container (height >= 825px) {
+  .chart-with-chips {
+    --plot-height: max(33.333%, 275px);
+  }
 }
 
 .chart-with-chips.maximized {
   flex: 1 1 100%;
   max-height: none;
   max-width: none;
+}
+
+.chart-with-chips:only-child {
+  --plot-height: max(50%, 400px);
+}
+
+.chart-with-chips:first-child:nth-last-child(2),
+.chart-with-chips:nth-child(2):last-child {
+  --plot-height: 50%;
 }
 
 .chart-maximize-btn {

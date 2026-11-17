@@ -13,6 +13,7 @@ export const mapIds = {
       childSymbol: getLayerId('location-child-symbol'),
       text: getLayerId('location-text'),
       fill: getLayerId('location-fill'),
+      line: getLayerId('location-line'),
     },
     source: getSourceId('location'),
   },

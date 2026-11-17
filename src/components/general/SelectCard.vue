@@ -23,7 +23,8 @@
       density="compact"
     >
       <v-list-item
-        v-for="item in items"
+        v-for="(item, index) in items"
+        :key="index"
         :value="getItemValue?.(item) ?? item"
         :title="getItemTitle?.(item) ?? String(item)"
         :lines="false"

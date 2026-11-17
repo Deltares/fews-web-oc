@@ -80,17 +80,15 @@ function buildMenuFromGroups(
     const groupNode = groupNodes.get(group.path.toString())
     if (group.groupName === undefined && groupNode !== undefined) {
       items.push(groupNode)
-    } else {
-      if (
-        groupNode !== undefined &&
-        group.groupName !== undefined &&
-        group.path.length > 0
-      ) {
-        const parentPath = group.path.slice(0, -1)
-        if (parentPath !== undefined) {
-          const parentNode = groupNodes.get(parentPath.toString())
-          parentNode?.children?.push(groupNode)
-        }
+    } else if (
+      groupNode !== undefined &&
+      group.groupName !== undefined &&
+      group.path.length > 0
+    ) {
+      const parentPath = group.path.slice(0, -1)
+      if (parentPath !== undefined) {
+        const parentNode = groupNodes.get(parentPath.toString())
+        parentNode?.children?.push(groupNode)
       }
     }
   }

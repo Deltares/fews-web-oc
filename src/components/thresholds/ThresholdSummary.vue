@@ -1,11 +1,12 @@
 <template>
-  <v-card
-    :border="true"
-    :color="isSelected ? 'var(--selected-color)' : 'transparent'"
-    flat
+  <v-list-item
+    border
+    :active="isSelected"
     density="compact"
+    rounded
     :ripple="false"
     v-bind="selectable ? { onClick: () => onPanelClick() } : {}"
+    class="pa-0 overflow-hidden"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
   >
@@ -27,7 +28,7 @@
         </template>
       </ThresholdsParameter>
     </template>
-  </v-card>
+  </v-list-item>
 </template>
 <script setup lang="ts">
 import ThresholdsParameter from '@/components/thresholds/ThresholdsField.vue'

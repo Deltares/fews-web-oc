@@ -41,7 +41,6 @@ const fullscreen = ref(false)
 <style scoped>
 .fullscreen {
   position: fixed;
-  flex-grow: 1 1 80%;
   top: 0px;
   right: 0px;
   width: 100%;

@@ -7,11 +7,12 @@ const mapUrl =
 
 async function enableDataDownloadTools(page: Page) {
   await page.getByRole('button', { name: 'User Settings' }).click()
-  await page.getByRole('button', { name: 'All User Settings' }).click()
+  await page.getByRole('button', { name: 'All settings' }).click()
   const toggle = page.getByRole('checkbox', {
     name: 'Show map data download',
   })
-  await toggle.click()
+  // check() instead of click(): the FEWS config may already enable the tools.
+  await toggle.check()
   await page.getByRole('button', { name: 'Close User Settings' }).click()
 }
 

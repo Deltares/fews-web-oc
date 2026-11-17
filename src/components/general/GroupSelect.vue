@@ -62,7 +62,8 @@
 
           <!-- Group Items -->
           <v-list-item
-            v-for="item in groupItems"
+            v-for="(item, index) in groupItems"
+            :key="index"
             density="compact"
             :title="getItemTitle(item)"
             :value="getItemValue(item)"

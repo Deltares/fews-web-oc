@@ -239,11 +239,11 @@ function toggleCurrentRoute() {
   validateInput()
 }
 
-async function handleClick(event: MouseEvent) {
+function handleClick(event: MouseEvent) {
   expandUi()
 }
 
-async function handleFocusIn(event: FocusEvent) {
+function handleFocusIn(event: FocusEvent) {
   expandUi()
 }
 

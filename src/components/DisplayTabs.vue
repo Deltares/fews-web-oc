@@ -1,13 +1,13 @@
 <template>
   <div
-    v-if="displayTabs.length > 1"
+    v-if="visibleDisplayTabs.length > 1"
     class="overflow-visible d-flex position-relative"
   >
     <div class="icon-group__underlay"></div>
     <v-btn
       variant="text"
       size="small"
-      v-for="tab in displayTabs"
+      v-for="tab in visibleDisplayTabs"
       :key="tab.id"
       :value="tab.type"
       :href="tab.href"
@@ -25,16 +25,24 @@ import {
   type DisplayTab,
 } from '@/lib/topology/displayTabs.js'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
-import { ref, watchEffect } from 'vue'
+import { useMicroFrontEnd } from '@/composables/useMicroFrontEnd'
+import { computed, ref, watchEffect } from 'vue'
+import type { WebOCComponentSettingsClass } from '@deltares/fews-pi-requests'
+import { filterDisplayTabs } from '@/lib/topology/filterDisplayTabs'
 
 interface Props {
   nodeId?: string | string[]
+  settings?: WebOCComponentSettingsClass
 }
 
 const props = defineProps<Props>()
 
 const displayTabs = ref<DisplayTab[]>([])
+const visibleDisplayTabs = computed(() =>
+  filterDisplayTabs(displayTabs.value, props.settings),
+)
 const topologyNodesStore = useTopologyNodesStore()
+const { microFrontEndConfig } = useMicroFrontEnd()
 
 // Update the displayTabs if the active node changes (or if the topologyMap changes).
 // Redirect to the corresponding display of the updated active tab.
@@ -42,12 +50,8 @@ watchEffect(async () => {
   // Check if the current displayTab already matches the active node.
   if (!props.nodeId) return
   const nodeId = props.nodeId
-  let activeNodeId: string
-  if (Array.isArray(nodeId)) {
-    activeNodeId = nodeId.length > 1 ? nodeId[nodeId.length - 1] : nodeId[0]
-  } else {
-    activeNodeId = nodeId
-  }
+  const activeNodeId = Array.isArray(nodeId) ? nodeId.at(-1) : nodeId
+  if (activeNodeId === undefined) return
 
   const parentNodeIdNodeId =
     Array.isArray(props.nodeId) && props.nodeId.length > 1
@@ -61,7 +65,16 @@ watchEffect(async () => {
   }
 
   // Create the displayTabs for the active node.
-  displayTabs.value = await displayTabsForNode(node, parentNodeIdNodeId)
+  const microFrontEndId = node.microFrontEnds?.[0]?.id
+  const microFrontEndIcon = microFrontEndConfig().find(
+    (microFrontEnd) => microFrontEnd.id === microFrontEndId,
+  )?.icon
+  const tabs = await displayTabsForNode(node, parentNodeIdNodeId)
+  displayTabs.value = tabs.map((tab) =>
+    tab.type === 'micro-frontend-display'
+      ? { ...tab, icon: microFrontEndIcon || tab.icon }
+      : tab,
+  )
 })
 </script>
 

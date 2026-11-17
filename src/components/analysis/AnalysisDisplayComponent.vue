@@ -50,8 +50,8 @@
     <div class="d-flex flex-column flex-1-1 overflow-auto">
       <v-card-title class="flex-0-0 d-flex ga-2 align-center">
         <AnalysisCollection
+          v-model:collections="collections"
           v-model:selectedCollectionName="selectedCollectionName"
-          :collections="collections"
           :config="config"
         />
         <AnalysisDateRange
@@ -93,7 +93,6 @@ import type {
   DataAnalysisDisplayElement,
 } from '@deltares/fews-pi-requests'
 import { computed, ref, watch } from 'vue'
-import { configManager } from '@/services/application-config'
 import { useTimeSeries } from '@/services/useTimeSeries'
 import {
   type ComponentSettings,
@@ -112,7 +111,6 @@ import { useFetchDomain } from '@/services/useFetchDomain'
 import { getBrushDomain } from '@/lib/charts/brush'
 
 interface Props {
-  collections: Collection[]
   config: DataAnalysisDisplayElement
   boundingBox?: BoundingBox
   settings?: ComponentSettings
@@ -121,6 +119,9 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
 })
+const collections = defineModel<Collection[]>('collections', {
+  required: true,
+})
 
 // Fetch colors and time steps from stores
 useTaskRunColorsStore()
@@ -128,11 +129,9 @@ useAvailableTimeStepsStore()
 
 const userSettings = useUserSettingsStore()
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-
-const selectedCollectionName = ref<string>(props.collections[0].name)
+const selectedCollectionName = ref<string>(collections.value[0].name)
 watch(
-  () => props.collections,
+  () => collections.value,
   (newCollections) => {
     if (!newCollections.some((c) => c.name === selectedCollectionName.value)) {
       selectedCollectionName.value = newCollections[0].name
@@ -140,20 +139,32 @@ watch(
   },
 )
 
-const selectedCollection = computed<Collection>(() => {
-  const collection = props.collections.find(
-    (c) => c.name === selectedCollectionName.value,
-  )
-  if (!collection) {
-    throw new Error(
-      `Collection with name ${selectedCollectionName.value} not found`,
+const selectedCollection = computed<Collection>({
+  get: () => {
+    const collection = collections.value.find(
+      (c) => c.name === selectedCollectionName.value,
     )
-  }
-  return collection
+    if (!collection) {
+      throw new Error(
+        `Collection with name ${selectedCollectionName.value} not found`,
+      )
+    }
+    return collection
+  },
+  set: (updatedCollection) => {
+    collections.value = collections.value.map((collection) =>
+      collection.name === selectedCollectionName.value
+        ? updatedCollection
+        : collection,
+    )
+  },
 })
 
 function addChart(chart: Chart) {
-  selectedCollection.value.charts = [chart, ...selectedCollection.value.charts]
+  selectedCollection.value = {
+    ...selectedCollection.value,
+    charts: [chart, ...selectedCollection.value.charts],
+  }
 }
 
 const requests = computed<ActionRequest[]>((prevRequests) => {
@@ -223,14 +234,10 @@ const timeSeriesOptions = computed(() => ({
   convertDatum: userSettings.convertDatum,
 }))
 
-const { series } = useTimeSeries(
-  baseUrl,
-  requests,
-  timeSeriesOptions,
-  true,
-  undefined,
-  false,
-)
+const { series } = useTimeSeries(requests, timeSeriesOptions, true, undefined, {
+  policies: [],
+  immediate: true,
+})
 
 const showBrush = computed(
   () => userSettings.get('charts.brush')?.value === true,
@@ -249,12 +256,11 @@ const brushOptions = computed(() => ({
   convertDatum: userSettings.convertDatum,
 }))
 const { series: brushSeries } = useTimeSeries(
-  baseUrl,
   requests,
   brushOptions,
   showBrush,
   undefined,
-  false,
+  { policies: [], immediate: true },
 )
 
 const tab = ref()

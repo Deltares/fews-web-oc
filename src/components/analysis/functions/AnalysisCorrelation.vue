@@ -81,16 +81,15 @@ import SelectCard from '@/components/general/SelectCard.vue'
 import { computed, ref, watch } from 'vue'
 import { Chart, CorrelationChart, getValidFilterCharts } from '@/lib/analysis'
 import { Series } from '@/lib/timeseries/timeSeries'
-import {
-  CorrelationFilter,
-  TimeSeriesDisplaySubplotItem,
-} from '@deltares/fews-pi-requests'
+import { CorrelationFilter } from '@deltares/fews-pi-requests'
 import {
   getCorrelationSubplot,
   RegressionEquation,
   regressionEquations,
 } from '@/lib/analysis/correlation'
 import { uid } from '@/lib/utils/uid'
+import { getFilterSubplotTitle } from '@/lib/analysis/filter'
+import type { FilterSubplotItem } from '@/lib/analysis/types'
 
 import { useI18n } from 'vue-i18n'
 
@@ -111,13 +110,13 @@ const emit = defineEmits<Emits>()
 
 const allSeries = computed(() => getValidFilterCharts(props.charts))
 
-const selectedTimeseries = ref<TimeSeriesDisplaySubplotItem>()
-const selectedSecondTimeseries = ref<TimeSeriesDisplaySubplotItem>()
+const selectedTimeseries = ref<FilterSubplotItem>()
+const selectedSecondTimeseries = ref<FilterSubplotItem>()
 const selectedRegressionEquation = ref<RegressionEquation>(
   regressionEquations[0],
 )
-const upperThreshold = ref<number | undefined>(undefined)
-const lowerThreshold = ref<number | undefined>(undefined)
+const upperThreshold = ref<number | null | undefined>(undefined)
+const lowerThreshold = ref<number | null | undefined>(undefined)
 
 watch(() => props.isActive, clearSelections)
 function clearSelections() {
@@ -131,8 +130,8 @@ function addChart() {
 
   const request1 = selectedTimeseries.value?.request ?? ''
   const request2 = selectedSecondTimeseries.value?.request ?? ''
-  const name1 = selectedTimeseries.value?.legend ?? ''
-  const name2 = selectedSecondTimeseries.value?.legend ?? ''
+  const name1 = selectedTimeseries.value.legend ?? ''
+  const name2 = selectedSecondTimeseries.value.legend ?? ''
 
   const { value: regressionEquation } = selectedRegressionEquation.value
 
@@ -142,18 +141,20 @@ function addChart() {
     regressionEquation,
   }
 
-  if (upperThreshold.value !== undefined) {
+  if (upperThreshold.value !== undefined && upperThreshold.value !== null) {
     filter.upperThreshold = upperThreshold.value
   }
 
-  if (lowerThreshold.value !== undefined) {
+  if (lowerThreshold.value !== undefined && lowerThreshold.value !== null) {
     filter.lowerThreshold = lowerThreshold.value
   }
 
   const chart: CorrelationChart = {
     id: uid(),
     type: 'correlation',
-    title: `Correlation between ${name1} and ${name2}`,
+    title: `Correlation between ${getFilterSubplotTitle({
+      items: [selectedTimeseries.value, selectedSecondTimeseries.value],
+    })}`,
     filter,
     subplot: getCorrelationSubplot(name1, name2),
   }

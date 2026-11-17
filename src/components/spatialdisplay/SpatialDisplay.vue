@@ -1,10 +1,11 @@
 <template>
   <div class="container" ref="container">
     <div
-      class="child-container flex-column"
-      :class="{ 'd-none': hideMap, 'd-flex': !hideMap }"
+      class="child-container map-container flex-column d-flex"
+      :class="{ 'force-hide': maximized, 'has-chart': showChartPanel }"
     >
       <SpatialDisplayComponent
+        ref="spatialDisplay"
         :layer-name="props.layerName"
         :location-ids="props.locationIds"
         :latitude="props.latitude"
@@ -18,12 +19,15 @@
         :layer-capabilities="layerCapabilities"
         :bounding-box="boundingBox"
         :times="times"
-        :times-default="timesDefault"
         :settings="settings.map"
+        :independent-context="independentContext"
         v-model:elevation="elevation"
+        @update:ensemble-selection="ensembleSelection = $event"
         @update:current-time="currentTime = $event"
         @coordinate-click="onCoordinateClick"
-      ></SpatialDisplayComponent>
+      >
+        <template #map><slot name="map" /></template>
+      </SpatialDisplayComponent>
     </div>
     <div v-if="showChartPanel" class="child-container flex-column d-flex">
       <SpatialTimeSeriesDisplay
@@ -35,12 +39,13 @@
         :settings="resolvedSettings"
         :currentTime="currentTime"
         :elevation="elevation"
+        :ensembleSelection="ensembleSelection"
         :taskRunId="taskRunId"
       >
         <template #toolbar-append>
           <v-btn
-            v-if="!containerIsMobileSize"
             size="small"
+            class="maximize-button"
             :icon="maximized ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
             @click="maximized = !maximized"
           />
@@ -56,17 +61,8 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  defineAsyncComponent,
-  onMounted,
-  onUnmounted,
-  ref,
-  useTemplateRef,
-  watch,
-} from 'vue'
+import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
-import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
 import { useWmsLayerCapabilities } from '@/services/useWms'
 import type { TopologyNode, Location } from '@deltares/fews-pi-requests'
@@ -76,15 +72,16 @@ import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
-import { useElementSize } from '@vueuse/core'
-import { useDateRegistry } from '@/services/useDateRegistry'
+import { useDateRegistry } from '@deltares/fews-web-oc-composables'
 import type { NavigateRoute } from '@/lib/router'
+import type { EnsembleSelection } from '@/lib/ensemble'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 import { useLocationNamesStore } from '@/stores/locationNames'
 import {
   filterFeaturesByThresholds,
   filterLocationsByThresholds,
 } from '@/lib/thresholds/utils'
+import { roundCoordinateToString } from '@/lib/coordinates'
 
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
@@ -97,6 +94,7 @@ interface Props {
   longitude?: string
   topologyNode?: TopologyNode
   settings?: ComponentSettings
+  independentContext?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -108,6 +106,10 @@ interface Emits {
   navigate: [to: NavigateRoute]
 }
 const emit = defineEmits<Emits>()
+const spatialDisplay = ref<InstanceType<typeof SpatialDisplayComponent>>()
+defineExpose({
+  getScreenshotContext: () => spatialDisplay.value?.getScreenshotContext(),
+})
 
 const taskRunId = ref<string>()
 watch(
@@ -121,9 +123,6 @@ const warningLevelsStore = useWarningLevelsStore()
 const locationNamesStore = useLocationNamesStore()
 const userSettings = useUserSettingsStore()
 
-const { thresholds } = useDisplay()
-const containerRef = useTemplateRef('container')
-
 const boundingBox = computed(() => props.topologyNode?.boundingBox)
 const filterIds = computed(() => props.topologyNode?.filterIds ?? [])
 const filterOptions = computed(() => {
@@ -134,6 +133,7 @@ const filterOptions = computed(() => {
     props.settings.charts.metaDataPanel.locationEnabledAttribute,
     props.settings.map.locationsLayer.minZoom.levelLocationAttribute,
     props.settings.map.locationsLayer.maxZoom.levelLocationAttribute,
+    props.settings.charts.dynamicReportDisplay.locationEnabledAttribute,
   ].filter((id): id is string => !!id)
   return {
     ...(userSettings.get('ui.map.showDataAvailability')?.value === true
@@ -144,8 +144,12 @@ const filterOptions = computed(() => {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { layerCapabilities, times, timesDefault, startPolling, stopPolling } =
-  useWmsLayerCapabilities(baseUrl, () => props.layerName, taskRunId)
+const { layerCapabilities, times } = useWmsLayerCapabilities(
+  baseUrl,
+  () => props.layerName,
+  taskRunId,
+  !props.independentContext,
+)
 
 function getDisplayEnabledFromLocationAttributes(
   locations: Location[],
@@ -228,6 +232,14 @@ const resolvedSettings = computed<ComponentSettings>(() => {
           props.settings.charts.metaDataPanel.enabled,
         ),
       },
+      dynamicReportDisplay: {
+        ...props.settings.charts.dynamicReportDisplay,
+        enabled: getDisplayEnabledFromLocationAttributes(
+          selected,
+          props.settings.charts.dynamicReportDisplay.locationEnabledAttribute,
+          props.settings.charts.dynamicReportDisplay.enabled,
+        ),
+      },
     },
   }
 })
@@ -265,7 +277,7 @@ const filteredGeojson = computed(() => {
   }
 })
 
-useDateRegistry(() => times.value ?? [])
+if (!props.independentContext) useDateRegistry(() => times.value ?? [])
 
 const onlyCoverageLayersAvailable = computed(() => {
   const capabilities = layerCapabilities.value
@@ -278,20 +290,9 @@ const showChartPanel = computed(() => {
 })
 
 const elevation = ref<number | undefined>()
+const ensembleSelection = ref<EnsembleSelection | undefined>()
 const currentTime = ref<Date>()
 const maximized = ref(false)
-
-const { width: containerWidth } = useElementSize(containerRef)
-
-const containerIsMobileSize = computed(() => {
-  return containerWidth.value < thresholds.value.md
-})
-
-const hideMap = computed(() => {
-  return (
-    maximized.value || (containerIsMobileSize.value && showChartPanel.value)
-  )
-})
 
 function onLocationsChange(locationIds: string[]): void {
   if (locationIds.length) {
@@ -348,8 +349,8 @@ function onCoordinateClick(latitude: number, longitude: number): void {
 function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
   if (!onlyCoverageLayersAvailable.value) return
 
-  const _latitude = latitude.toFixed(3)
-  const _longitude = longitude.toFixed(3)
+  const _latitude = roundCoordinateToString(latitude)
+  const _longitude = roundCoordinateToString(longitude)
 
   const to = {
     name: 'SpatialDisplayWithCoordinates',
@@ -365,14 +366,6 @@ function closeTimeSeriesDisplay(): void {
   maximized.value = false
   emit('navigate', { name: 'SpatialDisplay' })
 }
-
-onMounted(() => {
-  startPolling(60_000)
-})
-
-onUnmounted(() => {
-  stopPolling()
-})
 
 watch(locations, () => {
   if (
@@ -399,6 +392,8 @@ watch(
   display: flex;
   width: 100%;
   height: 100%;
+  container-type: inline-size;
+  container-name: spatial-display;
 }
 
 .child-container {
@@ -408,8 +403,16 @@ watch(
   flex: 1 1 0px;
 }
 
-.child-container.mobile {
-  height: 100%;
-  width: 100%;
+@container spatial-display (max-width: 840px) {
+  .map-container.has-chart {
+    display: none;
+  }
+  .maximize-button {
+    display: none;
+  }
+}
+
+.map-container.force-hide {
+  display: none;
 }
 </style>

@@ -1,18 +1,40 @@
 <template>
   <v-layout id="app">
     <v-app-bar
+      ref="appBar"
       :color="appBarColor"
       :style="appBarStyle"
+      :class="{ 'configurator-mode': configuratorMode.isEnabled }"
       density="compact"
       data-test-id="app-bar"
       role="banner"
       aria-label="Application header"
     >
+      <span v-if="configuratorMode.isEnabled" class="d-sr-only">
+        {{ t('configurator.modeActive') }}
+      </span>
       <template #prepend>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
         <v-btn :to="{ name: 'Default' }" v-if="!isInstalledPWA && mdAndUp">
           <img height="36px" :src="logoSrc" alt="Application Logo" />
         </v-btn>
+        <v-tooltip location="bottom">
+          <template #activator="{ props }">
+            <v-btn
+              v-bind="props"
+              prepend-icon="mdi-magnify"
+              :aria-keyshortcuts="isMac ? 'Meta+K' : 'Control+K'"
+              variant="plain"
+              @click="showSearchDialog = !showSearchDialog"
+            >
+              <template v-if="!mobile">Search</template>
+            </v-btn>
+          </template>
+          Search
+          <kbd>{{ isMac ? '⌘' : 'Ctrl' }}</kbd
+          >+<kbd>K</kbd>
+        </v-tooltip>
+
         <div id="app-bar-content-start" />
       </template>
       <div class="align-items-center" id="app-bar-content-center"></div>
@@ -90,7 +112,10 @@
           id="web-oc-toolbar-target"
         ></div>
       </template>
-      <div id="web-oc-sidebar-target" class="d-flex flex-column flex-1-1"></div>
+      <div
+        id="web-oc-sidebar-target"
+        class="d-flex flex-column flex-1-1 h-100"
+      ></div>
       <template v-slot:append>
         <v-divider></v-divider>
         <v-list-item>
@@ -111,21 +136,25 @@
                 />
               </template>
               <v-list density="compact">
-                <v-list-item
-                  v-if="helpMenu"
-                  v-for="item in helpMenu.url"
-                  :href="item.url"
-                  target="_blank"
-                  append-icon="mdi-open-in-new"
-                  >{{ item.name }}</v-list-item
-                >
-                <v-list-item
-                  v-if="helpMenu"
-                  v-for="item in helpMenu.path"
-                  :to="{ name: 'HtmlDisplay', params: { path: item.path } }"
-                  href="#"
-                  >{{ item.name }}</v-list-item
-                >
+                <template v-if="helpMenu">
+                  <v-list-item
+                    v-for="item in helpMenu.url"
+                    :key="item.name"
+                    :href="item.url"
+                    target="_blank"
+                    append-icon="mdi-open-in-new"
+                    >{{ item.name }}</v-list-item
+                  >
+                </template>
+                <template v-if="helpMenu">
+                  <v-list-item
+                    v-for="item in helpMenu.path"
+                    :key="item.name"
+                    :to="{ name: 'HtmlDisplay', params: { path: item.path } }"
+                    href="#"
+                    >{{ item.name }}</v-list-item
+                  >
+                </template>
                 <v-list-item :to="{ name: 'About' }">{{
                   $t('layout.about')
                 }}</v-list-item>
@@ -136,8 +165,11 @@
             <v-btn
               class="text-lowercase"
               size="small"
+              :readonly="!configuratorMode.isEnabled"
               @click="showHash = !showHash"
-              :prepend-icon="showHash ? 'mdi-source-commit' : 'mdi-tag-outline'"
+              :prepend-icon="
+                showCommitHash ? 'mdi-source-commit' : 'mdi-tag-outline'
+              "
               >{{ versionString }}</v-btn
             >
           </template>
@@ -148,55 +180,108 @@
       <v-sheet class="w-100 h-100 d-flex flex-row">
         <div class="flex-1-1 overflow-hidden">
           <Suspense>
-            <router-view></router-view>
+            <router-view />
           </Suspense>
         </div>
         <div class="border-s h-100" id="main-side-panel" />
       </v-sheet>
       <StartupDialog />
+      <SearchDialog v-model="showSearchDialog" />
     </v-main>
   </v-layout>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, type StyleValue, watch } from 'vue'
+import {
+  computed,
+  effectScope,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  useTemplateRef,
+  type StyleValue,
+  watch,
+} from 'vue'
 import { useDisplay, useRtl, useTheme } from 'vuetify'
+import { useI18n } from 'vue-i18n'
 import { useConfigStore } from '../stores/config.ts'
 import { useRoute } from 'vue-router'
 import LoginComponent from '../views/auth/LoginComponent.vue'
 import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
 import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
 import StartupDialog from '@/components/dialog/StartupDialog.vue'
+import SearchDialog from '@/components/dialog/SearchDialog.vue'
 
 import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
-import packageConfig from '@/../package.json'
+import { version } from '@/../package.json'
 import { toCharacterIcon } from '@/lib/icons/index.ts'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { useCustomStyleSheet } from '@/services/useCustomStyleSheet/index.ts'
+import { useSharedRequestHistoryTracker } from '@/services/useSharedRequestHistory'
+import { useConfiguratorModeStore } from '@/stores/configuratorMode'
 
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
+const configuratorMode = useConfiguratorModeStore()
+const { t } = useI18n()
+
 const { mobile, mdAndUp } = useDisplay()
 
 const theme = useTheme()
 
 const drawer = ref(true)
+const showSearchDialog = ref(false)
 const { isRtl } = useRtl()
 const route = useRoute()
 
 const isInstalledPWA = globalThis.matchMedia(
   '(display-mode: standalone)',
 ).matches
+// Track shared requests only while the configurator mode is enabled.
+let sharedRequestTrackerScope: ReturnType<typeof effectScope> | undefined
+watch(
+  () => configuratorMode.isEnabled,
+  (enabled) => {
+    if (enabled && !sharedRequestTrackerScope) {
+      sharedRequestTrackerScope = effectScope()
+      sharedRequestTrackerScope.run(useSharedRequestHistoryTracker)
+    } else if (!enabled && sharedRequestTrackerScope) {
+      sharedRequestTrackerScope.stop()
+      sharedRequestTrackerScope = undefined
+    }
+  },
+  { immediate: true },
+)
+onUnmounted(() => sharedRequestTrackerScope?.stop())
 
 const showHash = ref(false)
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
+const appBar = useTemplateRef('appBar')
+
+const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform)
+
+function onGlobalKeydown(event: KeyboardEvent): void {
+  const modifierPressed = isMac ? event.metaKey : event.ctrlKey
+
+  if (modifierPressed && event.key.toLowerCase() === 'k') {
+    event.preventDefault()
+    showSearchDialog.value = !showSearchDialog.value
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', onGlobalKeydown)
+  updateAppBarStyles()
+})
+onUnmounted(() => document.removeEventListener('keydown', onGlobalKeydown))
 
 function updateAppBarStyles() {
-  appBarColor.value = getComputedStyle(document.body).getPropertyValue(
-    '--weboc-app-bar-bg-color',
-  )
+  appBarColor.value = getComputedStyle(
+    appBar.value?.$el ?? document.documentElement,
+  ).getPropertyValue('--weboc-app-bar-bg-color')
   const meta = document.querySelector('meta[name="theme-color"]')
   if (meta) {
     meta.setAttribute('content', appBarColor.value)
@@ -213,6 +298,7 @@ watch(
   () => {
     nextTick(updateAppBarStyles)
   },
+  { immediate: true },
 )
 
 useCustomStyleSheet({ onload: updateAppBarStyles })
@@ -234,11 +320,16 @@ const logoSrc = computed(() => {
     : defaultLogo
 })
 
+// The commit hash is a system detail, only shown in configurator mode.
+const showCommitHash = computed(
+  () => configuratorMode.isEnabled && showHash.value,
+)
+
 const versionString = computed(() => {
-  if (showHash.value && !__GIT_TAG__) {
+  if (showCommitHash.value && !__GIT_TAG__) {
     return __GIT_HASH__
   }
-  return packageConfig.version
+  return version
 })
 
 const helpMenu = computed(() => configStore.general.helpMenu)
@@ -255,6 +346,24 @@ const useRail = computed(
 </script>
 
 <style>
+/* Same diagonal stripes as editable cells in the time series table, but
+   semi-transparent so the configured app bar colour and image remain visible.
+   The stripes use the text colour of the app bar so they contrast with any
+   configured background colour. */
+.v-app-bar.configurator-mode::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent 0px,
+    transparent 12.73px,
+    color-mix(in srgb, currentColor 5%, transparent) 12.73px,
+    color-mix(in srgb, currentColor 5%, transparent) 25.46px
+  );
+}
+
 html,
 body {
   margin: 0px;
@@ -274,5 +383,19 @@ body {
 .v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
   .v-navigation-drawer__content {
   overflow-y: hidden;
+}
+
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 5px;
+  margin-right: 3px;
+  border: 1px solid color-mix(in srgb, currentColor 60%, transparent);
+  border-radius: 4px;
+  font-size: 11px;
+  vertical-align: 0.15em;
 }
 </style>

@@ -1,6 +1,9 @@
 import { Extension } from '@tiptap/core'
 
-const EXCLUDED_DATA_ATTIBUTES = ['data-status', 'data-status-definition']
+const EXCLUDED_DATA_ATTIBUTES = new Set([
+  'data-status',
+  'data-status-definition',
+])
 
 export const KeepHtmlAttributes = Extension.create({
   name: 'keepHtmlAttributes',
@@ -11,6 +14,7 @@ export const KeepHtmlAttributes = Extension.create({
           'section',
           'bold',
           'division',
+          'dynamicReportInput',
           'draggableItem',
           'header',
           'heading',
@@ -49,9 +53,7 @@ export const KeepHtmlAttributes = Extension.create({
           dataSet: {
             parseHTML: (element: HTMLElement) => {
               const result = Object.keys(element.dataset)
-                .filter(
-                  (key) => !EXCLUDED_DATA_ATTIBUTES.includes(`data-${key}`),
-                )
+                .filter((key) => !EXCLUDED_DATA_ATTIBUTES.has(`data-${key}`))
                 .reduce((obj: Record<string, string | undefined>, key) => {
                   obj[key] = element.dataset[key]
                   return obj

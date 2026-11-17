@@ -1,4 +1,5 @@
-import type { LogMessage } from '@/lib/log'
+import { toDisplayDateTime } from '@/lib/date/timeZone'
+import { cleanTaskRunId, type LogMessage } from '@/lib/log'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import {
   type LogDisplayLogsFilter,
@@ -7,6 +8,7 @@ import {
 import type { MaybeRefOrGetter } from 'vue'
 import { computed, ref, shallowRef, toValue, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { systemTimeAuthority } from '@/services/system-time'
 
 type DateSeparatorItem = {
   type: 'dateSeparator'
@@ -20,9 +22,9 @@ type GroupedLogItem = {
 
 export type VirtualScrollItem = DateSeparatorItem | GroupedLogItem
 
+// The day in the display time zone, as yyyy-MM-dd
 function getDateString(entryTime: string): string {
-  const date = new Date(entryTime)
-  return date.toISOString().split('T')[0]
+  return toDisplayDateTime(new Date(entryTime)).toISODate() ?? ''
 }
 
 function groupByTaskRunId(logs: LogMessage[]): VirtualScrollItem[] {
@@ -142,7 +144,7 @@ export function useLogDisplayLogs(
       const logPromises = _filters.map(fetchLogsForFilter)
       const newLogs = await Promise.all(logPromises)
 
-      lastUpdatedTimestamp.value = Date.now()
+      lastUpdatedTimestamp.value = systemTimeAuthority.now().getTime()
       manualLogMessages.value = newLogs.flat()
     } catch {
       error.value = 'Error loading logDisplayLogs'
@@ -179,7 +181,7 @@ export function useLogDisplayLogs(
       const logPromises = _filters.map(fetchLogsForFilter)
       const newLogs = await Promise.all(logPromises)
 
-      lastUpdatedTimestamp.value = Date.now()
+      lastUpdatedTimestamp.value = systemTimeAuthority.now().getTime()
       systemLogMessages.value = newLogs.flat()
     } catch {
       error.value = 'Error loading logDisplayLogs'
@@ -221,9 +223,4 @@ export function useLogDisplayLogs(
     isLoading,
     error,
   }
-}
-
-// FIXME: Always has a space followed by -1 for some reason
-function cleanTaskRunId(taskRunId: string): string {
-  return taskRunId.split(' ')[0]
 }

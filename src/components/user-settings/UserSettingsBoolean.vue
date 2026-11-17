@@ -3,13 +3,13 @@
     <v-switch
       v-if="setting.type === 'boolean'"
       v-model="modelValue"
-      :label="setting.label"
+      :label="settingLabel"
       :disabled="setting.disabled"
       density="compact"
       color="primary"
       class="ml-3"
       hide-details
-      :aria-label="setting.label"
+      :aria-label="settingLabel"
     >
       <template #label>
         <v-label
@@ -18,7 +18,7 @@
             'text-medium-emphasis': !inline,
           }"
         >
-          {{ setting.label }}
+          {{ settingLabel }}
         </v-label>
       </template>
     </v-switch>
@@ -30,12 +30,17 @@
 
 <script lang="ts" setup>
 import { type UserSettingsItemBoolean } from '@/stores/userSettings'
+import { useUserSettingTranslation } from '@/services/useUserSettingTranslation'
+import { computed } from 'vue'
 
 interface Props {
   setting: UserSettingsItemBoolean
   inline?: boolean
 }
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const modelValue = defineModel<boolean>({ required: true })
+
+const { label } = useUserSettingTranslation()
+const settingLabel = computed(() => label(props.setting))
 </script>

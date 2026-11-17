@@ -1,10 +1,6 @@
 <template>
-  <svg class="colourstrip">
-    <g
-      ref="groupRef"
-      style="pointer-events: 'visiblePainted'"
-      transform="translate(-1, 0)"
-    ></g>
+  <svg class="colourstrip" aria-hidden="true">
+    <g ref="groupRef" transform="translate(-1, 0)"></g>
   </svg>
 </template>
 
@@ -45,7 +41,7 @@ function updateColourStrip() {
     position: AxisPosition.Bottom,
     ticks: 0,
   }
-  new ColourBar(group.value as any, props.colourMap, 200, 10, options)
+  new ColourBar(group.value as any, props.colourMap, 200, 10, options) // NOSONAR(S1848)
 }
 </script>
 
@@ -53,9 +49,6 @@ function updateColourStrip() {
 .colourstrip {
   width: 200px;
   height: 10px;
-}
-
-:deep(g) {
   pointer-events: none;
 }
 </style>

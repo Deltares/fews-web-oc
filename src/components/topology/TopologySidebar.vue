@@ -68,20 +68,13 @@ watch(
   { immediate: true },
 )
 
-const items = ref<ColumnItem[]>([])
-
-watch(() => props.subNodes, updateItems)
-watch(() => props.thresholds, updateItems)
-
-function updateItems(): void {
-  if (!props.subNodes) return
-
-  items.value = recursiveUpdateNode(
-    props.subNodes,
+const items = computed<ColumnItem[]>(() =>
+  recursiveUpdateNode(
+    props.subNodes ?? [],
     props.thresholds,
     props.showActiveThresholdCrossingsForFilters,
     props.topologyId,
     props.showLeafNodesAsButton,
-  )
-}
+  ),
+)
 </script>

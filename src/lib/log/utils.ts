@@ -2,10 +2,17 @@ import type {
   LogDisplayDisseminationAction,
   LogDisplayLogsFilter,
   LogDisplaySystemLog,
+  LogsDisplay,
 } from '@deltares/fews-pi-requests'
 import type { LogLevel, LogMessage, LogType } from './types'
 import { WorkflowItem } from '../workflows'
 import { TaskRun } from '@/lib/taskruns'
+import { hasEqualIdentity } from '@/lib/auth/identityEquality'
+
+export function cleanTaskRunId(taskRunId: string): string {
+  // Log responses can append a sentinel to the task-run ID.
+  return taskRunId.replace(/ -1$/, '')
+}
 
 export function getTitleForLog(
   log: LogMessage,
@@ -202,7 +209,8 @@ export function logToUserColor(log: LogMessage, userName: string, opacity = 1) {
 
 export function isLogMessageByCurrentUser(log: LogMessage, userName: string) {
   if (log.type === 'system') return false
-  return log.user === userName
+  if (log.user === undefined) return false
+  return hasEqualIdentity(log.user, userName)
 }
 
 export function logToActions(
@@ -216,6 +224,10 @@ export function logToActions(
   })
 
   return actions
+}
+
+export function canOpenTaskRunLogs(logDisplay?: LogsDisplay): boolean {
+  return Boolean(logDisplay?.systemLog)
 }
 
 export function getManualFilters(

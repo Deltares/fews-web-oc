@@ -11,7 +11,7 @@ import {
 import { FilterChart, FilterSubplot, FilterSubplotItem } from './types'
 import { configManager } from '@/services/application-config'
 import { absoluteUrl } from '../utils/absoluteUrl'
-import { uniq, uniqBy } from 'lodash-es'
+import { uniq, uniqBy } from '../utils/uniq'
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 import { convertFewsPiDateTimeToJsDate } from '../date'
 import { uid } from '@/lib/utils/uid'
@@ -76,7 +76,7 @@ export async function createNewChartForFilter(
   const filterId = filter.filterId
   if (!filterId) return
 
-  const headers = await fetchTimeSeriesHeaders(baseUrl, requests, {})
+  const headers = await fetchTimeSeriesHeaders(baseUrl, requests)
   const filterSubplot = subplotToFilterSubplot(
     filterId,
     subplot,
@@ -175,7 +175,9 @@ function subplotToFilterSubplot(
   return { ...item, items: newItems }
 }
 
-export function getFilterSubplotTitle(subplot: FilterSubplot) {
+export function getFilterSubplotTitle(subplot: {
+  items: Pick<FilterSubplotItem, 'parameterGroup' | 'locationName'>[]
+}) {
   const uniqueParameterGroups = getParameterGroups(subplot.items)
   const uniqueLocationNames = getLocationNames(subplot.items)
 
@@ -238,7 +240,7 @@ export async function addFilterToChart(
   const position = getAddPositionForFilter(chart, filter)
   if (!position) return
 
-  addFilterToChartPosition(chart, filter, position)
+  await addFilterToChartPosition(chart, filter, position)
 }
 
 async function addFilterToChartPosition(
@@ -334,7 +336,9 @@ export function replaceDuplicateColors(items: FilterSubplotItem[]) {
   })
 }
 
-export function getLocationNames(items: FilterSubplotItem[]) {
+export function getLocationNames(
+  items: Pick<FilterSubplotItem, 'locationName'>[],
+) {
   return uniq(items.map((item) => item.locationName ?? ''))
 }
 
@@ -346,7 +350,9 @@ export function getParameterIds(items: FilterSubplotItem[]) {
   return uniq(items.flatMap((item) => item.filter.parameterIds ?? []))
 }
 
-export function getParameterGroups(items: FilterSubplotItem[]) {
+export function getParameterGroups(
+  items: Pick<FilterSubplotItem, 'parameterGroup'>[],
+) {
   return uniq(items.flatMap((item) => item.parameterGroup ?? []))
 }
 

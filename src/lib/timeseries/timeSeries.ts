@@ -45,6 +45,10 @@ export class Series {
   lastUpdated?: Date
   domains?: Domains[]
   missingValue?: string
+  ensemble?: {
+    requestKey: string
+    memberId: string
+  }
 
   constructor(
     resource: SeriesResource | SeriesRequest | SeriesUrlRequest | SeriesDerived,

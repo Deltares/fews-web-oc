@@ -2,6 +2,7 @@ import {
   defaultChartSettings,
   defaultMapSettings,
   defaultSchematicStatusDisplaySettings,
+  defaultSidePanelSettings,
   defaultReportSettings,
   type ChartsSettings,
   type MapSettings,
@@ -25,6 +26,7 @@ export function getDefaultSettings(): ComponentSettings {
   return {
     id: '',
     map: defaultMapSettings,
+    sidePanel: defaultSidePanelSettings,
     ssd: defaultSchematicStatusDisplaySettings,
     charts: defaultChartSettings,
     report: defaultReportSettings,

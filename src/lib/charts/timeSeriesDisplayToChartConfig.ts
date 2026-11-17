@@ -17,6 +17,7 @@ import {
   AxisPosition,
   AxisType,
 } from '@deltares/fews-web-oc-charts'
+import { hashString } from '../utils/hash.js'
 
 const MAX_MILLISECONDS_FROM_EPOCH = 8.64e15
 
@@ -24,7 +25,7 @@ export function timeSeriesDisplayToChartConfig(
   subplot: TimeSeriesDisplaySubplot,
 ): ChartConfig {
   const xAxis = subplot.xAxis ? xAxisFromPlotItemXAxis(subplot.xAxis) : []
-  const subplotId = subplot.items.map((plot) => plot.request).toString()
+  const subplotId = hashString(JSON.stringify(subplot))
   const plotWeight = subplot.items?.[0]?.plotWeight
 
   const config: ChartConfig = {

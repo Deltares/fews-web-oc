@@ -13,6 +13,7 @@ import {
   nodeHasWebDisplay,
   nodeHasDataAnalysisDisplay,
   nodeHasDocumentDisplay,
+  nodeHasMF,
 } from './nodes'
 import {
   ComponentType,
@@ -49,10 +50,9 @@ export async function getLayerNameForNode(node: TopologyNode) {
   const groupId = node.gridDisplaySelection?.groupId
   if (groupId) {
     const capabilities = await fetchWmsCapabilitiesHeaders()
-    const layers = capabilities.layers.filter(
+    const firstLayer = capabilities.layers.find(
       (layer) => layer.groupName === groupId,
     )
-    const firstLayer = layers[0]
     return firstLayer?.name ?? ''
   }
 
@@ -66,6 +66,7 @@ export async function displayTabsForNode(
   topologyId?: string,
   from?: RouteLocationNormalized,
 ) {
+  const layerName = await getLayerNameForNode(node)
   for (const tab of displayTabs) {
     const params = {
       nodeId: parentNodeId ? [parentNodeId, node.id] : [node.id],
@@ -76,7 +77,7 @@ export async function displayTabsForNode(
         tab.active = nodeHasMap(node)
         tab.to.params = {
           ...params,
-          layerName: await getLayerNameForNode(node),
+          layerName,
         }
 
         if (from?.params.locationIds) {
@@ -135,6 +136,10 @@ export async function displayTabsForNode(
         break
       case 'documents-display':
         tab.active = nodeHasDocumentDisplay(node)
+        tab.to.params = { ...params }
+        break
+      case 'micro-frontend-display':
+        tab.active = nodeHasMF(node)
         tab.to.params = { ...params }
         break
     }

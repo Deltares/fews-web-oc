@@ -7,18 +7,48 @@ import {
   CORRELATION_POINTS_ID,
 } from '@/lib/analysis/correlation'
 import type { CorrelationFilter } from '@deltares/fews-pi-requests'
+import { useI18n } from 'vue-i18n'
 
 export function useCorrelationChartData(
   filter: MaybeRefOrGetter<CorrelationFilter | undefined>,
 ) {
-  const { correlation } = useCorrelation(filter)
+  const { t } = useI18n()
+  const { correlation, isLoading, error } = useCorrelation(filter)
+
+  const hasScatterPoints = computed(
+    () => (correlation.value?.values?.length ?? 0) > 0,
+  )
+
+  const hasRegressionFit = computed(
+    () => (correlation.value?.fitPoints?.length ?? 0) > 0,
+  )
 
   const description = computed(() => {
     return correlation.value?.equation?.description
   })
 
+  const statusDescription = computed(() => {
+    const equation = correlation.value?.equation
+    return equation && equation.status !== 'nominal'
+      ? equation.statusDescription
+      : undefined
+  })
+
   const rSquared = computed(() => {
-    return correlation.value?.equation?.['R-squared']
+    return correlation.value?.equation?.rSquared
+  })
+
+  const errorState = computed(() => {
+    if (isLoading.value || (!error.value && hasScatterPoints.value)) return
+
+    const type: 'error' | 'warning' = error.value ? 'error' : 'warning'
+
+    return {
+      type,
+      message: error.value
+        ? t('analysis.correlation.loadError')
+        : (statusDescription.value ?? t('analysis.correlation.noData')),
+    }
   })
 
   const series = computed(() => {
@@ -56,6 +86,12 @@ export function useCorrelationChartData(
   return {
     series,
     description,
+    statusDescription,
     rSquared,
+    hasScatterPoints,
+    hasRegressionFit,
+    isLoading,
+    error,
+    errorState,
   }
 }

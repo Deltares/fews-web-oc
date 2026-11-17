@@ -50,6 +50,55 @@
     "group": "UI"
   },
   {
+    "id": "ui.locale",
+    "type": "oneOfMultiple",
+    "label": "Language",
+    "value": "default",
+    "disabled": true,
+    "items": [
+      {
+        "value": "system",
+        "title": "System",
+        "icon": "mdi-monitor"
+      },
+      {
+        "value": "default",
+        "title": "Default",
+        "icon": "mdi-translate"
+      },
+      {
+        "value": "en",
+        "title": "English",
+        "abbreviation": "en"
+      },
+      {
+        "value": "de",
+        "title": "Deutsch",
+        "abbreviation": "de"
+      }
+    ],
+    "group": "UI"
+  },
+  {
+    "id": "ui.timeZone",
+    "type": "oneOfMultiple",
+    "label": "Time zone",
+    "value": "system",
+    "items": [
+      {
+        "value": "system",
+        "title": "System",
+        "icon": "mdi-monitor"
+      },
+      {
+        "value": "UTC",
+        "title": "UTC",
+        "icon": "mdi-earth"
+      }
+    ],
+    "group": "UI"
+  },
+  {
     "id": "ui.hierarchical-menu-style",
     "type": "oneOfMultiple",
     "label": "Menu style",
@@ -88,6 +137,43 @@
         "value": "full labels",
         "title": "Full labels",
         "icon": "mdi-format-list-bulleted"
+      }
+    ],
+    "group": "UI"
+  },
+  {
+    "id": "ui.scale",
+    "type": "oneOfMultiple",
+    "label": "UI scale",
+    "value": "1",
+    "items": [
+      {
+        "value": "0.8",
+        "title": "80%"
+      },
+      {
+        "value": "0.85",
+        "title": "85%"
+      },
+      {
+        "value": "0.9",
+        "title": "90%"
+      },
+      {
+        "value": "0.95",
+        "title": "95%"
+      },
+      {
+        "value": "1",
+        "title": "100%"
+      },
+      {
+        "value": "1.1",
+        "title": "110%"
+      },
+      {
+        "value": "1.2",
+        "title": "120%"
       }
     ],
     "group": "UI"
@@ -145,9 +231,9 @@
     "group": "Map"
   },
   {
-    "id": "ui.map.tools",
+    "id": "ui.map.measuringTools",
     "type": "boolean",
-    "label": "Show map tools",
+    "label": "Show measuring tools",
     "value": false,
     "group": "Map"
   },

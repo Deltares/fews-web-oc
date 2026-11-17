@@ -34,6 +34,7 @@
                 ?.disseminationActions"
               :prepend-icon="action.iconId"
               :title="action.description"
+              :key="action.id"
               @click="runDisseminateAction(htmlContent, action)"
             >
             </v-list-item>
@@ -74,7 +75,11 @@
         class="pdf-iframe"
       ></iframe>
       <div v-else class="products-browser-view__canvas overflow-y-auto w-100">
-        <img v-if="viewMode === 'img'" :src="src" />
+        <img
+          v-if="viewMode === 'img'"
+          :src="src"
+          :alt="selectedProduct?.attributes.name ?? 'Report'"
+        />
         <ReactiveIframe
           v-else-if="viewMode === 'html'"
           :src="src"
@@ -140,12 +145,12 @@ const filteredProducts = computed(() => {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { products, fetchProducts } = useProducts(
+const { products, refresh } = useProducts(
   baseUrl,
   viewPeriod,
   archiveProductConfig,
 )
-const { logDisplay } = useLogDisplay(baseUrl, () => LOG_DISPLAY_ID)
+const { logDisplay } = useLogDisplay(() => LOG_DISPLAY_ID)
 
 const viewMode = ref('html') // or 'iframe', 'img'
 const selected = ref(0) // Example timeZero
@@ -214,7 +219,7 @@ async function onSave() {
       fileName,
       metaData.attributes,
     )
-    await fetchProducts()
+    await refresh()
   } catch (error) {
     console.error('Error saving report:', error)
     return

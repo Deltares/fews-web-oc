@@ -8,7 +8,7 @@ import {
 import type { MaybeRefOrGetter } from 'vue'
 import { ref, shallowRef, toValue, watch } from 'vue'
 import { configManager } from '@/services/application-config'
-import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
+import { useRefreshCoordinator } from '@/services/useRefreshCoordinator'
 import { Pausable } from '@vueuse/core'
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -48,11 +48,13 @@ export function useTaskRunStatus(
   }
 
   if (refreshInterval) {
-    interval.value = useFocusAwareInterval(loadTaskRunStatus, refreshInterval, {
+    interval.value = useRefreshCoordinator(loadTaskRunStatus, {
+      policies: ['onSystemTick', 'onInterval', 'onVisibilityResume', 'manual'],
+      intervalMs: refreshInterval,
       immediateCallback: true,
     })
   } else {
-    loadTaskRunStatus()
+    void loadTaskRunStatus()
   }
 
   watch(() => toValue(filter), loadTaskRunStatus)

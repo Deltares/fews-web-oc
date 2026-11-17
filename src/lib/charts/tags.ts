@@ -16,7 +16,7 @@ export interface Tag {
 export function getMatchingIndexedString(item: string, text?: string) {
   if (!text) return
 
-  const match = item.match(/\[(\d+)\]/)?.[0]
+  const match = /\[(\d+)\]/.exec(item)?.[0]
   if (!match) return
 
   return text.split('\n').find((line) => line.includes(match))

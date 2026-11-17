@@ -4,57 +4,70 @@ import {
   PiWebserviceProvider,
   DynamicReportDisplayFilter,
 } from '@deltares/fews-pi-requests'
-import {
-  MaybeRefOrGetter,
-  ref,
-  shallowRef,
-  toValue,
-  watch,
-  watchEffect,
-} from 'vue'
+import { MaybeRefOrGetter, ref, shallowRef, toValue, watchEffect } from 'vue'
 
-export function useDynamicReport(
+export type DynamicReportDisplayCapabilities =
+  DynamicReportDisplayCapabilitiesResponse['dynamicReportDisplayCapabilities']
+
+export function useDynamicReportCapabilities(
   baseUrl: string,
   displayId: MaybeRefOrGetter<string | undefined>,
-  filter: MaybeRefOrGetter<
-    Omit<DynamicReportDisplayFilter, 'displayId'> | undefined
-  >,
 ) {
-  const reportHtml = ref<string>('')
-  const capabilities =
-    ref<
-      DynamicReportDisplayCapabilitiesResponse['dynamicReportDisplayCapabilities']
-    >()
-  const isReady = ref(false)
-  const isLoading = ref(false)
-  const error = shallowRef<string>()
+  const capabilities = ref<DynamicReportDisplayCapabilities>()
 
   async function loadCapability() {
     const _displayId = toValue(displayId)
-    if (_displayId === undefined) return {}
+    capabilities.value = undefined
+    if (_displayId === undefined) return
     const provider = new PiWebserviceProvider(baseUrl, {
       transformRequestFn: createTransformRequestFn(),
     })
     const response = await provider.getDynamicReportDisplayCapabilities({
       displayId: _displayId,
     })
+    // Ignore responses for a display that is no longer requested
+    if (toValue(displayId) !== _displayId) return
     capabilities.value = response.dynamicReportDisplayCapabilities
   }
+  watchEffect(loadCapability)
+
+  return { capabilities }
+}
+
+export function useDynamicReportHtml(
+  baseUrl: string,
+  displayId: MaybeRefOrGetter<string | undefined>,
+  capabilities: MaybeRefOrGetter<DynamicReportDisplayCapabilities | undefined>,
+  filter: MaybeRefOrGetter<
+    Omit<DynamicReportDisplayFilter, 'displayId'> | undefined
+  >,
+) {
+  const reportHtml = ref<string>('')
+  const isReady = ref(false)
+  const isLoading = ref(false)
+  const error = shallowRef<string>()
+  let latestRequestId = 0
 
   async function loadReport() {
+    const requestId = ++latestRequestId
+    isLoading.value = false
+    isReady.value = false
+    error.value = undefined
+
     const _displayId = toValue(displayId)
     const _filter = toValue(filter)
+    const _capabilities = toValue(capabilities)
 
-    if (!capabilities.value || _displayId === undefined) {
+    if (!_capabilities || _displayId === undefined) {
       reportHtml.value = ''
       return
     }
 
-    if (!hasRequiredParameters(capabilities.value, _filter)) {
+    if (!hasRequiredParameters(_capabilities, _filter)) {
+      reportHtml.value = ''
       return
     }
     isLoading.value = true
-    isReady.value = false
     try {
       const provider = new PiWebserviceProvider(baseUrl, {
         transformRequestFn: createTransformRequestFn(),
@@ -65,38 +78,84 @@ export function useDynamicReport(
         useLastValue: true,
         ..._filter,
       })
+      if (requestId !== latestRequestId) return
       reportHtml.value = response
     } catch {
+      if (requestId !== latestRequestId) return
       error.value = 'Error loading report'
       reportHtml.value = ''
     } finally {
-      isLoading.value = false
-      isReady.value = true
+      if (requestId === latestRequestId) {
+        isLoading.value = false
+        isReady.value = true
+      }
     }
   }
-  watchEffect(loadCapability)
-  watch(() => filter, loadReport, { deep: true })
+  watchEffect(loadReport)
 
   return {
     reportHtml,
-    capabilities,
     isReady,
     isLoading,
     error,
   }
 }
 
+export function useDynamicReport(
+  baseUrl: string,
+  displayId: MaybeRefOrGetter<string | undefined>,
+  filter: MaybeRefOrGetter<
+    Omit<DynamicReportDisplayFilter, 'displayId'> | undefined
+  >,
+) {
+  const { capabilities } = useDynamicReportCapabilities(baseUrl, displayId)
+  const report = useDynamicReportHtml(baseUrl, displayId, capabilities, filter)
+  return {
+    ...report,
+    capabilities,
+  }
+}
+
 function hasRequiredParameters(
-  capabilities: DynamicReportDisplayCapabilitiesResponse['dynamicReportDisplayCapabilities'],
+  capabilities: DynamicReportDisplayCapabilities,
   filter: Omit<DynamicReportDisplayFilter, 'displayId'> | undefined,
 ): boolean {
   if (!capabilities) return false
   const validTimeParameter =
-    !(capabilities.dimension?.name === 'time') || filter?.time !== undefined
+    capabilities.dimension?.name !== 'time' || filter?.time !== undefined
   const validLocationParameter =
     !capabilities.selectableLocations ||
-    capabilities.selectableLocations.findIndex(
+    capabilities.selectableLocations.some(
       (loc) => loc.id === filter?.locationId,
-    ) !== -1
+    )
   return validTimeParameter && validLocationParameter
+}
+
+export interface DynamicReportPanelConfig {
+  displayId: string
+  capabilities: DynamicReportDisplayCapabilities
+  locationId?: string
+}
+
+/**
+ * Get the dynamic report panel config for the selected locations.
+ * @returns `null` if no display is configured or no selected location is
+ *   selectable, `undefined` while a configured display's capabilities are
+ *   unavailable, otherwise the panel config.
+ */
+export function getDynamicReportPanelConfig(
+  displayId: string | undefined,
+  capabilities: DynamicReportDisplayCapabilities | undefined,
+  locationIds: string[],
+): DynamicReportPanelConfig | null | undefined {
+  if (displayId === undefined) return null
+  if (capabilities === undefined) return
+  const selectableLocations = capabilities.selectableLocations
+  if (!selectableLocations) return { displayId, capabilities }
+
+  const locationId = locationIds.find((id) =>
+    selectableLocations.some((location) => location.id === id),
+  )
+  if (locationId === undefined) return null
+  return { displayId, capabilities, locationId }
 }

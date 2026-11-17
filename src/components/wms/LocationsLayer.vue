@@ -1,5 +1,6 @@
 <template>
   <LocationsFillLayer
+    v-if="showLocations"
     :layerId="mapIds.location.layer.fill"
     :sourceId="mapIds.location.source"
     :source="source"
@@ -8,75 +9,95 @@
     :hoveredStateId="hoveredStateId"
   />
 
+  <LocationsLineLayer
+    v-if="showLocations"
+    :layerId="mapIds.location.layer.line"
+    :sourceId="mapIds.location.source"
+    :source="source"
+    :isDark="isDark"
+  />
+
   <LocationsCircleLayer
+    v-if="showLocations"
     :layerId="mapIds.location.layer.circle"
     :sourceId="mapIds.location.source"
     :source="source"
   />
 
   <LocationsSymbolLayer
+    v-if="showLocations"
     :layerId="mapIds.location.layer.symbol"
     :sourceId="mapIds.location.source"
     :isDark="isDark"
     :source="source"
+    :selectedLocationIds="selectedChildLocationIds"
   />
   <LocationsSymbolLayer
+    v-if="showLocations"
     :layerId="mapIds.location.layer.childSymbol"
     :sourceId="mapIds.location.source"
     :isDark="isDark"
     :source="source"
     child
+    :selectedLocationIds="selectedChildLocationIds"
   />
 
   <LocationsTextLayer
+    v-if="showLocations"
     :layerId="mapIds.location.layer.text"
     :sourceId="mapIds.location.source"
     :source="source"
     :isDark="isDark"
+    :selectedLocationIds="selectedChildLocationIds"
   />
 
-  <LocationsMarkers :geojson="geojson" />
+  <LocationsMarkers
+    :geojson="geojson"
+    :selectedLocationIds="selectedLocationIds"
+  />
 </template>
 
 <script setup lang="ts">
 import LocationsFillLayer from '@/components/wms/locations/LocationsFillLayer.vue'
+import LocationsLineLayer from '@/components/wms/locations/LocationsLineLayer.vue'
 import LocationsCircleLayer from '@/components/wms/locations/LocationsCircleLayer.vue'
 import LocationsSymbolLayer from '@/components/wms/locations/LocationsSymbolLayer.vue'
 import LocationsTextLayer from '@/components/wms/locations/LocationsTextLayer.vue'
 import LocationsMarkers from '@/components/wms/locations/LocationsMarkers.vue'
 import type { FeatureCollection, Geometry } from 'geojson'
-import {
-  type Location,
-  type LocationsLayerZoomSettings,
-} from '@deltares/fews-pi-requests'
+import type { Location } from '@deltares/fews-pi-requests'
 import {
   type MapGeoJSONFeature,
   type MapLayerMouseEvent,
   type MapLayerTouchEvent,
 } from 'maplibre-gl'
-import { watch, onBeforeUnmount, computed, ref } from 'vue'
-import { onBeforeMount } from 'vue'
+import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue'
 import { addLocationIconsToMap } from '@/lib/location-icons'
-import { useDark } from '@/services/useDark'
+import { useMapIsDark } from '@/services/useMapIsDark'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import {
   mapIds,
   clickableLocationLayerIds,
   addPropertiesToLocationGeojson,
+  getLocationCategory,
 } from '@/lib/map'
 import { useMap } from '@/services/useMap'
 import { useSource } from '@/services/useLayer'
+import {
+  defaultMapSettings,
+  type MapSettings,
+} from '@/lib/topology/componentSettings'
 
-const settings = useUserSettingsStore()
-const isDark = useDark()
+const userSettings = useUserSettingsStore()
+const isDark = useMapIsDark()
 const { map, zoom } = useMap()
 
 interface Props {
-  locationsGeoJson: FeatureCollection<Geometry, Location>
+  locationsGeoJson?: FeatureCollection<Geometry, Location>
   selectedLocationIds?: string[]
-  locationsClickable?: boolean
-  minZoom?: LocationsLayerZoomSettings
-  maxZoom?: LocationsLayerZoomSettings
+  selectedLocationCategories?: string[]
+  showLocations?: boolean
+  settings?: MapSettings['locationsLayer']
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -84,38 +105,76 @@ const props = withDefaults(defineProps<Props>(), {
     type: 'FeatureCollection',
     features: [],
   }),
-  selectedLocationId: null,
-  locationsClickable: true,
+  settings: () => defaultMapSettings.locationsLayer,
   selectedLocationIds: () => [],
-  minZoom: () => ({ level: -Infinity, levelLocationAttribute: '' }),
-  maxZoom: () => ({ level: Infinity, levelLocationAttribute: '' }),
+  selectedLocationCategories: () => [],
+  showLocations: () => true,
 })
 
 const showNames = computed(() => {
-  return Boolean(settings.get('ui.map.showLocationNames')?.value)
+  const showNamesUserSetting = Boolean(
+    userSettings.get('ui.map.showLocationNames')?.value ?? false,
+  )
+  const showNamesComponentSetting = props.settings.locationNames
+  return showNamesUserSetting && showNamesComponentSetting
 })
 
 const showDataAvailability = computed(() => {
-  return Boolean(settings.get('ui.map.showDataAvailability')?.value)
+  return Boolean(userSettings.get('ui.map.showDataAvailability')?.value)
 })
 
-const geojson = computed(() =>
-  addPropertiesToLocationGeojson(
-    props.locationsGeoJson,
-    props.selectedLocationIds,
+const locationsClickable = computed(() => props.settings.singleClickAction)
+
+const geojson = computed(() => {
+  const filteredLocations = props.selectedLocationCategories?.length
+    ? props.locationsGeoJson.features.filter((feature) => {
+        const category = getLocationCategory(feature)
+        return props.selectedLocationCategories?.includes(category)
+      })
+    : props.locationsGeoJson.features
+
+  return addPropertiesToLocationGeojson(
+    { ...props.locationsGeoJson, features: filteredLocations },
     showNames.value,
     showDataAvailability.value,
     zoom.value,
-    props.minZoom,
-    props.maxZoom,
-  ),
+    props.settings.minZoom,
+    props.settings.maxZoom,
+  )
+})
+
+const childLocationIds = computed(
+  () =>
+    new Set(
+      geojson.value.features
+        .filter(
+          (feature) =>
+            feature.geometry.type === 'Point' &&
+            'parentLocationId' in feature.properties,
+        )
+        .map((feature) => feature.properties.locationId),
+    ),
 )
+
+const selectedChildLocationIds = computed<string[]>((previous) => {
+  const ids = props.selectedLocationIds.filter((id) =>
+    childLocationIds.value.has(id),
+  )
+  // Changing symbol filters reloads source tiles, so polygon selection must
+  // leave these filters unchanged.
+  return previous &&
+    previous.length === ids.length &&
+    ids.every((id, index) => id === previous[index])
+    ? previous
+    : ids
+})
 
 const emit = defineEmits(['click'])
 
 const { source } = useSource(mapIds.location.source, () => ({
   type: 'geojson',
   data: geojson.value,
+  promoteId: 'locationId',
 }))
 
 watch(geojson, () => {
@@ -131,15 +190,12 @@ onBeforeUnmount(() => {
   removeHooksFromMapObject()
 })
 
-watch(
-  () => props.locationsClickable,
-  () => {
-    removeHooksFromMapObject()
-    addHooksToMapObject()
-  },
-)
+watch(locationsClickable, () => {
+  removeHooksFromMapObject()
+  addHooksToMapObject()
+})
 
-async function addLocationIcons() {
+function addLocationIcons() {
   if (!map) return
 
   addLocationIconsToMap(map, geojson.value).catch((error) =>
@@ -148,7 +204,7 @@ async function addLocationIcons() {
 }
 
 function clickHandler(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
-  if (map && props.locationsClickable) {
+  if (map && locationsClickable.value) {
     const layers = clickableLocationLayerIds.filter((layerId) =>
       map.getLayer(layerId),
     )
@@ -187,7 +243,7 @@ function onFillMouseLeave() {
 function onFillMouseMove(
   e: MapLayerMouseEvent & { features?: MapGeoJSONFeature[] },
 ) {
-  hoveredStateId.value = e.features?.[0].properties.locationId
+  hoveredStateId.value = e.features?.[0]?.properties.locationId
 }
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
@@ -196,7 +252,7 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 
 function addHooksToMapObject() {
   if (map) {
-    if (props.locationsClickable) {
+    if (locationsClickable.value) {
       for (const layerId of clickableLocationLayerIds) {
         map.on('click', layerId, clickHandler)
         map.on('mouseenter', layerId, setCursorPointer)
@@ -218,8 +274,8 @@ function removeHooksFromMapObject() {
       map.off('mouseleave', layerId, unsetCursorPointer)
     }
 
-    map.on('mousemove', mapIds.location.layer.fill, onFillMouseMove)
-    map.on('mouseleave', mapIds.location.layer.fill, onFillMouseLeave)
+    map.off('mousemove', mapIds.location.layer.fill, onFillMouseMove)
+    map.off('mouseleave', mapIds.location.layer.fill, onFillMouseLeave)
     map.off('style.load', addLocationIcons)
   }
 }

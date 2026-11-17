@@ -1,13 +1,17 @@
 import { LngLat } from 'maplibre-gl'
+import { roundCoordinateToString } from '@/lib/coordinates'
 
 export function coordinateToString(coordinate: LngLat | null) {
   return coordinate
-    ? `${coordinate.lat.toFixed(5)}°N ${coordinate.lng.toFixed(5)}°E`
+    ? `${roundCoordinateToString(coordinate.lat)}°N ${roundCoordinateToString(coordinate.lng)}°E`
     : '—'
 }
 
 export function coordinateToStringParts(coordinate: LngLat | null) {
   return coordinate
-    ? [`${coordinate.lat.toFixed(5)}°N`, `${coordinate.lng.toFixed(5)}°E`]
+    ? [
+        `${roundCoordinateToString(coordinate.lat)}°N`,
+        `${roundCoordinateToString(coordinate.lng)}°E`,
+      ]
     : ['—°N', '—°E']
 }

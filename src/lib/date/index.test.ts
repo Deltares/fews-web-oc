@@ -1,5 +1,17 @@
-import { describe, expect, test } from 'vitest'
-import { convertJSDateToFewsPiParameter, toDateAbsDifferenceString } from '.'
+import { afterEach, describe, expect, test } from 'vitest'
+import {
+  convertJSDateToFewsPiParameter,
+  toDateAbsDifferenceString,
+  toHumanReadableDate,
+  toHumanReadableDateTime,
+  toHumanReadableTime,
+  toShortHumanReadableDate,
+} from '.'
+import { setDisplayTimeZone, SYSTEM_TIME_ZONE } from './timeZone'
+
+afterEach(() => {
+  setDisplayTimeZone(SYSTEM_TIME_ZONE)
+})
 
 describe('toDateAbsDifferenceString', () => {
   test('with valid dates', () => {
@@ -166,5 +178,25 @@ describe('convertJSDateToFewsPiParameter', () => {
     const date = new Date('2023-10-15T14:25:36.789Z')
     const result = convertJSDateToFewsPiParameter(date)
     expect(result).toMatch(/Z$/)
+  })
+})
+
+describe('human-readable dates in a display time zone', () => {
+  const date = new Date('2026-01-01T03:04:05Z')
+
+  test('UTC', () => {
+    setDisplayTimeZone('UTC')
+    expect(toHumanReadableDate(date)).toBe('01/01/2026')
+    expect(toHumanReadableDateTime(date)).toBe('01/01/2026, 03:04:05')
+    expect(toHumanReadableTime(date)).toBe('03:04')
+    expect(toShortHumanReadableDate(date)).toBe('01 Jan, 03:04')
+  })
+
+  test('America/New_York', () => {
+    setDisplayTimeZone('America/New_York')
+    expect(toHumanReadableDate(date)).toBe('31/12/2025')
+    expect(toHumanReadableDateTime(date)).toBe('31/12/2025, 22:04:05')
+    expect(toHumanReadableTime(date)).toBe('22:04')
+    expect(toShortHumanReadableDate(date)).toBe('31 Dec, 22:04')
   })
 })

@@ -8,17 +8,20 @@ export type MapSettings = DeepRequiredMapSettings
 export const defaultMapSettings: MapSettings = {
   wmsLayer: {
     show: true, // TODO: Implement
-    autoPlay: false, // TODO: Implement
+    autoPlay: false,
     animateVectors: true, // TODO: Implement
     doubleClickAction: true,
   },
   locationsLayer: {
     show: true,
-    locationNames: true, // TODO: Implement
+    locationNames: true,
     singleClickAction: true,
     locationSearchEnabled: true,
     minZoom: { level: -Infinity, levelLocationAttribute: '' },
     maxZoom: { level: Infinity, levelLocationAttribute: '' },
+    legend: {
+      show: true,
+    },
   },
   overlays: [],
 }

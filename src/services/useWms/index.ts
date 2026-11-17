@@ -17,8 +17,10 @@ import {
   ref,
   Ref,
   toValue,
+  watch,
   watchEffect,
 } from 'vue'
+import { useRefreshCoordinator } from '@/services/useRefreshCoordinator'
 // @ts-ignore
 import { toWgs84 } from '@turf/projection'
 // @ts-ignore
@@ -44,22 +46,21 @@ export interface UseWmsReturn {
   timesDefault: Ref<Date | undefined>
   refresh: () => Promise<void>
   loading: Ref<boolean>
-  startPolling: (intervalMs: number) => void
-  stopPolling: () => void
 }
+
 export function useWmsLayerCapabilities(
   baseUrl: string,
   layerName: MaybeRefOrGetter<string>,
   taskRunId: MaybeRefOrGetter<string | undefined>,
+  inheritCapabilities = true,
 ): UseWmsReturn {
   // If a parent component has already provided WMS layer capabilities, use those instead of fetching them again.
   const parent = inject(WMS_LAYER_CAPABILITIES_KEY, undefined)
-  if (parent) {
+  if (inheritCapabilities && parent) {
     return parent
   }
 
   const loading = ref(false)
-  let pollingId: ReturnType<typeof globalThis.setInterval> | undefined
 
   const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl, {
@@ -124,20 +125,15 @@ export function useWmsLayerCapabilities(
     }
   }
 
-  const startPolling = (intervalMs: number) => {
-    stopPolling()
-    pollingId = globalThis.setInterval(() => {
+  useRefreshCoordinator(
+    async () => {
       if (loading.value) return
-      void refresh()
-    }, intervalMs)
-  }
-
-  const stopPolling = () => {
-    if (pollingId !== undefined) {
-      clearInterval(pollingId)
-      pollingId = undefined
-    }
-  }
+      await refresh()
+    },
+    {
+      policies: ['onSystemTick', 'onVisibilityResume'],
+    },
+  )
 
   watchEffect(refresh)
 
@@ -147,8 +143,6 @@ export function useWmsLayerCapabilities(
     timesDefault,
     refresh,
     loading,
-    startPolling,
-    stopPolling,
   }
   provide(WMS_LAYER_CAPABILITIES_KEY, result)
   return result
@@ -164,45 +158,46 @@ export function useWmsLegend(
 ): Ref<GetLegendGraphicResponse | undefined> {
   const legendGraphic = ref<GetLegendGraphicResponse>()
 
-  async function loadLegend(): Promise<void> {
-    const _layers = toValue(layerName)
-    const _useDisplayUnits = toValue(useDisplayUnits)
-    const _colorScaleRange = toValue(colorScaleRange)
-    const _style = toValue(style)
-    const _activeStyles = toValue(activeStyles)
+  watch(
+    [
+      () => toValue(layerName),
+      () => toValue(useDisplayUnits),
+      () => toValue(colorScaleRange),
+      () => toValue(style),
+      () => toValue(activeStyles),
+    ],
+    async ([
+      layerName,
+      useDisplayUnits,
+      colorScaleRange,
+      style,
+      activeStyles,
+    ]) => {
+      if (layerName === '') {
+        legendGraphic.value = undefined
+        return
+      }
 
-    if (_layers === '') {
-      legendGraphic.value = undefined
-      return
-    }
+      if (!activeStyles.some((s) => styleToId(s) === styleToId(style))) {
+        return
+      }
 
-    if (!_activeStyles.some((s) => styleToId(s) === styleToId(_style))) {
-      return
-    }
+      legendGraphic.value = await fetchWmsLegend(
+        baseUrl,
+        layerName,
+        useDisplayUnits,
+        colorScaleRange,
+        style,
+      )
+    },
+  )
 
-    legendGraphic.value = await fetchWmsLegend(
-      baseUrl,
-      _layers,
-      _useDisplayUnits,
-      _colorScaleRange,
-      _style,
-    )
-  }
-
-  watchEffect(() => {
-    loadLegend()
-  })
   return legendGraphic
 }
 
 export function useWmsMaxValuesTimeSeries(
   baseUrl: string,
-  layerName: MaybeRefOrGetter<string>,
-  start: MaybeRefOrGetter<Date | null>,
-  end: MaybeRefOrGetter<Date | null>,
-  doShowAggregated: MaybeRefOrGetter<boolean>,
-  aggregationLabel: MaybeRefOrGetter<string | null>,
-  taskRunId: MaybeRefOrGetter<string | undefined>,
+  filter: MaybeRefOrGetter<TimeSeriesGridMaxValuesFilter | undefined>,
 ) {
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -210,50 +205,33 @@ export function useWmsMaxValuesTimeSeries(
 
   const timeSeries = ref<TimeSeriesData[]>([])
   watchEffect(async () => {
-    const _layerName = toValue(layerName)
-    const _start = toValue(start)
-    const _end = toValue(end)
-    const _doShowAggregated = toValue(doShowAggregated)
-    const _aggregationLabel = toValue(aggregationLabel)
-    const _taskRunId = toValue(taskRunId)
-    if (_layerName !== '' && _start && _end) {
-      const filter: TimeSeriesGridMaxValuesFilter = {
-        startTime: _start.toISOString(),
-        endTime: _end.toISOString(),
-        layers: _layerName,
-      }
-      if (_doShowAggregated && _aggregationLabel !== null) {
-        filter.aggregation = _aggregationLabel
-      }
-      if (_taskRunId) {
-        filter.taskRunId = _taskRunId
-      }
-      const response = await piProvider.getTimeSeriesGridMaxValues(filter)
-      if (response && response.timeSeries && response.timeSeries.length > 0) {
-        // We will always have only one series of maximum values for a layer.
-        const series = response.timeSeries[0]
-        if (series.events) {
-          const missingValue = series.header?.missVal ?? ''
-          // If we successfully fetched, update the time series to the fetched
-          // values.
-          timeSeries.value = series.events.map((event) => {
-            const date = convertFewsPiDateTimeToJsDate(
-              { date: event.date, time: event.time },
-              'Z',
-            )
-            const value = event.value === missingValue ? null : +event.value
-            return {
-              x: date,
-              y: value,
-              flag: event.flag,
-            }
-          })
-          return
-        }
-      }
-    }
-    // In all other cases, reset the time series.
     timeSeries.value = []
+
+    const _filter = toValue(filter)
+    if (!_filter) return
+
+    const response = await piProvider.getTimeSeriesGridMaxValues(_filter)
+    if (!response?.timeSeries?.length) return
+
+    // We will always have only one series of maximum values for a layer.
+    const series = response.timeSeries[0]
+    if (!series.events) return
+
+    const missingValue = series.header?.missVal ?? ''
+    // If we successfully fetched, update the time series to the fetched
+    // values.
+    timeSeries.value = series.events.map((event) => {
+      const date = convertFewsPiDateTimeToJsDate(
+        { date: event.date, time: event.time },
+        'Z',
+      )
+      const value = event.value === missingValue ? null : +event.value
+      return {
+        x: date,
+        y: value,
+        flag: event.flag,
+      }
+    })
   })
 
   return { timeSeries }
@@ -302,7 +280,7 @@ export function useWmsCapabilities(
     }
   }
 
-  loadCapabilities()
+  void loadCapabilities()
 
   return { capabilities }
 }

@@ -69,6 +69,18 @@ Web OC will show a time series graph and a drop-down menu for selection of displ
 
 The period shown in the graph corresponds to the configured relative view period in `DisplayGroups.xml`.
 
+**How plotWeight is interpreted in the WebOC**
+
+The WebOC uses CSS Flexbox to distribute the remaining vertical space proportionally over the subplots axis heights (excluding the legend and margin for tick labels). The `flex-grow` property specifies the grow rate of the container.
+
+* The configured `plotWeight` is directly used as a `flex-grow` value.
+* The axis height of the subplot with `plotWeight` 2 grows twice as fast as a subplot with `plotWeight` 1.
+* The `plotWeight` is also used to set the minimum axis height in pixels. The plot view will have a scrollbar when there is not enough space.
+
+For WebOC, it is advised to use `plotWeight` values of 200 or higher. Since `plotWeight` is also used as the minimum axis height (in pixels, excluding legend/brush and margins), this helps keep subplots readable on small (mobile) screens. If a subplot should be two times larger than another subplot, set its `plotWeight` to 400.
+
+When no `plotWeight` is specified, all subplots will have an equal height of 400px including the legend and tick labels. On desktop resolutions, typically two subplots will fit on screen, while a third subplot requires a scrollbar.
+
 ---
 
 **Display Information Document**
@@ -98,6 +110,139 @@ The dynamic report module provides the ability to dynamically generate a report 
 The dynamic report can be linked to the topology using `<dynamicReportDisplayId>` in *Topology.xml*. Web OC displays a time slider to request the report for the selected time. 
 When `<selectedLocationVariable>` is configured in [DynamicReportDisplays.xml](https://publicwiki.deltares.nl/spaces/FEWSDOC/pages/352944402/37+Dynamic+Report+Displays+Web+OC+only), a location selection menu also becomes available.
 
+The report view, including a dynamic report in a time series window, can be
+edited temporarily, and node map screenshots can be added to the edited report.
+Chart capture is currently disabled; screenshots contain only the map and its
+colour legend. Choose a map aspect ratio: 16:9 (the default), 4:3,
+1:1, or 3:4. The preview resizes before capture; the map is not stretched or
+cropped afterward. The aspect ratio selector is left of the size selector;
+size labels update to show width × height when the ratio changes.
+The dialog uses nearly the full viewport height and becomes fullscreen at the
+application's mobile breakpoint. The map preview is centered and constrained to
+the available dialog space, including portrait aspect ratios.
+Choose an output width of 640 pixels
+(small), 1280 pixels (medium), or 1920 pixels (large, the default). The aspect
+ratio is preserved and height follows the map aspect ratio. The output always
+uses the selected width; smaller map sources are enlarged without adding detail.
+Screenshots are embedded
+as PNG data URLs, with a limit of 20 screenshots and 5 MiB of encoded screenshot
+data per report. Editing uses TipTap and may change
+HTML or formatting that its extensions do not support.
+In particular, TipTap currently rewrites table sections such as `<thead>` and
+`<tbody>`. Styles that depend on those sections may therefore change while
+editing or after previewing an edited report.
+The capture includes the map's colour legend (categorical or gradient).
+The capture dialog explains how to select a node and adjust the map.
+Wait for the map and colour legend to load before capturing.
+Each screenshot has an editable caption containing the node name, the source
+data layer ID and its valid time in UTC. The caption is included in HTML and
+print/PDF exports.
+The embedded PNG retains its captured pixel resolution. Screenshots shrink to
+fit the report width without stretching or enlarging smaller images, including
+in saved HTML and print/PDF. For print, aim for approximately 300 effective DPI:
+1920 pixels at 17 cm wide is about 287 DPI. Actual DPI depends on capture
+resolution and printed width; enlarging a smaller source does not improve detail.
+
+Edits and screenshots are not saved to FEWS and are discarded when the report,
+location, or time changes. In both the report view and the time series report
+panel, use **Export** to save the current report, including local edits and
+screenshots, as HTML or through the browser print dialog as PDF.
+These export options respect the report download setting. In a time series
+window, choose **Export** from the dot menu to open the report and replace the
+window toolbar with editing and export controls. Close report export to restore
+the normal window toolbar and display the original report without local edits.
+Local edits are retained for reopening export mode until the report changes.
+Export mode fills the application's main content area, leaving the application
+header and navigation visible. Closing it restores the original time series
+window size.
+The information icon in the export toolbar explains the local-only changes and
+editor formatting limitations in a tooltip.
+The primary **Edit**/**Preview** button is first in the export toolbar.
+**Save as HTML** and **Print or save as PDF** are separate buttons with icons.
+Printing opens the current report in a new browser tab and opens the print
+dialog after its styles, images and fonts load. Allow popups for this site.
+The tab remains open after printing or cancelling the dialog.
+The print tab contains only the report, without application layout constraints.
+Print CSS allows the report to flow across pages and uses page margin boxes for
+the document title and "Page n out of m" footer, without adding report elements.
+Print margins are zero on the left and right, with 20 mm at the top and bottom.
+The first page has no top margin or document-title header.
+CSS page headers and footers require a browser supporting page margin boxes
+(current Chrome/Edge). Disable the browser's own headers and footers to avoid
+duplicates. For dynamic page-header values in Chrome/Edge, generate literal
+CSS content in the FEWS report template; these browsers do not support CSS
+named strings (`string-set` and `string()`). The first-page margin is controlled
+by the report's own `@page :first` rule.
+While editing, a separate floating formatting toolbar above the report provides undo/redo, bold, italic,
+underline, highlighting, text color, and alignment.
+
+*Styling a dynamic report*
+
+Style the report template with CSS classes. Put the CSS rules in a `<style>` element in the template, or in a style sheet in the FEWS static resources (`WebResourceFiles`) that is linked with a relative path:
+
+```html
+<head>
+  <link rel="stylesheet" href="css/DynamicReport.css" />
+  <style>
+    .number {
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <table class="document-file-table">
+    <tr>
+      <td>Intake Plant A</td>
+      <td class="number">-0.699</td>
+    </tr>
+  </table>
+</body>
+```
+
+Do not use inline `style` attributes, such as `<td style="text-align: right">`. Some browsers block them when the [Content Security Policy](https://deltares.github.io/fews-web-oc/deployments/#content-security-policy-csp-headers) does not allow `'unsafe-inline'` in `style-src`. Classes work with any `style-src`. Style sheets that are not in the FEWS static resources, such as absolute URLs to other servers, are ignored.
+
+The report styles only apply to the report, they do not affect the rest of the Web OC.
+
+When a report is edited, Tiptap converts table rows to a single `<tbody>` and
+does not preserve `<thead>`. To keep header cells styled in the editor and in
+edited exports, target `th` directly instead of relying on `thead th` selectors.
+
+*Web OC and isolated styling*
+
+A report is shown with one of two stylings:
+
+- **Isolated styling** (default): the styles of the Web OC do not apply to the report, only the report styles do. The report styles have to set the font, colours and so on themselves. Use this when the report has its own look, or when the Web OC styles get in the way.
+- **Web OC styling**: the report is part of the Web OC page. The fonts, colours and other styles of the Web OC, including a configured `customStyleSheet`, also apply to the report. The report styles are added on top. Use this when the report should look like the rest of the Web OC.
+
+Isolated styling is the default. To opt in to Web OC styling, add a `<meta>` element in the `<head>` of the template:
+
+```html
+<head>
+  <meta name="fews-dynamic-report-styling" content="weboc" />
+</head>
+```
+
+In the report styles, `:scope` is the element that contains the report, and the Web OC adds the `dark` class to an element around it in dark mode. This works in both stylings. Use it to set the colours of the report, for example with CSS variables:
+
+Use `:scope` instead of `:root` for report-level variables. `:root` targets the document root, not the embedded report, so its variables are unavailable inside the report scope and colours using them will not render. `:scope` also works when the report is opened as a standalone HTML document.
+
+```css
+:scope {
+  --report-text: rgb(33, 33, 33);
+  --report-surface: rgb(255, 255, 255);
+  color: var(--report-text);
+  background-color: var(--report-surface);
+  font: 14px/1.5 system-ui, sans-serif;
+}
+
+.dark :scope {
+  --report-text: rgb(255, 255, 255);
+  --report-surface: rgb(33, 33, 33);
+}
+```
+
+With Web OC styling the report can also use the theme colours of the Web OC, such as `rgb(var(--v-theme-primary))` and `rgb(var(--v-theme-surface))`. These follow the Web OC theme, dark mode and the `customStyleSheet` automatically.
+
 ---
 
 **Embedded Browser**
@@ -109,7 +254,8 @@ When a `<embedUrl>` element is configured in the selected topology node, Web OC 
 **External url**
 
 When a `<url>` element is configured in the selected topology node, Web OC will open a new browser window (outside Web OC) for the URL configured.  
-⚠️ This is only supported for topology nodes with *only* the `<url>` element configured.  
+> [!NOTE]
+> This is only supported for topology nodes with *only* the `<url>` element configured.  
 
 ---
 
@@ -190,6 +336,7 @@ The classbreaks (legend) on the Spatial Display is only shown in the Web-OC when
 
 Optionally, gridded vector data can be shown as an animated layer in Web OC by configuring the `<animatedVectors>` settings in [Spatial Display](https://publicwiki.deltares.nl/display/FEWSDOC/01+Grid+Display).
 
+In `Topology.xml`, the desired mapExtentId should be configured on the topologyNode through the ``<mapExtentId>myExtent</mapExtentId>`` element.
 ---
 
 
@@ -198,7 +345,10 @@ Optionally, gridded vector data can be shown as an animated layer in Web OC by c
 In `Topology.xml`, a dashboard is linked to a node using `<webOCDashboardId>`.  
 For further configuration, see: [WebOCDashboards.xml](https://publicwiki.deltares.nl/spaces/FEWSDOC/pages/356779153/38+Web+OC+Dashboards).
 
+The desired mapExtentId should be configured on the topologyNode, through the <mapExtentId>Example</mapExtentId> element.
+
 ---
+
 
 ## Threshold Information in WebOC
 
@@ -222,6 +372,7 @@ In **WebOC**, the following options exist for displaying threshold information:
    By double-clicking, the threshold overview becomes visible in a side panel.  
    This option is only visible if  
    `<showActiveThresholdCrossingsForFilters>true</showActiveThresholdCrossingsForFilters>`
+
 
 ## Web OC side panel
 
@@ -265,9 +416,152 @@ Next to the Topology Display, three additional components can be configured in W
 
 **schematicStatusDisplay**: A tree view will list all SSD displayGroups including all displayPanels (configured permissions respected) available to FewsWebServices. Most click-actions on displayPanels are supported, see [SSD Service documentation](https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+Schematic+Status+Display+%28SSD%29+Web+Service).
 
-**HTML display**: Component, only available in Web OC, to either show static HTML pages stored in the FEWS Configuration (WebResourceFiles) or external web pages. See [WebOperatorClient.xml configuration](https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client).
+**HTML display**: Component, only available in Web OC, to either show static HTML pages stored in the FEWS Configuration (WebResourceFiles) or external web pages. Multiple HTML displays can be configured with distinct paths, including when the backend returns the same component ID for each. Use the paths in the help menu to open the corresponding pages. A default component is selected by ID, so repeated IDs cannot uniquely identify a default HTML display; the last matching display is used. See [WebOperatorClient.xml configuration](https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client).
 
 **Help menu**: Drop-down menu available on the bottom left side of Web OC. See [WebOperatorClient.xml configuration](https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client).
+
+## User settings
+
+Web OC users can change their settings, such as theme, units and map options, via the *cog* icon in the top-right corner of the screen. **All settings** opens the full list. **Restore defaults** resets every setting to the defaults described below.
+
+### Default user settings
+
+The defaults for all users can be configured in `WebResourceFiles/default-user-settings.json`. For each setting, the configuration can:
+
+- set the default value,
+- hide the setting and fix its value for all users,
+- show a hidden setting, such as the language selection,
+- add the setting to the favorites in the user settings menu,
+- replace the options users can choose from, for example the available time zones.
+
+Example:
+
+```json
+{
+  "$schema": "./default-user-settings.schema.json",
+  "settings": [
+    { "id": "ui.theme", "value": "dark" },
+    { "id": "units.displayUnits", "value": "system", "favorite": true },
+    { "id": "ui.locale", "value": "default", "enabled": true },
+    { "id": "charts.brush", "value": false, "enabled": false },
+    {
+      "id": "ui.timeZone",
+      "value": "UTC",
+      "items": [
+        { "value": "UTC" },
+        { "value": "Europe/Amsterdam", "title": "Amsterdam" }
+      ]
+    }
+  ]
+}
+```
+
+Each entry has the following properties. Only `id` is required.
+
+| Property | Description |
+| --- | --- |
+| `id` | Id of the setting, see the table below. |
+| `value` | Default value of the setting. |
+| `enabled` | `true` shows the setting to users. `false` hides it, and the configured `value` (or the Web OC default) applies to all users; values users chose earlier are ignored while the setting is hidden. When omitted, the Web OC default is used: all settings are shown, except the language selection. |
+| `favorite` | `true` shows the setting in the user settings menu (cog icon). Users can change this themselves. |
+| `items` | Options users can choose from, replacing the built-in options. Only for settings with a list of values, except `ui.map.theme`. Each option has a `value` and optionally a `title`, an `icon` ([Material Design icon](https://pictogrammers.com/library/mdi/), e.g. `mdi-earth`) and an `abbreviation` shown instead of an icon. Without a title or icon, those of the built-in option with the same value are used, or else the value itself. A configured title is shown as is in every language, instead of the translation of the built-in title. The `value` of the setting must be one of the options; when omitted and the built-in default is not one of them, the first option is the default. |
+
+A value chosen by a user takes precedence over the configured default. Web OC only stores the settings users changed themselves, so a change of a default in the configuration reaches all users who did not change that setting.
+
+Available settings:
+
+| Group | Id | Setting | Values | Web OC default |
+| --- | --- | --- | --- | --- |
+| Units | `units.displayUnits` | Unit System | `system`, `display` | `display` |
+| Datum | `datum.verticalDatum` | Absolute vertical datum | `true`, `false` | `true` |
+| UI | `ui.theme` | Theme | `auto`, `light`, `dark` | `auto` |
+| UI | `ui.locale` | Language | `system`, `default`, `en`, `de` | `default` (hidden) |
+| UI | `ui.timeZone` | Time zone | `system`, `UTC` or an IANA time zone | `system` |
+| UI | `ui.hierarchical-menu-style` | Menu style | `auto`, `tree`, `column` | `auto` |
+| UI | `ui.sidebar-style` | Sidebar style | `minimal`, `full labels` | `full labels` |
+| UI | `ui.scale` | UI scale | `0.8`, `0.85`, `0.9`, `0.95`, `1`, `1.1`, `1.2` | `1` |
+| Map | `ui.map.theme` | Basemap | `automatic`, `light`, `dark` or a base map id | `automatic` |
+| Map | `ui.map.showLocationNames` | Show location names | `true`, `false` | `true` |
+| Map | `ui.map.showDataAvailability` | Show data availability | `true`, `false` | `false` |
+| Map | `ui.map.navigationControl` | Show navigation control | `true`, `false` | `false` |
+| Map | `ui.map.geolocationControl` | Show your location | `true`, `false` | `false` |
+| Map | `ui.map.measuringTools` | Show measuring tools | `true`, `false` | `false` |
+| Map | `ui.map.data-download-tools` | Show map data download tools | `true`, `false` | `false` |
+| Map | `ui.map.showCoordinates` | Show mouse coordinates | `true`, `false` | `false` |
+| Charts | `charts.scrollZoomMode` | Scroll wheel zoom mode | `off`, `x`, `y`, `xy` | `x` |
+| Charts | `charts.brush` | Show brush chart | `true`, `false` | `false` |
+
+For `ui.locale`, `default` is the language set by `VITE_I18N_LOCALE` in the [application configuration](https://deltares.github.io/fews-web-oc/app_configuration/), and `system` is the language of the user's browser or operating system, if Web OC supports it.
+
+For `ui.timeZone`, `system` is the time zone of the user's browser or operating system. Other values are [IANA time zone names](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), such as `UTC` or `Europe/Amsterdam`. Configure `items` to offer other time zones than `system` and `UTC`. Unknown time zones are ignored.
+
+#### Time zones
+
+Users choose the time zone in the user settings and in the time control menu, which shows the UTC offset of each option. To offer additional time zones, configure the options of `ui.timeZone` with `items`. The options replace the built-in ones, so include `system` and `UTC` to keep them.
+
+For example, for a system in Australia, with Sydney time as default and the time zone in the favorites of the user settings menu:
+
+```json
+{
+  "$schema": "./default-user-settings.schema.json",
+  "settings": [
+    {
+      "id": "ui.timeZone",
+      "value": "Australia/Sydney",
+      "favorite": true,
+      "items": [
+        { "value": "system" },
+        { "value": "UTC" },
+        { "value": "Australia/Perth", "title": "Perth (AWST)" },
+        { "value": "Australia/Darwin", "title": "Darwin (ACST)" },
+        { "value": "Australia/Adelaide", "title": "Adelaide (ACST/ACDT)" },
+        { "value": "Australia/Brisbane", "title": "Brisbane (AEST)" },
+        { "value": "Australia/Sydney", "title": "Sydney, Canberra, Melbourne (AEST/AEDT)" },
+        { "value": "Australia/Hobart", "title": "Hobart (AEST/AEDT)" }
+      ]
+    }
+  ]
+}
+```
+
+Use a time zone name, not a fixed offset such as `+10:00`: daylight saving time follows from the name. Adelaide, Sydney and Hobart change to daylight saving time in summer, while Perth, Darwin and Brisbane keep the same offset all year. Without a `title`, the time zone name is shown, e.g. `Australia/Perth`.
+
+#### JSON schema
+
+The [JSON schema for default-user-settings.json](https://github.com/Deltares/fews-web-oc/blob/main/schemas/default-user-settings.schema.json) describes all settings and their allowed values. Download it to `WebResourceFiles/default-user-settings.schema.json` and refer to it with `"$schema": "./default-user-settings.schema.json"`, as in the example above. Editors like Visual Studio Code then validate the file, suggest setting ids and values, and show their descriptions. Use the schema that belongs to the Web OC version you deploy, as new versions can add settings.
+
+Web OC ignores invalid entries, such as an unknown id or a value that is not allowed, and lists them as a warning in the browser console (developer tools).
+
+### Translations
+
+Web OC includes translations in English and German. Texts, including the names of user settings and their options, can be changed or translated per language in `WebResourceFiles/locales/<language code>.json`, for example `locales/en.json` and `locales/de.json`. Only the texts in the file are replaced; all other texts keep the Web OC translation. Include only the texts you want to change, so that you keep receiving improvements of the other texts with new Web OC versions.
+
+Names of settings, options and groups are found under `userSettings`:
+
+- `userSettings.items.<id>.label`: name of a setting, where the dots of the id are nested objects,
+- `userSettings.items.<id>.options.<value>`: name of an option of a setting,
+- `userSettings.groups.<group>`: name of a group.
+
+Example `locales/de.json`:
+
+```json
+{
+  "userSettings": {
+    "groups": {
+      "UI": "Benutzeroberfläche"
+    },
+    "items": {
+      "charts": {
+        "brush": {
+          "label": "Übersichtsdiagramm anzeigen"
+        }
+      }
+    }
+  }
+}
+```
+
+Web OC loads the file of the language in use. Files that cannot be read are listed as a warning in the browser console.
 
 ## Known issues
 

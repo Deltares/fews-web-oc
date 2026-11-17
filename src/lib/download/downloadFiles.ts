@@ -20,6 +20,9 @@ export function getExtension(documentFormat: DocumentFormat): string {
     case DocumentFormat.PI_CSV_ID_AND_NAME:
     case DocumentFormat.PI_CSV:
       return '.csv'
+    case DocumentFormat.PI_SSV_ID_AND_NAME:
+    case DocumentFormat.PI_SSV:
+      return '.ssv'
     case 'PI_NETCDF' as any:
       return '.nc'
     default:
@@ -74,10 +77,9 @@ export async function downloadFileWithXhr(
     }
 
     req.onerror = () => {
-      reject({
-        status: req.status,
-        statusText: req.statusText,
-      })
+      reject(
+        new Error(`Error downloading file: ${req.status} ${req.statusText}`),
+      )
     }
 
     req.send()
@@ -102,7 +104,7 @@ async function downloadFileWithFetch(
   }
 }
 
-function clickDownloadBlob(blob: Blob, fileName: string) {
+export function clickDownloadBlob(blob: Blob, fileName: string) {
   const blobUrl = window.URL.createObjectURL(blob)
   clickDownloadUrl(blobUrl, fileName)
   window.URL.revokeObjectURL(blobUrl)

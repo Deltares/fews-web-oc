@@ -2,30 +2,27 @@ import { configManager } from '../../services/application-config/index.ts'
 import type { WebOcComponent, WebOcConfiguration } from './types.ts'
 import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { FewsConfigLoadError } from '@/lib/startup/startup-error.js'
 
 export async function getFewsConfig(): Promise<WebOcConfiguration> {
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const webServiceProvider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-  let webOcConfiguration: WebOcConfiguration = {
-    general: {},
-    webOcComponents: [],
-  }
   try {
+    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+    const webServiceProvider = new PiWebserviceProvider(baseUrl, {
+      transformRequestFn: createTransformRequestFn(),
+    })
     const fewsConfig = await webServiceProvider.getWebOcConfiguration()
     const webOcComponents: WebOcComponent[] = []
     for (const componentConfig of fewsConfig.components) {
       webOcComponents.push(componentConfig as WebOcComponent)
     }
-    webOcConfiguration = {
+    return {
       general: fewsConfig.general,
       webOcComponents,
     }
-  } catch (error) {
-    console.error(error)
+  } catch (error: unknown) {
+    if (error instanceof FewsConfigLoadError) throw error
+    throw new FewsConfigLoadError(error)
   }
-  return webOcConfiguration
 }
 
 export function getResourcesStaticUrl(resource: string) {
@@ -56,13 +53,20 @@ export async function getLocalOrRemoteFileUrl(
     return contentType?.includes('text/html') ?? false
   }
 
+  let remoteMayBeAvailable = false
   try {
     const remoteResponse = await fetch(remoteUrl, { method: 'HEAD' })
     if (remoteResponse.ok && !isHtmlResponse(remoteResponse)) {
       return remoteUrl
     }
+    remoteMayBeAvailable =
+      remoteResponse.status === 405 || remoteResponse.status === 501
   } catch (error) {
-    // Handle fetch error
+    console.warn(
+      `Could not verify remote resource with HEAD; will try other stylesheet locations: ${remoteUrl}`,
+      error,
+    )
+    remoteMayBeAvailable = true
   }
 
   try {
@@ -71,6 +75,11 @@ export async function getLocalOrRemoteFileUrl(
       return localUrl
     }
   } catch (error) {
-    // Handle fetch error
+    console.warn(
+      `Could not verify local resource with HEAD: ${localUrl}`,
+      error,
+    )
   }
+
+  if (remoteMayBeAvailable) return remoteUrl
 }

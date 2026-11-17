@@ -28,10 +28,11 @@ export function useCorrelation(
     }
 
     isLoading.value = true
+    error.value = undefined
     try {
       correlation.value = await provider.getCorrelation(_filter)
     } catch {
-      error.value = 'Error loading dashboards'
+      error.value = 'Error loading correlation'
       correlation.value = undefined
     } finally {
       isLoading.value = false

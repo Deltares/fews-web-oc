@@ -7,13 +7,18 @@ import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import { BrushHandler, CartesianAxes } from '@deltares/fews-web-oc-charts'
 import type { ChartsSettings } from '@/lib/topology/componentSettings'
-import { computed, nextTick, onMounted, useTemplateRef, watch } from 'vue'
+import { nextTick, onMounted, useTemplateRef, watch } from 'vue'
 import type { Margin } from '@deltares/fews-web-oc-charts'
-import { getAxisOptions } from '@/lib/charts/axisOptions'
+import {
+  getAxisOptions,
+  getAxisTimeZone,
+  setAxisTimeZone,
+} from '@/lib/charts/axisOptions'
 import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 import { getSubplotWithDomain } from '@/lib/display'
 import { useI18n } from 'vue-i18n'
+import { useEnsembleChartConfig } from '@/services/useEnsembleChartConfig'
 
 interface Props {
   config: ChartConfig
@@ -33,8 +38,9 @@ const { locale } = useI18n()
 let axis!: CartesianAxes
 let brushHandler!: BrushHandler
 
-const chartConfig = computed(() =>
-  getSubplotWithDomain(props.config, props.fullDomain),
+const chartConfig = useEnsembleChartConfig(
+  () => getSubplotWithDomain(props.config, props.fullDomain),
+  () => props.series,
 )
 
 onMounted(() => {
@@ -43,6 +49,7 @@ onMounted(() => {
   const axisOptions = getAxisOptions(chartConfig.value, props.settings, {
     isBrush: true,
     locale: locale.value,
+    timeZone: getAxisTimeZone(),
   })
   axis = new CartesianAxes(brushContainer.value, null, null, axisOptions)
 
@@ -74,6 +81,10 @@ watch(chartConfig, (newConfig) => onValueChange(newConfig))
 
 watch(domain, (newDomain) => {
   brushHandler.setBrushDomain({ x: newDomain })
+})
+
+watch(getAxisTimeZone, (timeZone) => {
+  if (axis) setAxisTimeZone(axis, timeZone)
 })
 
 // Keep margin in sync with main chart

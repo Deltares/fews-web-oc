@@ -234,10 +234,10 @@ const textFormat = computed(() =>
 )
 
 const textAlign = computed(() => {
-  const active = ['left', 'center', 'right', 'justify'].filter((format) =>
+  const active = ['left', 'center', 'right', 'justify'].find((format) =>
     props.editor.isActive({ textAlign: format }),
   )
-  return active[0]
+  return active
 })
 
 const disableUndo = computed(() => !props.editor.can().undo())

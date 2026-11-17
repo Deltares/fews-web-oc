@@ -81,7 +81,12 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const overlays = defineModel<Overlay[]>('overlays')
+// UI displays topmost overlay first, but style.json stores it last
+// This mismatch requires bidirectional reversal in both get/set accessors
+const overlays = defineModel<Overlay[]>('overlays', {
+  get: (overlays) => [...overlays].reverse(),
+  set: (overlays) => [...overlays].reverse(),
+})
 
 function getTitle(overlay: Overlay): string {
   if (overlay.type === 'gridLayer') {

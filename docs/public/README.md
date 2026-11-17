@@ -32,6 +32,7 @@ See [Web OC Delft-FEWS configuration ](configuration/). This page includes infor
 - Web OC side panel
 - Other WEB OC functional components
 - Permissions
+- User settings and translations
 
 ## Web OC Application configuration
 
@@ -48,6 +49,10 @@ npm run build
 A dist folder is created that can be used to deploy the web oc to different platforms, like Azure, Tomcat and Nginx.
 
 See [Deployments](deployments/) for more information on how to run Web OC stand-alone and/or from a webserver.
+
+## Micro Frontends
+
+See [Deploying Micro Frontends](micro_frontends/README.md) for hosting options, the infrastructure diagram, Web OC configuration, and connecting to the demo micro frontends.
 
 ## Authentication and Authorization
 

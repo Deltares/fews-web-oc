@@ -1,6 +1,7 @@
 <template>
   <mgl-marker
-    v-for="coordinates in selectedLocationsCoordinates"
+    v-for="(coordinates, index) in selectedLocationsCoordinates"
+    :key="index"
     :coordinates="coordinates"
     :offset="[0, 4]"
     anchor="bottom"
@@ -20,13 +21,15 @@ import type { ExtendedLocation } from '@/lib/map'
 
 interface Props {
   geojson: FeatureCollection<Geometry, ExtendedLocation>
+  selectedLocationIds: string[]
 }
 
 const props = defineProps<Props>()
 
 const selectedLocationsCoordinates = computed(() => {
-  const selectedLocations = props.geojson.features.filter(
-    (feature) => feature.properties.selected,
+  const selectedIds = new Set(props.selectedLocationIds)
+  const selectedLocations = props.geojson.features.filter((feature) =>
+    selectedIds.has(feature.properties.locationId),
   )
 
   return selectedLocations

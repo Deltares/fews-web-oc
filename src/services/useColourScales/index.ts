@@ -1,18 +1,15 @@
 import type { ColourScale } from '@/stores/colourScales'
 import type { MaybeRefOrGetter, ShallowRef } from 'vue'
-import { computed, ref, toValue, watchEffect } from 'vue'
+import { ref, toValue, watchEffect } from 'vue'
 
 export interface UseColourScalesReturn {
   currentScale: ShallowRef<ColourScale | undefined>
-  currentScaleTitle: ShallowRef<string>
   currentScales: ShallowRef<ColourScale[]>
-  currentScaleIsInitialRange: ShallowRef<boolean>
 }
 
 export function useColourScales(
   currentIds: MaybeRefOrGetter<string[]>,
   scales: MaybeRefOrGetter<Record<string, ColourScale>>,
-  title?: MaybeRefOrGetter<string>,
 ): UseColourScalesReturn {
   const currentScale = ref<ColourScale | undefined>(undefined)
   const currentScales = ref<ColourScale[]>([])
@@ -30,24 +27,8 @@ export function useColourScales(
     currentScales.value = updatedScales
   })
 
-  const currentScaleIsInitialRange = computed(() => {
-    if (!currentScale.value) return false
-    return (
-      currentScale.value.range.min === currentScale.value.initialRange.min &&
-      currentScale.value.range.max === currentScale.value.initialRange.max
-    )
-  })
-
-  const currentScaleTitle = computed(() => {
-    const unit = currentScale.value?.unit
-    const unitString = unit ? ` [${unit}]` : ''
-    return `${toValue(title)}${unitString}`
-  })
-
   return {
     currentScale,
-    currentScaleTitle,
     currentScales,
-    currentScaleIsInitialRange,
   }
 }

@@ -1,8 +1,10 @@
 import {
+  type CartesianAxes,
   type CartesianAxesOptions,
   AxisPosition,
   AxisType,
 } from '@deltares/fews-web-oc-charts'
+import { getDisplayTimeZone } from '@/lib/date/timeZone'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import type { ChartsSettings } from '@/lib/topology/componentSettings'
 import { merge } from 'lodash-es'
@@ -124,6 +126,40 @@ function getLocaleOptions(locale: string): Partial<CartesianAxesOptions> {
   }
 }
 
+/**
+ * The time zone of time axes: the display time zone, or the browser's time
+ * zone, which is also the default of the charts library.
+ */
+export function getAxisTimeZone(): string {
+  return (
+    getDisplayTimeZone() ?? Intl.DateTimeFormat().resolvedOptions().timeZone
+  )
+}
+
+function getTimeZoneOptions(timeZone: string): Partial<CartesianAxesOptions> {
+  return {
+    x: [
+      {
+        timeZone,
+      },
+    ],
+  }
+}
+
+/**
+ * Changes the time zone of the x-axes of an existing chart. The axes copy
+ * their options when they are created, so update those copies as well.
+ */
+export function setAxisTimeZone(axis: CartesianAxes, timeZone: string): void {
+  for (const options of axis.options.x) {
+    options.timeZone = timeZone
+  }
+  for (const [key, handle] of Object.entries(axis.axisHandles)) {
+    if (key.startsWith('x')) handle.options.timeZone = timeZone
+  }
+  axis.redraw()
+}
+
 export function getAxisOptions(
   config: ChartConfig,
   settings:
@@ -132,6 +168,7 @@ export function getAxisOptions(
     isVerticalProfile?: boolean
     isBrush?: boolean
     locale?: string
+    timeZone?: string
   },
 ): CartesianAxesOptions {
   const configOptions: Partial<CartesianAxesOptions> = {
@@ -162,6 +199,9 @@ export function getAxisOptions(
   }
   if (options?.locale && !options?.isVerticalProfile) {
     extraOptions.push(getLocaleOptions(options.locale))
+  }
+  if (options?.timeZone && !options?.isVerticalProfile) {
+    extraOptions.push(getTimeZoneOptions(options.timeZone))
   }
 
   return merge(getDefaultOptions(), ...extraOptions)

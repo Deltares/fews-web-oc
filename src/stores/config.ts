@@ -13,6 +13,23 @@ interface ConfigState {
   general: WebOcGeneralConfig
 }
 
+function getComponentKey(component: WebOcComponent): string {
+  return JSON.stringify(
+    component.type === 'HtmlDisplay'
+      ? [component.id, component.path]
+      : [component.id],
+  )
+}
+
+function findComponentById(
+  components: ConfigState['components'],
+  componentId: string,
+): WebOcComponent | undefined {
+  return Object.values(components)
+    .reverse()
+    .find((component) => component.id === componentId)
+}
+
 /**
  * Retrieves the menu icon for a given component configuration.
  * @param componentConfig - The configuration of the component.
@@ -42,6 +59,12 @@ function getToForComponent(component: WebOcComponent) {
       params: { topologyId: component.id },
     }
   }
+  if (component.type === 'HtmlDisplay') {
+    return {
+      name: component.type,
+      params: { path: component.path },
+    }
+  }
   return { name: component.type }
 }
 
@@ -54,7 +77,7 @@ const useConfigStore = defineStore('config', {
 
   actions: {
     addComponent(component: WebOcComponent) {
-      this.components[component.id] = component
+      this.components[getComponentKey(component)] = component
     },
 
     setGeneral(generalConfig: WebOcGeneralConfig) {
@@ -82,7 +105,7 @@ const useConfigStore = defineStore('config', {
     },
 
     getComponentById(componentId: string) {
-      const component = this.components[componentId]
+      const component = findComponentById(this.components, componentId)
       if (component) component.icon = getMenuIcon(component)
       return component
     },
@@ -97,6 +120,14 @@ const useConfigStore = defineStore('config', {
         route.params.topologyId !== undefined
       ) {
         return this.getComponentById(route.params.topologyId as string)
+      }
+
+      if (rootRouteName === 'HtmlDisplay' && route.params.path) {
+        const component = this.getComponentsByType('HtmlDisplay').find(
+          (component) => component.path === route.params.path,
+        )
+        if (component) component.icon = getMenuIcon(component)
+        return component
       }
 
       return this.getComponentByType(rootRouteName)
@@ -144,7 +175,10 @@ const useConfigStore = defineStore('config', {
 
     defaultComponent: (state) => {
       if (state.general.defaultComponent) {
-        return state.components[state.general.defaultComponent]
+        return findComponentById(
+          state.components,
+          state.general.defaultComponent,
+        )
       }
     },
   },

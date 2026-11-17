@@ -1,28 +1,29 @@
 import { configManager } from '../application-config/'
 import { UserManager, User, UserManagerSettings } from 'oidc-client-ts'
 import { RequestHeaderAuthorization } from '../application-config/ApplicationConfig'
-import { mergeHeaders } from '@/lib/requests/transformRequest'
 
 export class AuthenticationManager {
   userManager!: UserManager
   private user: User | null = null
   private userReady: Promise<void> | null = null
+  private userLoaded: Promise<void> | null = null
 
-  init(settings: UserManagerSettings): void {
-    this.userReady = new Promise(async (resolve, reject) => {
-      try {
-        this.userManager = new UserManager(settings)
-        this.userManager.events.addUserLoaded((user) => {
-          this.user = user
-          if (this.user) resolve()
-        })
+  init(settings: UserManagerSettings): Promise<void> {
+    this.userReady = this.initializeUser(settings)
+    return this.userReady
+  }
 
-        this.user = await this.userManager.getUser()
+  private async initializeUser(settings: UserManagerSettings): Promise<void> {
+    this.userManager = new UserManager(settings)
+    this.userLoaded = new Promise<void>((resolve) => {
+      this.userManager.events.addUserLoaded((user) => {
+        this.user = user
         if (this.user) resolve()
-      } catch (err) {
-        reject(err)
-      }
+      })
     })
+
+    const storedUser = await this.userManager.getUser()
+    this.user = this.user ?? storedUser
   }
 
   public async getUser(): Promise<User | null> {
@@ -31,6 +32,7 @@ export class AuthenticationManager {
       return null
     }
     await this.userReady
+    if (!this.user) await this.userLoaded
     await this.checkExpired(this.user)
     return this.user
   }
@@ -73,30 +75,17 @@ export class AuthenticationManager {
 
   public async getAuthorizationHeaders(): Promise<Headers> {
     if (!configManager.authenticationIsEnabled) return new Headers({})
-    switch (configManager.get('VITE_REQUEST_HEADER_AUTHORIZATION')) {
-      case RequestHeaderAuthorization.BEARER: {
-        const token = await this.getAccessToken()
-        const requestAuthHeaders = new Headers({
-          Authorization: `Bearer ${token}`,
-        })
-        return requestAuthHeaders
-      }
-      default:
-        return new Headers({})
+    if (
+      configManager.get('VITE_REQUEST_HEADER_AUTHORIZATION') ===
+      RequestHeaderAuthorization.BEARER
+    ) {
+      const token = await this.getAccessToken()
+      const requestAuthHeaders = new Headers({
+        Authorization: `Bearer ${token}`,
+      })
+      return requestAuthHeaders
     }
-  }
-
-  public async transformRequestAuth(
-    request: Request,
-    signal?: AbortSignal,
-  ): Promise<Request> {
-    const requestAuthHeaders = await this.getAuthorizationHeaders()
-    const requestInit = {
-      headers: mergeHeaders(request.headers, requestAuthHeaders),
-      signal: signal,
-    }
-    const newRequest = new Request(request, requestInit)
-    return newRequest
+    return new Headers({})
   }
 }
 
