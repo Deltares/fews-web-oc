@@ -252,6 +252,44 @@
     "group": "Map"
   },
   {
+    "id": "charts.engine",
+    "type": "oneOfMultiple",
+    "label": "Chart engine",
+    "value": "v4",
+    "disabled": true,
+    "items": [
+      {
+        "value": "v4",
+        "title": "Version 4"
+      },
+      {
+        "value": "v5",
+        "title": "Version 5 (preview)"
+      }
+    ],
+    "group": "Charts",
+    "favorite": false
+  },
+  {
+    "id": "charts.colorContrast",
+    "type": "oneOfMultiple",
+    "label": "Color contrast (v5 only)",
+    "value": "none",
+    "disabled": true,
+    "items": [
+      {
+        "value": "auto",
+        "title": "Automatic"
+      },
+      {
+        "value": "none",
+        "title": "None"
+      }
+    ],
+    "group": "Charts",
+    "favorite": false
+  },
+  {
     "id": "charts.scrollZoomMode",
     "type": "oneOfMultiple",
     "label": "Scroll wheel zoom mode",
@@ -276,6 +314,48 @@
         "value": "xy",
         "title": "Both X and Y",
         "icon": "mdi-arrow-expand-all"
+      }
+    ],
+    "group": "Charts"
+  },
+  {
+    "id": "charts.panModifierKey",
+    "type": "oneOfMultiple",
+    "label": "Pan modifier key",
+    "value": "shift",
+    "items": [
+      {
+        "value": "none",
+        "title": "None"
+      },
+      {
+        "value": "shift",
+        "title": "Shift"
+      },
+      {
+        "value": "ctrl",
+        "title": "Ctrl"
+      }
+    ],
+    "group": "Charts"
+  },
+  {
+    "id": "charts.scrollZoomModifierKey",
+    "type": "oneOfMultiple",
+    "label": "Scroll wheel zoom modifier key",
+    "value": "shift",
+    "items": [
+      {
+        "value": "none",
+        "title": "None"
+      },
+      {
+        "value": "shift",
+        "title": "Shift"
+      },
+      {
+        "value": "ctrl",
+        "title": "Ctrl"
       }
     ],
     "group": "Charts"

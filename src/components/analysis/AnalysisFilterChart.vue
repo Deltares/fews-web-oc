@@ -5,8 +5,7 @@
     :config
     :series
     :settings
-    :zoomHandler
-    :panHandler
+    :group="chartGroup"
     :startTime
     :endTime
     v-bind="$attrs"
@@ -21,6 +20,7 @@
         :series="brushSeries"
         :settings="settings.charts.timeSeriesChart"
         :mainChartMargin="margin"
+        :group
       />
     </template>
   </AnalysisPlotChart>
@@ -34,24 +34,24 @@
 
 <script setup lang="ts">
 import AnalysisPlotChart from '@/components/analysis/AnalysisPlotChart.vue'
-import TimeSeriesChartBrush from '@/components/charts/TimeSeriesChartBrush.vue'
+import TimeSeriesChartBrush from '@/components/charts/TimeSeriesChartBrushSwitch.vue'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
 import type { FilterChart } from '@/lib/analysis'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import type { PanHandler, ZoomHandler } from '@deltares/fews-web-oc-charts'
 import { computed, ref } from 'vue'
 import { getSubplotWithDomain } from '@/lib/display'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import type { ChartGroup } from '@/lib/charts/types/TimeSeriesChartProps'
+import { createChartHandlersGroup } from '@/services/useChartHandlers'
 
 interface Props {
   chart: FilterChart
   series: Record<string, Series>
   brushSeries: Record<string, Series>
   fullBrushDomain: [Date, Date]
-  zoomHandler?: ZoomHandler
-  panHandler?: PanHandler
+  group?: ChartGroup
   settings: ComponentSettings
   startTime?: Date
   endTime?: Date
@@ -61,6 +61,7 @@ const props = defineProps<Props>()
 
 const userSettings = useUserSettingsStore()
 const showDownloadDialog = ref(false)
+const localChartGroup = createChartHandlersGroup()
 
 const showBrush = computed(
   () => userSettings.get('charts.brush')?.value === true,
@@ -76,8 +77,8 @@ const xDomain = computed(
 
 const visibleDomain = defineModel<[Date, Date]>('domain')
 
-const zoomHandler = computed(() =>
-  props.chart.domain ? undefined : props.zoomHandler,
+const chartGroup = computed(() =>
+  props.chart.domain ? localChartGroup : props.group,
 )
 
 const config = computed(() =>

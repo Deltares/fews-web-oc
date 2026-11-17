@@ -241,6 +241,36 @@
         },
         "brush": {
           "label": "Pinsel-Diagramm anzeigen"
+        },
+        "engine": {
+          "label": "Diagramm-Engine",
+          "options": {
+            "v4": "Version 4",
+            "v5": "Version 5 (Vorschau)"
+          }
+        },
+        "colorContrast": {
+          "label": "Farbkontrast (nur v5)",
+          "options": {
+            "auto": "Automatisch",
+            "none": "Keiner"
+          }
+        },
+        "panModifierKey": {
+          "label": "Zusatztaste zum Verschieben",
+          "options": {
+            "none": "Keine",
+            "shift": "Umschalt",
+            "ctrl": "Strg"
+          }
+        },
+        "scrollZoomModifierKey": {
+          "label": "Zusatztaste für Scrollrad-Zoom",
+          "options": {
+            "none": "Keine",
+            "shift": "Umschalt",
+            "ctrl": "Strg"
+          }
         }
       }
     }

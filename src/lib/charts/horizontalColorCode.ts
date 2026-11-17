@@ -2,9 +2,10 @@ import { SeriesArrayData, SeriesData } from '../timeseries/types/SeriesData'
 import type { ChartSeries } from './types/ChartSeries'
 
 export function getColorMap(classBreaks: ChartSeries['classBreaks']) {
-  return (value: number): string => {
+  return (value: number | Date): string => {
+    const numericValue = typeof value === 'number' ? value : value.getTime()
     const breakpoint = classBreaks?.findLast(
-      (breakpoint) => value >= breakpoint.lowerValue,
+      (breakpoint) => numericValue >= breakpoint.lowerValue,
     )
     return breakpoint?.color ?? 'black'
   }

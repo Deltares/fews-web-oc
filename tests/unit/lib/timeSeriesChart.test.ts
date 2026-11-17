@@ -9,13 +9,20 @@ vi.mock('@deltares/fews-web-oc-charts', () => {
   class MockChart {
     data: unknown[]
     id = ''
+    style: unknown
 
     constructor(data: unknown[]) {
       this.data = data
     }
 
-    addTo(axis: { charts: MockChart[] }, _options: unknown, id?: string) {
+    addTo(
+      axis: { charts: MockChart[] },
+      _options: unknown,
+      id?: string,
+      style?: unknown,
+    ) {
       this.id = id ?? ''
+      this.style = style
       axis.charts.push(this)
       return this
     }
@@ -32,7 +39,7 @@ vi.mock('@deltares/fews-web-oc-charts', () => {
   }
 })
 
-import { refreshChart, updateChartData } from '@/lib/charts/timeSeriesChart'
+import { refreshChart, updateChartData } from '@/lib/charts/v4/timeSeriesChart'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 
 function createAxis() {
@@ -122,10 +129,17 @@ describe('timeSeriesChart helpers', () => {
   it('rescales empty line and marker charts sharing a series ID when data arrives', () => {
     const axis = createAxis()
     const line = createChartSeries('observation', ['resource-a'])
-    const marker: ChartSeries = { ...line, type: 'marker' }
-    const config = { ...createConfig(line), series: [line, marker] }
+    line.marker = { shape: 'diamond', size: 16, skip: 1 }
+    line.markerStyle = { fill: '#ff0000' }
+    const config = createConfig(line)
     refreshChart(axis, config, {})
     expect(axis.charts).toHaveLength(2)
+    expect(axis.charts[0].style).toEqual(line.style)
+    expect(axis.charts[1].style).toEqual(line.markerStyle)
+
+    refreshChart(axis, config, {})
+    expect(axis.charts).toHaveLength(2)
+    expect(axis.removeChart).not.toHaveBeenCalled()
 
     const needsAxisRescale = updateChartData(axis, config.series, {
       'resource-a': createSeries(275.21),

@@ -96,6 +96,22 @@ Run the focused layout checks with:
 npm run test:component -- timeSeriesChartLayout.spec.ts
 ```
 
+### Shared elevation interactions (v5)
+
+`charts/v5/TimeSeriesChartV5/SharedElevation` renders two vertical profiles
+with independent x-scales and a shared elevation y-scale. The regression test
+checks synchronized elevation crosshairs, y-based tooltips, box zoom, panning,
+and double-click reset. Tooltip assertions require only the legend label and
+measured value with its unit, without depth, coordinate prefixes, or mark IDs.
+It also checks that delayed profile data and legend
+entries appear in both subplots when the first profile's x-values reverse
+with elevation. Profiles preserve point order rather than using the sorted
+x-values required by the time-series store.
+
+```bash
+npm run test:component -- timeSeriesChartV5Elevation.spec.ts
+```
+
 ### Callbacks and events
 Create state inside the story and record it for assertions:
 

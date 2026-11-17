@@ -1,4 +1,3 @@
-import { WheelMode } from '@deltares/fews-web-oc-charts'
 import { defineStore } from 'pinia'
 import DefaultUserSettings from '@/assets/DefaultUserSettings.json'
 import { LayerKind } from '@/lib/streamlines'
@@ -13,6 +12,12 @@ import { fetchWebResourcesDefaultUserSettings } from '@/services/useDefaultUserS
 
 export { deserializeUserSettings } from '@/lib/user-settings/deserializeUserSettings'
 export type { UserSettingsOverride } from '@/lib/user-settings/deserializeUserSettings'
+import type { ColorContrast } from '@deltares/fews-web-oc-charts'
+import type {
+  ChartEngine,
+  ChartWheelMode,
+} from '@/lib/charts/types/TimeSeriesChartProps'
+import { ModifierKey } from '@deltares/fews-web-oc-charts'
 
 export interface UserSettingsWithIcon {
   value: string
@@ -59,6 +64,7 @@ export interface UserSettingsState {
   convertDatum: boolean
   useDisplayUnits: boolean
   preferredLayerKind: LayerKind | null
+  chartEngine: ChartEngine
 }
 
 const defaultUserSettings = DefaultUserSettings as UserSettingsItem[]
@@ -76,6 +82,19 @@ const defaultGroups: UserSettingsGroup[] = [
   { id: 'Charts', title: 'Charts', icon: 'mdi-chart-line' },
 ]
 
+function toModifierKey(value: unknown): ModifierKey {
+  switch (value) {
+    case ModifierKey.None:
+      return ModifierKey.None
+    case ModifierKey.Ctrl:
+      return ModifierKey.Ctrl
+    case ModifierKey.Shift:
+      return ModifierKey.Shift
+    default:
+      return ModifierKey.Shift
+  }
+}
+
 export const useUserSettingsStore = defineStore(
   'userSettings',
   () => {
@@ -92,6 +111,12 @@ export const useUserSettingsStore = defineStore(
     const runtimeOptions = new Map<string, UserSettingsWithIcon[]>()
 
     const route = useRoute()
+    const chartEngine = computed<ChartEngine>(() =>
+      get('charts.engine')?.value === 'v5' ? 'v5' : 'v4',
+    )
+    const chartColorContrast = computed<ColorContrast>(() =>
+      get('charts.colorContrast')?.value === 'none' ? 'none' : 'auto',
+    )
 
     // Settings disabled in the FEWS config are hidden from the user.
     const visibleItems = computed(() =>
@@ -101,23 +126,29 @@ export const useUserSettingsStore = defineStore(
     const listFavorite = computed(() =>
       visibleItems.value.filter((item) => item.favorite),
     )
-    const scrollZoomMode = computed<WheelMode>(() => {
+    const scrollZoomMode = computed<ChartWheelMode>(() => {
       const item = items.value.find(
         (item) => item.id === 'charts.scrollZoomMode',
       )
       switch (item?.value) {
         case 'x':
-          return WheelMode.X
+          return 'x'
         case 'y':
-          return WheelMode.Y
+          return 'y'
         case 'xy':
-          return WheelMode.XY
+          return 'xy'
         case 'off':
-          return WheelMode.NONE
+          return 'none'
         default:
-          return WheelMode.X
+          return 'x'
       }
     })
+    const panModifierKey = computed<ModifierKey>(() =>
+      toModifierKey(get('charts.panModifierKey')?.value),
+    )
+    const scrollZoomModifierKey = computed<ModifierKey>(() =>
+      toModifierKey(get('charts.scrollZoomModifierKey')?.value),
+    )
 
     function listByGroup(group: string) {
       return visibleItems.value.filter((item) => item.group === group)
@@ -245,10 +276,14 @@ export const useUserSettingsStore = defineStore(
       useDisplayUnits,
       preferredLayerKind,
       webResourcesOverrides,
+      chartEngine,
+      chartColorContrast,
       listByGroup,
       listFavorite,
       get,
       scrollZoomMode,
+      panModifierKey,
+      scrollZoomModifierKey,
       add,
       updateSettingItems,
       initializeWithWebResources,

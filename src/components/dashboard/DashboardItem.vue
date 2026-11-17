@@ -39,6 +39,7 @@ import type {
 } from '@/lib/topology/dashboardActions'
 import type { SsdActionResult } from '@deltares/fews-ssd-requests'
 import type { NavigateRoute } from '@/lib/router'
+import { provideChartHandlers } from '@/services/useChartHandlers'
 
 interface ComponentItem {
   title: string
@@ -57,6 +58,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Charts, including map popups, synchronize only within this dashboard item.
+provideChartHandlers()
 
 interface Emits {
   dashboardAction: [result: SsdActionResult]

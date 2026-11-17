@@ -3,7 +3,7 @@ import type { CartesianAxes } from '@deltares/fews-web-oc-charts'
 import { getAxisOptions, getAxisTimeZone, setAxisTimeZone } from './axisOptions'
 import { defaultChartSettings } from '@/lib/topology/componentSettings/chartSettings'
 import { setDisplayTimeZone, SYSTEM_TIME_ZONE } from '@/lib/date/timeZone'
-import type { ChartConfig } from './types/ChartConfig'
+import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 
 afterEach(() => {
   setDisplayTimeZone(SYSTEM_TIME_ZONE)
