@@ -85,7 +85,7 @@ import { useMap } from '@/services/useMap'
 import { useSource } from '@/services/useLayer'
 import {
   defaultMapSettings,
-  type MapSettings,
+  type DeepRequiredMapSettings,
 } from '@/lib/topology/componentSettings'
 
 const userSettings = useUserSettingsStore()
@@ -97,7 +97,7 @@ interface Props {
   selectedLocationIds?: string[]
   selectedLocationCategories?: string[]
   showLocations?: boolean
-  settings?: MapSettings['locationsLayer']
+  settings?: DeepRequiredMapSettings['locationsLayer']
 }
 
 const props = withDefaults(defineProps<Props>(), {

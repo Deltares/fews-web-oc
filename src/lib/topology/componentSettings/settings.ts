@@ -5,7 +5,7 @@ import {
   defaultSidePanelSettings,
   defaultReportSettings,
   type ChartsSettings,
-  type MapSettings,
+  type DeepRequiredMapSettings,
 } from '.'
 import { WebOCComponentSettingsClass } from '@deltares/fews-pi-requests'
 import { DeepRequired } from '@/lib/utils/types'
@@ -18,7 +18,7 @@ export type ComponentSettings = Omit<
   DeepRequiredComponentSettings,
   'map' | 'charts'
 > & {
-  map: MapSettings
+  map: DeepRequiredMapSettings
   charts: ChartsSettings
 }
 
