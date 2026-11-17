@@ -20,6 +20,19 @@ If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has a
 
 
 
+## CSS overrides
+
+Vuetify declares its component, override, utility, and final cascade layers.
+WebOC component styles are unlayered, so normal declarations in those styles
+override Vuetify without `!important` or additional selector specificity.
+Shared focus outlines use `vuetify-overrides`, allowing components such as the
+log editor to provide their own focus treatment. Preserve visible keyboard focus
+when overriding these shared outlines.
+
+MapLibre and the schematic status display also include unlayered styles.
+Keep overrides scoped to their owning component and use a selector specific
+enough to win regardless of stylesheet load order.
+
 ## Search data
 
 The search context stores its item tree in a `shallowRef`. Replace locations

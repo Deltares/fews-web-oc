@@ -195,7 +195,7 @@ function applyUiScale(value: string): void {
 
 <style>
 .v-table--fixed-header > .v-table__wrapper > table > thead > tr > th {
-  border-bottom: 0 !important;
+  border-bottom: 0;
   position: sticky;
   top: 0;
   z-index: 2;

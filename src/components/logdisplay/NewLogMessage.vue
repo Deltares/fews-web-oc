@@ -352,12 +352,12 @@ async function postNewLogMessage(
 :deep(.message-textarea .v-field),
 :deep(.message-textarea .v-field__input),
 :deep(.message-textarea textarea) {
-  -webkit-mask-image: none !important;
-  mask-image: none !important;
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 
 /* Remove native browser focus ring on the <textarea> element */
 :deep(.message-textarea textarea:focus) {
-  outline: none !important;
+  outline: none;
 }
 </style>

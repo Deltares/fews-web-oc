@@ -110,7 +110,7 @@ const subtitle = computed(() => {
 }
 
 .multi-line-toggle .v-btn {
-  height: 36px !important;
+  height: 36px;
 }
 
 :deep(.v-btn-group--density-compact.v-btn-group) {

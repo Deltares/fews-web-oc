@@ -151,7 +151,7 @@ onMounted(async () => {
   margin-top: 5%;
   width: 800px;
   max-width: 100%;
-  height: fit-content !important;
+  height: fit-content;
 }
 
 /* Aligned with the card above. */

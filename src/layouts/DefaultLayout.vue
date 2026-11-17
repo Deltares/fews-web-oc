@@ -367,7 +367,7 @@ const useRail = computed(
 html,
 body {
   margin: 0px;
-  overflow-y: auto !important;
+  overflow-y: auto;
   height: 100%;
 }
 
@@ -377,7 +377,7 @@ body {
 }
 
 #web-oc-toolbar-target:empty {
-  display: none !important;
+  display: none;
 }
 
 .v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)

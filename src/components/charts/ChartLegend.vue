@@ -267,7 +267,7 @@ function onToggleExpand() {
 }
 
 :deep(.v-chip.v-chip--disabled) {
-  opacity: 1 !important;
+  opacity: 1;
   pointer-events: none;
 }
 </style>

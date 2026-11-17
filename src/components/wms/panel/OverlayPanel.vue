@@ -116,8 +116,8 @@ function getTitle(overlay: Overlay): string {
 }
 
 :deep(.v-slider.v-input--horizontal > .v-input__control) {
-  height: 12px !important;
-  min-height: 12px !important;
+  height: 12px;
+  min-height: 12px;
 }
 
 .overlay-panel__gradient-slider :deep(.v-slider-track__background) {
@@ -125,11 +125,11 @@ function getTitle(overlay: Overlay): string {
     to right,
     rgba(var(--v-theme-on-surface), 0) 0%,
     rgba(var(--v-theme-on-surface), 1) 100%
-  ) !important;
+  );
 }
 
 .overlay-panel__gradient-slider :deep(.v-slider-track__fill) {
-  opacity: 0 !important;
+  opacity: 0;
 }
 
 .overlay-panel__data-layer-icon {

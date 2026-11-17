@@ -817,11 +817,8 @@ function onCoordinateMoved(lat: number, lng: number): void {
 .mapcomponent__controls-container :deep(.v-slide-group__content) {
   padding: 0 8px;
 }
-</style>
-
-<style>
-.maplibregl-ctrl-bottom-right,
-.maplibregl-ctrl-bottom-left {
-  bottom: v-bind('offsetBottomControls') !important;
+:deep(.maplibregl-ctrl-bottom-right),
+:deep(.maplibregl-ctrl-bottom-left) {
+  bottom: v-bind('offsetBottomControls');
 }
 </style>

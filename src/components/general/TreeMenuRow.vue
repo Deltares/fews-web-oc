@@ -95,7 +95,7 @@ const indent = computed(() => ({
 }
 
 :deep(.v-list-item__spacer) {
-  width: 12px !important;
+  width: 12px;
 }
 </style>
 
