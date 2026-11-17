@@ -136,6 +136,9 @@ export function updateChartData(
   series: Record<string, Series>,
   hasResetAxes: boolean = false,
 ) {
+  const plottedSeries = chartSeries.filter((s) => s.type !== 'dummy')
+  if (plottedSeries.length === 0) return hasResetAxes
+
   let allMissingData = true
   let hasAddedChart = false
   const emptyCharts = new Set(
@@ -143,7 +146,7 @@ export function updateChartData(
       (chart) => chart.data === undefined || chart.data.length === 0,
     ),
   )
-  chartSeries.forEach((chartSeries) => {
+  plottedSeries.forEach((chartSeries) => {
     const charts = axis.charts.filter((chart) => chart.id == chartSeries.id)
     if (hasMissingDataResource(chartSeries, series)) return
 
@@ -175,7 +178,9 @@ export function updateChartData(
   if (needsAxisRescale) {
     const options = {
       y: { autoScale: true },
-      ...(needsInitialScale ? { x: { autoScale: true } } : {}),
+      ...(needsInitialScale && axis.xInitialExtent[0] === undefined
+        ? { x: { autoScale: true } }
+        : {}),
     }
     axis.redraw(options)
   } else {
