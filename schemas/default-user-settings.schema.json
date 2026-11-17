@@ -611,6 +611,118 @@
             "type": "object",
             "required": ["id"],
             "properties": {
+              "id": { "type": "string", "const": "charts.engine" },
+              "value": {
+                "anyOf": [
+                  { "type": "string", "const": "v4" },
+                  { "type": "string", "const": "v5" }
+                ],
+                "description": "Default value: v4, v5."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["value"],
+                  "properties": {
+                    "value": {
+                      "anyOf": [
+                        { "type": "string", "const": "v4" },
+                        { "type": "string", "const": "v5" }
+                      ],
+                      "description": "Value of the option: v4, v5."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Name of the option. Defaults to the built-in name, or the value."
+                    },
+                    "icon": {
+                      "type": "string",
+                      "description": "Material Design icon, e.g. mdi-earth."
+                    },
+                    "abbreviation": {
+                      "type": "string",
+                      "description": "Short text shown instead of an icon."
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "description": "Options users can choose from, replacing the built-in options. The default value must be one of them; when omitted, the first option is the default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Chart engine",
+            "description": "Override for the \"Chart engine\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "charts.colorContrast" },
+              "value": {
+                "anyOf": [
+                  { "type": "string", "const": "auto" },
+                  { "type": "string", "const": "none" }
+                ],
+                "description": "Default value: auto, none."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["value"],
+                  "properties": {
+                    "value": {
+                      "anyOf": [
+                        { "type": "string", "const": "auto" },
+                        { "type": "string", "const": "none" }
+                      ],
+                      "description": "Value of the option: auto, none."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Name of the option. Defaults to the built-in name, or the value."
+                    },
+                    "icon": {
+                      "type": "string",
+                      "description": "Material Design icon, e.g. mdi-earth."
+                    },
+                    "abbreviation": {
+                      "type": "string",
+                      "description": "Short text shown instead of an icon."
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "description": "Options users can choose from, replacing the built-in options. The default value must be one of them; when omitted, the first option is the default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Color contrast (v5 only)",
+            "description": "Override for the \"Color contrast (v5 only)\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
               "id": { "type": "string", "const": "charts.scrollZoomMode" },
               "value": {
                 "anyOf": [
@@ -666,6 +778,125 @@
             "additionalProperties": false,
             "title": "Scroll wheel zoom mode",
             "description": "Override for the \"Scroll wheel zoom mode\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string", "const": "charts.panModifierKey" },
+              "value": {
+                "anyOf": [
+                  { "type": "string", "const": "none" },
+                  { "type": "string", "const": "shift" },
+                  { "type": "string", "const": "ctrl" }
+                ],
+                "description": "Default value: none, shift, ctrl."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["value"],
+                  "properties": {
+                    "value": {
+                      "anyOf": [
+                        { "type": "string", "const": "none" },
+                        { "type": "string", "const": "shift" },
+                        { "type": "string", "const": "ctrl" }
+                      ],
+                      "description": "Value of the option: none, shift, ctrl."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Name of the option. Defaults to the built-in name, or the value."
+                    },
+                    "icon": {
+                      "type": "string",
+                      "description": "Material Design icon, e.g. mdi-earth."
+                    },
+                    "abbreviation": {
+                      "type": "string",
+                      "description": "Short text shown instead of an icon."
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "description": "Options users can choose from, replacing the built-in options. The default value must be one of them; when omitted, the first option is the default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Pan modifier key",
+            "description": "Override for the \"Pan modifier key\" user setting."
+          },
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "const": "charts.scrollZoomModifierKey"
+              },
+              "value": {
+                "anyOf": [
+                  { "type": "string", "const": "none" },
+                  { "type": "string", "const": "shift" },
+                  { "type": "string", "const": "ctrl" }
+                ],
+                "description": "Default value: none, shift, ctrl."
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether users can see and change the setting. When false, the configured value applies to everyone."
+              },
+              "favorite": {
+                "type": "boolean",
+                "description": "Show the setting in the user settings menu by default."
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["value"],
+                  "properties": {
+                    "value": {
+                      "anyOf": [
+                        { "type": "string", "const": "none" },
+                        { "type": "string", "const": "shift" },
+                        { "type": "string", "const": "ctrl" }
+                      ],
+                      "description": "Value of the option: none, shift, ctrl."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Name of the option. Defaults to the built-in name, or the value."
+                    },
+                    "icon": {
+                      "type": "string",
+                      "description": "Material Design icon, e.g. mdi-earth."
+                    },
+                    "abbreviation": {
+                      "type": "string",
+                      "description": "Short text shown instead of an icon."
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "description": "Options users can choose from, replacing the built-in options. The default value must be one of them; when omitted, the first option is the default."
+              }
+            },
+            "additionalProperties": false,
+            "title": "Scroll wheel zoom modifier key",
+            "description": "Override for the \"Scroll wheel zoom modifier key\" user setting."
           },
           {
             "type": "object",

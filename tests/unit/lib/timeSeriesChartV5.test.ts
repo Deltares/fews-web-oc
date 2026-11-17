@@ -525,7 +525,8 @@ describe('v5 static chart config', () => {
     expect(table.length).toBe(2)
     expect(table.valueAt('y0', 1)).toBe(0.7)
     expect(table.valueAt('y1', 1)).toBe(0.6)
-    if (!('options' in second)) throw new Error('Expected an updatable bar mark')
+    if (!('options' in second))
+      throw new Error('Expected an updatable bar mark')
     expect(second.options.get().resolved).toMatchObject({
       layers: [{ fill: '#336699' }, { fill: '#ff0000' }],
     })

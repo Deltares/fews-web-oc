@@ -241,6 +241,36 @@
         },
         "brush": {
           "label": "Show brush chart"
+        },
+        "engine": {
+          "label": "Chart engine",
+          "options": {
+            "v4": "Version 4",
+            "v5": "Version 5 (preview)"
+          }
+        },
+        "colorContrast": {
+          "label": "Color contrast (v5 only)",
+          "options": {
+            "auto": "Automatic",
+            "none": "None"
+          }
+        },
+        "panModifierKey": {
+          "label": "Pan modifier key",
+          "options": {
+            "none": "None",
+            "shift": "Shift",
+            "ctrl": "Ctrl"
+          }
+        },
+        "scrollZoomModifierKey": {
+          "label": "Scroll wheel zoom modifier key",
+          "options": {
+            "none": "None",
+            "shift": "Shift",
+            "ctrl": "Ctrl"
+          }
         }
       }
     }

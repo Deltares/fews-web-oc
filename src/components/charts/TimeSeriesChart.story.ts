@@ -1,6 +1,5 @@
 import { computed, defineComponent, h, onMounted, ref } from 'vue'
-import TimeSeriesChart from './TimeSeriesChart.vue'
-import TimeSeriesChartBrush from './TimeSeriesChartBrush.vue'
+import TimeSeriesChart from './TimeSeriesChartSwitch.vue'
 import TimeSeriesChartBrushSwitch from './TimeSeriesChartBrushSwitch.vue'
 import type { Margin } from '@deltares/fews-web-oc-charts'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -154,8 +153,8 @@ export const EnsembleMembers = defineComponent({
     const config: ChartConfig = {
       id: 'ensemble',
       title: 'Ensemble',
-      xAxis: [{ domain: [start, end] }],
-      yAxis: [{ defaultDomain: [0, 4] }],
+      xAxis: [{ kind: 'time', domain: [start, end] }],
+      yAxis: [{ kind: 'value', defaultDomain: [0, 4] }],
       series: [
         {
           id: 'forecast',
@@ -307,7 +306,7 @@ function createChartStory(
               withBrush
                 ? {
                     brush: ({ margin }: { margin: Margin }) =>
-                      h(TimeSeriesChartBrush, {
+                      h(TimeSeriesChartBrushSwitch, {
                         config,
                         series,
                         settings,

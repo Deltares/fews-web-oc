@@ -56,7 +56,9 @@ describe('subplot identity', () => {
         subplot.items[0].markerStyle = 'diamond'
 
         expect(
-          timeSeriesDisplayToChartConfig(subplot).series.map((item) => item.type),
+          timeSeriesDisplayToChartConfig(subplot).series.map(
+            (item) => item.type,
+          ),
         ).toEqual([lineStyle, 'marker'])
       },
     )

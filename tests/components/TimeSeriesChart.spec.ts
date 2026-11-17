@@ -107,7 +107,7 @@ test('draws ensemble members independently when the last member has no values', 
   await expect(memberPaths).toHaveCount(1)
   await expect(memberPaths.first()).toHaveAttribute('d', /^M.+L/)
 })
-test('uses the v5 placeholder when the URL overrides the v4 setting', async ({
+test('ignores a URL chart engine override while the setting is disabled', async ({
   mount,
 }) => {
   const component = await mount('charts/TimeSeriesChart/ThresholdSwitching', {
@@ -115,8 +115,8 @@ test('uses the v5 placeholder when the URL overrides the v4 setting', async ({
     queryEngine: 'v5',
   })
 
-  await expect(component.getByRole('status')).toContainText('Version 5 chart')
-  await expect(component.locator('svg')).toHaveCount(0)
+  await expect(component.locator('.chart-with-chips svg').first()).toBeVisible()
+  await expect(component.locator('.chart-v5')).toHaveCount(0)
 })
 
 test('renders delayed series data after switching plot configurations', async ({

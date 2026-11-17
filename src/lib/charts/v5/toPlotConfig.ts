@@ -365,13 +365,7 @@ function createMarksForItem(
 
   const markerItem =
     item.type === 'marker' || item.marker !== undefined ? item : undefined
-  return createSeriesMarks(
-    item,
-    markerItem,
-    markId,
-    yScale,
-    context,
-  )
+  return createSeriesMarks(item, markerItem, markId, yScale, context)
 }
 
 function createEnsembleMarks(

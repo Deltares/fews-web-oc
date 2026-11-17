@@ -1,13 +1,12 @@
 import {
   defineAsyncComponent,
   defineComponent,
-  getCurrentInstance,
   h,
   onMounted,
   ref,
   watch,
 } from 'vue'
-import { createMemoryHistory, createRouter } from 'vue-router'
+import { type RouteRecordRaw, useRouter } from 'vue-router'
 import {
   provideHostRefreshContext,
   provideHostWebserviceContext,
@@ -17,6 +16,14 @@ import { configManager } from '@/services/application-config'
 import type { NavigateRoute } from '@/lib/router'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { i18n, loadLocale } from '@/plugins/i18n'
+
+// The gallery app already has a router; register the story's route on it
+// instead of installing a second router.
+function useStoryRoute(route: RouteRecordRaw & { name: string }) {
+  const router = useRouter()
+  if (!router.hasRoute(route.name)) router.addRoute(route)
+  return router
+}
 
 const TimeSeriesDisplay = defineAsyncComponent(
   () => import('./TimeSeriesDisplay.vue'),
@@ -55,17 +62,11 @@ export const SelectionMenu = defineComponent({
       onMounted(() => loadLocale(i18n.global.locale.value))
     }
     const navigationCount = ref(0)
-    const router = createRouter({
-      history: createMemoryHistory(),
-      routes: [
-        {
-          path: '/series/:plotId?',
-          name: 'TimeSeriesDisplay',
-          component: { render: () => null },
-        },
-      ],
+    const router = useStoryRoute({
+      path: '/series/:plotId?',
+      name: 'TimeSeriesDisplay',
+      component: { render: () => null },
     })
-    getCurrentInstance()!.appContext.app.use(router)
     void router.replace({
       name: 'TimeSeriesDisplay',
       params: { plotId: props.routePlotId ?? props.plotId },
@@ -128,11 +129,11 @@ export const DashboardSelection = defineComponent({
   setup(props) {
     const settings = prepareSelectionMenu()
     const store = useTopologyNodesStore()
-    const router = createRouter({
-      history: createMemoryHistory(),
-      routes: [{ path: '/dashboard', component: { render: () => null } }],
+    const router = useStoryRoute({
+      path: '/dashboard',
+      name: 'StoryDashboard',
+      component: { render: () => null },
     })
-    getCurrentInstance()!.appContext.app.use(router)
     void router.replace('/dashboard?keep=value#selection')
     const node = { id: 'selection-test', name: 'Selection test' }
     store.nodes = [node]
