@@ -49,6 +49,15 @@ describe('userSettings store – restoreDefaults', () => {
     vi.unstubAllGlobals()
   })
 
+  it('defaults to v4 while hiding the chart engine setting', () => {
+    const store = useUserSettingsStore()
+
+    expect(store.chartEngine).toBe('v4')
+    expect(store.listByGroup('Charts').map((item) => item.id)).not.toContain(
+      'charts.engine',
+    )
+  })
+
   it('restores values from the FEWS config, discarding user changes', async () => {
     const fetchMock = mockFewsConfigFile(defaultUserSettingsJson)
     storeLocalSettings([

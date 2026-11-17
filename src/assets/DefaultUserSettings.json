@@ -256,6 +256,7 @@
     "type": "oneOfMultiple",
     "label": "Chart engine",
     "value": "v4",
+    "disabled": true,
     "items": [
       {
         "value": "v4",
