@@ -85,6 +85,90 @@ describe('getV5PlotMargins', () => {
     )
   })
 
+  describe('grid', () => {
+    it('draws gridlines on the value axis only by default', () => {
+      const config = toPlotConfig(
+        { id: 'test', title: 'Test', series: [] },
+        {},
+        defaultChartSettings.timeSeriesChart,
+        {},
+      )
+
+      const grids = Object.fromEntries(
+        (config.axes ?? []).map((a) => [
+          a.scale,
+          a.options.get().resolved.grid,
+        ]),
+      )
+      expect(grids).toMatchObject({ x: false })
+      expect(Object.values(grids).filter(Boolean)).toHaveLength(1)
+    })
+
+    it('honours an explicit showGrid on a time axis', () => {
+      const config = toPlotConfig(
+        {
+          id: 'test',
+          title: 'Test',
+          series: [],
+          xAxis: [{ kind: 'time', position: 'bottom', showGrid: true }],
+        },
+        {},
+        defaultChartSettings.timeSeriesChart,
+        {},
+      )
+
+      const xAxis = config.axes?.find((a) => a.scale === 'x')
+      expect(xAxis?.options.get().resolved.grid).toBe(true)
+    })
+
+    it('draws the grid on a right y-axis when there is no left one', () => {
+      const config = toPlotConfig(
+        {
+          id: 'test',
+          title: 'Test',
+          series: [],
+          yAxis: [{ kind: 'value', position: 'right' }],
+        },
+        {},
+        defaultChartSettings.timeSeriesChart,
+        {},
+      )
+
+      const yAxes = config.axes?.filter((a) => a.scale !== 'x') ?? []
+      expect(yAxes).toHaveLength(1)
+      expect(yAxes[0].options.get().resolved).toMatchObject({
+        position: 'right',
+        grid: true,
+      })
+    })
+
+    it('keeps the grid on the left y-axis when both sides are present', () => {
+      const config = toPlotConfig(
+        {
+          id: 'test',
+          title: 'Test',
+          series: [],
+          yAxis: [
+            { kind: 'value', position: 'right' },
+            { kind: 'value', position: 'left' },
+          ],
+        },
+        {},
+        defaultChartSettings.timeSeriesChart,
+        {},
+      )
+
+      const grids = (config.axes ?? [])
+        .filter((a) => a.scale !== 'x')
+        .map((a) => a.options.get().resolved)
+        .map(({ position, grid }) => ({ position, grid }))
+      expect(grids).toEqual([
+        { position: 'right', grid: false },
+        { position: 'left', grid: true },
+      ])
+    })
+  })
+
   describe('brush axes', () => {
     it('shows only the x-axis with ticks and labels, without a grid', () => {
       const config = toPlotConfig(

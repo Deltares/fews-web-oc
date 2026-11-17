@@ -235,8 +235,11 @@ function createAxes(
         position: xAxis.position === 'top' ? 'top' : 'bottom',
         label: settings.xAxis.xLabel ? (xAxis.label ?? '') : '',
         unit: xAxis.unit ?? '',
+        // Gridlines only on the value axis: a time x-axis gets none by default.
         grid:
-          !options.isBrush && settings.xAxis.xTicks && (xAxis.showGrid ?? true),
+          !options.isBrush &&
+          settings.xAxis.xTicks &&
+          (xAxis.showGrid ?? xAxis.kind !== 'time'),
         tickCount: settings.xAxis.xTicks ? 6 : 1,
         style: 'classic',
         locale: xAxis.locale ?? options.locale,
@@ -247,16 +250,21 @@ function createAxes(
   }
 
   if (settings.yAxis.enabled && !options.isBrush) {
-    for (const [index, { id, axis: yAxis }] of yScales.entries()) {
-      const position =
-        yAxis.position === 'right'
-          ? 'right'
-          : yAxis.position === 'left'
+    const positions = yScales.map(({ axis: yAxis }, index) =>
+      yAxis.position === 'right'
+        ? 'right'
+        : yAxis.position === 'left'
+          ? 'left'
+          : index === 0
             ? 'left'
-            : index === 0
-              ? 'left'
-              : 'right'
-      const isPrimary = position === 'left'
+            : 'right',
+    )
+    // The grid follows the left axis, or the first right axis when there is
+    // no left one.
+    const hasLeftAxis = positions.includes('left')
+    for (const [index, { id, axis: yAxis }] of yScales.entries()) {
+      const position = positions[index]
+      const isPrimary = position === 'left' || (!hasLeftAxis && index === 0)
       axes.push(
         handles.use(`axis:${id}`, axis, id, {
           position,
@@ -284,7 +292,8 @@ function createMarks(
   handles: HandleCache,
   verticalProfile = false,
 ): (BandMark | BarMark | EnsembleMark | SeriesMark | LineMark)[] {
-  const marks: (BandMark | BarMark | EnsembleMark | SeriesMark | LineMark)[] = []
+  const marks: (BandMark | BarMark | EnsembleMark | SeriesMark | LineMark)[] =
+    []
   const mergedMarkerIndices = new Set<number>()
   const stackedBarAxes = new Set<string>()
 

@@ -494,7 +494,12 @@ defineExpose({ getSvgElement, exportImage })
 
 .chart-container {
   --fews-chart-background: var(--canvas-fill);
-  --fews-chart-grid: var(--theme-color);
+  /* Hairline grid one step off the surface, using Vuetify's divider tokens. */
+  --fews-chart-grid: rgba(var(--v-border-color), var(--v-border-opacity));
+  --fews-chart-foreground: rgba(
+    var(--v-theme-on-surface),
+    var(--v-medium-emphasis-opacity)
+  );
   --fews-chart-font-family: var(--font-family);
   --fews-chart-font-size: 14.4px;
   flex: 1 1 100%;
