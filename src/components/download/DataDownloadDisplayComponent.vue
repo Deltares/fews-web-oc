@@ -520,7 +520,9 @@ function getAttributeValues(locations: Location[]): string[][] {
     })
   })
 
-  attributeValuesMap.forEach((values) => values.sort())
+  attributeValuesMap.forEach((values) => {
+    values.sort((left, right) => left.localeCompare(right))
+  })
   return attributeValuesMap
 }
 
