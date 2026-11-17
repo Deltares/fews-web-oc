@@ -1,5 +1,5 @@
 import { toDisplayDateTime } from '@/lib/date/timeZone'
-import type { LogMessage } from '@/lib/log'
+import { cleanTaskRunId, type LogMessage } from '@/lib/log'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import {
   type LogDisplayLogsFilter,
@@ -223,9 +223,4 @@ export function useLogDisplayLogs(
     isLoading,
     error,
   }
-}
-
-// FIXME: Always has a space followed by -1 for some reason
-function cleanTaskRunId(taskRunId: string): string {
-  return taskRunId.split(' ')[0]
 }

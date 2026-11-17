@@ -30,7 +30,6 @@ import Underline from '@tiptap/extension-underline'
 import Data from './Data.js'
 import Time from './Time.js'
 
-// import Keybindings from './CustomKeybindings'
 import Division from './CustomDivision.js'
 import { KeepHtmlAttributes } from './KeepHtmlAtrributes.js'
 import { Node } from '@tiptap/core'
@@ -120,6 +119,4 @@ export const extensions = [
       return ['small', HTMLAttributes, 0]
     },
   }),
-  // FIXME: Keybindings are not inserting a Enter half way through a paragraph
-  // Keybindings,
 ]
