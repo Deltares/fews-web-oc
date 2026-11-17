@@ -244,6 +244,13 @@ test('traces the hovered ensemble member in the v5 chart', async ({
     '.chart-container svg [data-mark="ensemble"] path',
   )
   await expect(members.first()).toHaveAttribute('d', /^M.+L/)
+  // Replacing the ensemble mark must not invalidate the highlight plugin
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  for (const memberCount of [2, 4, 3]) {
+    await component.update({ engine: 'v5', dataReady: true, memberCount })
+    await expect(members.first()).toHaveAttribute('d', /^M.+L/)
+  }
   const point = await members.first().evaluate((element: SVGPathElement) => {
     const middle = element.getPointAtLength(element.getTotalLength() / 2)
     return new DOMPoint(middle.x, middle.y).matrixTransform(
@@ -263,4 +270,5 @@ test('traces the hovered ensemble member in the v5 chart', async ({
     return [x, y, width, height].map(Math.round)
   }
   expect(await trace.evaluate(box)).toEqual(await members.first().evaluate(box))
+  expect(errors).toEqual([])
 })
