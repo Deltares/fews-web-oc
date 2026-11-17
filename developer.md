@@ -33,6 +33,10 @@ MapLibre and the schematic status display also include unlayered styles.
 Keep overrides scoped to their owning component and use a selector specific
 enough to win regardless of stylesheet load order.
 
+Honor `prefers-reduced-motion: reduce` for decorative animation. The system-time
+status remains visible without blinking or sync pulses, and the startup error
+page disables its entrance animation and retry-button movement.
+
 ## Search data
 
 The search context stores its item tree in a `shallowRef`. Replace locations

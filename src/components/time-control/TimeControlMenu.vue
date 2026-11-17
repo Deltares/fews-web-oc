@@ -678,6 +678,17 @@ watch(
   animation: sync-pulse 0.7s ease-out;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .systemtime-status--running .systemtime-status__dot {
+    animation-name: none;
+  }
+
+  .systemtime-status__dot--pulse::after {
+    content: none;
+    animation: none;
+  }
+}
+
 @keyframes status-blink {
   0%,
   45% {
