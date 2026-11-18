@@ -97,6 +97,7 @@
           <v-col cols="12" sm :class="smAndUp ? 'border-e' : 'border-b'">
             <interval-selector
               v-model="store.selectedInterval"
+              @select="store.notifyPeriodSelected()"
               :items="intervalItems"
               :now="store.systemTime"
               :selected-description="periodDescription"
@@ -598,6 +599,7 @@ function toPickerDay(date: Date): Date {
 function onPickerUpdate(days: Date[]) {
   store.selectedInterval = 'custom'
   pickerDays.value = days
+  store.notifyPeriodSelected()
 }
 
 watch(

@@ -68,39 +68,24 @@ describe('useSystemTimeStore', () => {
     expect(store.startTime).toEqual(startTime)
   })
 
-  it('changes the selected period key on a period selection, not on a running window sync', async () => {
+  it('counts period selections, not running window syncs', async () => {
     const store = useSystemTimeStore()
     await flush()
-    const defaultKey = store.selectedPeriodKey
+    expect(store.periodSelectionCount).toBe(0)
 
     store.selectedInterval = { start: { days: -1 }, end: { hours: 6 } }
+    store.notifyPeriodSelected()
     await flush()
-    const runningKey = store.selectedPeriodKey
-    expect(runningKey).not.toBe(defaultKey)
+    expect(store.periodSelectionCount).toBe(1)
 
     backendTime = new Date('2026-10-29T12:01:00Z')
     await vi.advanceTimersByTimeAsync(60_000)
     await nextTick()
     expect(store.startTime).toEqual(new Date('2026-10-28T12:01:00Z'))
-    expect(store.selectedPeriodKey).toBe(runningKey)
+    expect(store.periodSelectionCount).toBe(1)
 
-    store.selectedInterval = { start: { days: -2 }, end: { hours: 6 } }
-    await flush()
-    expect(store.selectedPeriodKey).not.toBe(runningKey)
-
-    store.selectedInterval = 'custom'
-    store.startTime = new Date('2026-10-01T00:00:00Z')
-    store.endTime = new Date('2026-10-02T00:00:00Z')
-    await flush()
-    const customKey = store.selectedPeriodKey
-
-    store.endTime = new Date('2026-10-03T00:00:00Z')
-    await flush()
-    expect(store.selectedPeriodKey).not.toBe(customKey)
-
-    const syncedCustomKey = store.selectedPeriodKey
-    await vi.advanceTimersByTimeAsync(60_000)
-    await nextTick()
-    expect(store.selectedPeriodKey).toBe(syncedCustomKey)
+    // Selecting the same period again
+    store.notifyPeriodSelected()
+    expect(store.periodSelectionCount).toBe(2)
   })
 })

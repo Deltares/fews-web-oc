@@ -481,11 +481,12 @@ watch(visibleDomain, (newDomain) => {
   debouncedRefetchChartTimeSeries(newDomain)
 })
 
-// Selecting another period shows that period. A running period that moves
-// with the system time keeps the zoom. Runs synchronously, so the data of the
-// previous zoom is not requested for the new period first.
+// Selecting a period, also the current one again, shows the whole period. A
+// running period that moves with the system time keeps the zoom. Runs
+// synchronously, so the data of the previous zoom is not requested for the
+// new period first.
 watch(
-  () => store.selectedPeriodKey,
+  () => store.periodSelectionCount,
   () => {
     resetDomain()
     visibleDomain.value = undefined
