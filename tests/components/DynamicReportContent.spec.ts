@@ -269,6 +269,22 @@ for (const story of ['ReadonlyEditing', 'ReadonlyWebOcEditing']) {
     )
     expect(await getContentWithoutSelectionDecoration(fixed)).toBe(original)
 
+    await editor.locator('#commentary').click()
+    await page.keyboard.press('End')
+    await page.keyboard.type(' updated')
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Editable commentary updated',
+    )
+    await page.keyboard.press('ControlOrMeta+z')
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Editable commentary',
+    )
+    await page.keyboard.press('ControlOrMeta+Shift+z')
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Editable commentary updated',
+    )
+    expect(await getContentWithoutSelectionDecoration(fixed)).toBe(original)
+
     await page.keyboard.press('ControlOrMeta+a')
     await page.keyboard.press('Backspace')
     await expect(fixed).toBeVisible()
@@ -290,22 +306,6 @@ for (const story of ['ReadonlyEditing', 'ReadonlyWebOcEditing']) {
     })
     await expect(fixed).toBeVisible()
     await expect(editor).not.toContainText('Pasted replacement')
-
-    await editor.locator('#commentary').click()
-    await page.keyboard.press('End')
-    await page.keyboard.type(' updated')
-    await expect(editor.locator('#commentary')).toHaveText(
-      'Editable commentary updated',
-    )
-    await page.keyboard.press('ControlOrMeta+z')
-    await expect(editor.locator('#commentary')).toHaveText(
-      'Editable commentary',
-    )
-    await page.keyboard.press('ControlOrMeta+Shift+z')
-    await expect(editor.locator('#commentary')).toHaveText(
-      'Editable commentary updated',
-    )
-    expect(await getContentWithoutSelectionDecoration(fixed)).toBe(original)
 
     await component.getByRole('button', { name: 'Apply edits' }).click()
     await expect(component.locator('.tiptap')).toHaveCount(0)
