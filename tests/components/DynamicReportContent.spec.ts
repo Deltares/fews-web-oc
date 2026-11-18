@@ -23,6 +23,16 @@ function getFontFamily(locator: Locator) {
   return locator.evaluate((element) => getComputedStyle(element).fontFamily)
 }
 
+function getContentWithoutSelectionDecoration(locator: Locator) {
+  return locator.evaluate((element) => {
+    const clone = element.cloneNode(true) as HTMLElement
+    clone
+      .querySelectorAll('.ProseMirror-selectednode')
+      .forEach((node) => node.classList.remove('ProseMirror-selectednode'))
+    return clone.innerHTML
+  })
+}
+
 function getReport(component: Locator) {
   // Locators pierce open shadow roots, so this works for both stylings
   const table = component.locator('.dynamic-report table.document-file-table')
@@ -184,10 +194,135 @@ for (const story of ['GovernorateTableEditing', 'DistrictTableEditing']) {
     await page.keyboard.press('End')
     await page.keyboard.type('!')
     await expect(header).toContainText('!')
-    await component.getByRole('button', { name: 'Preview' }).click()
+    await component.getByRole('button', { name: 'Apply edits' }).click()
     await expect(component.locator('.tiptap')).toHaveCount(0)
     await expect(header).toContainText('!')
     await expectHeaderStyle()
+  })
+}
+
+for (const story of ['CaretEditing', 'CaretWebOcEditing']) {
+  test(`${story}: focuses the first usable caret marker and restores it on reopening`, async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(`reports/DynamicReportContent/${story}`)
+    await component.getByRole('button', { name: 'Edit', exact: true }).click()
+    const editor = component.locator('.tiptap')
+    await expect(editor).toBeFocused()
+    await page.keyboard.type('New ')
+    await expect(editor.locator('#commentary')).toHaveText(
+      'New Write commentary here.',
+    )
+    await expect(editor.locator('[data-readonly="true"]').first()).toHaveText(
+      'Fixed introduction',
+    )
+    await component.getByRole('button', { name: 'Apply edits' }).click()
+    await expect(component.locator('.tiptap')).toHaveCount(0)
+    await expect(component.locator('#commentary')).toHaveText(
+      'New Write commentary here.',
+    )
+    await component.getByRole('button', { name: 'Edit', exact: true }).click()
+    await expect(editor).toBeFocused()
+    await page.keyboard.type('Again ')
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Again New Write commentary here.',
+    )
+  })
+}
+
+for (const story of ['ReadonlyEditing', 'ReadonlyWebOcEditing']) {
+  test(`${story}: protects sections through keyboard edits, paste and preview`, async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(`reports/DynamicReportContent/${story}`)
+    await expect(component.locator('#fixed')).toContainText('12.3')
+    await expect(component.locator('#fixed input')).toHaveCount(0)
+    await component.getByRole('button', { name: 'Edit', exact: true }).click()
+    const editor = component.locator('.tiptap')
+    await expect(editor).toBeFocused()
+    await page.keyboard.type('Start ')
+    await expect(editor.locator('#intro')).toHaveText(
+      'Start Editable introduction',
+    )
+    await page.keyboard.press('ControlOrMeta+z')
+    const fixed = editor.locator('#fixed')
+    const original = await getContentWithoutSelectionDecoration(fixed)
+    await expect(fixed).toHaveAttribute('contenteditable', 'false')
+    await expect(fixed.locator('input')).toHaveCount(0)
+    expect(
+      await fixed
+        .locator('h2')
+        .evaluate((element) => (element as HTMLElement).isContentEditable),
+    ).toBe(false)
+
+    await editor.locator('#commentary').click()
+    await page.keyboard.press('End')
+    await page.keyboard.type(' updated')
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Editable commentary updated',
+    )
+    await page.keyboard.press('ControlOrMeta+z')
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Editable commentary',
+    )
+    await page.keyboard.press('ControlOrMeta+Shift+z')
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Editable commentary updated',
+    )
+    expect(await getContentWithoutSelectionDecoration(fixed)).toBe(original)
+
+    await editor.locator('#intro').click()
+    await page.keyboard.press('End')
+    await page.keyboard.press('Delete')
+    await expect(editor.locator('#intro')).toHaveText('Editable introduction')
+    await editor.locator('#commentary').click()
+    await page.keyboard.press('Home')
+    await page.keyboard.press('Backspace')
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Editable commentary updated',
+    )
+    expect(await getContentWithoutSelectionDecoration(fixed)).toBe(original)
+
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.keyboard.press('Backspace')
+    await expect(fixed).toBeVisible()
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Editable commentary updated',
+    )
+    await page.keyboard.press('ControlOrMeta+b')
+    expect(await getContentWithoutSelectionDecoration(fixed)).toBe(original)
+    await editor.evaluate((element) => {
+      const clipboardData = new DataTransfer()
+      clipboardData.setData('text/html', '<p>Pasted replacement</p>')
+      element.dispatchEvent(
+        new ClipboardEvent('paste', {
+          clipboardData,
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    await expect(fixed).toBeVisible()
+    await expect(editor).not.toContainText('Pasted replacement')
+
+    await component.getByRole('button', { name: 'Apply edits' }).click()
+    await expect(component.locator('.tiptap')).toHaveCount(0)
+    await expect(component.locator('#fixed')).toHaveAttribute(
+      'data-readonly',
+      'true',
+    )
+    await expect(component.locator('#fixed input')).toHaveCount(0)
+    await component.getByRole('button', { name: 'Edit', exact: true }).click()
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Editable commentary updated',
+    )
+    await editor.locator('#commentary').click()
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.keyboard.press('Backspace')
+    await expect(fixed).toBeVisible()
+    expect(await getContentWithoutSelectionDecoration(fixed)).toBe(original)
   })
 }
 

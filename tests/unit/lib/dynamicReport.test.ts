@@ -161,6 +161,18 @@ describe('toStaticResourcePath', () => {
 })
 
 describe('findDynamicReportNodes', () => {
+  it('leaves input values in read-only sections as text', () => {
+    const input =
+      '<span data-input-type="number" data-time-series-index="0" data-time="t">12.3</span>'
+    const container = toContainer(
+      `<div data-readonly="true"><div data-readonly="false"><p>${input}</p></div></div><p>${input}</p>`,
+    )
+    expect(findDynamicReportNodes(container)).toHaveLength(1)
+    expect(container.querySelector('[data-readonly="true"]')?.textContent).toBe(
+      '12.3',
+    )
+  })
+
   it('parses the data attributes and takes the text content as value', () => {
     const container = toContainer(
       `<table><tr><td>

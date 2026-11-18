@@ -15,7 +15,7 @@
           {{
             t(
               editing
-                ? 'dynamicReport.previewReport'
+                ? 'dynamicReport.applyEditsReport'
                 : 'dynamicReport.editReport',
             )
           }}

@@ -39,6 +39,7 @@ export function findDynamicReportNodes(root: ParentNode): DynamicReportNode[] {
   )
   const nodes: DynamicReportNode[] = []
   elements.forEach((element, index) => {
+    if (element.closest('[data-readonly="true"]')) return
     const { inputType, timeSeriesIndex, time } = element.dataset
     if (!inputType || !time || !timeSeriesIndex) {
       console.warn('Invalid dynamic report input element', element)

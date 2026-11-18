@@ -53,7 +53,11 @@ export const KeepHtmlAttributes = Extension.create({
           dataSet: {
             parseHTML: (element: HTMLElement) => {
               const result = Object.keys(element.dataset)
-                .filter((key) => !EXCLUDED_DATA_ATTIBUTES.has(`data-${key}`))
+                .filter(
+                  (key) =>
+                    key !== 'editorCaret' &&
+                    !EXCLUDED_DATA_ATTIBUTES.has(`data-${key}`),
+                )
                 .reduce((obj: Record<string, string | undefined>, key) => {
                   obj[key] = element.dataset[key]
                   return obj

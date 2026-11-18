@@ -150,6 +150,8 @@ npm run test:e2e
 
 If the dev server is running, `npm run test:e2e` will reuse it automatically.
 
+Use one of these `e2e`-mode commands rather than a regular dev or preview server. The location zoom test uses a test-only hook to inspect the map's canvas-backed location source.
+
 > [!WARNING]
 > The dev server might time out for certain tests.
 
