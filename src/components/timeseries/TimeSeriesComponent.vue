@@ -295,7 +295,8 @@ const showBrush = computed(
   () =>
     userSettings.get('charts.brush')?.value === true && !props.disableThinning,
 )
-const { debouncedRefetchChartTimeSeries, domain } = useFetchDomain(fullDomain)
+const { debouncedRefetchChartTimeSeries, domain, resetDomain } =
+  useFetchDomain(fullDomain)
 const chartOptions = computed<PiTimeSeriesQueryOptions>(() => {
   if (props.disableThinning) {
     return {
@@ -481,11 +482,14 @@ watch(visibleDomain, (newDomain) => {
 })
 
 // Selecting another period shows that period. A running period that moves
-// with the system time keeps the zoom.
+// with the system time keeps the zoom. Runs synchronously, so the data of the
+// previous zoom is not requested for the new period first.
 watch(
   () => store.selectedPeriodKey,
   () => {
+    resetDomain()
     visibleDomain.value = undefined
   },
+  { flush: 'sync' },
 )
 </script>

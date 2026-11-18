@@ -132,36 +132,54 @@ describe('v5 chart group synchronization', () => {
     },
   )
 
-  it.each(['timeScale', 'brushTimeScale'] as const)(
-    'keeps a zoomed %s when a running period moves, and follows it otherwise',
-    (scale) => {
-      const group = createV5ChartGroup()
-      const minute = 60_000
-      const initial: [Date, Date] = [new Date(0), new Date(10 * minute)]
-      const moved: [Date, Date] = [new Date(minute), new Date(11 * minute)]
-      const zoomed: [Date, Date] = [new Date(2 * minute), new Date(3 * minute)]
+  it('keeps a zoomed time scale when a running period moves, and follows it otherwise', () => {
+    const scale = 'timeScale'
+    const group = createV5ChartGroup()
+    const minute = 60_000
+    const initial: [Date, Date] = [new Date(0), new Date(10 * minute)]
+    const moved: [Date, Date] = [new Date(minute), new Date(11 * minute)]
+    const zoomed: [Date, Date] = [new Date(2 * minute), new Date(3 * minute)]
 
-      initializeV5TimeScale(group, scale, initial)
-      initializeV5TimeScale(group, scale, moved)
-      expect(group[scale].domain.get()).toEqual([minute, 11 * minute])
+    initializeV5TimeScale(group, scale, initial)
+    initializeV5TimeScale(group, scale, moved)
+    expect(group[scale].domain.get()).toEqual([minute, 11 * minute])
 
-      updateTimeScaleDomain(group[scale], zoomed)
-      const later: [Date, Date] = [new Date(2 * minute), new Date(12 * minute)]
-      initializeV5TimeScale(group, scale, later)
-      expect(group[scale].domain.get()).toEqual([2 * minute, 3 * minute])
-      expect(group[scale].options.get().resolved.defaultDomain).toEqual([
-        2 * minute,
-        12 * minute,
-      ])
+    updateTimeScaleDomain(group[scale], zoomed)
+    const later: [Date, Date] = [new Date(2 * minute), new Date(12 * minute)]
+    initializeV5TimeScale(group, scale, later)
+    expect(group[scale].domain.get()).toEqual([2 * minute, 3 * minute])
+    expect(group[scale].options.get().resolved.defaultDomain).toEqual([
+      2 * minute,
+      12 * minute,
+    ])
 
-      // The zoom no longer overlaps the period
-      initializeV5TimeScale(group, scale, [
-        new Date(3 * minute),
-        new Date(13 * minute),
-      ])
-      expect(group[scale].domain.get()).toEqual([3 * minute, 13 * minute])
-    },
-  )
+    // The zoom no longer overlaps the period
+    initializeV5TimeScale(group, scale, [
+      new Date(3 * minute),
+      new Date(13 * minute),
+    ])
+    expect(group[scale].domain.get()).toEqual([3 * minute, 13 * minute])
+  })
+
+  it('moves the brush overview with a running period, even when its domain differs', () => {
+    const group = createV5ChartGroup()
+    const minute = 60_000
+    initializeV5TimeScale(group, 'brushTimeScale', [
+      new Date(0),
+      new Date(10 * minute),
+    ])
+    updateTimeScaleDomain(group.brushTimeScale, [
+      new Date(2 * minute),
+      new Date(3 * minute),
+    ])
+
+    initializeV5TimeScale(group, 'brushTimeScale', [
+      new Date(minute),
+      new Date(11 * minute),
+    ])
+
+    expect(group.brushTimeScale.domain.get()).toEqual([minute, 11 * minute])
+  })
 
   it('resets the time scale to its default domain', () => {
     const group = createV5ChartGroup()

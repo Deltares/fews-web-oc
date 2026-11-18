@@ -9,9 +9,21 @@ function toTimeRange(range: Range | undefined): [number, number] | undefined {
     : undefined
 }
 
-// Date round-trips truncate to whole milliseconds
-function isSameTimeRange(a: [number, number], b: [number, number]): boolean {
-  return Math.abs(a[0] - b[0]) < 1 && Math.abs(a[1] - b[1]) < 1
+/**
+ * Whether two time ranges, as dates or epoch milliseconds, are the same.
+ * Date round-trips truncate to whole milliseconds, so sub-millisecond
+ * differences count as the same range.
+ */
+export function isSameTimeRange(
+  a: Range | undefined,
+  b: Range | undefined,
+): boolean {
+  const rangeA = toTimeRange(a)
+  const rangeB = toTimeRange(b)
+  if (!rangeA || !rangeB) return false
+  return (
+    Math.abs(rangeA[0] - rangeB[0]) < 1 && Math.abs(rangeA[1] - rangeB[1]) < 1
+  )
 }
 
 /**

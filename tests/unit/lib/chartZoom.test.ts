@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { shouldKeepVisibleTimeRange } from '@/lib/charts/zoom'
+import { isSameTimeRange, shouldKeepVisibleTimeRange } from '@/lib/charts/zoom'
 
 const day = 24 * 60 * 60 * 1000
 const previousDefault: [Date, Date] = [
@@ -86,5 +86,24 @@ describe('shouldKeepVisibleTimeRange', () => {
     ['incomplete range', [zoomed[0]], previousDefault, nextDefault],
   ])('does not keep a range without a %s', (_name, visible, previous, next) => {
     expect(shouldKeepVisibleTimeRange(visible, previous, next)).toBe(false)
+  })
+})
+
+describe('isSameTimeRange', () => {
+  it('compares dates and epoch milliseconds within a millisecond', () => {
+    expect(
+      isSameTimeRange(previousDefault, [
+        previousDefault[0].getTime() + 0.5,
+        previousDefault[1].getTime(),
+      ]),
+    ).toBe(true)
+    expect(isSameTimeRange(previousDefault, nextDefault)).toBe(false)
+  })
+
+  it('treats missing or incomplete ranges as different', () => {
+    expect(isSameTimeRange(undefined, previousDefault)).toBe(false)
+    expect(isSameTimeRange([previousDefault[0]], [previousDefault[0]])).toBe(
+      false,
+    )
   })
 })
