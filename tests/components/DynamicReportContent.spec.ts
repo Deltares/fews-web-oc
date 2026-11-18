@@ -23,6 +23,16 @@ function getFontFamily(locator: Locator) {
   return locator.evaluate((element) => getComputedStyle(element).fontFamily)
 }
 
+function getContentWithoutSelectionDecoration(locator: Locator) {
+  return locator.evaluate((element) => {
+    const clone = element.cloneNode(true) as HTMLElement
+    clone
+      .querySelectorAll('.ProseMirror-selectednode')
+      .forEach((node) => node.classList.remove('ProseMirror-selectednode'))
+    return clone.innerHTML
+  })
+}
+
 function getReport(component: Locator) {
   // Locators pierce open shadow roots, so this works for both stylings
   const table = component.locator('.dynamic-report table.document-file-table')
@@ -238,7 +248,7 @@ for (const story of ['ReadonlyEditing', 'ReadonlyWebOcEditing']) {
     )
     await page.keyboard.press('ControlOrMeta+z')
     const fixed = editor.locator('#fixed')
-    const original = await fixed.innerHTML()
+    const original = await getContentWithoutSelectionDecoration(fixed)
     await expect(fixed).toHaveAttribute('contenteditable', 'false')
     await expect(fixed.locator('input')).toHaveCount(0)
     expect(
@@ -257,7 +267,7 @@ for (const story of ['ReadonlyEditing', 'ReadonlyWebOcEditing']) {
     await expect(editor.locator('#commentary')).toHaveText(
       'Editable commentary',
     )
-    expect(await fixed.innerHTML()).toBe(original)
+    expect(await getContentWithoutSelectionDecoration(fixed)).toBe(original)
 
     await page.keyboard.press('ControlOrMeta+a')
     await page.keyboard.press('Backspace')
@@ -266,7 +276,7 @@ for (const story of ['ReadonlyEditing', 'ReadonlyWebOcEditing']) {
       'Editable commentary',
     )
     await page.keyboard.press('ControlOrMeta+b')
-    expect(await fixed.innerHTML()).toBe(original)
+    expect(await getContentWithoutSelectionDecoration(fixed)).toBe(original)
     await editor.evaluate((element) => {
       const clipboardData = new DataTransfer()
       clipboardData.setData('text/html', '<p>Pasted replacement</p>')
@@ -295,7 +305,7 @@ for (const story of ['ReadonlyEditing', 'ReadonlyWebOcEditing']) {
     await expect(editor.locator('#commentary')).toHaveText(
       'Editable commentary updated',
     )
-    expect(await fixed.innerHTML()).toBe(original)
+    expect(await getContentWithoutSelectionDecoration(fixed)).toBe(original)
 
     await component.getByRole('button', { name: 'Apply edits' }).click()
     await expect(component.locator('.tiptap')).toHaveCount(0)
@@ -312,7 +322,7 @@ for (const story of ['ReadonlyEditing', 'ReadonlyWebOcEditing']) {
     await page.keyboard.press('ControlOrMeta+a')
     await page.keyboard.press('Backspace')
     await expect(fixed).toBeVisible()
-    expect(await fixed.innerHTML()).toBe(original)
+    expect(await getContentWithoutSelectionDecoration(fixed)).toBe(original)
   })
 }
 
