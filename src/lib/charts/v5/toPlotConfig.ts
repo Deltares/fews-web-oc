@@ -231,22 +231,24 @@ function createScale(
   const scaleDomain: [number, number] | undefined = source
     ? [Number(source[0]), Number(source[1])]
     : undefined
-  const defaultDomain = axisConfig.defaultDomain ?? [0, 1]
+  // A configured domain is the default domain, not a zoom, so a zoom reset
+  // shows it again
+  const defaultDomain = scaleDomain ?? axisConfig.defaultDomain ?? [0, 1]
   const common = {
     defaultDomain,
+    ...(scaleDomain ? { autoscale: 'fixed' as const } : {}),
     includeZero: axisConfig.includeZero ?? false,
     nice: axisConfig.nice ?? true,
     reverse: axisConfig.reverse ?? false,
     locale: axisConfig.locale ?? options.locale ?? 'en',
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   }
-  const numeric = scaleDomain ? { ...common, domain: scaleDomain } : common
 
   switch (axisConfig.kind) {
     case 'time':
-      return handles.use(`scale:${id}`, timeScale, numeric)
+      return handles.use(`scale:${id}`, timeScale, common)
     case 'degrees':
-      return handles.use(`scale:${id}`, degreesScale, numeric)
+      return handles.use(`scale:${id}`, degreesScale, common)
     case 'band':
       return handles.use(`scale:${id}`, bandScale, {
         includeZero: common.includeZero,
@@ -256,7 +258,7 @@ function createScale(
         timeZone: common.timeZone,
       })
     default:
-      return handles.use(`scale:${id}`, linearScale, numeric)
+      return handles.use(`scale:${id}`, linearScale, common)
   }
 }
 

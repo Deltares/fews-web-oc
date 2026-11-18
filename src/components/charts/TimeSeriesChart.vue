@@ -121,7 +121,7 @@ import {
 } from '@/lib/charts/v4/timeSeriesChart'
 import { getThresholdValues, isUniqueThreshold } from '@/lib/charts/thresholds'
 import { toV4AlertLineOptions } from '@/lib/charts/v4/thresholds'
-import { isSameTimeRange, shouldKeepVisibleTimeRange } from '@/lib/charts/zoom'
+import { isSameTimeRange } from '@/lib/charts/zoom'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 import { useI18n } from 'vue-i18n'
@@ -138,6 +138,8 @@ const chartConfig = useEnsembleChartConfig(
   () => props.config,
   () => props.series,
 )
+// The time range the user zoomed, panned or brushed to, or undefined to show
+// the default range of the chart
 const domain = defineModel<[Date, Date]>('domain')
 const v4Handlers = computed(() => getV4ChartHandlers(props.group))
 const zoomHandler = computed(
@@ -294,9 +296,28 @@ watch(
   },
 )
 
+// Set while the chart changes its own view, which is not a user change
+let isUpdatingView = false
+
+function updateView(update: () => void): void {
+  const wasUpdatingView = isUpdatingView
+  isUpdatingView = true
+  try {
+    update()
+  } finally {
+    isUpdatingView = wasUpdatingView
+  }
+}
+
 function onUpdateXDomain(event: DomainChangeEvent): void {
-  if (isChartHidden()) return
-  domain.value = event.new as [Date, Date]
+  if (isUpdatingView || isChartHidden()) return
+  const newDomain = event.new as [Date, Date]
+  const defaultDomain = chartConfig.value.xAxis?.[0]?.domain
+  // Resetting the zoom to the default range follows that range again
+  const isReset =
+    event.fromZoomReset &&
+    (!defaultDomain || isSameTimeRange(newDomain, defaultDomain))
+  domain.value = isReset ? undefined : newDomain
 }
 
 function onCrossValueChange(value: Date) {
@@ -431,24 +452,10 @@ function isAllDataLoaded() {
 }
 
 const onValueChange = (previousConfig?: ChartConfig) => {
-  const defaultDomain = chartConfig.value.xAxis?.[0]?.domain
-  const previousDefault = previousConfig?.xAxis?.[0]?.domain ?? defaultDomain
-  // A rebuild, e.g. when a running period moves with the system time or the
-  // chart is shown for another location, keeps a zoomed time range
-  const keepX = shouldKeepVisibleTimeRange(
-    domain.value,
-    previousDefault,
-    defaultDomain,
-  )
-  const xDomain = keepX ? domain.value : undefined
-  // A y-zoom only applies to the same series, and is dropped together with an
-  // x-zoom that no longer overlaps the period
-  const isZoomedX =
-    domain.value !== undefined &&
-    !isSameTimeRange(domain.value, previousDefault)
+  // A rebuild, e.g. when a running period moves with the system time, keeps
+  // the zoom. A y-zoom only applies to the same series.
   zoomedY =
     zoomedY &&
-    (keepX || !isZoomedX) &&
     (previousConfig === undefined ||
       getSeriesIds(previousConfig) === getSeriesIds(chartConfig.value))
   const yDomains = zoomedY ? axis.yScalesDomains.map((d) => [...d]) : undefined
@@ -462,12 +469,9 @@ const onValueChange = (previousConfig?: ChartConfig) => {
   }
   // Delay automatic margin calculation until thresholds and all series data are present
   axis.options.automargin = isAllDataLoaded()
-  redraw(axis, chartConfig.value, { xDomain, yDomains })
-  // A hidden chart does not emit its domain, so emit the default range it
-  // follows; otherwise the next rebuild takes the stale range for a zoom
-  if (!keepX && domain.value && defaultDomain && isChartHidden()) {
-    domain.value = [new Date(defaultDomain[0]), new Date(defaultDomain[1])]
-  }
+  updateView(() =>
+    redraw(axis, chartConfig.value, { xDomain: domain.value, yDomains }),
+  )
   resetAxes(false)
   setTags()
 }
@@ -482,11 +486,11 @@ watch(domain, (newDomain) => {
   if (!newDomain) {
     // Show the default range again, e.g. after selecting another period. Take
     // it from the config, as the axis options may still hold the previous one.
-    redraw(axis, chartConfig.value)
+    updateView(() => redraw(axis, chartConfig.value))
     onResetZoom()
     return
   }
-  axis.redraw({ x: { domain: newDomain } })
+  updateView(() => axis.redraw({ x: { domain: newDomain } }))
   resetAxes(!zoomedY)
 })
 
@@ -494,6 +498,7 @@ const { resetAxes } = useSeriesUpdateChartData(
   () => props.series,
   chartConfig,
   () => axis,
+  updateView,
 )
 
 watch(chartConfig, (_newConfig, previousConfig) => {

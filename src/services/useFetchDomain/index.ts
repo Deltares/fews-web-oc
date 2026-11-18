@@ -1,6 +1,5 @@
 import { debounce } from 'lodash-es'
-import { onScopeDispose, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
-import { shouldKeepVisibleTimeRange } from '@/lib/charts/zoom'
+import { getCurrentScope, onScopeDispose, ref } from 'vue'
 
 // Ratio between old and new domain when zooming above which no refetch is
 // performed. Note: zooming out (i.e. zoom ratio > 1) will always refetch.
@@ -10,9 +9,7 @@ const MAX_ZOOM_RATIO_FOR_REFETCH = 0.8
 // unlikely that there is any effect of thinning.
 const MIN_HOURS_FOR_REFETCH = 12
 
-export function useFetchDomain(
-  configuredDomain?: MaybeRefOrGetter<[Date, Date] | undefined>,
-) {
+export function useFetchDomain() {
   const domain = ref<{ startTime?: Date; endTime?: Date }>({})
 
   function shouldRefetchAfterDomainUpdate(newDomain: [Date, Date]): boolean {
@@ -57,28 +54,12 @@ export function useFetchDomain(
   }
   const debouncedRefetchChartTimeSeries = debounce(refetchChartTimeSeries, 500)
 
-  /** Fetch the configured domain again, e.g. after selecting another period */
+  /** Fetch the whole period again, e.g. after selecting another period */
   function resetDomain() {
     debouncedRefetchChartTimeSeries.cancel()
     domain.value = {}
   }
-
-  if (configuredDomain) {
-    watch(
-      () => toValue(configuredDomain)?.map(Number),
-      (next, previous) => {
-        if (next?.[0] === previous?.[0] && next?.[1] === previous?.[1]) {
-          return
-        }
-        // A zoom that the chart keeps while a running period moves keeps its
-        // data, which is thinned for the zoomed range
-        const { startTime, endTime } = domain.value
-        const fetched = startTime && endTime ? [startTime, endTime] : undefined
-        if (shouldKeepVisibleTimeRange(fetched, previous, next)) return
-        resetDomain()
-      },
-      { flush: 'sync' },
-    )
+  if (getCurrentScope()) {
     onScopeDispose(() => debouncedRefetchChartTimeSeries.cancel())
   }
 

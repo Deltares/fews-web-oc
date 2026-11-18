@@ -66,6 +66,7 @@ import { useI18n } from 'vue-i18n'
 import {
   ModifierKey,
   handleCache,
+  type DomainChangeSource,
   type LayoutChangeDetail,
   crosshair,
   crossSectionSelect,
@@ -95,6 +96,14 @@ import {
 } from '@/services/useChartHandlers/v5'
 
 const props = defineProps<TimeSeriesChartProps>()
+// Domain changes by the user; autoscale and api changes are made by the chart
+const USER_DOMAIN_SOURCES = new Set<DomainChangeSource>([
+  'zoom',
+  'wheel',
+  'pan',
+  'brush',
+  'reset',
+])
 const emit = defineEmits<{
   'toggle-maximize': []
 }>()
@@ -158,7 +167,9 @@ const zoomInteraction = zoom({
   wheel: userSettings.scrollZoomMode,
   wheelModifier: userSettings.scrollZoomModifierKey,
   modifier: getDragZoomModifier(),
-  reset: 'initial',
+  // Clears the zoomed domain, so the scales show their default domain, which
+  // follows the period
+  reset: 'full',
 })
 const panInteraction = pan({
   mode: props.verticalProfile ? 'y' : 'x',
@@ -347,16 +358,6 @@ watch(
     const controller = new AbortController()
     onCleanup(() => controller.abort())
 
-    if (!props.verticalProfile && chartGroup.v5) {
-      currentPlot.subscribe(
-        chartGroup.v5.timeScale.domain,
-        (nextDomain) => {
-          domain.value = [new Date(nextDomain[0]), new Date(nextDomain[1])]
-        },
-        { immediate: true },
-      )
-    }
-
     const updateLegend = (entries = currentPlot.legend.entries.get()) => {
       legendTags.value = getV5LegendTags(entries, props.forecastLegend)
     }
@@ -367,17 +368,21 @@ watch(
     })
     currentPlot.on(
       'domainchange',
-      ({ scale, domain: nextDomain, explicit }) => {
+      ({ scale, domain: nextDomain, source, explicit }) => {
         if (
           props.verticalProfile ||
           scale !== 'x' ||
-          !explicit ||
+          !USER_DOMAIN_SOURCES.has(source) ||
           typeof nextDomain[0] !== 'number' ||
           typeof nextDomain[1] !== 'number'
         ) {
           return
         }
-        domain.value = [new Date(nextDomain[0]), new Date(nextDomain[1])]
+        // A reset clears the zoom, so the chart follows the period again
+        domain.value =
+          source === 'reset' && !explicit
+            ? undefined
+            : [new Date(nextDomain[0]), new Date(nextDomain[1])]
       },
       { signal: controller.signal },
     )
