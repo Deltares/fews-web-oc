@@ -151,10 +151,10 @@ resolution and printed width; enlarging a smaller source does not improve detail
 
 Edits and screenshots are not saved to FEWS and are discarded when the report,
 location, or time changes. In both the report view and the time series report
-panel, use **Export** to save the current report, including local edits and
+panel, use **Save as HTML** or **Print or save as PDF** to save the current report, including local edits and
 screenshots, as HTML or through the browser print dialog as PDF.
 These export options respect the report download setting. In a time series
-window, choose **Export** from the dot menu to open the report and replace the
+window, choose **Export and edit report...** from the dot menu to open the report and replace the
 window toolbar with editing and export controls. Close report export to restore
 the normal window toolbar and display the original report without local edits.
 Local edits are retained for reopening export mode until the report changes.
@@ -163,7 +163,9 @@ header and navigation visible. Closing it restores the original time series
 window size.
 The information icon in the export toolbar explains the local-only changes and
 editor formatting limitations in a tooltip.
-The primary **Edit**/**Preview** button is first in the export toolbar.
+The primary **Edit**/**Apply edits** button is first in the export toolbar.
+**Apply edits** leaves the editor and displays the locally edited report; it
+does not save changes to FEWS.
 **Save as HTML** and **Print or save as PDF** are separate buttons with icons.
 Printing opens the current report in a new browser tab and opens the print
 dialog after its styles, images and fonts load. Allow popups for this site.
@@ -181,6 +183,65 @@ named strings (`string-set` and `string()`). The first-page margin is controlled
 by the report's own `@page :first` rule.
 While editing, a separate floating formatting toolbar above the report provides undo/redo, bold, italic,
 underline, highlighting, text color, and alignment.
+
+*Read-only report sections*
+
+Add `data-readonly="true"` to a supported report block element to keep that
+section fixed while allowing edits elsewhere:
+
+```html
+<div data-readonly="true">
+  <h2>Fixed report information</h2>
+  <p>This forecast must remain unchanged.</p>
+</div>
+<p>Editable commentary</p>
+```
+
+Use a `div` wrapper for a section, or mark an existing supported block such as
+a paragraph, heading, header, article, table, row, or cell. Ordinary inline
+spans are not supported as read-only sections; wrap their paragraph instead.
+Only the exact value `"true"` enables protection. A nested
+`data-readonly="false"` does not unlock content inside a protected section.
+
+In the editor, protected sections cannot be edited, deleted, moved, or
+reformatted. Operations whose selection spans protected content are rejected
+as a whole, including paste or deletion; edit the surrounding content separately.
+Time series input values inside protected sections remain plain text, both
+in the editor and in the report view. The marker is retained in preview and
+saved HTML, so protection also applies when reopening locally edited content.
+An ordinary `contenteditable="false"` attribute is not a substitute for this
+marker. This is an editor restriction, not server-side validation or protection
+against changing an exported HTML file outside Web OC.
+
+*Initial editor caret*
+
+Add a numeric `data-editor-caret` attribute to a supported report block to choose where
+typing starts when opening the editor:
+
+```html
+<p>Report introduction</p>
+<p data-editor-caret="0">Write commentary here.</p>
+<p data-editor-caret="1">Additional notes.</p>
+```
+
+The editor focuses the start of the first editable text block in the marked
+section and scrolls the caret into view. A marker on a wrapper such as a `div`
+or table targets its first editable paragraph or heading. Empty paragraphs
+are valid targets. Inline spans and elements without an editable text block
+are not caret targets.
+
+The lowest non-negative integer wins (`0` before `1`, then `2`, etc.),
+with document order breaking ties. Negative values are excluded from marker
+selection, like a negative `tabindex`; invalid values (including `"true"`) are
+ignored. Unlike `tabindex`, this attribute only controls initial caret
+placement and does not change keyboard Tab navigation. Markers in read-only sections
+are skipped, including those inside a read-only ancestor. Without a usable
+marker, the first editable text block is used. If no editable text block
+exists, the editor is not focused.
+
+This placement applies each time editing starts, including when reopening
+local edits. The marker survives preview and HTML export. Positioning the
+caret does not change report content or add a placeholder.
 
 *Styling a dynamic report*
 

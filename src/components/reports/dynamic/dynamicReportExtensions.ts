@@ -1,6 +1,8 @@
 import { extensions } from '@/components/reports/tiptap/extensions'
 import CustomImage from '@/components/reports/tiptap/CustomImage'
 import { DynamicReportInput } from './dynamicReportInput'
+import { ReportReadonly } from './reportReadonly'
+import { ReportCaret } from './reportCaret'
 import { Extension, Mark, Node } from '@tiptap/core'
 
 const ReportSpan = Mark.create({
@@ -37,7 +39,12 @@ const ReportAttributes = Extension.create({
           id: { default: null },
           dataSet: {
             default: null,
-            parseHTML: (element: HTMLElement) => ({ ...element.dataset }),
+            parseHTML: (element: HTMLElement) =>
+              Object.fromEntries(
+                Object.entries(element.dataset).filter(
+                  ([key]) => key !== 'editorCaret',
+                ),
+              ),
             renderHTML: (attributes) =>
               Object.fromEntries(
                 Object.entries(attributes.dataSet ?? {}).map(([key, value]) => [
@@ -74,4 +81,6 @@ export const dynamicReportExtensions = [
   ReportSpan,
   ReportHeader,
   ReportAttributes,
+  ReportReadonly,
+  ReportCaret,
 ]

@@ -85,7 +85,7 @@ const displayActionItems = computed(() => {
     },
     {
       icon: 'mdi-export-variant',
-      label: t('dynamicReport.exportReport'),
+      label: t('dynamicReport.exportReport') + '...',
       action: () => emit('export-report'),
       disabled:
         props.dynamicReport?.capabilities.dimension?.name === 'time' &&
