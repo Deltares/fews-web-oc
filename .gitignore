@@ -14,6 +14,11 @@ dist-ssr
 dist-standalone
 *.local
 .__mf__temp
+*.tsbuildinfo
+
+# Output of `vue-tsc --build` for the Vite config files (tsconfig.node.json)
+/vite.config*.js
+/vite.config*.d.ts
 
 @mf-types
 
