@@ -36,14 +36,20 @@
   background: #9e9e9e;
 }
 
-@layer vuetify-overrides {
-  .v-theme--light *:focus {
-    outline: 1px solid rgb(25, 118, 210);
-    outline-offset: -1px;
-  }
+/*
+ * Shared focus outline. It must win over component and third-party rules
+ * (e.g. MapLibre) that set `outline`, without resorting to !important.
+ * `:not(#focus-outline)` matches every element (no element has that id) but
+ * adds ID-level specificity, so it beats any class-based selector regardless
+ * of stylesheet load order. Components that deliberately replace the focus
+ * treatment must use the same `:not(#focus-outline)` boost.
+ */
+.v-theme--light *:focus:not(#focus-outline) {
+  outline: 1px solid rgb(25, 118, 210);
+  outline-offset: -1px;
+}
 
-  .v-theme--dark *:focus {
-    outline: 1px solid rgb(33, 150, 243);
-    outline-offset: -1px;
-  }
+.v-theme--dark *:focus:not(#focus-outline) {
+  outline: 1px solid rgb(33, 150, 243);
+  outline-offset: -1px;
 }

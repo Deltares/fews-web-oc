@@ -356,8 +356,9 @@ async function postNewLogMessage(
   mask-image: none;
 }
 
-/* Remove native browser focus ring on the <textarea> element */
-:deep(.message-textarea textarea:focus) {
+/* Remove the shared focus ring on the <textarea> element; the field shows focus.
+   `:not(#focus-outline)` matches the shared rule in vuetify-overrule.css. */
+:deep(.message-textarea textarea:focus:not(#focus-outline)) {
   outline: none;
 }
 </style>

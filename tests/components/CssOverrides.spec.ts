@@ -1,5 +1,22 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type ElementHandle, type Page } from '@playwright/test'
 import { fileURLToPath } from 'node:url'
+
+// The CT config reuses the browser context, so stylesheets added here would
+// leak into later specs on the same page. Track and remove them per test.
+const addedStyles: ElementHandle[] = []
+
+async function addStyle(
+  page: Page,
+  options: Parameters<Page['addStyleTag']>[0],
+): Promise<void> {
+  addedStyles.push(await page.addStyleTag(options))
+}
+
+test.afterEach(async () => {
+  for (const style of addedStyles.splice(0)) {
+    await style.evaluate((element) => element.remove())
+  }
+})
 
 for (const theme of ['light', 'dark']) {
   test(`component overrides preserve their appearance in the ${theme} theme`, async ({
@@ -7,7 +24,7 @@ for (const theme of ['light', 'dark']) {
     page,
   }) => {
     const component = await mount('general/CssOverrides/Default', { theme })
-    await page.addStyleTag({ url: '/weboc-default-style.css' })
+    await addStyle(page, { url: '/weboc-default-style.css' })
 
     await expect(
       component.locator('.v-list-item__prepend > .v-list-item__spacer').first(),
@@ -56,7 +73,7 @@ for (const theme of ['light', 'dark']) {
       await expect(chip).toHaveCSS('pointer-events', 'none')
     }
 
-    await page.addStyleTag({
+    await addStyle(page, {
       path: fileURLToPath(
         new URL(
           '../../node_modules/@deltares/fews-ssd-webcomponent/dist/collection/components/schematic-status-display/schematic-status-display.css',
@@ -65,6 +82,8 @@ for (const theme of ['light', 'dark']) {
       ),
     })
     const ssd = component.locator('schematic-status-display')
+    // The SSD web component is not registered in the component gallery, so it
+    // never fetches `src`; add the SVG child that it would render.
     await ssd.evaluate((element) => {
       element.appendChild(
         document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
@@ -79,16 +98,30 @@ for (const theme of ['light', 'dark']) {
     page,
   }) => {
     const component = await mount('general/CssOverrides/Default', { theme })
-    await page.addStyleTag({ url: '/weboc-default-style.css' })
+    await addStyle(page, { url: '/weboc-default-style.css' })
 
-    const button = component.getByRole('button', { name: 'Style test First' })
-    await button.focus()
-    await expect(button).toHaveCSS('outline-width', '1px')
-    await expect(button).toHaveCSS('outline-style', 'solid')
-    await expect(button).toHaveCSS(
-      'outline-color',
-      theme === 'light' ? 'rgb(25, 118, 210)' : 'rgb(33, 150, 243)',
+    const outlineColor =
+      theme === 'light' ? 'rgb(25, 118, 210)' : 'rgb(33, 150, 243)'
+    const expectSharedOutline = async (
+      element: ReturnType<typeof component.locator>,
+    ) => {
+      await element.focus()
+      await expect(element).toHaveCSS('outline-width', '1px')
+      await expect(element).toHaveCSS('outline-style', 'solid')
+      await expect(element).toHaveCSS('outline-color', outlineColor)
+    }
+
+    // Vuetify component
+    await expectSharedOutline(
+      component.getByRole('button', { name: 'Style test First' }),
     )
+    // MapLibre sets an unlayered `outline: none` on control buttons
+    await expectSharedOutline(
+      component.getByRole('button', { name: 'Zoom in' }),
+    )
+    // EditableTitle sets a scoped `outline: none` on its input
+    await component.getByRole('button', { name: 'Editable title' }).click()
+    await expectSharedOutline(component.getByRole('textbox', { name: 'Title' }))
   })
 }
 
@@ -97,7 +130,7 @@ test('table headers, editable cells, and highlighted borders override Vuetify', 
   page,
 }) => {
   const component = await mount('table/TimeSeriesTable/Benchmark200Rows')
-  await page.addStyleTag({ url: '/weboc-default-style.css' })
+  await addStyle(page, { url: '/weboc-default-style.css' })
 
   const header = component
     .getByRole('columnheader')

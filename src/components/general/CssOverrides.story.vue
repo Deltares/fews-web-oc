@@ -33,7 +33,12 @@
         />
       </div>
       <div style="height: 100px">
-        <SsdComponent src="/style-test.svg" />
+        <!-- Not fetched: the SSD web component is not registered in the gallery -->
+        <SsdComponent src="http://localhost/ssd" />
+      </div>
+      <EditableTitle v-model="title" />
+      <div class="maplibregl-ctrl maplibregl-ctrl-group">
+        <button type="button" aria-label="Zoom in">+</button>
       </div>
     </v-main>
   </v-app>
@@ -53,6 +58,8 @@ import NewLogMessage from '@/components/logdisplay/NewLogMessage.vue'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
 import ChartLegendOverlay from '@/components/charts/ChartLegendOverlay.vue'
 import SsdComponent from '@/components/ssd/SsdComponent.vue'
+import EditableTitle from './EditableTitle.vue'
+import 'maplibre-gl/dist/maplibre-gl.css'
 
 withDefaults(defineProps<{ theme?: string }>(), { theme: 'light' })
 
@@ -60,6 +67,7 @@ const router = createRouter({ history: createMemoryHistory(), routes: [] })
 provide(routeLocationKey, router.currentRoute.value)
 
 const selected = ref('first')
+const title = ref('Editable title')
 const setting: UserSettingsItemOneOf = {
   id: 'test.style',
   label: 'Style test',
