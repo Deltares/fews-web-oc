@@ -1,7 +1,7 @@
 <template></template>
 
 <script setup lang="ts">
-import { isCustomLayer } from '@/lib/map'
+import { getLayerGroupId, isCustomLayer } from '@/lib/map'
 import { useLayerOrder } from '@/services/useLayerOrder'
 import { useMap } from '@/services/useMap'
 import { watch } from 'vue'
@@ -16,11 +16,17 @@ watch(layerOrder, (newOrder) => {
   // We reverse the order to ensure that layers are moved in the correct sequence
   newOrder.toReversed().forEach((layerId) => {
     if (!isCustomLayer(layerId)) return
-    if (!map.getLayer(layerId)) return
 
-    const beforeOrder = map.getLayersOrder()
-    const beforeId = getBeforeId(layerId, beforeOrder)
-    map.moveLayer(layerId, beforeId)
+    // A layer may consist of multiple map layers (e.g. an external overlay);
+    // move all of them, keeping their relative order.
+    const currentOrder = map.getLayersOrder()
+    const groupLayerIds = currentOrder.filter(
+      (id) => getLayerGroupId(id) === layerId,
+    )
+    if (groupLayerIds.length === 0) return
+
+    const beforeId = getBeforeId(layerId, currentOrder)
+    groupLayerIds.forEach((id) => map.moveLayer(id, beforeId))
   })
 })
 </script>

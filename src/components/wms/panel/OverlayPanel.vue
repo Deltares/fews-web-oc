@@ -99,13 +99,13 @@ function getTitle(overlay: Overlay): string {
   }
 
   if (overlay.type === 'externalOverLay') {
-    return overlay.name ?? overlay.id ?? 'Unnamed overlay'
+    return overlay.name ?? overlay.id ?? t('wms.unnamedLayer')
   }
 
   const foundLayer = props.capabilities?.layers.find(
     (layer) => layer.name === overlay.id,
   )
-  return foundLayer?.title ?? overlay.id ?? 'Unnamed overlay'
+  return foundLayer?.title ?? overlay.id ?? t('wms.unnamedLayer')
 }
 </script>
 

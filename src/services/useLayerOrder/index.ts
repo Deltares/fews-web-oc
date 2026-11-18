@@ -1,5 +1,5 @@
 import type { BaseMap } from '@/lib/basemap'
-import { getLayerId, isCustomLayer, mapIds } from '@/lib/map'
+import { getLayerGroupId, getLayerId, isCustomLayer, mapIds } from '@/lib/map'
 import type { Overlay } from '@/services/useOverlays'
 import {
   computed,
@@ -62,21 +62,31 @@ export function useLayerOrder() {
 
     const desiredOrder = _layerOrder ?? []
 
+    // Layers that are part of a group (e.g. the sub layers of an external
+    // overlay) are ordered as a whole, using the id of their group.
+    const groupId = getLayerGroupId(layerId)
+
     // Find the index of the target layer in the desired order
-    const desiredIdx = desiredOrder.indexOf(layerId)
+    const desiredIdx = desiredOrder.indexOf(groupId)
 
     if (desiredIdx !== -1) {
-      // Look for the next layer (after layerId) in layerOrder that exists in currentOrder
-      const nextInOrder = desiredOrder
-        .slice(desiredIdx + 1)
-        .find((id) => currentOrder.includes(id))
-      if (nextInOrder) return nextInOrder
+      // Look for the next layer (after layerId) in layerOrder that exists in
+      // currentOrder, and return the bottom-most map layer of it
+      for (const nextId of desiredOrder.slice(desiredIdx + 1)) {
+        const nextInOrder = currentOrder.find(
+          (id) => getLayerGroupId(id) === nextId,
+        )
+        if (nextInOrder) return nextInOrder
+      }
     }
 
-    // If not found, return the first custom layer in currentOrder that is not layerId and not in layerOrder
-    return currentOrder.find(
-      (id) => isCustomLayer(id) && id !== layerId && !desiredOrder.includes(id),
-    )
+    // If not found, return the first custom layer in currentOrder that is not
+    // part of the layerId group and not in layerOrder
+    return currentOrder.find((id) => {
+      if (!isCustomLayer(id)) return false
+      const idGroupId = getLayerGroupId(id)
+      return idGroupId !== groupId && !desiredOrder.includes(idGroupId)
+    })
   }
 
   return { layerOrder, getBeforeId }

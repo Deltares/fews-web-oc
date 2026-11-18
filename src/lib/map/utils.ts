@@ -21,6 +21,27 @@ export function isCustomSource(id: string) {
   return id.startsWith(SOURCE_PREFIX)
 }
 
+// Separates the id of a layer group (e.g. an external overlay) from the id of
+// one of the map layers it consists of.
+const SUBLAYER_SEPARATOR = '::'
+
+/**
+ * Returns the map layer id for a sub layer of a layer group. Layer ordering
+ * treats all sub layers of a group as a single unit.
+ */
+export function getSubLayerId(groupLayerId: string, subLayerId: string) {
+  return `${groupLayerId}${SUBLAYER_SEPARATOR}${subLayerId}`
+}
+
+/**
+ * Returns the id of the layer group a map layer belongs to; for a layer that
+ * is not part of a group, this is the layer id itself.
+ */
+export function getLayerGroupId(layerId: string) {
+  const index = layerId.indexOf(SUBLAYER_SEPARATOR)
+  return index === -1 ? layerId : layerId.slice(0, index)
+}
+
 /**
  * Whether style mutations such as setFilter and setFeatureState are allowed.
  * They throw while a style is being rebuilt, and map.style is null after a lost
