@@ -94,4 +94,62 @@ describe('useFetchDomain', () => {
       scope.stop()
     }
   })
+
+  it('keeps a zoom override that overlaps a moving period, and resets it on request', () => {
+    vi.useFakeTimers()
+    const period = ref<[Date, Date]>([
+      new Date('2026-01-01T00:00:00Z'),
+      new Date('2026-01-08T00:00:00Z'),
+    ])
+    const scope = effectScope()
+    try {
+      const { debouncedRefetchChartTimeSeries, domain, resetDomain } =
+        scope.run(() => useFetchDomain(period))!
+      const zoomed: [Date, Date] = [
+        new Date('2026-01-03T00:00:00Z'),
+        new Date('2026-01-04T00:00:00Z'),
+      ]
+      debouncedRefetchChartTimeSeries(zoomed)
+      vi.runAllTimers()
+
+      // A running period one minute later
+      period.value = [
+        new Date('2026-01-01T00:01:00Z'),
+        new Date('2026-01-08T00:01:00Z'),
+      ]
+      expect(domain.value).toEqual({
+        startTime: zoomed[0],
+        endTime: zoomed[1],
+      })
+
+      resetDomain()
+      expect(domain.value).toEqual({})
+    } finally {
+      scope.stop()
+    }
+  })
+
+  it('fetches a moving period again when the previous period was shown', () => {
+    vi.useFakeTimers()
+    const period = ref<[Date, Date]>([
+      new Date('2026-01-01T00:00:00Z'),
+      new Date('2026-01-08T00:00:00Z'),
+    ])
+    const scope = effectScope()
+    try {
+      const { debouncedRefetchChartTimeSeries, domain } = scope.run(() =>
+        useFetchDomain(period),
+      )!
+      debouncedRefetchChartTimeSeries(period.value)
+      vi.runAllTimers()
+
+      period.value = [
+        new Date('2026-01-01T00:01:00Z'),
+        new Date('2026-01-08T00:01:00Z'),
+      ]
+      expect(domain.value).toEqual({})
+    } finally {
+      scope.stop()
+    }
+  })
 })

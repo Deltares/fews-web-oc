@@ -84,7 +84,7 @@ function onValueChange(config: ChartConfig) {
 watch(chartConfig, (newConfig) => onValueChange(newConfig))
 
 watch(domain, (newDomain) => {
-  brushHandler.setBrushDomain({ x: newDomain })
+  if (newDomain) brushHandler.setBrushDomain({ x: newDomain })
 })
 
 watch(getAxisTimeZone, (timeZone) => {

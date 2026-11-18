@@ -39,7 +39,11 @@ vi.mock('@deltares/fews-web-oc-charts', () => {
   }
 })
 
-import { refreshChart, updateChartData } from '@/lib/charts/v4/timeSeriesChart'
+import {
+  redraw,
+  refreshChart,
+  updateChartData,
+} from '@/lib/charts/v4/timeSeriesChart'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 
 function createAxis() {
@@ -89,6 +93,70 @@ function createSeries(value: number, lastUpdated?: Date): Series {
 }
 
 describe('timeSeriesChart helpers', () => {
+  describe('redraw', () => {
+    const configured: [Date, Date] = [
+      new Date('2026-01-01T00:00:00Z'),
+      new Date('2026-01-10T00:00:00Z'),
+    ]
+    const zoomed: [Date, Date] = [
+      new Date('2026-01-03T00:00:00Z'),
+      new Date('2026-01-04T00:00:00Z'),
+    ]
+    const config = createConfig(createChartSeries(), configured)
+
+    function createZoomAxis() {
+      return {
+        ...createAxis(),
+        yScales: [{}, {}],
+        setDomain: vi.fn(),
+      } as any
+    }
+
+    it('shows the configured domain and auto-scales the y-axes by default', () => {
+      const axis = createZoomAxis()
+      redraw(axis, config)
+      expect(axis.redraw).toHaveBeenCalledExactlyOnceWith({
+        x: { domain: configured },
+        y: { autoScale: true },
+      })
+    })
+
+    it('auto-scales both axes without a configured domain', () => {
+      const axis = createZoomAxis()
+      redraw(axis, createConfig(createChartSeries()))
+      expect(axis.redraw).toHaveBeenCalledExactlyOnceWith({
+        x: { autoScale: true },
+        y: { autoScale: true },
+      })
+    })
+
+    it('keeps a zoomed x-domain instead of the configured domain', () => {
+      const axis = createZoomAxis()
+      redraw(axis, config, { xDomain: zoomed })
+      expect(axis.redraw).toHaveBeenCalledExactlyOnceWith({
+        x: { domain: zoomed },
+        y: { autoScale: true },
+      })
+    })
+
+    it('keeps zoomed y-domains per axis instead of auto-scaling', () => {
+      const axis = createZoomAxis()
+      redraw(axis, config, {
+        xDomain: zoomed,
+        yDomains: [
+          [1, 2],
+          [10, 20],
+          [100, 200],
+        ],
+      })
+      expect(axis.setDomain).toHaveBeenCalledTimes(2)
+      expect(axis.setDomain).toHaveBeenCalledWith('y', 0, [1, 2])
+      expect(axis.setDomain).toHaveBeenCalledWith('y', 1, [10, 20])
+      expect(axis.redraw).toHaveBeenCalledExactlyOnceWith({
+        x: { domain: zoomed },
+      })
+    })
+  })
   it('creates configured charts in order even while a required data resource is missing', () => {
     const axis = createAxis()
     const chartSeries = createChartSeries()

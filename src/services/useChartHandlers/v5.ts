@@ -7,6 +7,7 @@ import {
 } from '@deltares/fews-web-oc-charts'
 import type { V5ChartGroup } from '@/lib/charts/types/TimeSeriesChartProps'
 import type { ChartAxis } from '@/lib/charts/types/ChartAxis'
+import { isSameTimeRange, shouldKeepVisibleTimeRange } from '@/lib/charts/zoom'
 
 export function createV5ChartGroup(): V5ChartGroup {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -54,14 +55,22 @@ export function initializeV5TimeScale(
   const initializedKey =
     scale === 'timeScale' ? 'timeScaleInitialized' : 'brushTimeScaleInitialized'
   const values: [number, number] = [Number(domain[0]), Number(domain[1])]
-  if (
-    group[initializedKey] &&
-    sameRange(group[scale].options.get().resolved.defaultDomain, values)
-  ) {
+  const previousDefault = group[scale].options.get().resolved.defaultDomain
+  if (group[initializedKey] && isSameTimeRange(previousDefault, values)) {
     return
   }
 
-  group[scale].update({ domain: values, defaultDomain: values })
+  // A moving period, e.g. a running period after a sync, keeps a zoom. The
+  // overview of the brush always shows its full period.
+  const current = group[scale].domain.get()
+  const keepZoom =
+    scale === 'timeScale' &&
+    group[initializedKey] &&
+    shouldKeepVisibleTimeRange(current, previousDefault, values)
+  group[scale].update({
+    domain: keepZoom ? [Number(current[0]), Number(current[1])] : values,
+    defaultDomain: values,
+  })
   group[initializedKey] = true
 }
 
@@ -72,9 +81,17 @@ export function updateTimeScaleDomain(
   if (!domain) return
 
   const next: [number, number] = [domain[0].getTime(), domain[1].getTime()]
-  if (sameRange(scale.domain.get(), next)) return
+  if (isSameTimeRange(scale.domain.get(), next)) return
 
   scale.update({ domain: next })
+}
+
+/** Show the default domain of the scale again, e.g. after a period change */
+export function resetTimeScaleDomain(scale: V5ChartGroup['timeScale']): void {
+  const defaultDomain = scale.options.get().resolved.defaultDomain
+  if (isSameTimeRange(scale.domain.get(), defaultDomain)) return
+
+  scale.update({ domain: [Number(defaultDomain[0]), Number(defaultDomain[1])] })
 }
 
 export function updateBrushSelection(
@@ -90,25 +107,11 @@ export function updateBrushSelection(
   const current = group.selection.selection
     .get()
     ?.ranges.find(({ axis }) => axis === 'x')?.range
-  if (sameRange(current, next)) return
+  // Echoing the same domain back would abort an in-progress brush gesture
+  if (isSameTimeRange(current, next)) return
 
   group.selection.setSelection({
     mode: 'x',
     ranges: [{ scale: group.brushTimeScale, axis: 'x', range: next }],
   })
-}
-
-// Date round-trips truncate to whole milliseconds; treat sub-ms differences as
-// equal so echoing a domain back does not abort an in-progress brush gesture.
-function sameRange(
-  current: readonly unknown[] | undefined,
-  next: readonly number[],
-): boolean {
-  return (
-    current?.length === next.length &&
-    current.every(
-      (value, index) =>
-        typeof value === 'number' && Math.abs(value - next[index]) < 1,
-    )
-  )
 }
