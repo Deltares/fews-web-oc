@@ -257,18 +257,6 @@ for (const story of ['ReadonlyEditing', 'ReadonlyWebOcEditing']) {
         .evaluate((element) => (element as HTMLElement).isContentEditable),
     ).toBe(false)
 
-    await editor.locator('#intro').click()
-    await page.keyboard.press('End')
-    await page.keyboard.press('Delete')
-    await expect(editor.locator('#intro')).toHaveText('Editable introduction')
-    await editor.locator('#commentary').click()
-    await page.keyboard.press('Home')
-    await page.keyboard.press('Backspace')
-    await expect(editor.locator('#commentary')).toHaveText(
-      'Editable commentary',
-    )
-    expect(await getContentWithoutSelectionDecoration(fixed)).toBe(original)
-
     await editor.locator('#commentary').click()
     await page.keyboard.press('End')
     await page.keyboard.type(' updated')
@@ -282,6 +270,18 @@ for (const story of ['ReadonlyEditing', 'ReadonlyWebOcEditing']) {
     await page.keyboard.press('ControlOrMeta+Shift+z')
     await expect(editor.locator('#commentary')).toHaveText(
       'Editable commentary updated',
+    )
+    expect(await getContentWithoutSelectionDecoration(fixed)).toBe(original)
+
+    await editor.locator('#intro').click()
+    await page.keyboard.press('End')
+    await page.keyboard.press('Delete')
+    await expect(editor.locator('#intro')).toHaveText('Editable introduction')
+    await editor.locator('#commentary').click()
+    await page.keyboard.press('Home')
+    await page.keyboard.press('Backspace')
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Editable commentary',
     )
     expect(await getContentWithoutSelectionDecoration(fixed)).toBe(original)
 
