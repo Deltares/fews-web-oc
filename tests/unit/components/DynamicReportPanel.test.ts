@@ -14,6 +14,7 @@ import DynamicReportPanel from '@/components/timeseries/DynamicReportPanel.vue'
 import TimeSeriesWindowComponent from '@/components/timeseries/TimeSeriesWindowComponent.vue'
 import { printDynamicReport } from '@/lib/dynamic-report/print'
 import en from '@/locales/en.json'
+import de from '@/locales/de.json'
 import type { DynamicReportPanelConfig } from '@/services/useDynamicReport'
 import {
   getDefaultSettings,
@@ -286,6 +287,7 @@ describe('DynamicReportPanel', () => {
     downloadReport?: boolean
     exportMode?: boolean
     toolbarTarget?: HTMLElement
+    locale?: 'en' | 'de'
   }) {
     const props = reactive({ ...initial })
     app = createApp({
@@ -300,7 +302,13 @@ describe('DynamicReportPanel', () => {
           toolbarTarget: props.toolbarTarget,
         }),
     })
-    app.use(createI18n({ legacy: false, locale: 'en', messages: { en } }))
+    app.use(
+      createI18n({
+        legacy: false,
+        locale: initial.locale ?? 'en',
+        messages: { en, de },
+      }),
+    )
     app.mount(container)
     return props
   }
@@ -362,39 +370,57 @@ describe('DynamicReportPanel', () => {
       formattingToolbar.closest('.dynamic-report-editor-area'),
     ).not.toBeNull()
 
-    await click(en.dynamicReport.previewReport)
+    await click(en.dynamicReport.applyEditsReport)
     expect(container.querySelector('.formatting-menu')).toBeNull()
   })
 
-  it('puts the primary Edit/Preview toggle first and shows separate export buttons with icons', async () => {
-    getDynamicReportDisplay.mockResolvedValue('<p>report</p>')
-    mountPanel({ config: config() })
-    await flushPromises()
+  it.each([
+    ['en', en],
+    ['de', de],
+  ] as const)(
+    'shows localized Edit/Apply edits and export controls in %s',
+    async (locale, messages) => {
+      getDynamicReportDisplay.mockResolvedValue('<p>report</p>')
+      mountPanel({ config: config(), locale })
+      await flushPromises()
 
-    const firstButton = () => container.querySelector('button')!
-    expect(firstButton().textContent?.trim()).toBe('Edit')
-    expect(firstButton().getAttribute('color')).toBe('primary')
-    expect(container.textContent).not.toContain(en.dynamicReport.exportReport)
-    const buttons = Array.from(container.querySelectorAll('button'))
-    expect(
-      buttons
-        .find(
-          (button) => button.textContent?.trim() === en.dynamicReport.saveHtml,
-        )
-        ?.getAttribute('prepend-icon'),
-    ).toBe('mdi-file-code-outline')
-    expect(
-      buttons
-        .find((button) => button.textContent?.trim() === 'Print or save as PDF')
-        ?.getAttribute('prepend-icon'),
-    ).toBe('mdi-printer')
+      const firstButton = () => container.querySelector('button')!
+      expect(firstButton().textContent?.trim()).toBe(
+        messages.dynamicReport.editReport,
+      )
+      expect(firstButton().getAttribute('color')).toBe('primary')
+      expect(container.textContent).not.toContain(
+        messages.dynamicReport.exportReport,
+      )
+      const buttons = Array.from(container.querySelectorAll('button'))
+      expect(
+        buttons
+          .find(
+            (button) =>
+              button.textContent?.trim() === messages.dynamicReport.saveHtml,
+          )
+          ?.getAttribute('prepend-icon'),
+      ).toBe('mdi-file-code-outline')
+      expect(
+        buttons
+          .find(
+            (button) =>
+              button.textContent?.trim() === messages.dynamicReport.savePdf,
+          )
+          ?.getAttribute('prepend-icon'),
+      ).toBe('mdi-printer')
 
-    await click('Edit')
-    expect(firstButton().textContent?.trim()).toBe('Preview')
-    expect(firstButton().getAttribute('color')).toBe('primary')
-    await click('Preview')
-    expect(firstButton().textContent?.trim()).toBe('Edit')
-  })
+      await click(messages.dynamicReport.editReport)
+      expect(firstButton().textContent?.trim()).toBe(
+        messages.dynamicReport.applyEditsReport,
+      )
+      expect(firstButton().getAttribute('color')).toBe('primary')
+      await click(messages.dynamicReport.applyEditsReport)
+      expect(firstButton().textContent?.trim()).toBe(
+        messages.dynamicReport.editReport,
+      )
+    },
+  )
 
   it('shows the local-only notice as an info tooltip instead of an inline alert', async () => {
     getDynamicReportDisplay.mockResolvedValue('<p>report</p>')
@@ -439,52 +465,64 @@ describe('DynamicReportPanel', () => {
     expect(container.querySelector('.report')?.textContent).toContain('edited')
   })
 
-  it('opens report export from the dot menu, replaces the window toolbar and restores it on close', async () => {
-    getDynamicReportDisplay.mockResolvedValue('<p>report</p>')
-    const settings = structuredClone(getDefaultSettings())
-    settings.charts.dynamicReportDisplay.enabled = true
-    app = createApp({
-      render: () =>
-        h(TimeSeriesWindowComponent, {
-          settings: settings.charts,
-          reportSettings: settings,
-          dynamicReport: config(),
-        }),
-    })
-    app.use(createI18n({ legacy: false, locale: 'en', messages: { en } }))
-    app.mount(container)
-    await flushPromises()
-    expect(
-      container.querySelector('.window-toolbar [name="Time series actions"]'),
-    ).not.toBeNull()
-    expect(container.textContent).not.toContain(en.dynamicReport.editReport)
+  it.each([
+    ['en', en],
+    ['de', de],
+  ] as const)(
+    'opens report export from the localized dot menu in %s and restores the toolbar on close',
+    async (locale, messages) => {
+      getDynamicReportDisplay.mockResolvedValue('<p>report</p>')
+      const settings = structuredClone(getDefaultSettings())
+      settings.charts.dynamicReportDisplay.enabled = true
+      app = createApp({
+        render: () =>
+          h(TimeSeriesWindowComponent, {
+            settings: settings.charts,
+            reportSettings: settings,
+            dynamicReport: config(),
+          }),
+      })
+      app.use(createI18n({ legacy: false, locale, messages: { en, de } }))
+      app.mount(container)
+      await flushPromises()
+      expect(
+        container.querySelector('.window-toolbar [name="Time series actions"]'),
+      ).not.toBeNull()
+      expect(container.textContent).not.toContain(
+        messages.dynamicReport.editReport,
+      )
 
-    await click(en.dynamicReport.exportReport)
-    const exportArea = container.querySelector('.report-export-main')!
-    expect(exportArea).not.toBeNull()
-    expect(exportArea.parentElement).toBe(container)
-    const toolbar = container.querySelector('.window-toolbar')!
-    expect(toolbar.textContent).toContain(en.dynamicReport.editReport)
-    expect(toolbar.textContent).toContain(en.dynamicReport.saveHtml)
-    expect(toolbar.textContent).toContain(en.dynamicReport.savePdf)
-    expect(toolbar.textContent).not.toContain(en.dynamicReport.exportReport)
-    expect(toolbar.querySelector('[name="Time series actions"]')).toBeNull()
-    expect(
-      container.querySelector('.window-content')?.textContent,
-    ).not.toContain(en.dynamicReport.editReport)
+      await click(messages.dynamicReport.exportReport + '...')
+      const exportArea = container.querySelector('.report-export-main')!
+      expect(exportArea).not.toBeNull()
+      expect(exportArea.parentElement).toBe(container)
+      const toolbar = container.querySelector('.window-toolbar')!
+      expect(toolbar.textContent).toContain(messages.dynamicReport.editReport)
+      expect(toolbar.textContent).toContain(messages.dynamicReport.saveHtml)
+      expect(toolbar.textContent).toContain(messages.dynamicReport.savePdf)
+      expect(toolbar.textContent).not.toContain(
+        messages.dynamicReport.exportReport,
+      )
+      expect(toolbar.querySelector('[name="Time series actions"]')).toBeNull()
+      expect(
+        container.querySelector('.window-content')?.textContent,
+      ).not.toContain(messages.dynamicReport.editReport)
 
-    const close = toolbar.querySelector<HTMLButtonElement>(
-      `[aria-label="${en.dynamicReport.closeExport}"]`,
-    )!
-    expect(close).not.toBeNull()
-    close.click()
-    await flushPromises()
-    expect(container.querySelector('.report-export-main')).toBeNull()
-    expect(
-      container.querySelector('.window-toolbar [name="Time series actions"]'),
-    ).not.toBeNull()
-    expect(container.textContent).not.toContain(en.dynamicReport.editReport)
-  })
+      const close = toolbar.querySelector<HTMLButtonElement>(
+        `[aria-label="${messages.dynamicReport.closeExport}"]`,
+      )!
+      expect(close).not.toBeNull()
+      close.click()
+      await flushPromises()
+      expect(container.querySelector('.report-export-main')).toBeNull()
+      expect(
+        container.querySelector('.window-toolbar [name="Time series actions"]'),
+      ).not.toBeNull()
+      expect(container.textContent).not.toContain(
+        messages.dynamicReport.editReport,
+      )
+    },
+  )
 
   it.each(['prop', 'setting'])(
     'hides the dot-menu export action when disabled by %s',
@@ -675,7 +713,7 @@ describe('DynamicReportPanel', () => {
       'Node',
       undefined,
     )
-    await click(en.dynamicReport.previewReport)
+    await click(en.dynamicReport.applyEditsReport)
     expect(container.querySelector('.report')?.textContent).toContain('edited')
   })
 
@@ -688,10 +726,12 @@ describe('DynamicReportPanel', () => {
     )!
     edit.click()
     await flushPromises()
-    expect(container.textContent).toContain(en.dynamicReport.previewReport)
+    expect(container.textContent).toContain(en.dynamicReport.applyEditsReport)
     props.config = { ...config(), locationId: 'b' }
     await flushPromises()
-    expect(container.textContent).not.toContain(en.dynamicReport.previewReport)
+    expect(container.textContent).not.toContain(
+      en.dynamicReport.applyEditsReport,
+    )
     expect(container.querySelector('.report')?.textContent).toContain(
       'same report',
     )

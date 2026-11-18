@@ -184,7 +184,7 @@ for (const story of ['GovernorateTableEditing', 'DistrictTableEditing']) {
     await page.keyboard.press('End')
     await page.keyboard.type('!')
     await expect(header).toContainText('!')
-    await component.getByRole('button', { name: 'Preview' }).click()
+    await component.getByRole('button', { name: 'Apply edits' }).click()
     await expect(component.locator('.tiptap')).toHaveCount(0)
     await expect(header).toContainText('!')
     await expectHeaderStyle()

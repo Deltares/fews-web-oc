@@ -151,10 +151,10 @@ resolution and printed width; enlarging a smaller source does not improve detail
 
 Edits and screenshots are not saved to FEWS and are discarded when the report,
 location, or time changes. In both the report view and the time series report
-panel, use **Export** to save the current report, including local edits and
+panel, use **Save as HTML** or **Print or save as PDF** to save the current report, including local edits and
 screenshots, as HTML or through the browser print dialog as PDF.
 These export options respect the report download setting. In a time series
-window, choose **Export** from the dot menu to open the report and replace the
+window, choose **Export and edit report...** from the dot menu to open the report and replace the
 window toolbar with editing and export controls. Close report export to restore
 the normal window toolbar and display the original report without local edits.
 Local edits are retained for reopening export mode until the report changes.
@@ -163,7 +163,9 @@ header and navigation visible. Closing it restores the original time series
 window size.
 The information icon in the export toolbar explains the local-only changes and
 editor formatting limitations in a tooltip.
-The primary **Edit**/**Preview** button is first in the export toolbar.
+The primary **Edit**/**Apply edits** button is first in the export toolbar.
+**Apply edits** leaves the editor and displays the locally edited report; it
+does not save changes to FEWS.
 **Save as HTML** and **Print or save as PDF** are separate buttons with icons.
 Printing opens the current report in a new browser tab and opens the print
 dialog after its styles, images and fonts load. Allow popups for this site.
