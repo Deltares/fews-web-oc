@@ -71,9 +71,14 @@ function getSubtitle(index: number): string | undefined {
   return index === selectedIndex.value ? props.selectedDescription : undefined
 }
 
+function intervalAt(index: number): Interval {
+  if (index === 0) return 'default'
+  if (index === 1) return 'custom'
+  return props.items[index - 2]
+}
+
 const onSelectInterval = (index: number) => {
-  const selected: Interval =
-    index === 0 ? 'default' : index === 1 ? 'custom' : props.items[index - 2]
+  const selected = intervalAt(index)
   interval.value = selected
   emit('select', selected)
 }
