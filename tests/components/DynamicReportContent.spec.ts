@@ -281,7 +281,7 @@ for (const story of ['ReadonlyEditing', 'ReadonlyWebOcEditing']) {
     await page.keyboard.press('Home')
     await page.keyboard.press('Backspace')
     await expect(editor.locator('#commentary')).toHaveText(
-      'Editable commentary',
+      'Editable commentary updated',
     )
     expect(await getContentWithoutSelectionDecoration(fixed)).toBe(original)
 
@@ -289,7 +289,7 @@ for (const story of ['ReadonlyEditing', 'ReadonlyWebOcEditing']) {
     await page.keyboard.press('Backspace')
     await expect(fixed).toBeVisible()
     await expect(editor.locator('#commentary')).toHaveText(
-      'Editable commentary',
+      'Editable commentary updated',
     )
     await page.keyboard.press('ControlOrMeta+b')
     expect(await getContentWithoutSelectionDecoration(fixed)).toBe(original)
