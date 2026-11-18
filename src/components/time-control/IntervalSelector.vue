@@ -57,6 +57,10 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const interval = defineModel<Interval>({ required: true })
+const emit = defineEmits<{
+  /** Emitted on every selection, also of the selected interval */
+  select: [interval: Interval]
+}>()
 const selectedIndex = ref(0)
 
 onBeforeMount(() => {
@@ -67,14 +71,16 @@ function getSubtitle(index: number): string | undefined {
   return index === selectedIndex.value ? props.selectedDescription : undefined
 }
 
+function intervalAt(index: number): Interval {
+  if (index === 0) return 'default'
+  if (index === 1) return 'custom'
+  return props.items[index - 2]
+}
+
 const onSelectInterval = (index: number) => {
-  if (index === 0) {
-    interval.value = 'default'
-  } else if (index === 1) {
-    interval.value = 'custom'
-  } else {
-    interval.value = props.items[index - 2]
-  }
+  const selected = intervalAt(index)
+  interval.value = selected
+  emit('select', selected)
 }
 
 function updateIndex(newValue: Interval) {
