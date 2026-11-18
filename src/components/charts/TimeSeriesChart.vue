@@ -121,6 +121,8 @@ import {
 } from '@/lib/charts/v4/timeSeriesChart'
 import { getThresholdValues, isUniqueThreshold } from '@/lib/charts/thresholds'
 import { toV4AlertLineOptions } from '@/lib/charts/v4/thresholds'
+import { shouldKeepVisibleTimeRange } from '@/lib/charts/zoom'
+import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 import { useI18n } from 'vue-i18n'
 import { useEnsembleChartConfig } from '@/services/useEnsembleChartConfig'
@@ -420,7 +422,19 @@ function isAllDataLoaded() {
   )
 }
 
-const onValueChange = () => {
+const onValueChange = (previousConfig?: ChartConfig) => {
+  const defaultDomain = chartConfig.value.xAxis?.[0]?.domain
+  // A rebuild, e.g. when a running period moves with the system time or the
+  // chart is shown for another location, keeps a zoomed time range
+  const xDomain = shouldKeepVisibleTimeRange(
+    domain.value,
+    previousConfig?.xAxis?.[0]?.domain ?? defaultDomain,
+    defaultDomain,
+  )
+    ? domain.value
+    : undefined
+  const yDomains = zoomedY ? axis.yScalesDomains.map((d) => [...d]) : undefined
+
   clearChart(axis)
 
   refreshChart(axis, chartConfig.value, props.series)
@@ -430,7 +444,7 @@ const onValueChange = () => {
   }
   // Delay automatic margin calculation until thresholds and all series data are present
   axis.options.automargin = isAllDataLoaded()
-  redraw(axis, chartConfig.value)
+  redraw(axis, chartConfig.value, { xDomain, yDomains })
   resetAxes(false)
   setTags()
 }
@@ -442,6 +456,13 @@ const beforeDestroy = () => {
 
 watch(domain, (newDomain) => {
   if (!axis) return
+  if (!newDomain) {
+    // Show the default range again, e.g. after selecting another period
+    zoomedY = false
+    axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
+    resetAxes(true)
+    return
+  }
   axis.redraw({ x: { domain: newDomain } })
   resetAxes(!zoomedY)
 })
@@ -452,9 +473,9 @@ const { resetAxes } = useSeriesUpdateChartData(
   () => axis,
 )
 
-watch(chartConfig, () => {
+watch(chartConfig, (_newConfig, previousConfig) => {
   if (!axis) return
-  onValueChange()
+  onValueChange(previousConfig)
 })
 
 // KeepAlive can reuse this component for a subplot whose requests changed;

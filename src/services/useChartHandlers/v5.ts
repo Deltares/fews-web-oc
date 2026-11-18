@@ -7,6 +7,7 @@ import {
 } from '@deltares/fews-web-oc-charts'
 import type { V5ChartGroup } from '@/lib/charts/types/TimeSeriesChartProps'
 import type { ChartAxis } from '@/lib/charts/types/ChartAxis'
+import { shouldKeepVisibleTimeRange } from '@/lib/charts/zoom'
 
 export function createV5ChartGroup(): V5ChartGroup {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -54,14 +55,20 @@ export function initializeV5TimeScale(
   const initializedKey =
     scale === 'timeScale' ? 'timeScaleInitialized' : 'brushTimeScaleInitialized'
   const values: [number, number] = [Number(domain[0]), Number(domain[1])]
-  if (
-    group[initializedKey] &&
-    sameRange(group[scale].options.get().resolved.defaultDomain, values)
-  ) {
+  const previousDefault = group[scale].options.get().resolved.defaultDomain
+  if (group[initializedKey] && sameRange(previousDefault, values)) {
     return
   }
 
-  group[scale].update({ domain: values, defaultDomain: values })
+  // A moving period, e.g. a running period after a sync, keeps a zoom
+  const current = group[scale].domain.get()
+  const keepZoom =
+    group[initializedKey] &&
+    shouldKeepVisibleTimeRange(current, previousDefault, values)
+  group[scale].update({
+    domain: keepZoom ? [Number(current[0]), Number(current[1])] : values,
+    defaultDomain: values,
+  })
   group[initializedKey] = true
 }
 
@@ -75,6 +82,14 @@ export function updateTimeScaleDomain(
   if (sameRange(scale.domain.get(), next)) return
 
   scale.update({ domain: next })
+}
+
+/** Show the default domain of the scale again, e.g. after a period change */
+export function resetTimeScaleDomain(scale: V5ChartGroup['timeScale']): void {
+  const defaultDomain = scale.options.get().resolved.defaultDomain
+  if (sameRange(scale.domain.get(), defaultDomain)) return
+
+  scale.update({ domain: [Number(defaultDomain[0]), Number(defaultDomain[1])] })
 }
 
 export function updateBrushSelection(

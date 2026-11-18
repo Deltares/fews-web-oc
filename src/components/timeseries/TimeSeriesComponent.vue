@@ -479,4 +479,13 @@ watch(visibleDomain, (newDomain) => {
   if (!newDomain) return
   debouncedRefetchChartTimeSeries(newDomain)
 })
+
+// Selecting another period shows that period. A running period that moves
+// with the system time keeps the zoom.
+watch(
+  () => store.selectedPeriodKey,
+  () => {
+    visibleDomain.value = undefined
+  },
+)
 </script>

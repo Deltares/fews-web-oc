@@ -258,11 +258,29 @@ export function updateChartData(
   return needsAxisRescale
 }
 
-export function redraw(axis: CartesianAxes, config?: ChartConfig) {
-  const xDomain = config?.xAxis?.[0]?.domain
-  if (xDomain) {
-    axis.redraw({ x: { domain: xDomain }, y: { autoScale: true } })
-  } else {
-    axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
+export interface ChartView {
+  /** Visible x-domain to keep, e.g. a user zoom, instead of the default */
+  xDomain?: [Date, Date]
+  /** Visible y-domains to keep per axis, instead of auto-scaling */
+  yDomains?: Array<Array<number>>
+}
+
+export function redraw(
+  axis: CartesianAxes,
+  config?: ChartConfig,
+  view: ChartView = {},
+) {
+  const configuredDomain = config?.xAxis?.[0]?.domain
+  const xDomain = view.xDomain ?? configuredDomain
+  const x = xDomain ? { domain: xDomain } : { autoScale: true }
+  if (!view.yDomains) {
+    axis.redraw({ x, y: { autoScale: true } })
+    return
   }
+  view.yDomains.forEach((domain, index) => {
+    if (axis.yScales[index] && domain.length === 2) {
+      axis.setDomain('y', index as 0 | 1, domain as [number, number])
+    }
+  })
+  axis.redraw({ x })
 }

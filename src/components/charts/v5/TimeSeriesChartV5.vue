@@ -90,6 +90,7 @@ import { useChartHandlers } from '@/services/useChartHandlers'
 import {
   initializeV5ElevationScale,
   initializeV5TimeScale,
+  resetTimeScaleDomain,
   updateTimeScaleDomain,
 } from '@/services/useChartHandlers/v5'
 
@@ -312,8 +313,11 @@ watch(
 )
 
 watch(domain, (nextDomain) => {
-  if (!props.verticalProfile && chartGroup.v5) {
+  if (props.verticalProfile || !chartGroup.v5) return
+  if (nextDomain) {
     updateTimeScaleDomain(chartGroup.v5.timeScale, nextDomain)
+  } else {
+    resetTimeScaleDomain(chartGroup.v5.timeScale)
   }
 })
 

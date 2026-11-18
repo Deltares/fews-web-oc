@@ -23,6 +23,19 @@ export const useSystemTimeStore = defineStore('systemTime', () => {
   const isRunningWindow = computed(
     () => typeof selectedInterval.value === 'object',
   )
+  // Changes when the user selects a period, but not when a running window
+  // moves with the system time
+  const selectedPeriodKey = computed(() =>
+    JSON.stringify(
+      isRunningWindow.value
+        ? selectedInterval.value
+        : [
+            selectedInterval.value,
+            startTime.value?.getTime() ?? null,
+            endTime.value?.getTime() ?? null,
+          ],
+    ),
+  )
 
   async function syncFromBackend() {
     syncError.value = undefined
@@ -99,5 +112,6 @@ export const useSystemTimeStore = defineStore('systemTime', () => {
     endTime,
     selectedInterval,
     isRunningWindow,
+    selectedPeriodKey,
   }
 })
