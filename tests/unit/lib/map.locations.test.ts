@@ -155,7 +155,68 @@ afterEach(() => {
 })
 
 describe('location map interactions', () => {
-  it('filters locations using the configured zoom range', async () => {
+  it('filters locations using the configured zoom range and location attributes', async () => {
+    const props = mountLayer()
+    const options = () => sourceOptions() as GeoJSONSourceSpecification
+    const locationIds = () =>
+      (options().data as FeatureCollection<Geometry, Location>).features.map(
+        (feature) => feature.properties.locationId,
+      )
+
+    props.settings.minZoom = {
+      level: 1,
+      levelLocationAttribute: 'minimum',
+    }
+    props.settings.maxZoom = {
+      level: 4,
+      levelLocationAttribute: 'maximum',
+    }
+    props.locationsGeoJson = {
+      ...geojson,
+      features: geojson.features.map((feature) => ({
+        ...feature,
+        properties: {
+          ...feature.properties,
+          ...(feature.properties.locationId === 'child'
+            ? {
+                attributes: [
+                  { id: 'minimum', value: '2' },
+                  { id: 'maximum', value: '3' },
+                ],
+              }
+            : {}),
+        },
+      })),
+    }
+    await nextTick()
+    expect(locationIds()).toEqual([])
+
+    zoom.value = 1
+    await nextTick()
+    expect(locationIds()).toEqual(['district'])
+
+    zoom.value = 2
+    await nextTick()
+    expect(locationIds()).toEqual(['child', 'district'])
+
+    zoom.value = 3
+    await nextTick()
+    expect(locationIds()).toEqual(['child', 'district'])
+
+    zoom.value = 4
+    await nextTick()
+    expect(locationIds()).toEqual(['district'])
+
+    zoom.value = 5
+    await nextTick()
+    expect(locationIds()).toEqual([])
+
+    zoom.value = 1
+    await nextTick()
+    expect(locationIds()).toEqual(['district'])
+  })
+
+  it('updates locations when the map zoom changes', async () => {
     const props = mountLayer()
     const options = () => sourceOptions() as GeoJSONSourceSpecification
     const features = () =>
