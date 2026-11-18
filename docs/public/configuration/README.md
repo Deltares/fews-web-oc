@@ -184,6 +184,35 @@ by the report's own `@page :first` rule.
 While editing, a separate floating formatting toolbar above the report provides undo/redo, bold, italic,
 underline, highlighting, text color, and alignment.
 
+*Read-only report sections*
+
+Add `data-readonly="true"` to a supported report block element to keep that
+section fixed while allowing edits elsewhere:
+
+```html
+<div data-readonly="true">
+  <h2>Fixed report information</h2>
+  <p>This forecast must remain unchanged.</p>
+</div>
+<p>Editable commentary</p>
+```
+
+Use a `div` wrapper for a section, or mark an existing supported block such as
+a paragraph, heading, header, article, table, row, or cell. Ordinary inline
+spans are not supported as read-only sections; wrap their paragraph instead.
+Only the exact value `"true"` enables protection. A nested
+`data-readonly="false"` does not unlock content inside a protected section.
+
+In the editor, protected sections cannot be edited, deleted, moved, or
+reformatted. Operations whose selection spans protected content are rejected
+as a whole, including paste or deletion; edit the surrounding content separately.
+Time series input values inside protected sections remain plain text, both
+in the editor and in the report view. The marker is retained in preview and
+saved HTML, so protection also applies when reopening locally edited content.
+An ordinary `contenteditable="false"` attribute is not a substitute for this
+marker. This is an editor restriction, not server-side validation or protection
+against changing an exported HTML file outside Web OC.
+
 *Styling a dynamic report*
 
 Style the report template with CSS classes. Put the CSS rules in a `<style>` element in the template, or in a style sheet in the FEWS static resources (`WebResourceFiles`) that is linked with a relative path:

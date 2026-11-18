@@ -85,6 +85,7 @@ async function insertScreenshot(image: Blob, alt: string, caption?: string) {
     }
   })
   checkScreenshotLimits(screenshots, reference)
+  const previousDoc = activeEditor.state.doc
   const inserted = activeEditor
     .chain()
     .focus()
@@ -108,7 +109,7 @@ async function insertScreenshot(image: Blob, alt: string, caption?: string) {
         : []),
     ])
     .run()
-  if (!inserted)
+  if (!inserted || activeEditor.state.doc === previousDoc)
     throw new Error('Could not insert the screenshot in the report')
 }
 

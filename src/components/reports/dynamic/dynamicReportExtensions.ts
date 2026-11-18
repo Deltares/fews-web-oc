@@ -1,6 +1,7 @@
 import { extensions } from '@/components/reports/tiptap/extensions'
 import CustomImage from '@/components/reports/tiptap/CustomImage'
 import { DynamicReportInput } from './dynamicReportInput'
+import { ReportReadonly } from './reportReadonly'
 import { Extension, Mark, Node } from '@tiptap/core'
 
 const ReportSpan = Mark.create({
@@ -74,4 +75,5 @@ export const dynamicReportExtensions = [
   ReportSpan,
   ReportHeader,
   ReportAttributes,
+  ReportReadonly,
 ]

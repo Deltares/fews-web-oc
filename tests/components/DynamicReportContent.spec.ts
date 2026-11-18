@@ -191,6 +191,95 @@ for (const story of ['GovernorateTableEditing', 'DistrictTableEditing']) {
   })
 }
 
+for (const story of ['ReadonlyEditing', 'ReadonlyWebOcEditing']) {
+  test(`${story}: protects sections through keyboard edits, paste and preview`, async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(`reports/DynamicReportContent/${story}`)
+    await expect(component.locator('#fixed')).toContainText('12.3')
+    await expect(component.locator('#fixed input')).toHaveCount(0)
+    await component.getByRole('button', { name: 'Edit', exact: true }).click()
+    const editor = component.locator('.tiptap')
+    const fixed = editor.locator('#fixed')
+    const original = await fixed.innerHTML()
+    await expect(fixed).toHaveAttribute('contenteditable', 'false')
+    await expect(fixed.locator('input')).toHaveCount(0)
+    expect(
+      await fixed
+        .locator('h2')
+        .evaluate((element) => (element as HTMLElement).isContentEditable),
+    ).toBe(false)
+
+    await editor.locator('#intro').click()
+    await page.keyboard.press('End')
+    await page.keyboard.press('Delete')
+    await expect(editor.locator('#intro')).toHaveText('Editable introduction')
+    await editor.locator('#commentary').click()
+    await page.keyboard.press('Home')
+    await page.keyboard.press('Backspace')
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Editable commentary',
+    )
+    expect(await fixed.innerHTML()).toBe(original)
+
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.keyboard.press('Backspace')
+    await expect(fixed).toBeVisible()
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Editable commentary',
+    )
+    await page.keyboard.press('ControlOrMeta+b')
+    expect(await fixed.innerHTML()).toBe(original)
+    await editor.evaluate((element) => {
+      const clipboardData = new DataTransfer()
+      clipboardData.setData('text/html', '<p>Pasted replacement</p>')
+      element.dispatchEvent(
+        new ClipboardEvent('paste', {
+          clipboardData,
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    await expect(fixed).toBeVisible()
+    await expect(editor).not.toContainText('Pasted replacement')
+
+    await editor.locator('#commentary').click()
+    await page.keyboard.press('End')
+    await page.keyboard.type(' updated')
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Editable commentary updated',
+    )
+    await page.keyboard.press('ControlOrMeta+z')
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Editable commentary',
+    )
+    await page.keyboard.press('ControlOrMeta+Shift+z')
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Editable commentary updated',
+    )
+    expect(await fixed.innerHTML()).toBe(original)
+
+    await component.getByRole('button', { name: 'Apply edits' }).click()
+    await expect(component.locator('.tiptap')).toHaveCount(0)
+    await expect(component.locator('#fixed')).toHaveAttribute(
+      'data-readonly',
+      'true',
+    )
+    await expect(component.locator('#fixed input')).toHaveCount(0)
+    await component.getByRole('button', { name: 'Edit', exact: true }).click()
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Editable commentary updated',
+    )
+    await editor.locator('#commentary').click()
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.keyboard.press('Backspace')
+    await expect(fixed).toBeVisible()
+    expect(await fixed.innerHTML()).toBe(original)
+  })
+}
+
 test('governorate print table emphasizes status colors on every row', async ({
   page,
 }) => {

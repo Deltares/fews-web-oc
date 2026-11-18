@@ -69,6 +69,39 @@ function reportRoot(host: HTMLElement): HTMLElement | ShadowRoot {
 }
 
 describe('editable dynamic report content', () => {
+  it('reports an error when screenshot insertion would change a protected section', async () => {
+    vi.stubGlobal('CSSStyleSheet', TestStyleSheet)
+    const restoreApis = stubShadowRootApis()
+    const report = ref<InstanceType<typeof DynamicReportContent>>()
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    const app = createApp({
+      render: () =>
+        h(DynamicReportContent, {
+          html: '<div data-readonly="true"><p>Fixed</p></div><p>Editable</p>',
+          editable: true,
+          ref: report,
+        }),
+    })
+    try {
+      app.mount(host)
+      await vi.waitFor(() => expect(report.value?.editor).toBeDefined())
+      report.value!.editor!.commands.selectAll()
+      await expect(
+        report.value!.insertScreenshot(
+          new Blob(['image'], { type: 'image/png' }),
+          'Map',
+        ),
+      ).rejects.toThrow('Could not insert the screenshot in the report')
+      expect(report.value!.editor!.getHTML()).not.toContain('<img')
+      expect(report.value!.editor!.state.doc.textContent).toBe('FixedEditable')
+    } finally {
+      app.unmount()
+      host.remove()
+      restoreApis()
+    }
+  })
+
   it('renders input nodes in an editor, emits changes, and resets for a new report', async () => {
     vi.stubGlobal('CSSStyleSheet', TestStyleSheet)
     const restoreApis = stubShadowRootApis()
