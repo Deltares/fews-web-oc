@@ -60,25 +60,20 @@
   </div>
 </template>
 <script setup lang="ts">
+import { toDisplayLocaleString } from '@/lib/date/timeZone'
 import { computed, ref, watch } from 'vue'
 
 import { RelativePeriod } from '@/lib/period'
-import {
-  sortTasks,
-  isTaskRun,
-  TaskStatus,
-  getTaskStatusesForCategories,
-  TaskStatusCategory,
-} from '@/lib/taskruns'
+import { sortTasks, isTaskRun } from '@/lib/taskruns'
 
 import { useCurrentUser } from '@/services/useCurrentUser'
-import { useTaskRuns } from '@/services/useTasksRuns'
+import { useTasksRuns } from '@/services/useTasksRuns'
 
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 
 import ForecastSummary from './ForecastSummary.vue'
 import PeriodFilterControl from '@/components/tasks/PeriodFilterControl.vue'
-import type { TopologyNode } from '@deltares/fews-pi-requests'
+import { TaskStatus, type TopologyNode } from '@deltares/fews-pi-requests'
 import { useTaskRunsStore } from '@/stores/taskRuns'
 
 interface Props {
@@ -93,15 +88,6 @@ const user = useCurrentUser()
 
 const expandedItems = ref<Record<string, boolean>>({})
 
-const visualizeMenuTaskStatuses = getTaskStatusesForCategories([
-  TaskStatusCategory.Completed,
-  TaskStatusCategory.PartlyCompleted,
-  TaskStatusCategory.Pending,
-  TaskStatusCategory.Running,
-])
-
-const selectedTaskStatuses = ref<TaskStatus[]>(visualizeMenuTaskStatuses)
-
 // Look 1 day back by default.
 const period = ref<RelativePeriod | null>({
   startOffsetSeconds: -24 * 60 * 60,
@@ -115,14 +101,15 @@ const {
   outputStartTime,
   outputEndTime,
   fetch: refreshTaskRuns,
-} = useTaskRuns(
-  period,
-  availableWorkflowsStore.workflowIds,
-  selectedTaskStatuses,
-  {
-    topologyNodeId: () => props.topologyNode?.id,
-  },
-)
+} = useTasksRuns(period, availableWorkflowsStore.workflowIds, {
+  topologyNodeId: () => props.topologyNode?.id,
+  taskRunStatusIds: [
+    TaskStatus.A, // Complete
+    TaskStatus.B, // Partly Complete
+    TaskStatus.C, // Complete
+    TaskStatus.D, // Partly Successful
+  ],
+})
 
 const sortedTasks = computed(() => filteredTaskRuns.value.toSorted(sortTasks))
 
@@ -188,7 +175,7 @@ function formatSectionLabel(label: string) {
 const lastUpdatedString = computed<string>(() => {
   const lastUpdated = lastUpdatedTimestamp.value
   if (lastUpdated === null) return '—'
-  return new Date(lastUpdated).toLocaleString()
+  return toDisplayLocaleString(lastUpdated)
 })
 </script>
 

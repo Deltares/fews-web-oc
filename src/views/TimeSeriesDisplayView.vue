@@ -3,7 +3,7 @@
     <ColumnMenu v-model:active="active" :items="items" v-model:open="open">
     </ColumnMenu>
   </Teleport>
-  <TimeSeriesDisplay :nodeId="nodeId"></TimeSeriesDisplay>
+  <TimeSeriesDisplay :nodeId="nodeId" :plotId="plotId" @navigate="onNavigate" />
 </template>
 
 <script setup lang="ts">
@@ -13,16 +13,31 @@ import type { ColumnItem } from '../components/general/ColumnItem'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import TimeSeriesDisplay from '../components/timeseries/TimeSeriesDisplay.vue'
 import { getTopologyNodes } from '@/lib/topology/getTopologyNodes'
+import { useRoute, useRouter } from 'vue-router'
+import type { NavigateRoute } from '@/lib/router'
 
 const TIME_SERIES_DIALOG_PANEL: string = 'time series dialog'
 
 interface Props {
   nodeId?: string
+  plotId?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   nodeId: '',
 })
+
+const route = useRoute()
+const router = useRouter()
+
+function onNavigate(to: NavigateRoute) {
+  void router.replace({
+    ...to,
+    params: { nodeId: props.nodeId, ...to.params },
+    query: route.query,
+    hash: route.hash,
+  })
+}
 
 const active = ref<string | undefined>(undefined)
 const open = ref<string[]>([])
@@ -39,9 +54,6 @@ watch(
 )
 
 const topologyNodes = ref<TopologyNode[]>()
-getTopologyNodes().then((response) => {
-  topologyNodes.value = response
-})
 
 function anyChildNodeIsVisible(nodes: TopologyNode[] | undefined): boolean {
   if (nodes === undefined) return false
@@ -70,20 +82,18 @@ function recursiveUpdateNode(nodes: TopologyNode[]) {
       }
       if (node.topologyNodes) {
         result.children = recursiveUpdateNode(node.topologyNodes)
+      } else if (
+        node.url !== undefined &&
+        node.mainPanel !== TIME_SERIES_DIALOG_PANEL
+      ) {
+        result.href = node.url
+        result.target = node.url
       } else {
-        if (
-          node.url !== undefined &&
-          node.mainPanel !== TIME_SERIES_DIALOG_PANEL
-        ) {
-          result.href = node.url
-          result.target = node.url
-        } else {
-          result.to = {
-            name: 'TimeSeriesDisplay',
-            params: {
-              nodeId: node.id,
-            },
-          }
+        result.to = {
+          name: 'TimeSeriesDisplay',
+          params: {
+            nodeId: node.id,
+          },
         }
       }
       return result
@@ -100,9 +110,15 @@ function updateItems(): void {
   if (topologyNodes.value) {
     const _items = recursiveUpdateNode(topologyNodes.value)
     items.value = _items
-    open.value = [_items[0].id]
+    const firstItem = _items[0]
+    open.value = firstItem ? [firstItem.id] : []
   }
 }
 
 watch(topologyNodes, updateItems)
+try {
+  topologyNodes.value = await getTopologyNodes()
+} catch (error) {
+  console.error('Failed to fetch topology nodes.', error)
+}
 </script>

@@ -1,0 +1,895 @@
+// @vitest-environment jsdom
+import {
+  createPlot,
+  createSeries,
+  handleCache,
+} from '@deltares/fews-web-oc-charts'
+import { effectScope, nextTick, ref } from 'vue'
+import { describe, expect, it, vi } from 'vitest'
+import { defaultChartSettings } from '@/lib/topology/componentSettings/chartSettings'
+import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
+import type { ChartSeries } from '@/lib/charts/types/ChartSeries'
+import type { Series } from '@/lib/timeseries/timeSeries'
+import { toPlotConfig } from '@/lib/charts/v5/toPlotConfig'
+import { useSeriesStores } from '@/lib/charts/v5/useSeriesStores'
+
+function createChartSeries(
+  id: string,
+  type: ChartSeries['type'],
+  dataResources: string[],
+  axisIndex = 0,
+  marker?: ChartSeries['marker'],
+): ChartSeries {
+  return {
+    id,
+    dataResources,
+    name: id,
+    type,
+    options: {
+      x: { key: 'x', axisIndex: 0 },
+      y: { key: 'y', axisIndex },
+    },
+    unit: '',
+    style: {
+      fill: '#336699',
+      stroke: '#336699',
+      'stroke-width': '2',
+    },
+    marker,
+    classBreaks: undefined,
+    barMargin: undefined,
+    visibleInLegend: true,
+    visibleInPlot: true,
+    visibleInTable: false,
+  }
+}
+
+function createResource(
+  values: { x: Date; y: number; flag?: string }[],
+): Series {
+  return {
+    data: values,
+  } as Series
+}
+
+describe('v5 static chart config', () => {
+  it('renders ensemble requests as native member plots with aligned gaps and metadata', () => {
+    const item = createChartSeries('forecast', 'line', ['request'], 1)
+    const first = createResource([
+      { x: new Date(0), y: 1 },
+      { x: new Date(1000), y: 2, flag: '6' },
+      { x: new Date(2000), y: 3 },
+    ])
+    first.ensemble = { requestKey: 'request', memberId: '1' }
+    const second = createResource([
+      { x: new Date(0), y: 4 },
+      { x: new Date(2000), y: 6 },
+    ])
+    second.ensemble = { requestKey: 'request', memberId: '2' }
+    const unrelated = createResource([{ x: new Date(0), y: 100 }])
+    unrelated.ensemble = { requestKey: 'other', memberId: '1' }
+    const plotConfig = toPlotConfig(
+      {
+        id: 'subplot',
+        title: '',
+        yAxis: [
+          { kind: 'value', position: 'left' },
+          { kind: 'value', position: 'right' },
+        ],
+        series: [item],
+      },
+      {},
+      defaultChartSettings.timeSeriesChart,
+      {},
+      { first, second, unrelated },
+    )
+    expect(plotConfig.marks).toHaveLength(1)
+    const mark = plotConfig.marks![0]
+    if (!('data' in mark) || !('memberCount' in mark.data)) {
+      throw new Error('Expected a native ensemble mark')
+    }
+    expect(mark.options.get().resolved).toMatchObject({
+      id: '0:forecast',
+      x: 'x',
+      y: 'y1',
+      label: 'forecast',
+      members: { stroke: '#336699', width: 2, opacity: 1 },
+      spread: false,
+      mean: false,
+      median: false,
+    })
+    expect(mark.data.memberCount).toBe(2)
+    expect(mark.data.members).toMatchObject([
+      { id: 'first', label: '1' },
+      { id: 'second', label: '2' },
+    ])
+    expect(mark.data).toHaveLength(3)
+    expect(mark.data.xAt(1)).toBe(1000)
+    expect(mark.data.valueAt(0, 1)).toBeNaN()
+    expect(mark.data.valueAt(1, 1)).toBeNaN()
+    expect(mark.data.valueAt(0, 2)).toBe(3)
+    expect(mark.data.valueAt(1, 2)).toBe(6)
+  })
+
+  it('highlights the hovered ensemble member only on ensemble marks', () => {
+    const forecast = createChartSeries('forecast', 'line', ['request'])
+    const observation = createChartSeries('observation', 'line', ['obs'])
+    const member = createResource([
+      { x: new Date(0), y: 1 },
+      { x: new Date(1000), y: 2 },
+    ])
+    member.ensemble = { requestKey: 'request', memberId: '1' }
+    const obs = createResource([{ x: new Date(0), y: 1 }])
+    const plugins = [{ update: () => {} }] as never[]
+    const build = (series: ChartSeries[], isBrush = false) =>
+      toPlotConfig(
+        { id: 'subplot', title: '', series },
+        { obs: createSeries({ x: [0], y: [1] }) },
+        defaultChartSettings.timeSeriesChart,
+        { plugins, isBrush },
+        { member, obs },
+      )
+
+    const config = build([forecast, observation])
+    expect(config.plugins).toHaveLength(2)
+    const highlight = config.plugins![1] as unknown as {
+      options: { get(): { resolved: { axis: string; marks: unknown[] } } }
+    }
+    const { axis, marks } = highlight.options.get().resolved
+    expect(axis).toBe('x')
+    expect(marks).toEqual([config.marks![0]])
+
+    expect(build([observation]).plugins).toBe(plugins)
+    expect(build([forecast, observation], true).plugins).toBe(plugins)
+  })
+
+  it('updates native ensemble data in place and rebuilds when membership changes', () => {
+    const handles = handleCache()
+    const item = createChartSeries('forecast', 'line', ['request'])
+    const config: ChartConfig = { id: 'subplot', title: '', series: [item] }
+    const member = createResource([{ x: new Date(0), y: 1 }])
+    member.ensemble = { requestKey: 'request', memberId: '1' }
+    const resources: Record<string, Series> = {}
+    const build = () =>
+      toPlotConfig(
+        config,
+        {},
+        defaultChartSettings.timeSeriesChart,
+        { handles },
+        resources,
+      )
+    expect(build().marks).toHaveLength(0)
+    resources.first = member
+    const first = build().marks![0]
+    if (!('data' in first) || !('memberCount' in first.data)) {
+      throw new Error('Expected a native ensemble mark')
+    }
+    const store = first.data
+    member.data = [
+      { x: new Date(0), y: 2 },
+      { x: new Date(1000), y: 3 },
+    ]
+    item.style.stroke = '#ff0000'
+    const updated = build().marks![0]
+    expect(updated).toBe(first)
+    expect(first.data).toBe(store)
+    expect(store).toHaveLength(2)
+    expect(store.valueAt(0, 0)).toBe(2)
+    expect(first.options.get().resolved).toMatchObject({
+      members: { stroke: '#ff0000' },
+    })
+    member.data[0].y = 5
+    expect(build().marks![0]).toBe(first)
+    expect(store.valueAt(0, 0)).toBe(5)
+    const second = createResource([{ x: new Date(0), y: 4 }])
+    second.ensemble = { requestKey: 'request', memberId: '2' }
+    resources.second = second
+    const rebuilt = build().marks![0]
+    expect(rebuilt).not.toBe(first)
+    if (!('data' in rebuilt) || !('memberCount' in rebuilt.data)) {
+      throw new Error('Expected a native ensemble mark')
+    }
+    expect(rebuilt.data.memberCount).toBe(2)
+    item.visibleInPlot = false
+    expect(build().marks).toHaveLength(0)
+  })
+
+  it('preserves the marker series alongside an ensemble when its store exists', () => {
+    const item = createChartSeries('forecast', 'line', ['request'], 0, {
+      shape: 'diamond',
+      size: 16,
+      skip: 1,
+    })
+    item.markerStyle = { fill: '#ff0000' }
+    const member = createResource([{ x: new Date(0), y: 1 }])
+    member.ensemble = { requestKey: 'request', memberId: '1' }
+
+    const plotConfig = toPlotConfig(
+      { id: 'subplot', title: '', series: [item] },
+      { request: createSeries({ x: [0], y: [1] }) },
+      defaultChartSettings.timeSeriesChart,
+      {},
+      { member },
+    )
+
+    expect(plotConfig.marks?.map((mark) => mark.id)).toEqual([
+      '0:forecast',
+      '0:forecast:0',
+    ])
+    const marker = plotConfig.marks?.[1]
+    if (!marker || !('options' in marker)) throw new Error('Expected a marker')
+    expect(marker.options.get().resolved).toMatchObject({
+      line: false,
+      markers: { symbol: 'diamond', fill: '#ff0000' },
+    })
+  })
+
+  it.each(['line', 'marker', 'area'] as const)(
+    'preserves elevation order, gaps and legends for %s profiles with reversing x values',
+    (type) => {
+      const item = createChartSeries('profile', type, ['profile'])
+      const plotConfig = toPlotConfig(
+        { id: 'profile', title: '', series: [item] },
+        {},
+        defaultChartSettings.verticalProfileChart,
+        { verticalProfile: true },
+        {
+          profile: {
+            data: [
+              { x: 3, y: 0, flag: '0' },
+              { x: 2, y: 25, flag: '0' },
+              { x: 1, y: 50, flag: '6' },
+              { x: null, y: 75, flag: '0' },
+              { x: 2, y: 100, flag: '0' },
+            ],
+          } as Series,
+        },
+      )
+      expect(plotConfig.marks).toHaveLength(1)
+      const mark = plotConfig.marks![0]
+      if (!('xValues' in mark)) throw new Error('Expected a profile line mark')
+      expect(mark.xValues).toEqual([3, 2, 1, null, 2])
+      expect(mark.yValues).toEqual([0, 25, null, 75, 100])
+      expect(mark).toMatchObject({
+        id: '0:profile:0',
+        x: 'x',
+        y: 'y0',
+        line: type === 'line',
+      })
+      if (!('markers' in mark)) throw new Error('Expected a profile line mark')
+      expect(!!mark.markers).toBe(type === 'marker')
+      expect(!!mark.area).toBe(type === 'area')
+    },
+  )
+
+  it('reuses bands across data, style, scale binding and legend changes', () => {
+    const handles = handleCache()
+    const item = createChartSeries('range', 'area', ['low', 'high'])
+    const config: ChartConfig = {
+      id: 'subplot',
+      title: '',
+      series: [item],
+      yAxis: [{ kind: 'value' }, { kind: 'value', position: 'right' }],
+    }
+    const resources = {
+      low: createResource([
+        { x: new Date(0), y: 1 },
+        { x: new Date(1000), y: 2 },
+      ]),
+      high: createResource([
+        { x: new Date(0), y: 3 },
+        { x: new Date(1000), y: 4 },
+      ]),
+    }
+    const build = () =>
+      toPlotConfig(
+        config,
+        {},
+        defaultChartSettings.timeSeriesChart,
+        { handles },
+        resources,
+      ).marks![0]
+    const first = build()
+    if (!('yValues' in first)) throw new Error('Expected a band mark')
+    expect(first.yValues).toEqual([[1, 3]])
+    resources.low = createResource([
+      { x: new Date(0), y: 2 },
+      { x: new Date(2000), y: 4 },
+    ])
+    item.style.fill = '#ff0000'
+    expect(build()).toBe(first)
+    expect(first.fill).toBe('#ff0000')
+    expect(first.xValues).toEqual([
+      [0, 1000],
+      [1000, 2000],
+    ])
+    expect(first.yValues).toEqual([[2, 3], null])
+    item.options.y.axisIndex = 1
+    const rebound = build()
+    expect(rebound).toBe(first)
+    expect(rebound.y).toBe('y1')
+    item.name = 'Renamed'
+    const renamed = build()
+    expect(renamed).toBe(first)
+    expect(first.label).toBe('Renamed')
+    expect(first.legendGroup).toBe('Renamed')
+    item.visibleInLegend = false
+    const hidden = build()
+    expect(hidden).toBe(first)
+    expect(first.label).toBeUndefined()
+    expect(first.legendGroup).toBeUndefined()
+    expect(build()).toBe(hidden)
+    config.series = []
+    toPlotConfig(
+      config,
+      {},
+      defaultChartSettings.timeSeriesChart,
+      { handles },
+      resources,
+    )
+    expect(handles.has('mark:0:range')).toBe(false)
+  })
+
+  it('reuses handles, updates options, and preserves interactive scale domains', () => {
+    const handles = handleCache()
+    const item = createChartSeries('line', 'line', ['resource'])
+    const config: ChartConfig = {
+      id: 'subplot',
+      title: '',
+      series: [item],
+    }
+    const stores = { resource: createSeries({ x: [0, 1], y: [1, 2] }) }
+    const settings = structuredClone(defaultChartSettings.timeSeriesChart)
+    const build = () => toPlotConfig(config, stores, settings, { handles })
+    const first = build()
+    first.scales!.x!.update({ domain: [10, 20] })
+    item.style.stroke = '#ff0000'
+    const second = build()
+    expect(second.scales!.x).toBe(first.scales!.x)
+    expect(second.scales!.y0).toBe(first.scales!.y0)
+    expect(second.scales!.x!.domain.get()).toEqual([10, 20])
+    expect(second.axes![0]).toBe(first.axes![0])
+    expect(second.marks![0]).toBe(first.marks![0])
+    const mark = second.marks![0]
+    if (!('options' in mark)) throw new Error('Expected an updatable mark')
+    expect(mark.options.get().resolved).toMatchObject({
+      line: { stroke: '#ff0000' },
+    })
+    mark.update({ visible: false })
+    build()
+    expect(mark.options.get().resolved.visible).toBe(false)
+    settings.xAxis.xTicks = false
+    const withoutTicks = build()
+    expect(withoutTicks.axes![0]).toBe(first.axes![0])
+    expect(withoutTicks.axes![0].options.get().resolved.format?.(1)).toBe('')
+    settings.xAxis.xTicks = true
+    expect(build().axes![0].options.get().resolved.format).toBeUndefined()
+  })
+
+  it('forgets removed handles and replaces handles when their inputs change', () => {
+    const handles = handleCache()
+    const config: ChartConfig = {
+      id: 'subplot',
+      title: '',
+      series: [createChartSeries('line', 'line', ['resource'])],
+    }
+    const stores = { resource: createSeries({ x: [0, 1], y: [1, 2] }) }
+    const build = () =>
+      toPlotConfig(config, stores, defaultChartSettings.timeSeriesChart, {
+        handles,
+      })
+    const first = build()
+    stores.resource = createSeries({ x: [0, 1], y: [3, 4] })
+    expect(build().marks![0]).not.toBe(first.marks![0])
+    config.yAxis = [{ kind: 'degrees', position: 'left' }]
+    expect(build().scales!.y0).not.toBe(first.scales!.y0)
+    config.series = []
+    expect(build().marks).toEqual([])
+    expect(handles.has('mark:0:line:0')).toBe(false)
+    config.series = [createChartSeries('line', 'line', ['resource'])]
+    expect(build().marks![0]).not.toBe(first.marks![0])
+    const independent = toPlotConfig(
+      config,
+      stores,
+      defaultChartSettings.timeSeriesChart,
+      { handles: handleCache() },
+    )
+    expect(independent.scales!.x).not.toBe(first.scales!.x)
+  })
+
+  it('keeps bar marks and tables stable while updating their data and style', () => {
+    const handles = handleCache()
+    const item = createChartSeries('bars', 'bar', ['resource'])
+    const config: ChartConfig = { id: 'subplot', title: '', series: [item] }
+    const resources = {
+      resource: createResource([
+        { x: new Date(0), y: 1 },
+        { x: new Date(1000), y: 2 },
+      ]),
+    }
+    const build = () =>
+      toPlotConfig(
+        config,
+        {},
+        defaultChartSettings.timeSeriesChart,
+        { handles },
+        resources,
+      )
+    const first = build().marks![0]
+    if (!('data' in first) || !('valueAt' in first.data)) {
+      throw new Error('Expected a table-backed mark')
+    }
+    const table = first.data
+    resources.resource = createResource([
+      { x: new Date(0), y: 3 },
+      { x: new Date(2000), y: 4 },
+    ])
+    item.style.fill = '#ff0000'
+    const second = build().marks![0]
+    expect(second).toBe(first)
+    expect(first.data).toBe(table)
+    expect(table.valueAt('y', 0)).toBe(3)
+    expect(table.valueAt('start', 1)).toBe(0)
+    expect(table.valueAt('x', 1)).toBe(2000)
+    if (!('options' in second)) throw new Error('Expected an updatable mark')
+    expect(second.options.get().resolved).toMatchObject({ fill: '#ff0000' })
+    resources.resource.data = []
+    build()
+    expect(table.length).toBe(0)
+    config.series = []
+    build()
+    expect(handles.has('table:0:bars')).toBe(false)
+  })
+
+  it('stacks visible bars on the same axis without combining different axes', () => {
+    const first = createChartSeries('dry', 'bar', ['dry'])
+    const second = createChartSeries('normal', 'bar', ['normal'])
+    const hidden = createChartSeries('hidden', 'bar', ['hidden'])
+    hidden.visibleInPlot = false
+    second.style.fill = '#ffff00'
+    const config = toPlotConfig(
+      {
+        id: 'probabilities',
+        title: '',
+        yAxis: [
+          { kind: 'value', position: 'left' },
+          { kind: 'value', position: 'right' },
+        ],
+        series: [
+          first,
+          second,
+          hidden,
+          createChartSeries('other', 'bar', ['other'], 1),
+        ],
+      },
+      {},
+      defaultChartSettings.timeSeriesChart,
+      {},
+      {
+        dry: createResource([
+          { x: new Date(0), y: 0.2 },
+          { x: new Date(1000), y: 0.4 },
+        ]),
+        normal: createResource([
+          { x: new Date(0), y: 0.8 },
+          { x: new Date(1000), y: 0.6 },
+        ]),
+        hidden: createResource([{ x: new Date(0), y: 10 }]),
+        other: createResource([{ x: new Date(0), y: 5 }]),
+      },
+    )
+    expect(config.marks).toHaveLength(2)
+    const mark = config.marks![0]
+    if (!('data' in mark) || !('valueAt' in mark.data)) {
+      throw new Error('Expected a table-backed stacked bar mark')
+    }
+    expect(mark.options.get().resolved).toMatchObject({
+      id: 'Stacked bars (y0)',
+      layout: 'stacked',
+      scales: { x: 'x', y: 'y0' },
+      interval: { start: 'start', end: 'x' },
+      label: '',
+      layers: [
+        { id: '0:dry', y: 'y0', label: 'dry', fill: '#336699' },
+        { id: '1:normal', y: 'y1', label: 'normal', fill: '#ffff00' },
+      ],
+    })
+    expect(
+      Array.from({ length: mark.data.length }, (_, index) => [
+        mark.data.valueAt('start', index),
+        mark.data.valueAt('x', index),
+        mark.data.valueAt('y0', index),
+        mark.data.valueAt('y1', index),
+      ]),
+    ).toEqual([
+      [0, 0, 0.2, 0.8],
+      [0, 1000, 0.4, 0.6],
+    ])
+    const other = config.marks![1]
+    if (!('options' in other)) throw new Error('Expected an updatable bar mark')
+    expect(other.options.get().resolved).toMatchObject({
+      scales: { x: 'x', y: 'y1' },
+      y: 'y',
+    })
+  })
+
+  it('reuses stacked bars while preserving missing and unreliable sample gaps', () => {
+    const handles = handleCache()
+    const items = [
+      createChartSeries('first', 'bar', ['first']),
+      createChartSeries('second', 'bar', ['second']),
+    ]
+    const resources = {
+      first: createResource([
+        { x: new Date(0), y: 0.2 },
+        { x: new Date(1000), y: 0.3, flag: '6' },
+        { x: new Date(2000), y: 0.4 },
+      ]),
+      second: createResource([
+        { x: new Date(0), y: 0.8 },
+        { x: new Date(2000), y: 0.6 },
+      ]),
+    }
+    const build = () =>
+      toPlotConfig(
+        { id: 'subplot', title: '', series: items },
+        {},
+        defaultChartSettings.timeSeriesChart,
+        { handles },
+        resources,
+      )
+    const first = build().marks![0]
+    if (!('data' in first) || !('valueAt' in first.data)) {
+      throw new Error('Expected a table-backed stacked bar mark')
+    }
+    const table = first.data
+    expect(table.valueAt('y0', 1)).toBeNaN()
+    expect(table.valueAt('y1', 1)).toBeNaN()
+    expect(table.valueAt('start', 2)).toBe(1000)
+    resources.first = createResource([
+      { x: new Date(0), y: 0.5 },
+      { x: new Date(2000), y: 0.7 },
+    ])
+    items[1].style.fill = '#ff0000'
+    const second = build().marks![0]
+    expect(second).toBe(first)
+    expect(first.data).toBe(table)
+    expect(table.length).toBe(2)
+    expect(table.valueAt('y0', 1)).toBe(0.7)
+    expect(table.valueAt('y1', 1)).toBe(0.6)
+    if (!('options' in second))
+      throw new Error('Expected an updatable bar mark')
+    expect(second.options.get().resolved).toMatchObject({
+      layers: [{ fill: '#336699' }, { fill: '#ff0000' }],
+    })
+  })
+
+  it('gives time bars explicit preceding-sample intervals without bridging missing values', () => {
+    const handles = handleCache()
+    const config: ChartConfig = {
+      id: 'subplot',
+      title: '',
+      series: [createChartSeries('bars', 'bar', ['resource'])],
+    }
+    const plotConfig = toPlotConfig(
+      config,
+      {},
+      defaultChartSettings.timeSeriesChart,
+      { handles },
+      {
+        resource: createResource([
+          { x: new Date(0), y: 1 },
+          { x: new Date(1000), y: 2 },
+          { x: new Date(3000), y: 3, flag: '6' },
+          { x: new Date(6000), y: 4 },
+        ]),
+      },
+    )
+    const mark = plotConfig.marks?.[0]
+    expect(mark).toBeDefined()
+    if (!mark || !('data' in mark) || !('valueAt' in mark.data)) {
+      throw new Error('Expected a table-backed bar mark')
+    }
+    expect(mark.options.get().resolved).toMatchObject({
+      interval: { start: 'start', end: 'x' },
+      scales: { x: 'x', y: 'y0' },
+    })
+    expect(
+      Array.from({ length: mark.data.length }, (_, index) => [
+        mark.data.valueAt('start', index),
+        mark.data.valueAt('x', index),
+        mark.data.valueAt('y', index),
+      ]),
+    ).toEqual([
+      [0, 0, 1],
+      [0, 1000, 2],
+      [3000, 6000, 4],
+    ])
+
+    class Observer {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+    vi.stubGlobal('ResizeObserver', Observer)
+    vi.stubGlobal('IntersectionObserver', Observer)
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({
+        matches: false,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    )
+    const container = document.createElement('div')
+    try {
+      const plot = createPlot(container, plotConfig)
+      try {
+        expect(() => plot.setConfig(plotConfig)).not.toThrow()
+        expect(() =>
+          plot.setConfig(
+            toPlotConfig(
+              config,
+              {},
+              defaultChartSettings.timeSeriesChart,
+              { handles },
+              {
+                resource: createResource([
+                  { x: new Date(0), y: 5 },
+                  { x: new Date(2000), y: 6 },
+                ]),
+              },
+            ),
+          ),
+        ).not.toThrow()
+      } finally {
+        plot.destroy()
+      }
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it('assigns unique, repeatable mark IDs when FEWS entries share a series ID', () => {
+    const config: ChartConfig = {
+      id: 'subplot',
+      title: '',
+      series: [
+        createChartSeries('shared', 'line', ['lower', 'upper']),
+        createChartSeries('shared', 'marker', ['lower']),
+        createChartSeries('shared', 'line', ['lower']),
+        createChartSeries('shared', 'area', ['lower']),
+        createChartSeries('shared', 'area', ['lower', 'upper']),
+        createChartSeries('shared', 'bar', ['lower']),
+      ],
+    }
+    const stores = {
+      lower: createSeries({ x: [0, 1], y: [1, 2] }),
+      upper: createSeries({ x: [0, 1], y: [3, 4] }),
+    }
+    const resources = {
+      lower: createResource([
+        { x: new Date(0), y: 1 },
+        { x: new Date(1), y: 2 },
+      ]),
+      upper: createResource([
+        { x: new Date(0), y: 3 },
+        { x: new Date(1), y: 4 },
+      ]),
+    }
+    const build = () =>
+      toPlotConfig(
+        config,
+        stores,
+        defaultChartSettings.timeSeriesChart,
+        {},
+        resources,
+      )
+    const ids = build().marks?.map((mark) => mark.id)
+
+    expect(ids).toHaveLength(7)
+    expect(new Set(ids).size).toBe(7)
+    expect(build().marks?.map((mark) => mark.id)).toEqual(ids)
+    expect(config.series.every((item) => item.id === 'shared')).toBe(true)
+  })
+
+  it('renders a combined line and marker with their separate styles', () => {
+    const config: ChartConfig = {
+      id: 'subplot',
+      title: '',
+      series: [
+        createChartSeries('observed', 'line', ['observed'], 0, {
+          shape: 'diamond',
+          size: 16,
+          skip: 1,
+        }),
+        createChartSeries('other', 'marker', ['observed']),
+      ],
+    }
+    config.series[0].markerStyle = { fill: '#ff0000', stroke: '#ff0000' }
+
+    const plotConfig = toPlotConfig(
+      config,
+      { observed: createSeries({ x: [0, 1], y: [1, 2] }) },
+      defaultChartSettings.timeSeriesChart,
+    )
+
+    expect(plotConfig.marks?.map((mark) => mark.id)).toEqual([
+      '0:observed:0',
+      '1:other:0',
+    ])
+    const merged = plotConfig.marks?.[0]
+    if (!merged || !('options' in merged)) {
+      throw new Error('Expected a series mark')
+    }
+    const resolved = merged.options.get().resolved as {
+      line: unknown
+      markers: unknown
+    }
+    expect(resolved.line).toMatchObject({ stroke: '#336699' })
+    expect(resolved.markers).toMatchObject({
+      symbol: 'diamond',
+      size: 16,
+      fill: '#ff0000',
+    })
+  })
+
+  it.each(['line', 'marker', 'area'] as const)(
+    'binds %s marks to their configured left and right y scales',
+    (type) => {
+      const config: ChartConfig = {
+        id: 'subplot',
+        title: '',
+        yAxis: [
+          { kind: 'value', position: 'left' },
+          { kind: 'value', position: 'right' },
+        ],
+        series: [
+          createChartSeries('left', type, ['resource'], 0),
+          createChartSeries('right', type, ['resource'], 1),
+        ],
+      }
+      const plotConfig = toPlotConfig(
+        config,
+        { resource: createSeries({ x: [0, 1], y: [1, 2] }) },
+        defaultChartSettings.timeSeriesChart,
+      )
+
+      expect(plotConfig.marks?.map((mark) => mark.y)).toEqual(['y0', 'y1'])
+      for (const mark of plotConfig.marks ?? []) {
+        expect(plotConfig.scales?.[mark.x]).toBeDefined()
+        expect(plotConfig.scales?.[mark.y]).toBeDefined()
+      }
+    },
+  )
+
+  it('reuses stores when resources update and converts unreliable values to gaps', async () => {
+    const time = new Date('2026-01-01T00:00:00Z')
+    const resource = ref({
+      observation: createResource([
+        { x: time, y: 2 },
+        { x: new Date(time.getTime() + 1), y: 3, flag: '6' },
+      ]),
+    })
+    const scope = effectScope()
+    let stores!: ReturnType<typeof useSeriesStores>
+    scope.run(() => {
+      stores = useSeriesStores(resource)
+    })
+
+    const store = stores.value.observation
+    expect(store.length).toBe(2)
+    expect(store.yAt(0)).toBe(2)
+    expect(Number.isNaN(store.yAt(1))).toBe(true)
+
+    resource.value = {
+      observation: createResource([{ x: time, y: 5 }]),
+    }
+    await nextTick()
+
+    expect(stores.value.observation).toBe(store)
+    expect(store.length).toBe(1)
+    expect(store.yAt(0)).toBe(5)
+    scope.stop()
+  })
+
+  it('maps line, marker, area, band and bar series onto time and dual y scales', () => {
+    const first = new Date('2026-01-01T00:00:00Z')
+    const second = new Date('2026-01-02T00:00:00Z')
+    const stores = {
+      line: createSeries({
+        x: [first.getTime(), second.getTime()],
+        y: [1, 2],
+      }),
+      marker: createSeries({ x: [first.getTime()], y: [3] }),
+      area: createSeries({ x: [first.getTime()], y: [4] }),
+      bar: createSeries({ x: [first.getTime()], y: [5] }),
+    }
+    const line = createChartSeries('line', 'line', ['line'])
+    line.visibleInLegend = false
+    const config: ChartConfig = {
+      id: 'subplot',
+      title: 'Static v5 chart',
+      xAxis: [{ kind: 'time', position: 'bottom', label: 'Time' }],
+      yAxis: [
+        { kind: 'value', position: 'left', label: 'Level' },
+        { kind: 'value', position: 'right', label: 'Flow' },
+      ],
+      series: [
+        line,
+        createChartSeries('marker', 'marker', ['marker'], 0, {
+          shape: 'triangle-up',
+          size: 9,
+          skip: 1,
+        }),
+        createChartSeries('area', 'area', ['area']),
+        createChartSeries('band', 'area', ['lower', 'upper'], 1),
+        createChartSeries('bar', 'bar', ['bar']),
+      ],
+    }
+    const resources = {
+      lower: createResource([
+        { x: first, y: 1 },
+        { x: second, y: 2 },
+      ]),
+      upper: createResource([
+        { x: first, y: 3 },
+        { x: second, y: 4 },
+      ]),
+      bar: createResource([{ x: first, y: 5 }]),
+    }
+
+    const plotConfig = toPlotConfig(
+      config,
+      stores,
+      defaultChartSettings.timeSeriesChart,
+      { locale: 'en' },
+      resources,
+    )
+
+    expect(plotConfig.scales?.x?.kind).toBe('time')
+    expect(plotConfig.scales?.y0?.kind).toBe('linear')
+    expect(plotConfig.scales?.y1?.kind).toBe('linear')
+    expect(plotConfig.axes).toHaveLength(3)
+    expect(
+      plotConfig.axes?.map((axis) => axis.options.get().resolved.style),
+    ).toEqual(['classic', 'classic', 'classic'])
+    expect(plotConfig.marks).toHaveLength(5)
+    expect(plotConfig.marks?.filter((mark) => 'xValues' in mark)).toHaveLength(
+      1,
+    )
+    expect(plotConfig.marks?.filter((mark) => 'data' in mark)).toHaveLength(4)
+    const lineMark = plotConfig.marks?.[0]
+    expect(lineMark && 'visible' in lineMark && lineMark.visible).toBe(true)
+  })
+
+  it('uses the selected axis kind and honors disabled tick settings', () => {
+    const config: ChartConfig = {
+      id: 'subplot',
+      title: '',
+      xAxis: [
+        {
+          kind: 'degrees',
+          position: 'bottom',
+          domain: [0, 360],
+          nice: false,
+        },
+      ],
+      yAxis: [{ kind: 'degrees', position: 'left', domain: [0, 360] }],
+      series: [],
+    }
+    const settings = {
+      ...defaultChartSettings.timeSeriesChart,
+      xAxis: {
+        ...defaultChartSettings.timeSeriesChart.xAxis,
+        xTicks: false,
+        xLabel: false,
+      },
+    }
+
+    const plotConfig = toPlotConfig(config, {}, settings)
+
+    expect(plotConfig.scales?.x?.kind).toBe('degrees')
+    expect(plotConfig.scales?.y0?.kind).toBe('degrees')
+  })
+})

@@ -21,6 +21,11 @@
 
 <script setup lang="ts">
 import { computed, ref, useSlots, watch } from 'vue'
+import {
+  fromDisplayDateTimeInputValue,
+  getDisplayTimeZone,
+  toDisplayDateTimeInputValue,
+} from '@/lib/date/timeZone'
 
 interface Props {
   label: string
@@ -37,12 +42,12 @@ const slots = useSlots() as Record<string, () => void>
 
 const modelValue = defineModel<Date>({ required: true })
 
-const dateString = ref(toLocalDateString(modelValue.value))
+const dateString = ref(toDisplayDateTimeInputValue(modelValue.value))
 const minString = computed<string | undefined>(() =>
-  props.min ? toLocalDateString(props.min) : undefined,
+  props.min ? toDisplayDateTimeInputValue(props.min) : undefined,
 )
 const maxString = computed<string | undefined>(() =>
-  props.max ? toLocalDateString(props.max) : undefined,
+  props.max ? toDisplayDateTimeInputValue(props.max) : undefined,
 )
 const hideDetails = computed<boolean>(() => {
   const hasMessages = props.messages !== undefined && props.messages.length > 0
@@ -51,22 +56,16 @@ const hideDetails = computed<boolean>(() => {
   return !hasMessages && !hasErrorMessages
 })
 
-function toLocalDateString(date: Date) {
-  const offset = date.getTimezoneOffset()
-  const localDate = new Date(date.getTime() - offset * 60 * 1000)
-  return localDate.toISOString().slice(0, 16)
-}
-
 watch(
-  modelValue,
-  (newValue) => {
-    dateString.value = toLocalDateString(newValue)
+  [modelValue, getDisplayTimeZone],
+  ([newValue]) => {
+    dateString.value = toDisplayDateTimeInputValue(newValue)
   },
   { immediate: true },
 )
 
 function updateModelValue() {
-  modelValue.value = new Date(dateString.value)
+  modelValue.value = fromDisplayDateTimeInputValue(dateString.value)
 }
 </script>
 

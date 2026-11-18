@@ -134,7 +134,10 @@ function convertPropertyToJsonSchemaProperty(
       return {
         type: 'integer',
         default: property.defaultValue,
+        minimum: property.minValue,
+        maximum: property.maxValue,
         title: property.name,
+        description: `Min: ${property.minValue}, Max: ${property.maxValue}`,
       }
     case 'boolean':
       return {
@@ -143,13 +146,12 @@ function convertPropertyToJsonSchemaProperty(
         title: property.name,
       }
     case 'dateTime':
-      const dateValidation = convertPropertyToDateValidationOptions(property)
       return {
         type: 'string',
         format: 'date-time',
         default: property.defaultValue,
         title: property.name,
-        dateValidation,
+        dateValidation: convertPropertyToDateValidationOptions(property),
       }
     case 'whatIfTemplateId':
       return {
@@ -272,7 +274,7 @@ export function getErrorsForProperties(
     if (schema.required?.includes(key)) {
       errors.push(...getRequiredErrors(properties[key], key))
     }
-    if (property.type === 'number') {
+    if (property.type === 'number' || property.type === 'integer') {
       errors.push(...getNumberErrors(properties[key], key, title, property))
     }
     if (
@@ -481,18 +483,15 @@ export function convertPropertiesToFewsPi(
   const converted: Record<string, string | number> = {}
   for (const [key, property] of Object.entries(properties)) {
     const prop = templateProperties?.find((p) => p.id === key)
-    switch (prop?.type) {
-      case 'dateTime': {
-        const convertedValue = convertJSDateToFewsPiParameter(
-          new Date(properties[key]),
-        )
-        if (convertedValue != null) {
-          converted[key] = convertedValue
-        }
-        break
+    if (prop?.type === 'dateTime') {
+      const convertedValue = convertJSDateToFewsPiParameter(
+        new Date(properties[key]),
+      )
+      if (convertedValue != null) {
+        converted[key] = convertedValue
       }
-      default:
-        converted[key] = property
+    } else {
+      converted[key] = property
     }
   }
   return converted

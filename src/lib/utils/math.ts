@@ -6,7 +6,7 @@
  * floatPrecision(54.6545) // 4
  */
 export function floatPrecision(a: number): number {
-  if (!isFinite(a)) return 0
+  if (!Number.isFinite(a)) return 0
   let e = 1,
     p = 0
   while (Math.round(a * e) / e !== a) {

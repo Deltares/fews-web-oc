@@ -20,6 +20,7 @@
   >
     <SyncMap />
     <MaintainLayerOrder />
+    <MapTheme />
     <!-- Fade duration is set to 100ms instead of 0ms to avoid flickering -->
     <mgl-attribution-control position="top-right" :compact="true" />
     <mgl-navigation-control
@@ -30,8 +31,12 @@
       v-if="showGeolocation && showGeolocationSetting"
       position="top-right"
     />
+    <mgl-custom-control class="" position="bottom-right">
+      <CoordinatesDisplay />
+    </mgl-custom-control>
     <mgl-scale-control v-if="showScale" position="bottom-right" />
     <NetCdfDownloadControl
+      v-if="layerName"
       :layer-name="layerName"
       :layer-capabilities="layerCapabilities"
     />
@@ -40,8 +45,6 @@
 </template>
 
 <script setup lang="ts">
-import { configManager } from '@/services/application-config'
-import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import SyncMap from '@/components/map/SyncMap.vue'
 import MaintainLayerOrder from '@/components/map/MaintainLayerOrder.vue'
 import NetCdfDownloadControl from '@/components/map/NetCdfDownloadControl.vue'
@@ -51,6 +54,7 @@ import {
   MglMap,
   MglNavigationControl,
   MglScaleControl,
+  MglCustomControl,
 } from '@indoorequal/vue-maplibre-gl'
 import type {
   ResourceType,
@@ -61,11 +65,16 @@ import type {
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { transformStyle } from '@/lib/map'
+import { getRequestHeaders } from '@/lib/requests/transformRequest'
 import { useLayerOrder } from '@/services/useLayerOrder'
+import CoordinatesDisplay from '@/components/map/CoordinatesDisplay.vue'
+import MapTheme from '@/components/map/MapTheme.vue'
 
 interface Props {
   bounds?: LngLatBounds
-  style: string
+  // Not named style, which Vue treats as the CSS style attribute, e.g. when
+  // merging fallthrough attributes.
+  mapStyle: string
   showGeolocation?: boolean
   showNavigation?: boolean
   showScale?: boolean
@@ -87,7 +96,7 @@ const userSettings = useUserSettingsStore()
 
 const minZoom = ref(0)
 
-const initialStyle = props.style
+const initialStyle = props.mapStyle
 
 onMounted(() => {
   updateMinZoom()
@@ -96,7 +105,7 @@ onMounted(() => {
 const { getBeforeId } = useLayerOrder()
 
 watch(
-  () => props.style,
+  () => props.mapStyle,
   (newBaseStyle) => {
     if (!newBaseStyle) return
 
@@ -135,13 +144,8 @@ async function transformRequest(
   url: string,
   resourceType?: ResourceType,
 ): Promise<RequestParameters> {
-  if (!configManager.authenticationIsEnabled)
-    return {
-      url,
-    }
-  if (resourceType === 'Image' && url.indexOf('GetMap') > -1) {
-    const requestAuthHeaders =
-      await authenticationManager.getAuthorizationHeaders()
+  if (resourceType === 'Image' && url.includes('GetMap')) {
+    const requestAuthHeaders = await getRequestHeaders()
     return {
       url,
       headers: requestAuthHeaders,
@@ -152,3 +156,9 @@ async function transformRequest(
   }
 }
 </script>
+
+<style>
+.maplibregl-ctrl-bottom-right {
+  display: flex;
+}
+</style>

@@ -11,6 +11,8 @@ import { isLoadedSymbol } from '@indoorequal/vue-maplibre-gl'
 import { useMap } from '@/services/useMap'
 import {
   AddLayerObject,
+  AllLayoutProperties,
+  AllPaintProperties,
   GeoJSONSource,
   GeoJSONSourceSpecification,
   ImageSource,
@@ -19,6 +21,7 @@ import {
   SourceSpecification,
 } from 'maplibre-gl'
 import { useLayerOrder } from '@/services/useLayerOrder'
+import { isStyleReady } from '@/lib/map'
 
 export function useLayer(
   layerId: string,
@@ -72,7 +75,11 @@ export function useLayer(
     if (!newLayout) return
 
     Object.entries(newLayout).forEach(([property, value]) => {
-      map.setLayoutProperty(layerId, property, value)
+      map.setLayoutProperty(
+        layerId,
+        property as keyof AllLayoutProperties,
+        value,
+      )
     })
   })
 
@@ -81,15 +88,21 @@ export function useLayer(
     if (!newPaint) return
 
     Object.entries(newPaint).forEach(([property, value]) => {
-      map.setPaintProperty(layerId, property, value)
+      map.setPaintProperty(layerId, property as keyof AllPaintProperties, value)
     })
   })
 
-  watch(filter, (newFilter) => {
-    if (!map) return
+  function applyFilter(): void {
+    if (!map || !isStyleReady(map)) return
+    if (!map.getLayer(layerId)) return
 
-    map.setFilter(layerId, newFilter)
-  })
+    map.setFilter(layerId, filter.value)
+  }
+
+  watch(filter, applyFilter)
+  // A rebuilt style copies its layers from the previous style, so a filter
+  // change that was skipped during the rebuild has to be applied afterwards.
+  map?.on('style.load', applyFilter)
 
   function addLayer(): void {
     if (!map) return
@@ -109,6 +122,7 @@ export function useLayer(
   }
 
   onScopeDispose(() => {
+    map?.off('style.load', applyFilter)
     removeLayer()
   })
 }
@@ -154,7 +168,7 @@ export function useSource(
 
     if (isGeojsonSourceSpecification(options)) {
       const geojsonSource = source as GeoJSONSource
-      geojsonSource.setData(options.data)
+      void geojsonSource.setData(options.data)
       return
     }
 
@@ -190,8 +204,8 @@ export function useSource(
 
 function isImageSourceSpecification(
   source: SourceSpecification | undefined,
-): source is ImageSourceSpecification {
-  return source?.type === 'image'
+): source is ImageSourceSpecification & { url: string } {
+  return source?.type === 'image' && typeof source.url === 'string'
 }
 
 function isGeojsonSourceSpecification(

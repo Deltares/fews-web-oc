@@ -1,6 +1,16 @@
-export function getFileExtension(url: string): string {
-  const urlParts = url.toLowerCase().split('.')
-  return urlParts[urlParts.length - 1]
+export function getFileExtension(url: string | undefined): string {
+  if (!url) return ''
+
+  try {
+    const pathname = new URL(url, 'https://example.invalid/').pathname
+    const filename = pathname.slice(pathname.lastIndexOf('/') + 1)
+    const extensionIndex = filename.lastIndexOf('.')
+    return extensionIndex > 0
+      ? filename.slice(extensionIndex + 1).toLowerCase()
+      : ''
+  } catch {
+    return ''
+  }
 }
 
 export type ViewMode = 'html' | 'iframe' | 'img' | 'pdf'

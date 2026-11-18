@@ -30,7 +30,7 @@
             density="default"
             class="ma-0"
             variant="text"
-            @click="toggleLine(tag)"
+            @click="toggleLine(tag, $event)"
             :disabled="!tag.interactive"
           >
             <div
@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Margin } from '@deltares/fews-web-oc-charts'
+import type { ChartMargin } from '@/lib/charts/types/TimeSeriesChartProps'
 import type { Tag } from '@/lib/charts/tags'
 import { useElementSize, useToggle } from '@vueuse/core'
 import { computed, useTemplateRef, watch } from 'vue'
@@ -73,7 +73,7 @@ import type { ChartsSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   tags: Tag[]
-  margin: Margin
+  margin: ChartMargin
   settings:
     | ChartsSettings['timeSeriesChart']['legend']
     | ChartsSettings['verticalProfileChart']['legend']
@@ -81,7 +81,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const emit = defineEmits(['toggleLine'])
+const emit = defineEmits<{
+  toggleLine: [tag: Tag, event: MouseEvent | KeyboardEvent]
+}>()
 
 const numberOfLines = computed(() => {
   const minLines =
@@ -121,9 +123,9 @@ watch(requiresExpand, () => {
 
 const [expanded, toggleExpand] = useToggle(false)
 
-function toggleLine(tag: Tag) {
+function toggleLine(tag: Tag, event: MouseEvent | KeyboardEvent) {
   tag.disabled = !tag.disabled
-  emit('toggleLine', tag)
+  emit('toggleLine', tag, event)
 }
 
 const chipMargin = 8

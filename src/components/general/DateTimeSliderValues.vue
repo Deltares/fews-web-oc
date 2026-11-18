@@ -13,7 +13,7 @@ import { ColourScale } from '@/stores/colourScales'
 interface Props {
   values: TimeSeriesData[]
   colourScale: ColourScale | null
-  height: string
+  height?: string
 }
 const props = withDefaults(defineProps<Props>(), { height: '5px' })
 
@@ -72,7 +72,9 @@ function updateSliderValues(): void {
   // Create colour scale based on the current WMS colour map.
   const domain = props.colourScale.colourMap.map((entry) => entry.lowerValue)
   const range = props.colourScale.colourMap.map((entry) => entry.color)
-  const scale = d3.scaleLinear<string>().domain(domain).range(range).clamp(true)
+  const scale = props.colourScale.useGradients
+    ? d3.scaleLinear<string>().domain(domain).range(range).clamp(true)
+    : d3.scaleThreshold<number, string>().domain(domain.slice(1)).range(range)
 
   // We want the centres of the coloured blocks to align with the slider
   // positions, so we need to start and end with half a block width.

@@ -2,7 +2,8 @@
   <div v-if="hasLoadedCss" class="display-container pa-1 ga-1">
     <div class="dashboard-container flex-1-1 ga-1">
       <DashboardGroup
-        v-for="group in groups"
+        v-for="(group, index) in groups"
+        :key="index"
         :group="group"
         :settings="props.settings"
         @navigate="emit('navigate', $event)"
@@ -29,7 +30,7 @@ import { computed, ref } from 'vue'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { useDisplay } from 'vuetify'
-import { createDateRegistry } from '@/services/useDateRegistry'
+import { createDateRegistry } from '@deltares/fews-web-oc-composables'
 import { provideSelectedDate } from '@/services/useSelectedDate'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useDynamicCss } from '@/services/useDynamicCss'

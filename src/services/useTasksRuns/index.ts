@@ -22,7 +22,12 @@ import {
 
 import { configManager } from '../application-config'
 import { convertRelativeToAbsolutePeriod } from '@/lib/period/convert'
-import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
+import { hasEqualIdentity } from '@/lib/auth/identityEquality'
+import {
+  type RefreshPolicy,
+  useRefreshCoordinator,
+} from '@/services/useRefreshCoordinator'
+import { systemTimeAuthority } from '@/services/system-time'
 
 const shouldRefreshTaskRuns = ref(false)
 
@@ -33,18 +38,19 @@ export function refreshTaskRuns() {
 
 const DEFAULT_REFRESH_INTERVAL_SECONDS = 15
 
-interface UseTaskRunsOptions {
+interface UseTasksRunsOptions {
   userId?: MaybeRefOrGetter<string | null>
   topologyNodeId?: MaybeRefOrGetter<string | undefined>
   includeWhatIfScenario?: MaybeRefOrGetter<boolean>
   refreshIntervalSeconds?: number
+  taskRunStatusIds?: MaybeRefOrGetter<string[]>
+  statuses?: MaybeRefOrGetter<TaskStatus[]>
 }
 
-export function useTaskRuns(
+export function useTasksRuns(
   dispatchPeriod: MaybeRefOrGetter<RelativePeriod | null>,
   workflowIds: MaybeRefOrGetter<string[]>,
-  statuses: MaybeRefOrGetter<TaskStatus[]>,
-  options: UseTaskRunsOptions = {},
+  options: UseTasksRunsOptions = {},
 ) {
   const isLoading = ref(false)
   const lastUpdatedTimestamp = ref<number | null>(null)
@@ -55,13 +61,20 @@ export function useTaskRuns(
   const refreshIntervalSeconds =
     options.refreshIntervalSeconds ?? DEFAULT_REFRESH_INTERVAL_SECONDS
 
-  useFocusAwareInterval(
-    () => {
-      fetch().catch((error) => console.error(`Failed to fetch tasks: ${error}`))
-    },
-    refreshIntervalSeconds * 1000,
-    { immediateCallback: true },
-  )
+  const refreshPolicies: RefreshPolicy[] = [
+    'onSystemTick',
+    'onVisibilityResume',
+    'manual',
+  ]
+  if (refreshIntervalSeconds > 0) {
+    refreshPolicies.push('onInterval')
+  }
+
+  useRefreshCoordinator(fetch, {
+    policies: refreshPolicies,
+    intervalMs: refreshIntervalSeconds * 1000,
+    immediateCallback: true,
+  })
 
   watch(
     [
@@ -69,12 +82,15 @@ export function useTaskRuns(
       () => toValue(options.topologyNodeId),
       () => shouldRefreshTaskRuns.value,
     ],
-    fetch,
+    () => {
+      void fetch()
+    },
   )
 
   async function fetch(): Promise<void> {
     const _dispatchPeriod = toValue(dispatchPeriod)
     const _topologyNodeId = toValue(options.topologyNodeId)
+    const _taskRunStatusIds = toValue(options.taskRunStatusIds)
     const _includeWhatIfScenario =
       toValue(options.includeWhatIfScenario) ?? true
 
@@ -88,6 +104,7 @@ export function useTaskRuns(
       piProvider,
       _dispatchPeriod,
       _topologyNodeId,
+      _taskRunStatusIds,
     )
 
     if (_includeWhatIfScenario) {
@@ -108,18 +125,30 @@ export function useTaskRuns(
       outputEndTime.value = range.outputEndTime
     }
 
-    lastUpdatedTimestamp.value = Date.now()
+    lastUpdatedTimestamp.value = systemTimeAuthority.now().getTime()
   }
 
   function filterTasks(): TaskRun[] {
     const _workflowIds = toValue(workflowIds)
-    const _statuses = toValue(statuses)
+    const _statuses = toValue(options.statuses)
     const _userId = toValue(options.userId) ?? null
+
+    const matchesUser = (task: TaskRun) => {
+      if (_userId === null) return true
+      if (task.userId === null) return false
+      return hasEqualIdentity(task.userId, _userId)
+    }
+
+    const hasStatus = (task: TaskRun) => {
+      if (_statuses === undefined) return true
+      return _statuses.includes(task.status)
+    }
+
     return allTaskRuns.value.filter(
       (task) =>
         _workflowIds.includes(task.workflowId) &&
-        _statuses.includes(task.status) &&
-        (_userId === null || task.userId === _userId),
+        hasStatus(task) &&
+        matchesUser(task),
     )
   }
 
@@ -138,6 +167,7 @@ async function fetchTaskRuns(
   piProvider: PiWebserviceProvider,
   dispatchPeriod?: RelativePeriod | null,
   topologyNodeId?: string,
+  taskRunStatusIds?: string[],
 ): Promise<FewsPiTaskRun[]> {
   const period = dispatchPeriod
     ? convertRelativeToAbsolutePeriod(dispatchPeriod)
@@ -151,7 +181,7 @@ async function fetchTaskRuns(
     documentFormat: DocumentFormat.PI_JSON,
     startDispatchTime,
     endDispatchTime,
-    taskRunStatusIds: Object.values(TaskStatusId),
+    taskRunStatusIds: taskRunStatusIds ?? Object.values(TaskStatusId),
   }
 
   const topologyNodeFilter = {

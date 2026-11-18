@@ -19,13 +19,13 @@
         v-if="nodesStore.nodeButtons.length > 0 && showLeafsAsButton"
         v-model:activeNodeId="nodesStore.activeNodeId"
         :items="nodesStore.nodeButtons"
-        variant="tonal"
       />
     </Teleport>
 
     <Teleport to="#app-bar-content-center">
       <DisplayTabs
         :nodeId="nodeId"
+        :settings="componentSettings"
         role="tablist"
         aria-label="Node tab selection"
       />
@@ -38,6 +38,9 @@
         :showActiveThresholdCrossingsForFilters="
           showActiveThresholdCrossingsForFilters
         "
+        :showComponent="componentSettings?.sidePanel?.showComponent"
+        :componentSettingsReady="isComponentSettingsReady"
+        :initialSidePanel="initialSidePanel"
         @navigate="onNavigate"
       />
     </Teleport>
@@ -63,7 +66,7 @@ import TopologySidePanel from '@/components/topology/TopologySidePanel.vue'
 
 import { useConfigStore } from '@/stores/config'
 
-import type { WebOcTopologyDisplayConfig } from '@deltares/fews-pi-requests'
+import type { WebOcTopologyDisplayConfig } from '@/lib/fews-config/types'
 
 import { computed, onUnmounted, watch, watchEffect } from 'vue'
 import {
@@ -83,6 +86,7 @@ import { useNodesStore } from '@/stores/nodes'
 import { nodeButtonItems } from '@/lib/topology/nodes'
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
+import { useSearchContext } from '@/stores/searchContext'
 
 interface Props {
   topologyId?: string
@@ -106,6 +110,9 @@ const props = withDefaults(defineProps<Props>(), {
 const route = useRoute()
 const router = useRouter()
 
+// Read before the initial reroute, which does not preserve the query.
+const initialSidePanel = route.query.sidePanel?.toString()
+
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { thresholds } = useTopologyThresholds(baseUrl)
 
@@ -114,10 +121,13 @@ const availableWorkflowsStore = useAvailableWorkflowsStore()
 const warningLevelsStore = useWarningLevelsStore()
 const nodesStore = useNodesStore()
 const topologyNodesStore = useTopologyNodesStore()
+const searchContext = useSearchContext()
 
-topologyNodesStore
-  .fetch()
-  .catch(() => console.error('Failed to fetch topology nodes'))
+try {
+  await topologyNodesStore.fetch()
+} catch (error) {
+  console.error('Failed to fetch topology nodes', error)
+}
 
 // Clear the preferred workflow IDs when we unmount.
 onUnmounted(() => availableWorkflowsStore.clearPreferredWorkflowIds())
@@ -126,7 +136,8 @@ const topologyNode = computed(() => {
   const nodeId = props.nodeId
   if (!nodeId) return
 
-  const id = Array.isArray(nodeId) ? nodeId[nodeId.length - 1] : nodeId
+  const id = Array.isArray(nodeId) ? nodeId.at(-1) : nodeId
+  if (id === undefined) return
   return topologyNodesStore.getNodeById(id)
 })
 
@@ -147,8 +158,6 @@ const topologyComponentConfig = computed(() =>
 )
 
 const topologyDisplayNodes = computed<string[] | undefined>(() => {
-  // FIXME: Update when the types are updated
-  // @ts-expect-error
   return topologyComponentConfig.value?.topologyDisplayNodes
 })
 
@@ -163,19 +172,20 @@ const showActiveThresholdCrossingsForFilters = computed(
 )
 
 // Pre-fetch WMS capabilities headers for better performance later on.
-fetchWmsCapabilitiesHeaders()
+try {
+  await fetchWmsCapabilitiesHeaders()
+} catch (error) {
+  console.error('Failed to pre-fetch WMS capabilities headers', error)
+}
 
 const subNodes = computed(() =>
   topologyNodesStore.getSubNodesForIds(topologyDisplayNodes.value),
 )
 watch(
-  () => topologyNodesStore.nodes,
-  async () => {
-    const to = await reroute(route)
-    if (to) router.push(to)
-  },
+  [subNodes, () => props.topologyId],
+  ([nodes, topologyId]) => searchContext.setTopologyNodes(nodes, topologyId),
+  { immediate: true },
 )
-
 function getComponentConfig(topologyId?: string) {
   const component = topologyId
     ? configStore.getComponentById(topologyId)
@@ -184,11 +194,11 @@ function getComponentConfig(topologyId?: string) {
   return config ?? configStore.getComponentByType('TopologyDisplay')
 }
 
-const { componentSettings } = useComponentSettings(baseUrl, () => [
-  // @ts-expect-error FIXME: Update when the types are updated
-  topologyComponentConfig.value?.componentSettingsId,
-  topologyNode.value?.componentSettingsId,
-])
+const { componentSettings, isReady: isComponentSettingsReady } =
+  useComponentSettings(baseUrl, () => [
+    topologyComponentConfig.value?.componentSettingsId,
+    topologyNode.value?.componentSettingsId,
+  ])
 
 watchEffect(() => {
   if (showLeafsAsButton.value && Array.isArray(props.nodeId)) {
@@ -207,11 +217,32 @@ watchEffect(() => {
   }
 })
 
+watch(
+  () => topologyNodesStore.nodes,
+  async () => {
+    const to = await reroute(route)
+    if (to) await router.replace(to)
+  },
+  { immediate: true },
+)
+
 function onNavigate(to: NavigateRoute) {
   const name = `Topology${String(to.name)}`
   const layerName = to.params?.layerName ?? props.layerName
 
   switch (to.name) {
+    case 'TimeSeriesDisplay':
+      router.replace({
+        name: 'TopologyTimeSeries',
+        params: {
+          ...to.params,
+          topologyId: props.topologyId,
+          nodeId: props.nodeId,
+        },
+        query: route.query,
+        hash: route.hash,
+      })
+      break
     case 'SpatialDisplayWithLocation':
       router.push({
         name,
@@ -274,6 +305,26 @@ function onNavigate(to: NavigateRoute) {
       })
       break
     }
+    case 'MicroFrontendDisplay':
+      router.push({
+        name,
+        params: {
+          nodeId: props.nodeId,
+        },
+        query: route.query,
+      })
+      break
+    case 'MicroFrontendTimeSeriesDisplay':
+      router.push({
+        name,
+        params: {
+          nodeId: props.nodeId,
+          locationIds: to.params?.locationIds,
+        },
+        query: route.query,
+      })
+      break
+
     default:
       console.warn(`Unknown route name: ${String(to.name)}`)
   }
@@ -281,17 +332,27 @@ function onNavigate(to: NavigateRoute) {
 
 onBeforeRouteUpdate(reroute)
 
+function getFirstSubNodeId() {
+  const firstSubNode = subNodes.value[0]
+  return firstSubNode
+    ? topologyNodesStore.getFirstLeafNodeForId(firstSubNode.id)?.id
+    : undefined
+}
+
 async function reroute(
   to: RouteLocationNormalized,
   from?: RouteLocationNormalized,
 ) {
-  if (!to.params.nodeId) {
-    const firstSubNodeId = topologyNodesStore.getFirstLeafNodeForId(
-      subNodes.value[0].id,
-    )?.id
+  if (
+    !to.params.nodeId ||
+    (Array.isArray(to.params.nodeId) && to.params.nodeId.length === 0)
+  ) {
+    const firstSubNodeId = getFirstSubNodeId()
     if (firstSubNodeId) {
-      to.params.nodeId = firstSubNodeId
-      return reroute(to, from)
+      return reroute(
+        { ...to, params: { ...to.params, nodeId: firstSubNodeId } },
+        from,
+      )
     }
     return
   }

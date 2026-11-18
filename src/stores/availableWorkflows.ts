@@ -1,11 +1,11 @@
 import { ref, computed } from 'vue'
-import uniq from 'lodash-es/uniq'
 import { defineStore } from 'pinia'
 import {
   fetchWorkflowsWithExpectedRunTime,
   WorkflowItem,
 } from '@/lib/workflows'
 import { until } from '@vueuse/core'
+import { uniq } from '@/lib/utils/uniq'
 
 export const useAvailableWorkflowsStore = defineStore(
   'availableWorkflows',

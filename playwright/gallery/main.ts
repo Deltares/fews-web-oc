@@ -1,7 +1,10 @@
 import { createApp, h, shallowRef, type App, type Component } from 'vue'
 import vuetify from '../../src/plugins/vuetify'
-import { i18n } from '../../src/plugins/i18n'
-import { createPinia } from 'pinia'
+import { i18n, setI18nLanguage } from '../../src/plugins/i18n'
+import { createPinia, setActivePinia } from 'pinia'
+import { createMemoryHistory, createRouter } from 'vue-router'
+
+const pinia = createPinia()
 
 // Resolve stories via import.meta.glob
 const stories = import.meta.glob('../../src/**/*.story.{ts,js,vue}', {
@@ -35,15 +38,25 @@ let app: App | undefined
   story: string
   props?: Record<string, any>
 }) => {
+  setActivePinia(pinia)
   const resolved = await resolve(storyId)
   if (!resolved) throw new Error(`Unknown story: ${storyId}`)
   story.value = resolved
   props.value = nextProps ?? {}
   if (!app) {
+    // Load the messages like the WebOC does at startup, so components show
+    // their translated texts instead of the message keys
+    await setI18nLanguage(i18n, 'en-GB')
     app = createApp(host)
     app.use(vuetify)
     app.use(i18n)
-    app.use(createPinia())
+    app.use(pinia)
+    app.use(
+      createRouter({
+        history: createMemoryHistory(),
+        routes: [{ path: '/:pathMatch(.*)*', component: host }],
+      }),
+    )
     app.mount('#root')
   }
 }
@@ -53,4 +66,11 @@ let app: App | undefined
   app = undefined
   story.value = null
   props.value = {}
+}
+
+// Playwright sets navigator.webdriver, only show the picker when browsing by hand
+if (!navigator.webdriver) {
+  import('./picker').then(({ createStoryPicker }) =>
+    createStoryPicker(stories, id, (window as any).mount),
+  )
 }

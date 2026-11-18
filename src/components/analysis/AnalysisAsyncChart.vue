@@ -71,7 +71,7 @@ const taskRunIds = computed(() =>
 )
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { taskRuns, interval: taskRunInterval } = useTaskRuns(
+const { taskRuns, pause: pauseTaskRunRefresh } = useTaskRuns(
   baseUrl,
   () => ({ taskRunIds: taskRunIds.value }),
   TASK_RUN_REFRESH_INTERVAL,
@@ -90,7 +90,7 @@ const category = computed(() => {
 
 watchEffect(() => {
   if (category.value === 'completed' || category.value === 'failed') {
-    taskRunInterval.value?.pause()
+    pauseTaskRunRefresh()
   }
 })
 
@@ -131,8 +131,8 @@ watch(
       if (filterCharts.length || archiveCharts.length) {
         emit('remove')
         // Reverse the order of archiveCharts to maintain the configured order
-        archiveCharts.toReversed().forEach((chart) => emit('addChart', chart))
-        filterCharts.forEach((chart) => emit('addChart', chart))
+        archiveCharts.toReversed().forEach((chart) => emit('addChart', chart)) // NOSONAR(S8961) - Sonar does not understand extended interace
+        filterCharts.forEach((chart) => emit('addChart', chart)) // NOSONAR(S8961) - Sonar does not understand extended interace
       }
     }
   },
@@ -175,16 +175,21 @@ async function getChartsForTaskRun(
 
   const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-  const waitForProducts = async () => {
-    let matchingProducts: ProductMetaDataType[] = []
-    while (matchingProducts.length !== archiveProducts.length) {
-      const newProducts = await fetchProducts()
-      matchingProducts = findArchiveProducts(newProducts)
-      if (matchingProducts.length !== archiveProducts.length) {
-        await wait(PRODUCT_META_DATA_REFRESH_INTERVAL)
-      }
+  const waitForProducts = async (
+    matchingProducts: ProductMetaDataType[] = [],
+  ): Promise<ProductMetaDataType[]> => {
+    if (matchingProducts.length === archiveProducts.length) {
+      return matchingProducts
     }
-    return matchingProducts
+
+    const newProducts = await fetchProducts()
+    const nextMatchingProducts = findArchiveProducts(newProducts)
+    if (nextMatchingProducts.length === archiveProducts.length) {
+      return nextMatchingProducts
+    }
+
+    await wait(PRODUCT_META_DATA_REFRESH_INTERVAL)
+    return waitForProducts(nextMatchingProducts)
   }
 
   const products = await waitForProducts()

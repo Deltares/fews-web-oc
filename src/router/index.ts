@@ -14,6 +14,8 @@ import { configManager } from '../services/application-config'
 import { authenticationManager } from '../services/authentication/AuthenticationManager'
 import { useConfigStore } from '../stores/config.ts'
 import { hasDefaultPath, type WebOcComponent } from '@/lib/fews-config/types.ts'
+import { loadCustomStyleSheet } from '@/services/useCustomStyleSheet/index.ts'
+import { handleStartupError } from '@/lib/startup/startup-error.js'
 
 const SystemMonitorDisplayView = () =>
   import('../views/SystemMonitorDisplayView.vue')
@@ -44,6 +46,7 @@ const DataAnalysisDisplay = () =>
   import('../components/analysis/DataAnalysisDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
 const DocumentDisplayView = () => import('../views/DocumentDisplayView.vue')
+const MicroFrontendDisplay = () => import('../views/MicroFrontendDisplay.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
   {
@@ -136,7 +139,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     ],
   },
   {
-    path: '/series/node/:nodeId?',
+    path: '/series/node/:nodeId?/:plotId?',
     name: 'TimeSeriesDisplay',
     component: TimeSeriesDisplayView,
     props: true,
@@ -157,7 +160,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         meta: { sidebar: true },
       },
       {
-        path: 'series',
+        path: 'series/:plotId?',
         name: 'TopologyTimeSeries',
         component: TimeSeriesDisplay,
         props: true,
@@ -288,6 +291,22 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         props: true,
         meta: { sidebar: true },
       },
+      {
+        path: 'mf',
+        name: 'TopologyMicroFrontendDisplay',
+        component: MicroFrontendDisplay,
+        props: true,
+        meta: { sidebar: true },
+        children: [
+          {
+            path: 'location/:locationIds',
+            name: 'TopologyMicroFrontendTimeSeriesDisplay',
+            component: Empty,
+            props: true,
+            meta: { sidebar: true },
+          },
+        ],
+      },
     ],
   },
   {
@@ -327,9 +346,13 @@ async function handleAuthorization(to: RouteLocationNormalized) {
 async function addDynamicRoutes() {
   const store = useConfigStore()
   await store.setFewsConfig()
+  await loadCustomStyleSheet()
   const configuredComponents = Object.values(store.components)
 
-  configuredComponents.forEach((component: any) => {
+  const configuredTypes = new Set<WebOcComponent['type']>()
+  configuredComponents.forEach((component) => {
+    if (configuredTypes.has(component.type)) return
+    configuredTypes.add(component.type)
     const route = dynamicRoutes.find((route) => route.name === component.type)
     if (route !== undefined) {
       router.addRoute({
@@ -352,14 +375,20 @@ async function addDynamicRoutes() {
     defaultComponent = configuredComponents[0]
   }
   if (defaultComponent && router.hasRoute(defaultComponent.type)) {
-    const isTopology = defaultComponent.type === 'TopologyDisplay'
-    // Ensure topologyId param is present for default topology display
-    const redirectTarget = isTopology
-      ? {
-          name: 'TopologyDisplay',
-          params: { topologyId: defaultComponent.id },
-        }
-      : { name: defaultComponent.type }
+    let redirectTarget: { name: string; params?: Record<string, string> } = {
+      name: defaultComponent.type,
+    }
+    if (defaultComponent.type === 'TopologyDisplay') {
+      redirectTarget = {
+        name: 'TopologyDisplay',
+        params: { topologyId: defaultComponent.id },
+      }
+    } else if (defaultComponent.type === 'HtmlDisplay') {
+      redirectTarget = {
+        name: 'HtmlDisplay',
+        params: { path: defaultComponent.path },
+      }
+    }
 
     router.removeRoute('Default')
     router.addRoute({
@@ -434,7 +463,12 @@ router.beforeEach(async (to) => {
   }
 
   if (!routesAreInitialized) {
-    await addDynamicRoutes()
+    try {
+      await addDynamicRoutes()
+    } catch (error) {
+      handleStartupError(error)
+      return false
+    }
     routesAreInitialized = true
     if (redirect) {
       return redirect

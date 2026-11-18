@@ -1,27 +1,25 @@
 import type { DeepRequired } from '@/lib/utils/types'
 import type { MapSettings as PiMapSettings } from '@deltares/fews-pi-requests'
 
-type DeepRequiredMapSettings = DeepRequired<PiMapSettings>
+export type DeepRequiredMapSettings = DeepRequired<PiMapSettings>
 
-export type MapSettings = Omit<DeepRequiredMapSettings, 'locationsLayer'> & {
-  locationsLayer: Omit<
-    DeepRequiredMapSettings['locationsLayer'],
-    'minZoom' | 'maxZoom'
-  >
-}
-
-export const defaultMapSettings: MapSettings = {
+export const defaultMapSettings: DeepRequiredMapSettings = {
   wmsLayer: {
     show: true, // TODO: Implement
-    autoPlay: false, // TODO: Implement
+    autoPlay: false,
     animateVectors: true, // TODO: Implement
     doubleClickAction: true,
   },
   locationsLayer: {
     show: true,
-    locationNames: true, // TODO: Implement
+    locationNames: true,
     singleClickAction: true,
     locationSearchEnabled: true,
+    minZoom: { level: -Infinity, levelLocationAttribute: '' },
+    maxZoom: { level: Infinity, levelLocationAttribute: '' },
+    legend: {
+      show: true,
+    },
   },
   overlays: [],
 }

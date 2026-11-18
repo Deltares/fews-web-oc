@@ -1,6 +1,7 @@
 <template>
   <v-card
-    v-for="element in group.elements"
+    v-for="(element, index) in group.elements"
+    :key="index"
     :style="{ gridArea: element.gridTemplateArea }"
     class="d-flex flex-column"
     density="compact"
@@ -32,7 +33,6 @@ import type { DashboardActionEventBus } from '@/lib/topology/dashboardActions'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { provideMapSync } from '@/services/useMapSync'
 import { provideSelectedElevation } from '@/services/useSelectedElevation'
-import { provideChartHandlers } from '@/services/useChartHandlers'
 import type { NavigateRoute } from '@/lib/router'
 
 interface Props {
@@ -50,7 +50,6 @@ const emit = defineEmits<Emits>()
 // Provide group level shared state
 provideMapSync()
 provideSelectedElevation()
-provideChartHandlers()
 
 const activeActionId = ref<string>()
 function onDashboardAction(action: SsdActionResult) {

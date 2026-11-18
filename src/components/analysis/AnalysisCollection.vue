@@ -75,30 +75,31 @@
 </template>
 
 <script setup lang="ts">
-import { createCollection, type Collection } from '@/lib/analysis'
+import { createCollection } from '@/lib/analysis/collection'
+import type { Collection } from '@/lib/analysis/types'
 import { DataAnalysisDisplayElement } from '@deltares/fews-pi-requests'
 import { computed, ref } from 'vue'
 
 interface Props {
   config: DataAnalysisDisplayElement
-  collections: Collection[]
 }
 const props = defineProps<Props>()
 
+const collections = defineModel<Collection[]>('collections', { required: true })
 const selectedCollectionName = defineModel<string>('selectedCollectionName')
 const dialog = ref(false)
 const newCollectionName = ref('')
 
 const canAddName = computed(() => {
   const name = newCollectionName.value.trim()
-  return name && !props.collections.some((c) => c.name === name)
+  return name && !collections.value.some((c) => c.name === name)
 })
 
 function addCollection(): void {
   const name = newCollectionName.value.trim()
   if (canAddName.value) {
     const newItem = createCollection(name, props.config)
-    props.collections.push(newItem)
+    collections.value = [...collections.value, newItem]
     selectedCollectionName.value = newItem.name
   }
   newCollectionName.value = ''
@@ -106,15 +107,19 @@ function addCollection(): void {
 }
 
 function deleteCollection(collectionName: string) {
-  const index = props.collections.findIndex((c) => c.name === collectionName)
+  const index = collections.value.findIndex((c) => c.name === collectionName)
   if (index === -1) return
 
-  props.collections.splice(index, 1)
+  const updatedCollections = collections.value.filter(
+    (c) => c.name !== collectionName,
+  )
 
-  if (props.collections.length === 0) {
+  if (updatedCollections.length === 0) {
     const newCollection = createCollection('Default', props.config)
-    props.collections.push(newCollection)
+    updatedCollections.push(newCollection)
     selectedCollectionName.value = newCollection.name
   }
+
+  collections.value = updatedCollections
 }
 </script>

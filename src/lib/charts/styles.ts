@@ -1,17 +1,5 @@
 import { SvgPropertiesHyphen } from 'csstype'
-import { SymbolOptions } from '@deltares/fews-web-oc-charts'
-
-const SymbolType = {
-  Circle: 0,
-  Cross: 1,
-  Diamond: 2,
-  Square: 3,
-  Asterisk: 4,
-  TriangleUp: 5,
-  Wye: 6,
-} as const
-
-type SymbolType = (typeof SymbolType)[keyof typeof SymbolType]
+import type { ChartMarker, ChartMarkerShape } from './types/ChartMarker'
 
 /**
  * Converts a hexadecimal color code to its RGB representation.
@@ -61,7 +49,7 @@ export function cssStyleFromFewsLine(item: {
   const re =
     /(?<lineStyle>none|solid|dashed|dashdot|dotted)(;(?<lineWidth>thick))?/
   if (item.lineStyle !== undefined) {
-    const matches = item.lineStyle.match(re)
+    const matches = re.exec(item.lineStyle)
     if (matches?.groups?.lineStyle !== undefined) {
       style = {
         ...style,
@@ -71,7 +59,7 @@ export function cssStyleFromFewsLine(item: {
     if (item.lineWidth) {
       style = {
         ...style,
-        ...{ 'stroke-width': `${item.lineWidth}` },
+        'stroke-width': `${item.lineWidth}`,
       }
     } else if (matches?.groups?.lineWidth !== undefined) {
       style = {
@@ -104,7 +92,7 @@ export function cssStyleFromFewsArea(item: {
   const re =
     /(?<lineStyle>none|solid|dashed|dashdot|dotted)(;(?<lineWidth>thick))?/
   if (item.lineStyle !== undefined) {
-    const matches = item.lineStyle.match(re)
+    const matches = re.exec(item.lineStyle)
     if (matches?.groups?.lineWidth !== undefined) {
       style = {
         ...style,
@@ -174,14 +162,7 @@ function cssStyleFromFewsLineStyle(lineStyle: string): SvgPropertiesHyphen {
  */
 function cssStyleFromFewsLineWidth(lineWidth: string): SvgPropertiesHyphen {
   const style: SvgPropertiesHyphen = {}
-  switch (lineWidth) {
-    case 'thick':
-      style['stroke-width'] = '2px'
-      break
-    default:
-      style['stroke-width'] = '1px'
-      break
-  }
+  style['stroke-width'] = lineWidth === 'thick' ? '2px' : '1px'
   return style
 }
 
@@ -214,9 +195,10 @@ export function cssStyleFromFewsMarker(item: {
 export function chartMarkerFromFews(
   style: string,
   markerSize: number = 3,
-): SymbolOptions {
-  const marker: SymbolOptions = {
-    id: SymbolType.Circle,
+): ChartMarker {
+  let shape: ChartMarkerShape = 'circle'
+  const marker: ChartMarker = {
+    shape,
     size: markerSize ** 2,
     skip: 1,
   }
@@ -224,30 +206,28 @@ export function chartMarkerFromFews(
     case 'none':
       break
     case 'diamond':
-      marker.id = SymbolType.Diamond
+      shape = 'diamond'
       break
     case 'square':
-      marker.id = SymbolType.Square
+      shape = 'square'
       break
     case 'triangleup':
-      marker.id = SymbolType.TriangleUp
+      shape = 'triangle-up'
       break
     case 'triangledown':
-      marker.id = SymbolType.TriangleUp
-      break
-    case 'circle':
-      marker.id = SymbolType.Circle
+      shape = 'triangle-down'
       break
     case 'x':
-      marker.id = SymbolType.Wye
+      shape = 'wye'
       break
     case '+':
-      marker.id = SymbolType.Cross
+      shape = 'cross'
       break
     case 'rectangle':
-      marker.id = SymbolType.Square
+      shape = 'rectangle'
       break
   }
+  marker.shape = shape
   return marker
 }
 

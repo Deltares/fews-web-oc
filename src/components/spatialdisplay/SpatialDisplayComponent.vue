@@ -1,10 +1,11 @@
 <template>
   <MapComponent
     :bounds="bounds"
-    :style="mapStyle"
+    :map-style="mapStyle"
     :layer-name="layerName"
     :layer-capabilities="layerCapabilities"
   >
+    <slot name="map" />
     <AnimatedRasterLayer
       v-if="layerKind === LayerKind.Static && showLayer && layerOptions"
       v-model:isLoading="isLoading"
@@ -33,14 +34,13 @@
       <ColourLegend
         v-if="!currentColourScale.useGradients"
         :colourMap="currentColourScale.colourMap"
-        :title="currentColourScaleTitle"
+        :title="currentColourScale.title"
       />
       <ColourBar
         v-else
         :colourMap="currentColourScale.colourMap"
-        :title="currentColourScaleTitle"
+        :title="currentColourScale.title"
         :useGradients="currentColourScale.useGradients"
-        v-model:range="currentColourScale.range"
       />
     </div>
     <SelectedCoordinateLayer
@@ -48,10 +48,12 @@
       @coordinate-moved="onCoordinateMoved"
     />
     <LocationsLayer
-      v-if="showLocationsLayer && hasLocations"
+      v-if="hasLocations"
+      :showLocations="showLocationsLayer"
       :locationsGeoJson="geojson"
       :selectedLocationIds="selectedLocationIds"
-      :locationsClickable="settings.locationsLayer.singleClickAction"
+      :selectedLocationCategories="selectedLocationCategories"
+      :settings="settings.locationsLayer"
       @click="onLocationClick"
     />
     <CoordinateSelectorMarker
@@ -65,7 +67,6 @@
     />
     <MapToolsControl />
     <div class="mapcomponent__controls-container pa-2 ga-2">
-      <CoordinatesDisplay />
       <BoundingBoxControl
         v-if="workflowsStore.isDrawingBoundingBox"
         v-model:active="workflowsStore.isDrawingBoundingBox"
@@ -94,6 +95,13 @@
           v-model:show-layer="showLayer"
           @changeLayer="onLayerChange"
         >
+          <template v-if="canSelectEnsemble">
+            <v-divider />
+            <EnsemblesPanel
+              v-model="ensembleSelection"
+              :ensembles="ensembles"
+            />
+          </template>
           <template v-if="aggregations.length > 0">
             <v-divider />
             <AggregationPanel
@@ -119,22 +127,31 @@
             />
           </template>
           <template #extension>
-            <AggregationExtension
-              v-if="doShowAggregated"
-              :aggregations="aggregations"
-              v-model:selected-aggregation-label="selectedAggregationLabel"
-            />
+            <div class="d-flex align-start ga-1">
+              <AggregationExtension
+                v-if="doShowAggregated && aggregations.length > 0"
+                :aggregations="aggregations"
+                v-model:selected-aggregation-label="selectedAggregationLabel"
+              />
+              <EnsemblesExtension
+                v-if="canSelectEnsemble"
+                v-model="ensembleSelection"
+                :ensembles="ensembles"
+              />
+            </div>
           </template>
         </InformationPanel>
         <TaskRunControl v-model:taskRunId="taskRunId" />
-        <LocationsSearchControl
+        <LocationsMapControl
           v-if="settings.locationsLayer.locationSearchEnabled"
           v-model:showLocations="showLocationsLayer"
           width="50vw"
           max-width="250"
           :locations="locations"
+          :geojson="geojson"
           :locationToChildrenMap="locationToChildrenMap"
           :selectedLocationIds="selectedLocationIds"
+          v-model:selectedLocationCategories="selectedLocationCategories"
           @changeLocationIds="onLocationsChange"
         />
       </template>
@@ -159,6 +176,7 @@
       class="spatial-display__slider"
       :hide-speed-controls="mobile"
       :isLoading="isLoading"
+      :auto-play="settings.wmsLayer.autoPlay"
     >
       <template #below-track>
         <SnapshotStrip
@@ -188,7 +206,14 @@ import DateTimeSliderValues from '@/components/general/DateTimeSliderValues.vue'
 import MapComponent from '@/components/map/MapComponent.vue'
 import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 
-import { ref, computed, watch, watchEffect } from 'vue'
+import { ref, computed, watch, watchEffect, onScopeDispose } from 'vue'
+import {
+  createPinia,
+  disposePinia,
+  getActivePinia,
+  setActivePinia,
+} from 'pinia'
+import { useStorage } from '@vueuse/core'
 import {
   convertBoundingBoxToLngLatBounds,
   useWmsCapabilities,
@@ -198,20 +223,21 @@ import ColourBar from '@/components/wms/ColourBar.vue'
 import AnimatedRasterLayer, {
   AnimatedRasterLayerOptions,
 } from '@/components/wms/AnimatedRasterLayer.vue'
-import LocationsSearchControl from '@/components/wms/LocationsSearchControl.vue'
+import LocationsMapControl from '@/components/wms/LocationsMapControl.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import InformationPanel from '@/components/wms/panel/InformationPanel.vue'
 import OverlayInformationPanel from '@/components/wms/panel/OverlayInformationPanel.vue'
-import AggregationPanel from '../wms/panel/AggregationPanel.vue'
+import AggregationPanel from '@/components/wms/panel/AggregationPanel.vue'
+import EnsemblesPanel from '@/components/wms/panel/EnsemblesPanel.vue'
 import AggregationExtension from '@/components/wms/panel/AggregationExtension.vue'
+import EnsemblesExtension from '@/components/wms/panel/EnsemblesExtension.vue'
 import ColourPanel from '@/components/wms/panel/ColourPanel.vue'
 import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
 import MapToolsControl from '@/components/map/MapToolsControl.vue'
-import CoordinatesDisplay from '@/components/map/CoordinatesDisplay.vue'
 import StreamlinesButton from '@/components/wms/panel/StreamlinesButton.vue'
 import TaskRunControl from '@/components/wms/TaskRunControl.vue'
 import debounce from 'lodash-es/debounce'
@@ -223,12 +249,15 @@ import {
   type MapLayerTouchEvent,
 } from 'maplibre-gl'
 import type { BoundingBox, Layer, Style } from '@deltares/fews-wms-requests'
-import type { Location } from '@deltares/fews-pi-requests'
+import type {
+  Location,
+  TimeSeriesGridMaxValuesFilter,
+} from '@deltares/fews-pi-requests'
 import { LayerKind } from '@/lib/streamlines'
 import { useColourScalesStore } from '@/stores/colourScales'
 import { useDisplay } from 'vuetify'
 import ColourLegend from '@/components/wms/ColourLegend.vue'
-import { rangeToString, styleToId } from '@/lib/legend'
+import { styleToId } from '@/lib/legend'
 import { useWorkflowsStore } from '@/stores/workflows'
 import CoordinateSelectorMarker from '@/components/wms/CoordinateSelectorMarker.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
@@ -239,6 +268,7 @@ import { useColourScales } from '@/services/useColourScales'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import { useBaseMap } from '@/services/useBaseMap'
 import { isInDatesRange } from '@/lib/date'
+import { roundCoordinateToString } from '@/lib/coordinates'
 import { getLocationWithChilds, mapIds } from '@/lib/map'
 import { createLocationToChildrenMap } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
@@ -247,7 +277,9 @@ import { clamp } from '@/lib/utils/math'
 import { useAggregations } from '@/services/useAggregations'
 import { provideLayerOrder } from '@/services/useLayerOrder'
 import { useOverlays } from '@/services/useOverlays'
+import { useWmsEnsembles } from '@/services/useWmsEnsembles'
 import SnapshotStrip from '@/components/spatialdisplay/SnapshotStrip.vue'
+import { useSearchContext } from '@/stores/searchContext'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -270,6 +302,7 @@ interface Props {
   groupId?: string
   boundingBox?: BoundingBox
   settings: ComponentSettings['map']
+  independentContext?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -282,6 +315,7 @@ const emit = defineEmits([
   'coordinateClick',
   'changeLayer',
   'update:elevation',
+  'update:ensembleSelection',
   'update:currentTime',
 ])
 
@@ -300,6 +334,14 @@ const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
 
+const {
+  ensembles,
+  selection: ensembleSelection,
+  canSelectEnsemble,
+} = useWmsEnsembles(() => props.layerCapabilities)
+
+watch(ensembleSelection, () => setLayerOptions())
+
 const doFollowNow = ref(taskRunId.value === undefined)
 // Set follow now to false when a task run is selected because taskRun data is typically historical data,
 // so it doesn't make sense to follow now.
@@ -313,9 +355,18 @@ const locationToChildrenMap = computed(() =>
   createLocationToChildrenMap(props.locations ?? []),
 )
 
+const searchContext = useSearchContext()
+watch(
+  () => props.locations,
+  (locations) => searchContext.setLocations(locations ?? []),
+  { immediate: true },
+)
+
 const selectedDateOfSlider = ref<Date>()
-const { selectedDate, dateTimeSliderEnabled } =
-  useSelectedDate(selectedDateOfSlider)
+const { selectedDate, dateTimeSliderEnabled } = useSelectedDate(
+  selectedDateOfSlider,
+  !props.independentContext,
+)
 const showTimeSnapshotFrames = ref(false)
 
 function onSnapshotSelectTime(date: Date): void {
@@ -345,6 +396,11 @@ watch(
 )
 
 const selectedLocationIds = computed(() => props.locationIds?.split(',') ?? [])
+const selectedLocationCategories = useStorage<string[]>(
+  'weboc-selected-location-categories-v1.0.0',
+  [],
+  sessionStorage,
+)
 
 const { doShowAggregated, selectedAggregationLabel, aggregations } =
   useAggregations(selectedDate, () => props.layerCapabilities)
@@ -352,6 +408,14 @@ const { doShowAggregated, selectedAggregationLabel, aggregations } =
 watch([doShowAggregated, selectedAggregationLabel], () => setLayerOptions())
 
 const layerOptions = ref<AnimatedRasterLayerOptions>()
+defineExpose({
+  getScreenshotContext: () => {
+    const layer = layerOptions.value
+    return layer?.time
+      ? { source: layer.name, validTime: layer.time.toISOString() }
+      : undefined
+  },
+})
 const isLoading = ref(false)
 
 const legendLayerStyles = ref<Style[]>()
@@ -360,17 +424,19 @@ const userSettings = useUserSettingsStore()
 const showLayer = ref<boolean>(true)
 const layerKind = ref(LayerKind.Static)
 
-const colourScalesStore = useColourScalesStore()
+const localPinia = props.independentContext ? createPinia() : undefined
+const parentPinia = getActivePinia()
+const colourScalesStore = useColourScalesStore(localPinia)
+if (localPinia) {
+  setActivePinia(parentPinia)
+  onScopeDispose(() => {
+    colourScalesStore.clearScales()
+    disposePinia(localPinia)
+  })
+}
 const currentColourScaleIds = ref<string[]>([])
-const {
-  currentScale: currentColourScale,
-  currentScales: currentColourScales,
-  currentScaleTitle: currentColourScaleTitle,
-} = useColourScales(
-  currentColourScaleIds,
-  () => colourScalesStore.scales,
-  () => props.layerCapabilities?.title ?? props.layerName,
-)
+const { currentScale: currentColourScale, currentScales: currentColourScales } =
+  useColourScales(currentColourScaleIds, () => colourScalesStore.scales)
 
 const workflowsStore = useWorkflowsStore()
 
@@ -394,14 +460,33 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const maxValuesStartTime = ref<Date | null>(null)
 const maxValuesEndTime = ref<Date | null>(null)
 const maxValuesTaskRunId = ref<string>()
+const maxTimeSeriesFilter = computed(() => {
+  if (
+    !props.layerName ||
+    !maxValuesStartTime.value ||
+    !maxValuesEndTime.value
+  ) {
+    return undefined
+  }
+
+  const filter: TimeSeriesGridMaxValuesFilter = {
+    layers: props.layerName,
+    startTime: maxValuesStartTime.value.toISOString(),
+    endTime: maxValuesEndTime.value.toISOString(),
+    taskRunId: maxValuesTaskRunId.value,
+    aggregation: doShowAggregated.value
+      ? (selectedAggregationLabel.value ?? undefined)
+      : undefined,
+    useDisplayUnits: userSettings.useDisplayUnits,
+    convertDatum: userSettings.convertDatum,
+    // NOTE: this endpoint does not yet accept ensemble parameters, so it may
+    //       return values that do not match the currently selected ensemble.
+  }
+  return filter
+})
 const { timeSeries: maxValuesTimeSeries } = useWmsMaxValuesTimeSeries(
   baseUrl,
-  () => props.layerName,
-  maxValuesStartTime,
-  maxValuesEndTime,
-  doShowAggregated,
-  selectedAggregationLabel,
-  maxValuesTaskRunId,
+  maxTimeSeriesFilter,
 )
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.
@@ -537,7 +622,11 @@ watch(
   () => props.layerCapabilities,
   (layer) => {
     legendLayerStyles.value = props.layerCapabilities?.styles
-    if (legendLayerStyles.value === undefined && props.layerName) {
+    if (
+      props.layerCapabilities &&
+      legendLayerStyles.value === undefined &&
+      props.layerName
+    ) {
       legendLayerStyles.value = [
         {
           title: props.layerName,
@@ -580,6 +669,16 @@ watch(
 )
 
 watch(
+  () => layerOptions.value?.ensembleSelection,
+  (ensembleSelection) => {
+    // Follow the ensemble selection of the layer, so the time series of a
+    // clicked location show the same ensemble member as the map.
+    emit('update:ensembleSelection', ensembleSelection)
+  },
+  { immediate: true },
+)
+
+watch(
   [() => currentColourScale.value?.range, () => userSettings.useDisplayUnits],
   () => {
     setLayerOptions()
@@ -611,13 +710,12 @@ function setLayerOptions(): void {
       minElevation.value,
       maxElevation.value,
     ),
-    colorScaleRange: currentColourScale.value?.range
-      ? rangeToString(currentColourScale.value.range)
-      : undefined,
-    style: currentColourScale.value?.style.name,
+    colorScaleRange: currentColourScale.value?.requestRange,
+    style: currentColourScale.value?.style,
     useDisplayUnits: userSettings.useDisplayUnits,
     useLastValue: isInDatesRange(selectedDate.value, props.times),
     taskRunId: taskRunId.value,
+    ensembleSelection: ensembleSelection.value ?? undefined,
   }
 }
 
@@ -652,13 +750,17 @@ function onCoordinateClick(
 
   emit(
     'coordinateClick',
-    +event.lngLat.lat.toFixed(5),
-    +event.lngLat.lng.toFixed(5),
+    +roundCoordinateToString(event.lngLat.lat),
+    +roundCoordinateToString(event.lngLat.lng),
   )
 }
 
 function onCoordinateMoved(lat: number, lng: number): void {
-  emit('coordinateClick', +lat.toFixed(5), +lng.toFixed(5))
+  emit(
+    'coordinateClick',
+    +roundCoordinateToString(lat),
+    +roundCoordinateToString(lng),
+  )
 }
 </script>
 
@@ -668,6 +770,7 @@ function onCoordinateMoved(lat: number, lng: number): void {
   z-index: 1000;
   bottom: v-bind('offsetBottomControls');
   left: 5px;
+  pointer-events: none;
 }
 
 .spatial-display {
@@ -675,15 +778,32 @@ function onCoordinateMoved(lat: number, lng: number): void {
 }
 
 .spatial-display__slider {
+  /* Browsers round the corners of the window, and phone screens even more.
+     The bottom corners follow that radius, so the gap stays the same width. */
+  --window-corner-radius: 20px;
+  --slider-inset: 5px;
+  --datetime-slider-corner-radius: calc(
+    var(--window-corner-radius) - var(--slider-inset)
+  );
   position: absolute;
-  bottom: 5px;
-  left: 5px;
-  right: 5px;
+  bottom: var(--slider-inset);
+  left: var(--slider-inset);
+  right: var(--slider-inset);
   z-index: 1000;
-  border-radius: 5px;
   backdrop-filter: blur(5px);
   background-color: rgba(var(--v-theme-surface), 0.8);
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Phones, in portrait and landscape. The slider spans the bottom of the
+   screen, with its content inset to clear the rounded screen corners. */
+@media (pointer: coarse) and (max-width: 600px),
+  (pointer: coarse) and (max-height: 600px) {
+  .spatial-display__slider {
+    --slider-inset: 0px;
+    --datetime-slider-corner-radius: 0px;
+    --datetime-slider-safe-corner-radius: 55px;
+  }
 }
 
 .mapcomponent__controls-container {

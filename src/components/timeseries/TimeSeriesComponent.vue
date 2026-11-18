@@ -2,6 +2,8 @@
   <v-window v-model="tab" class="h-100 w-100" :touch="false">
     <v-window-item
       v-if="settings.timeSeriesChart.enabled"
+      :transition="false"
+      :reverse-transition="false"
       :value="DisplayType.TimeSeriesChart"
       class="d-flex flex-column h-100 overflow-y-auto"
     >
@@ -11,17 +13,17 @@
           v-model:domain="visibleDomain"
           :key="subplot.id"
           v-show="
-            maximizedSubplotId === null || maximizedSubplotId === subplot.id
+            maximizedChartSubplotId === null ||
+            maximizedChartSubplotId === subplot.id
           "
           :config="subplot"
           :series="chartSeries"
           :highlightTime="selectedDate"
-          :zoomHandler="sharedZoomHandler"
-          :panHandler="sharedPanHandler"
+          :group="chartGroup"
           :settings="settings.timeSeriesChart"
           :forecastLegend="config.forecastLegend"
-          :maximized="maximizedSubplotId === subplot.id"
-          @toggle-maximize="toggleMaximizeSubplot(subplot.id)"
+          :maximized="maximizedChartSubplotId === subplot.id"
+          @toggle-maximize="toggleMaximizeSubplot('chart', subplot.id)"
         >
           <template #brush="{ margin: chartMargin }">
             <TimeSeriesChartBrush
@@ -32,6 +34,7 @@
               :series="brushChartSeries"
               :settings="settings.timeSeriesChart"
               :mainChartMargin="chartMargin"
+              :group="chartGroup"
             />
           </template>
         </TimeSeriesChart>
@@ -39,6 +42,8 @@
     </v-window-item>
     <v-window-item
       v-if="settings.verticalProfileChart.enabled"
+      :transition="false"
+      :reverse-transition="false"
       :value="DisplayType.ElevationChart"
       class="d-flex flex-row h-100 overflow-x-auto"
     >
@@ -46,44 +51,72 @@
         <TimeSeriesChart
           v-for="subplot in elevationChartSubplots"
           v-show="
-            maximizedSubplotId === null || maximizedSubplotId === subplot.id
+            maximizedElevationSubplotId === null ||
+            maximizedElevationSubplotId === subplot.id
           "
           verticalProfile
           :config="subplot"
           :series="elevationChartSeries"
           :key="subplot.id"
           :style="{ minWidth: `${getElevationChartMinWidth(subplot.id)}%` }"
-          :zoomHandler="sharedVerticalZoomHandler"
+          :group="chartGroup"
           :settings="settings.verticalProfileChart"
-          :maximized="maximizedSubplotId === subplot.id"
-          @toggle-maximize="toggleMaximizeSubplot(subplot.id)"
+          :maximized="maximizedElevationSubplotId === subplot.id"
+          @toggle-maximize="toggleMaximizeSubplot('elevation', subplot.id)"
         >
         </TimeSeriesChart>
       </KeepAlive>
     </v-window-item>
     <v-window-item
       v-if="settings.timeSeriesTable.enabled"
+      :transition="false"
+      :reverse-transition="false"
       :value="DisplayType.TimeSeriesTable"
       class="d-flex flex-column h-100 overflow-y-hidden"
     >
       <TimeSeriesTable
-        :config="tableConfig"
+        :config="ensembleTableConfig"
         :series="tableSeries"
         :key="tableConfig.title"
         :settings="settings.timeSeriesTable"
+        :selected-date="selectedDate"
+        :page-update="tablePageUpdate"
         :is-loading="isLoadingTableSeries"
+        :is-loading-more="isLoadingMoreTableSeries"
         class="single"
         @change="(event) => onDataChange(event)"
         @update:isEditing="isEditing = $event"
+        @load-more-data="loadMoreTableSeries"
       >
       </TimeSeriesTable>
     </v-window-item>
     <v-window-item
       v-if="settings.metaDataPanel.enabled"
+      :transition="false"
+      :reverse-transition="false"
       :value="DisplayType.Information"
       class="h-100"
     >
       <div v-html="informationContent" class="pa-4 h-100 w-100" />
+    </v-window-item>
+    <v-window-item
+      v-if="settings.dynamicReportDisplay.enabled"
+      :transition="false"
+      :reverse-transition="false"
+      :value="DisplayType.DynamicReport"
+      class="h-100"
+    >
+      <DynamicReportPanel
+        v-if="dynamicReport"
+        :config="dynamicReport"
+        :selectedDate="selectedDate"
+        :settings="reportSettings"
+        :initial-node-id="reportNodeId"
+        :download-report="downloadReport"
+        :export-mode="reportExportMode"
+        :toolbar-target="reportToolbarTarget"
+        @close-export="emit('close-report-export')"
+      />
     </v-window-item>
   </v-window>
   <v-dialog v-model="confirmationDialog" persistent max-width="500">
@@ -104,9 +137,11 @@
 
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
-import TimeSeriesChart from '../charts/TimeSeriesChart.vue'
-import TimeSeriesChartBrush from '../charts/TimeSeriesChartBrush.vue'
+import TimeSeriesChart from '../charts/TimeSeriesChartSwitch.vue'
+import TimeSeriesChartBrush from '../charts/TimeSeriesChartBrushSwitch.vue'
 import TimeSeriesTable from '../table/TimeSeriesTable.vue'
+import DynamicReportPanel from './DynamicReportPanel.vue'
+import type { DynamicReportPanelConfig } from '@/services/useDynamicReport'
 import {
   DisplayType,
   type DisplayConfig,
@@ -114,9 +149,10 @@ import {
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import {
   postTimeSeriesEdit,
+  usePaginatedTimeSeries,
   useTimeSeries,
 } from '../../services/useTimeSeries/index.ts'
-import type { UseTimeSeriesOptions } from '../../services/useTimeSeries/index.ts'
+import type { PiTimeSeriesQueryOptions } from '@deltares/fews-web-oc-composables'
 import { configManager } from '../../services/application-config'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import { useUserSettingsStore } from '@/stores/userSettings'
@@ -128,6 +164,7 @@ import { useSelectedDate } from '@/services/useSelectedDate'
 import {
   getDefaultSettings,
   type ChartsSettings,
+  type ComponentSettings,
 } from '@/lib/topology/componentSettings'
 import { useChartHandlers } from '@/services/useChartHandlers'
 import { useFetchDomain } from '@/services/useFetchDomain/index.ts'
@@ -137,6 +174,7 @@ import {
 } from '@/lib/display/utils'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 import { getBrushDomain } from '@/lib/charts/brush.ts'
+import { useEnsembleChartConfig } from '@/services/useEnsembleChartConfig'
 
 interface Props {
   config?: DisplayConfig
@@ -145,10 +183,18 @@ interface Props {
   elevationChartConfig?: DisplayConfig
   currentTime?: Date
   informationContent?: string | null
+  dynamicReport?: DynamicReportPanelConfig | null
+  reportSettings?: ComponentSettings
+  reportNodeId?: string
+  downloadReport?: boolean
+  reportExportMode?: boolean
+  reportToolbarTarget?: HTMLElement
   settings?: ChartsSettings
 }
 
+const emit = defineEmits<{ 'close-report-export': [] }>()
 const props = withDefaults(defineProps<Props>(), {
+  downloadReport: true,
   config: () => {
     return {
       title: '',
@@ -203,21 +249,25 @@ const userSettings = useUserSettingsStore()
 const isEditing = ref(false)
 const confirmationDialog = ref(false)
 const { xs } = useDisplay()
-const { sharedZoomHandler, sharedPanHandler, sharedVerticalZoomHandler } =
-  useChartHandlers()
+const chartGroup = useChartHandlers()
 
-const maximizedSubplotId = ref<string | null>(null)
+type SubplotListKey = 'chart' | 'elevation'
 
-function toggleMaximizeSubplot(id: string): void {
-  maximizedSubplotId.value = maximizedSubplotId.value === id ? null : id
+const maximizedChartSubplotId = ref<string | null>(null)
+const maximizedElevationSubplotId = ref<string | null>(null)
+
+function toggleMaximizeSubplot(list: SubplotListKey, id: string): void {
+  const target =
+    list === 'chart' ? maximizedChartSubplotId : maximizedElevationSubplotId
+  target.value = target.value === id ? null : id
 }
 
 function getElevationChartMinWidth(subplotId: string): number {
-  if (maximizedSubplotId.value === null) {
+  if (maximizedElevationSubplotId.value === null) {
     return xs.value ? 100 : 50
   }
 
-  return maximizedSubplotId.value === subplotId ? 100 : 0
+  return maximizedElevationSubplotId.value === subplotId ? 100 : 0
 }
 
 const tab = defineModel<DisplayType>('displayType', {
@@ -245,8 +295,8 @@ const showBrush = computed(
   () =>
     userSettings.get('charts.brush')?.value === true && !props.disableThinning,
 )
-const { debouncedRefetchChartTimeSeries, domain } = useFetchDomain()
-const chartOptions = computed<UseTimeSeriesOptions>(() => {
+const { debouncedRefetchChartTimeSeries, domain } = useFetchDomain(fullDomain)
+const chartOptions = computed<PiTimeSeriesQueryOptions>(() => {
   if (props.disableThinning) {
     return {
       startTime: domain.value.startTime ?? store.startTime,
@@ -261,46 +311,51 @@ const chartOptions = computed<UseTimeSeriesOptions>(() => {
   }
 })
 
-const brushOptions = computed<UseTimeSeriesOptions>(() => ({
+const brushOptions = computed<PiTimeSeriesQueryOptions>(() => ({
   startTime: fullBrushDomain.value[0],
   endTime: fullBrushDomain.value[1],
   thinning: true,
 }))
 
-const tableOptions = computed<UseTimeSeriesOptions>(() => ({
+const tableOptions = computed<PiTimeSeriesQueryOptions>(() => ({
   startTime: store.startTime,
   endTime: store.endTime,
 }))
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { series: chartSeries, interval: useTimeSeriesInterval } = useTimeSeries(
-  baseUrl,
+const { series: chartSeries } = useTimeSeries(
   () => props.config.requests,
   chartOptions,
   () => tab.value === DisplayType.TimeSeriesChart,
 )
 const { series: brushChartSeries } = useTimeSeries(
-  baseUrl,
   () => props.config.requests,
   brushOptions,
   () => tab.value === DisplayType.TimeSeriesChart && showBrush.value,
 )
 const {
   series: tableSeries,
-  isLoading: isLoadingTableSeries,
-  refresh: refreshTableTimeSeries,
-} = useTimeSeries(
-  baseUrl,
+  loading: isTableLoading,
+  refreshing: isTableRefreshing,
+  isLoadingMore: isLoadingMoreTableSeries,
+  pageUpdate: tablePageUpdate,
+  loadMore: loadMoreTableSeries,
+  requestRefresh: refreshTableTimeSeries,
+  pauseRefresh: pauseTableRefresh,
+  resumeRefresh: resumeTableRefresh,
+} = usePaginatedTimeSeries(
   () => props.config.requests,
   tableOptions,
   () => tab.value === DisplayType.TimeSeriesTable,
 )
 const { series: elevationChartSeries } = useTimeSeries(
-  baseUrl,
   () => props.elevationChartConfig.requests,
   chartOptions,
   () => tab.value === DisplayType.ElevationChart,
   selectedDate,
+)
+const isLoadingTableSeries = computed(
+  () => isTableLoading.value || isTableRefreshing.value,
 )
 
 async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
@@ -332,7 +387,29 @@ const elevationChartSubplots = computed(() => {
   }
 })
 
+// Clear a maximized id once its subplot no longer exists in the (possibly new) list.
+watch(subplots, (newSubplots) => {
+  if (
+    maximizedChartSubplotId.value !== null &&
+    !newSubplots.some((subplot) => subplot.id === maximizedChartSubplotId.value)
+  ) {
+    maximizedChartSubplotId.value = null
+  }
+})
+
+watch(elevationChartSubplots, (newSubplots) => {
+  if (
+    maximizedElevationSubplotId.value !== null &&
+    !newSubplots.some(
+      (subplot) => subplot.id === maximizedElevationSubplotId.value,
+    )
+  ) {
+    maximizedElevationSubplotId.value = null
+  }
+})
+
 const tableConfig = ref<ChartConfig>({ id: '', title: '', series: [] })
+const ensembleTableConfig = useEnsembleChartConfig(tableConfig, tableSeries)
 
 watch(
   () => props.config.subplots,
@@ -357,9 +434,9 @@ watch(
 
 watch(isEditing, () => {
   if (isEditing.value) {
-    useTimeSeriesInterval?.pause()
+    pauseTableRefresh()
   } else {
-    useTimeSeriesInterval?.resume()
+    resumeTableRefresh()
   }
   // Can't set a custom message in modern browsers
   globalThis.onbeforeunload = isEditing.value ? () => true : null
@@ -370,7 +447,10 @@ onUnmounted(() => {
 })
 
 onBeforeRouteLeave(confirmUnsavedChanges)
-onBeforeRouteUpdate(confirmUnsavedChanges)
+onBeforeRouteUpdate((to, from) => {
+  // A query update does not leave the current display.
+  if (to.path !== from.path) return confirmUnsavedChanges()
+})
 async function confirmUnsavedChanges() {
   if (isEditing.value) {
     // For multiple simultaneous leaves set to false since confirm dialog is async

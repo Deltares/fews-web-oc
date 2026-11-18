@@ -94,14 +94,14 @@ onMounted(() => {
   }
 })
 
-function onLoad(): void {
+async function onLoad(): Promise<void> {
   isLoading.value = false
 
   if (props.allowZooming) {
     setupD3Zoom()
   }
 
-  resize()
+  await resize()
 }
 
 function onAction(event: CustomEvent): void {

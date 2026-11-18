@@ -1,35 +1,40 @@
 <template>
-  <v-btn-toggle
-    v-if="aggregations.length > 0"
+  <InformationPanelExtension
     v-model="selectedAggregationLabel"
-    density="compact"
-    variant="flat"
-    mandatory
-    class="overflow-visible"
+    :items="aggregations"
+    value-key="id"
+    text-key="shortLabel"
+    icon-key="icon"
+    active-prepend-icon="mdi-clock-end"
   >
-    <v-tooltip v-for="item in aggregations" :key="item.id" location="top">
-      <template #activator="{ props: tooltipProps }">
-        <AggregationButton
-          :item="item"
-          :selectedAggregationLabel="selectedAggregationLabel"
-          :tooltipProps="tooltipProps"
-        />
-      </template>
+    <template #tooltip="{ item }">
       <strong>{{ item.type }} {{ item.id }}</strong>
       <div>{{ toDateRangeString(item.startDate, item.endDate) }}</div>
-    </v-tooltip>
-  </v-btn-toggle>
+      <KeyboardHint
+        :keys="['←', '→']"
+        :label="t('wms.previousNext')"
+        class="pt-2"
+      />
+    </template>
+  </InformationPanelExtension>
 </template>
 
 <script setup lang="ts">
-import AggregationButton from '@/components/wms/panel/AggregationButton.vue'
-import type { AggregationItem } from '@/lib/aggregation'
+import { useI18n } from 'vue-i18n'
+
+import KeyboardHint from '@/components/general/KeyboardHint.vue'
+
+import { type AggregationItem } from '@/lib/aggregation'
 import { toDateRangeString } from '@/lib/date'
+
+import InformationPanelExtension from './InformationPanelExtension.vue'
 
 interface Props {
   aggregations: AggregationItem[]
 }
 defineProps<Props>()
+
+const { t } = useI18n()
 
 const selectedAggregationLabel = defineModel<string | null>(
   'selectedAggregationLabel',

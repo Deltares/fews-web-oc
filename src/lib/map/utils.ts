@@ -1,4 +1,6 @@
-import type { StyleSpecification } from 'maplibre-gl'
+import { AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
+import { GetMapFilter } from '@deltares/fews-wms-requests'
+import type { Map, StyleSpecification } from 'maplibre-gl'
 
 const LAYER_PREFIX = 'weboc-layer-'
 const SOURCE_PREFIX = 'weboc-source-'
@@ -17,6 +19,16 @@ export function isCustomLayer(id: string) {
 
 export function isCustomSource(id: string) {
   return id.startsWith(SOURCE_PREFIX)
+}
+
+/**
+ * Whether style mutations such as setFilter and setFeatureState are allowed.
+ * They throw while a style is being rebuilt, and map.style is null after a lost
+ * WebGL context. map.isStyleLoaded() is too strict to use here: it is also false
+ * while tiles are loading, which would drop updates that are valid.
+ */
+export function isStyleReady(map: Map): boolean {
+  return map.style?._loaded === true
 }
 
 export function transformStyle(
@@ -65,4 +77,31 @@ export function transformStyle(
     layers,
     glyphs,
   }
+}
+
+export function getFilterFromLayerOptions(options: AnimatedRasterLayerOptions) {
+  const filter: Omit<GetMapFilter, 'time' | 'bbox'> = {
+    service: 'WMS',
+    version: '1.3',
+    crs: 'EPSG:3857',
+    layers: options.name,
+    aggregation: options.aggregationLabel,
+    useLastValue: options.useLastValue,
+    styles: options.style,
+    elevation: options.elevation ?? undefined,
+    layerType: options.layerType,
+    taskRunId: options.taskRunId,
+    useDisplayUnits: options.useDisplayUnits,
+  }
+
+  if (options.colorScaleRange) {
+    filter.colorscalerange = options.colorScaleRange
+  }
+
+  if (options.ensembleSelection) {
+    filter.ensembleId = options.ensembleSelection.ensembleId
+    filter.ensembleMemberId = options.ensembleSelection.ensembleMemberId
+  }
+
+  return filter
 }

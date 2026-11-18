@@ -6,20 +6,21 @@ import {
 } from '@deltares/fews-pi-requests'
 import type { MaybeRefOrGetter } from 'vue'
 import { ref, shallowRef, toValue, watch } from 'vue'
-import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
+import {
+  RefreshPolicy,
+  useRefreshCoordinator,
+} from '@/services/useRefreshCoordinator'
 import { configManager } from '@/services/application-config'
-import { Pausable } from '@vueuse/core'
 import { convertFewsPiTaskRunToTaskRun, type TaskRun } from '@/lib/taskruns'
 
 export function useTaskRuns(
   baseUrl: string,
   filter: MaybeRefOrGetter<TaskRunsFilter>,
-  refreshInterval?: number,
+  intervalMs?: number,
 ) {
   const taskRuns = shallowRef<TaskRun[]>([])
   const isLoading = ref(false)
   const error = shallowRef<string>()
-  const interval = ref<Pausable>()
 
   async function fetchTaskRunsForFilter(_filter: TaskRunsFilter) {
     const explodeQueryParameters = configManager.get(
@@ -71,20 +72,33 @@ export function useTaskRuns(
     }
   }
 
-  if (refreshInterval) {
-    interval.value = useFocusAwareInterval(loadTaskRun, refreshInterval, {
-      immediateCallback: true,
-    })
-  } else {
-    loadTaskRun()
+  const policies: RefreshPolicy[] = [
+    'onSystemTick',
+    'onVisibilityResume',
+    'manual',
+  ]
+
+  if (intervalMs !== undefined) {
+    policies.push('onInterval')
   }
 
-  watch(() => toValue(filter), loadTaskRun)
+  const refreshCoordinator = useRefreshCoordinator(loadTaskRun, {
+    policies,
+    immediateCallback: true,
+    intervalMs,
+  })
+
+  watch(
+    () => toValue(filter),
+    () => {
+      refreshCoordinator.trigger()
+    },
+  )
 
   return {
     taskRuns,
     isLoading,
-    interval,
+    pause: refreshCoordinator.pause,
     error,
   }
 }

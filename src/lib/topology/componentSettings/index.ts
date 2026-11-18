@@ -1,5 +1,6 @@
 export * from './settings'
 export * from './chartSettings'
 export * from './schematicStatusDisplaySettings'
+export * from './sidePanelSettings'
 export * from './reportSettings'
 export * from './mapSettings'

@@ -1,0 +1,1139 @@
+<template>
+  <v-dialog
+    v-model="modelValue"
+    transition="dialog-top-transition"
+    :fullscreen="mobile"
+    :max-width="mobile ? undefined : '900'"
+    :height="mobile ? undefined : '60vh'"
+    class="search-dialog"
+    @keydown="onKeydown"
+  >
+    <v-card rounded="lg" class="search-dialog__card">
+      <v-toolbar density="compact" class="d-flex flex-row w-100 align-items">
+        <input
+          ref="searchInput"
+          v-model="searchContext.search"
+          type="text"
+          :placeholder="searchPlaceholder"
+          aria-label="Search"
+          class="search-dialog__input ml-2"
+          @keydown.enter.stop.prevent="selectSelectedItem"
+        />
+        <v-btn size="small" icon @click="modelValue = false">
+          <v-icon size="small">mdi-close</v-icon>
+        </v-btn>
+      </v-toolbar>
+      <div class="search-dialog__mode-hint text-caption text-medium-emphasis">
+        <template v-if="searchMode === 'location'">
+          <span class="search-dialog__mode-hint-current">
+            <kbd>{{ LOCATION_SEARCH_SHORTCUT }}</kbd>
+            Searching locations
+          </span>
+          <span
+            >Remove {{ LOCATION_SEARCH_SHORTCUT }} to search for anything</span
+          >
+        </template>
+
+        <template v-else-if="searchMode === 'route'">
+          <span class="search-dialog__mode-hint-current">
+            <kbd>{{ ROUTE_SEARCH_SHORTCUT }}</kbd>
+            Searching routes
+          </span>
+          <span>Remove {{ ROUTE_SEARCH_SHORTCUT }} to search for anything</span>
+        </template>
+
+        <template v-else>
+          <span>Search all groups</span>
+
+          <span>
+            <kbd>{{ LOCATION_SEARCH_SHORTCUT }}</kbd>
+            Locations
+          </span>
+
+          <span>
+            <kbd>{{ ROUTE_SEARCH_SHORTCUT }}</kbd>
+            Routes
+          </span>
+        </template>
+      </div>
+
+      <v-divider />
+
+      <div class="search-dialog__results">
+        <div class="search-dialog__scroll-container">
+          <v-virtual-scroll
+            ref="virtualScroll"
+            :items="visibleRows"
+            :item-height="48"
+            class="search-dialog__virtual-scroll"
+          >
+            <template #default="{ item: row, index }">
+              <!-- GROUP ROW -->
+              <div
+                v-if="row.kind === 'group'"
+                :key="row.id"
+                class="search-dialog__row search-dialog__group-row"
+                :data-search-row-index="index"
+              >
+                <div class="search-dialog__row-content">
+                  <v-icon size="16">
+                    {{
+                      row.id === 'topology'
+                        ? 'mdi-directions'
+                        : 'mdi-map-marker'
+                    }}
+                  </v-icon>
+
+                  <span class="search-dialog__group-title">
+                    {{ row.label }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- TREE ROW -->
+              <!-- //NOSONAR -->
+              <div
+                :key="row.item.id"
+                v-else
+                class="search-dialog__row"
+                :class="{
+                  'search-dialog__row--selected': isSelected(row.item),
+                }"
+                :style="{ '--tree-depth': row.depth }"
+                :data-search-item-id="row.item.id"
+                :data-search-row-index="index"
+              >
+                <div class="search-dialog__row-content">
+                  <!-- indentation -->
+                  <div class="search-dialog__indent" aria-hidden="true" />
+
+                  <!-- expand/collapse -->
+                  <button
+                    v-if="row.item.children?.length"
+                    type="button"
+                    class="search-dialog__expand-button"
+                    :aria-label="
+                      isTreeItemExpanded(row.item) ? 'Collapse' : 'Expand'
+                    "
+                    tabindex="-1"
+                    @mousedown.prevent
+                    @click.stop="onToggleTreeItemClick(row.item)"
+                  >
+                    <v-icon size="18">
+                      {{
+                        isTreeItemExpanded(row.item)
+                          ? 'mdi-chevron-down'
+                          : 'mdi-chevron-right'
+                      }}
+                    </v-icon>
+                  </button>
+
+                  <span v-else class="search-dialog__expand-placeholder" />
+
+                  <button
+                    type="button"
+                    class="search-dialog__select-button"
+                    tabindex="-1"
+                    @mousedown.prevent
+                    @click.stop="selectTreeItem(row.item)"
+                  >
+                    <!-- icon -->
+                    <span class="search-dialog__icon">
+                      <v-icon v-if="row.item.type === 'topology'" size="16">
+                        {{ row.item.iconName }}
+                      </v-icon>
+
+                      <v-icon
+                        v-else-if="
+                          row.item.type === 'location' && row.item.iconName
+                        "
+                        :icon="toResourceIcon(row.item.iconName)"
+                        size="16"
+                      />
+
+                      <svg
+                        v-else-if="row.item.type === 'location'"
+                        class="search-dialog__location-marker"
+                        viewBox="0 0 16 16"
+                        width="10"
+                        height="10"
+                        aria-hidden="true"
+                      >
+                        <circle
+                          cx="8"
+                          cy="8"
+                          r="7"
+                          fill="#dfdfdf"
+                          stroke="black"
+                          stroke-width="2"
+                        />
+                      </svg>
+                    </span>
+
+                    <!-- title/details -->
+                    <span class="search-dialog__content">
+                      <span
+                        class="search-dialog__title"
+                        :class="{
+                          'search-dialog__title--selected': isSelected(
+                            row.item,
+                          ),
+                        }"
+                      >
+                        <HighlightMatch
+                          :value="row.item.label"
+                          :query="searchQuery"
+                        />
+                        <span
+                          v-if="
+                            row.item.type === 'location' &&
+                            showLocationId(row.item)
+                          "
+                          class="search-dialog__id-match"
+                        >
+                          ID:
+                          <HighlightMatch
+                            :value="row.item.id"
+                            :query="searchQuery"
+                          />
+                        </span>
+                      </span>
+                      <!-- route path -->
+                      <span
+                        v-if="
+                          row.item.type === 'topology' &&
+                          !row.item.children?.length
+                        "
+                        class="search-dialog__route-path"
+                      >
+                        <span v-if="isSelected(row.item)">
+                          <kbd>Enter</kbd>
+                          Open
+                        </span>
+
+                        {{ routeForItem(row.item).fullPath }}
+                      </span>
+
+                      <!-- selected item hint -->
+                      <span
+                        v-if="isSelected(row.item)"
+                        class="search-dialog__item-hint"
+                      >
+                        <template v-if="row.item.children?.length">
+                          <span v-if="isTreeItemExpanded(row.item)">
+                            <kbd>←</kbd> Collapse
+                          </span>
+                          <span v-if="!isTreeItemExpanded(row.item)">
+                            <kbd>→</kbd> Expand
+                          </span>
+                        </template>
+                        <template v-if="row.item.type === 'location'">
+                          <span>
+                            <kbd>Enter</kbd>
+                            {{
+                              isExclusivelySelected(row.item)
+                                ? row.item.children?.length
+                                  ? 'Deselect subtree'
+                                  : 'Deselect location'
+                                : row.item.children?.length
+                                  ? 'Select subtree'
+                                  : 'Select location'
+                            }}
+                          </span>
+
+                          <span v-if="canUseAddLocationShortcut(row.item)">
+                            <kbd>Shift</kbd>+<kbd>Enter</kbd>
+                            {{
+                              isLocationSelected(row.item)
+                                ? 'Remove location'
+                                : 'Add location'
+                            }}
+                          </span>
+                        </template>
+                      </span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </template>
+          </v-virtual-scroll>
+        </div>
+      </div>
+
+      <div
+        v-if="!searchResults.length"
+        class="pa-8 text-center text-medium-emphasis"
+      >
+        <v-icon size="40" class="mb-2"> mdi-magnify-close </v-icon>
+
+        <div>No results found</div>
+      </div>
+
+      <v-divider />
+
+      <div
+        class="d-flex align-center ga-4 px-4 py-2 text-caption text-medium-emphasis"
+      >
+        <span>
+          <kbd>↑</kbd>
+          <kbd>↓</kbd>
+          Navigate
+        </span>
+
+        <span>
+          <kbd>←</kbd>
+          <kbd>→</kbd>
+          (De)collapse
+        </span>
+        <span>
+          <kbd>Esc</kbd>
+          Close
+        </span>
+      </div>
+    </v-card>
+  </v-dialog>
+</template>
+
+<script setup lang="ts">
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { refDebounced } from '@vueuse/core'
+import { useSearchContext } from '@/stores/searchContext'
+import type { SearchItem } from '@/stores/searchContext'
+import { matchSearchTree } from '@/lib/search/tree'
+import HighlightMatch from '@/components/general/HighlightMatch.vue'
+import { toResourceIcon } from '@/lib/icons'
+import { useDisplay } from 'vuetify'
+import { VVirtualScroll } from 'vuetify/components'
+
+const modelValue = defineModel<boolean>({
+  type: Boolean,
+  required: true,
+})
+
+const router = useRouter()
+const route = useRoute()
+
+const { mobile } = useDisplay()
+const searchContext = useSearchContext()
+const searchInput = useTemplateRef<HTMLInputElement>('searchInput')
+const virtualScroll =
+  useTemplateRef<InstanceType<typeof VVirtualScroll>>('virtualScroll')
+
+const LOCATION_SEARCH_SHORTCUT = '@' as const
+const ROUTE_SEARCH_SHORTCUT = '#' as const
+
+type SearchMode = 'location' | 'route'
+
+const selectedIndex = ref(0)
+
+const searchMode = computed<SearchMode | undefined>(() => {
+  const firstCharacter = searchContext.search.charAt(0)
+  if (firstCharacter === LOCATION_SEARCH_SHORTCUT) {
+    return 'location'
+  }
+  if (firstCharacter === ROUTE_SEARCH_SHORTCUT) {
+    return 'route'
+  }
+  return undefined
+})
+
+const searchPlaceholder = computed(() => {
+  switch (searchMode.value) {
+    case 'location':
+      return 'Search locations...'
+    case 'route':
+      return 'Search routes...'
+    default:
+      return `Search... (${LOCATION_SEARCH_SHORTCUT} locations, ${ROUTE_SEARCH_SHORTCUT} routes)`
+  }
+})
+
+const debouncedSearch = refDebounced(
+  computed(() => searchContext.search),
+  100,
+)
+
+const searchQuery = computed(() => {
+  const value = debouncedSearch.value.trim()
+  return searchMode.value ? value.slice(1).trim() : value
+})
+
+const normalizedSearchQuery = computed(() => searchQuery.value.toLowerCase())
+
+const treeMatches = computed(() => {
+  let roots
+  if (searchMode.value === 'location') {
+    roots = searchContext.items.filter((item) => item.type === 'location')
+  } else if (searchMode.value === 'route') {
+    roots = searchContext.items.filter((item) => item.type === 'topology')
+  } else {
+    roots = searchContext.items
+  }
+
+  return matchSearchTree(roots, normalizedSearchQuery.value)
+})
+
+interface GroupRow {
+  kind: 'group'
+  id: 'topology' | 'location'
+  label: string
+}
+
+interface TreeRow {
+  kind: 'item'
+  item: SearchItem
+  depth: number
+}
+
+type VisibleRow = GroupRow | TreeRow
+
+/**
+ * The actual virtualized dataset.
+ *
+ * This is the most important optimization:
+ *
+ * v-virtual-scroll now receives individual rows rather than
+ * two root treeviews.
+ */
+const visibleRows = computed<VisibleRow[]>(() => {
+  const rows: VisibleRow[] = []
+  const query = normalizedSearchQuery.value
+  const topologyRoots = treeMatches.value.matchedRoots.filter(
+    (item) => item.type === 'topology',
+  )
+  const locationRoots = treeMatches.value.matchedRoots.filter(
+    (item) => item.type === 'location',
+  )
+  appendGroup(rows, 'topology', 'Routes', topologyRoots, query)
+  appendGroup(rows, 'location', 'Locations', locationRoots, query)
+  return rows
+})
+
+const selectedVirtualIndex = computed(() => {
+  let searchIndex = 0
+
+  for (let i = 0; i < visibleRows.value.length; i++) {
+    const row = visibleRows.value[i]
+
+    if (row.kind !== 'item') continue
+
+    if (searchIndex === selectedIndex.value) {
+      return i
+    }
+
+    searchIndex++
+  }
+
+  return -1
+})
+
+function appendGroup(
+  rows: VisibleRow[],
+  id: 'topology' | 'location',
+  label: string,
+  roots: SearchItem[],
+  query: string,
+): void {
+  if (!roots.length) return
+
+  rows.push({
+    kind: 'group',
+    id,
+    label,
+  })
+
+  for (const root of roots) {
+    appendVisibleItem(rows, root, 0, query)
+  }
+}
+
+function appendVisibleItem(
+  rows: VisibleRow[],
+  item: SearchItem,
+  depth: number,
+  query: string,
+  ancestorMatches = false,
+): void {
+  const match = treeMatches.value.matches.get(item)
+  const ownMatch = !query || match?.ownMatch === true
+
+  // If an ancestor matched, everything below it is visible.
+  // Otherwise, this item must either match or have a matching descendant.
+  if (query && !ancestorMatches && !ownMatch && !match?.hasMatchingDescendant) {
+    return
+  }
+
+  rows.push({
+    kind: 'item',
+    item,
+    depth,
+  })
+
+  if (!item.children?.length) {
+    return
+  }
+
+  if (!openedTreeIds.value.has(item.id)) {
+    return
+  }
+
+  // Once a node matches, don't filter anything below it.
+  const includeAllChildren = ancestorMatches || ownMatch
+
+  for (const child of item.children) {
+    appendVisibleItem(rows, child, depth + 1, query, includeAllChildren)
+  }
+}
+
+/**
+ * Logical search results used for keyboard navigation.
+ *
+ * Groups are deliberately excluded.
+ */
+const searchResults = computed<SearchItem[]>(() =>
+  visibleRows.value
+    .filter((row): row is TreeRow => row.kind === 'item')
+    .map((row) => row.item),
+)
+
+const openedTreeIds = ref<Set<string>>(new Set())
+
+function getDefaultOpenedIds(): Set<string> {
+  return new Set(treeMatches.value.defaultOpenedIds)
+}
+
+function isSelected(item: SearchItem): boolean {
+  return searchResults.value[selectedIndex.value]?.id === item.id
+}
+
+function isTreeItemExpanded(item: SearchItem): boolean {
+  return openedTreeIds.value.has(item.id)
+}
+
+function toggleTreeItem(item: SearchItem): void {
+  const next = new Set(openedTreeIds.value)
+
+  if (next.has(item.id)) {
+    next.delete(item.id)
+  } else {
+    next.add(item.id)
+  }
+
+  openedTreeIds.value = next
+}
+
+// Keep keyboard focus in the search input and the keyboard selection in sync
+// with the clicked row, so shortcuts like Enter keep working after a click.
+function setSelectedItem(item: SearchItem): void {
+  const index = searchResults.value.findIndex((result) => result.id === item.id)
+  if (index >= 0) {
+    selectedIndex.value = index
+  }
+  searchInput.value?.focus()
+}
+
+function onToggleTreeItemClick(item: SearchItem): void {
+  setSelectedItem(item)
+  toggleTreeItem(item)
+}
+
+function selectTreeItem(item: SearchItem): void {
+  setSelectedItem(item)
+  selectItem(item)
+}
+
+function showLocationId(item: SearchItem): boolean {
+  const query = normalizedSearchQuery.value
+
+  if (!query || item.type !== 'location') {
+    return false
+  }
+
+  return (
+    item.normalizedId.includes(query) && !item.normalizedLabel.includes(query)
+  )
+}
+
+function isLocationSelected(item: SearchItem): boolean {
+  if (item.type !== 'location') {
+    return false
+  }
+
+  return getCurrentLocationIdSet().has(String(item.params.locationId))
+}
+
+function getCurrentLocationIds(): string[] {
+  const currentLocationIds = route.params.locationIds
+
+  if (Array.isArray(currentLocationIds)) {
+    return currentLocationIds
+  }
+
+  return currentLocationIds?.split(',') ?? []
+}
+
+function getCurrentLocationIdSet(): Set<string> {
+  return new Set(getCurrentLocationIds())
+}
+
+function collectLocationIds(item: SearchItem): string[] {
+  const result: string[] = []
+
+  const stack: SearchItem[] = [item]
+
+  while (stack.length) {
+    const current = stack.pop()!
+
+    if (current.type === 'location') {
+      result.push(String(current.params.locationId))
+    }
+
+    if (current.children?.length) {
+      for (let i = current.children.length - 1; i >= 0; i--) {
+        stack.push(current.children[i])
+      }
+    }
+  }
+
+  return result
+}
+
+function isExclusivelySelected(item: SearchItem): boolean {
+  const locationIds = collectLocationIds(item)
+  const currentLocationIds = getCurrentLocationIds()
+
+  if (currentLocationIds.length !== locationIds.length) {
+    return false
+  }
+
+  const current = new Set(currentLocationIds)
+
+  return locationIds.every((id) => current.has(id))
+}
+
+function canUseAddLocationShortcut(item: SearchItem): boolean {
+  const currentLocationIds = getCurrentLocationIds()
+
+  return (
+    currentLocationIds.length > 0 &&
+    (!isLocationSelected(item) || currentLocationIds.length > 1)
+  )
+}
+const routeFactories: Record<
+  SearchItem['type'],
+  (params: SearchItem['params']) => ReturnType<typeof router.resolve>
+> = {
+  user: (params) =>
+    router.resolve({
+      name: 'user',
+      params: {
+        id: params.id,
+      },
+    }),
+
+  project: (params) =>
+    router.resolve({
+      name: 'project',
+      params: {
+        id: params.id,
+      },
+    }),
+
+  document: (params) =>
+    router.resolve({
+      name: 'document',
+      params: {
+        id: params.id,
+      },
+    }),
+
+  location: (params) =>
+    route.params.topologyId !== undefined
+      ? router.resolve({
+          name: 'TopologySpatialDisplayWithLocation',
+          params: {
+            topologyId: route.params.topologyId,
+            nodeId: route.params.nodeId,
+            layerName: route.params.layerName,
+            locationIds: params.locationId,
+          },
+          query: route.query,
+        })
+      : router.resolve({
+          name: 'SpatialDisplayWithLocation',
+          params: {
+            locationId: params.locationId,
+          },
+        }),
+
+  topology: (params) =>
+    router.resolve({
+      name: 'TopologyDisplay',
+      params: {
+        topologyId: params.topologyId,
+        nodeId: params.nodeId,
+      },
+    }),
+}
+
+function routeForItem(item: SearchItem, addLocation = false) {
+  if (item.type === 'location') {
+    return routeForLocation(item, addLocation)
+  }
+
+  return routeFactories[item.type](item.params)
+}
+
+function routeForLocation(item: SearchItem, addLocation: boolean) {
+  const locationId = String(item.params.locationId)
+  const currentLocationIds = getCurrentLocationIds()
+
+  if (route.params.topologyId !== undefined) {
+    const locationIds =
+      addLocation || !currentLocationIds.includes(locationId)
+        ? [...new Set([...currentLocationIds, locationId])]
+        : currentLocationIds.filter((id) => id !== locationId)
+
+    return router.resolve({
+      name:
+        locationIds.length > 0
+          ? 'TopologySpatialDisplayWithLocation'
+          : 'TopologySpatialDisplay',
+      params: {
+        topologyId: route.params.topologyId,
+        nodeId: route.params.nodeId,
+        layerName: route.params.layerName,
+        ...(locationIds.length > 0
+          ? {
+              locationIds: locationIds.join(','),
+            }
+          : {}),
+      },
+      query: route.query,
+    })
+  }
+
+  if (route.params.locationId === locationId && !addLocation) {
+    return router.resolve({
+      name: 'SpatialDisplay',
+      params: {
+        layerName: route.params.layerName,
+      },
+      query: route.query,
+    })
+  }
+
+  return routeFactories.location(item.params)
+}
+
+function routeForLocationIds(locationIds: string[]) {
+  if (route.params.topologyId !== undefined) {
+    return router.resolve({
+      name:
+        locationIds.length > 0
+          ? 'TopologySpatialDisplayWithLocation'
+          : 'TopologySpatialDisplay',
+      params: {
+        topologyId: route.params.topologyId,
+        nodeId: route.params.nodeId,
+        layerName: route.params.layerName,
+        ...(locationIds.length > 0
+          ? {
+              locationIds: locationIds.join(','),
+            }
+          : {}),
+      },
+      query: route.query,
+    })
+  }
+
+  return locationIds.length > 0
+    ? router.resolve({
+        name: 'SpatialDisplayWithLocation',
+        params: {
+          locationId: locationIds[0],
+        },
+      })
+    : router.resolve({
+        name: 'SpatialDisplay',
+        params: {
+          layerName: route.params.layerName,
+        },
+        query: route.query,
+      })
+}
+
+function selectItem(item: SearchItem, addLocation = false) {
+  router.push(routeForItem(item, addLocation))
+  if (mobile.value) {
+    close()
+  }
+}
+
+function selectSelectedItem(event?: KeyboardEvent): void {
+  const item = searchResults.value[selectedIndex.value]
+  if (!item) return
+
+  if (item.type === 'location') {
+    selectSelectedLocation(event)
+    return
+  }
+  if (!item.children?.length) {
+    selectItem(item)
+  }
+}
+
+function selectSelectedLocation(event?: KeyboardEvent): void {
+  const item = searchResults.value[selectedIndex.value]
+  if (!item || item.type !== 'location') {
+    return
+  }
+
+  const locationIds = collectLocationIds(item)
+  const currentLocationIds = getCurrentLocationIds()
+  const current = new Set(currentLocationIds)
+  const addLocation = event?.shiftKey === true
+
+  let nextLocationIds: string[]
+
+  const allSelected = locationIds.every((id) => current.has(id))
+
+  if (!addLocation) {
+    nextLocationIds = allSelected ? [] : locationIds
+  } else if (allSelected) {
+    const selected = new Set(locationIds)
+    nextLocationIds = currentLocationIds.filter((id) => !selected.has(id))
+  } else {
+    nextLocationIds = [...new Set([...currentLocationIds, ...locationIds])]
+  }
+
+  router.push(routeForLocationIds(nextLocationIds))
+}
+
+function expandSelectedItem(): void {
+  const item = searchResults.value[selectedIndex.value]
+
+  if (!item?.children?.length) {
+    return
+  }
+  toggleTreeItem(item)
+}
+
+function close(): void {
+  modelValue.value = false
+}
+
+function onKeydown(event: KeyboardEvent): void {
+  if (!modelValue.value) return
+
+  const items = searchResults.value
+
+  switch (event.key) {
+    case 'ArrowDown':
+      event.preventDefault()
+
+      if (items.length) {
+        selectedIndex.value = (selectedIndex.value + 1) % items.length
+
+        scrollSelectedItemIntoView()
+      }
+
+      break
+
+    case 'ArrowUp':
+      event.preventDefault()
+
+      if (selectedIndex.value > 0) {
+        selectedIndex.value--
+        scrollSelectedItemIntoView()
+      }
+
+      break
+
+    case 'ArrowLeft':
+    case 'ArrowRight':
+      event.preventDefault()
+
+      toggleSelectedTreeItem(event.key, items)
+
+      break
+    case 'Spacebar':
+      event.preventDefault()
+      expandSelectedItem()
+      break
+
+    case 'Enter':
+      event.preventDefault()
+      selectSelectedItem(event)
+      break
+
+    case 'Escape':
+      event.preventDefault()
+      close()
+      break
+  }
+}
+
+function toggleSelectedTreeItem(key: string, items: SearchItem[]): void {
+  const item = items[selectedIndex.value]
+
+  if (!item?.children?.length) return
+
+  const expanded = openedTreeIds.value.has(item.id)
+
+  if (key === 'ArrowRight' && !expanded) {
+    toggleTreeItem(item)
+    return
+  }
+
+  if (key === 'ArrowLeft' && expanded) {
+    toggleTreeItem(item)
+  }
+}
+
+function scrollSelectedItemIntoView(): void {
+  const virtual = virtualScroll.value
+  if (!virtual) return
+
+  const virtualIndex = selectedVirtualIndex.value
+  if (virtualIndex < 0) return
+
+  const container: HTMLElement = virtual.$el
+  const row = container.querySelector<HTMLElement>(
+    `[data-search-row-index="${virtualIndex}"]`,
+  )
+  if (!row) {
+    virtual.scrollToIndex(virtualIndex)
+    return
+  }
+
+  const viewport = container.getBoundingClientRect()
+  const bounds = row.getBoundingClientRect()
+  if (bounds.top < viewport.top) {
+    virtual.scrollToIndex(virtualIndex, 'start')
+  } else if (bounds.bottom > viewport.bottom) {
+    virtual.scrollToIndex(virtualIndex, 'end')
+  }
+}
+
+watch(
+  searchQuery,
+  () => {
+    selectedIndex.value = 0
+    openedTreeIds.value = getDefaultOpenedIds()
+  },
+  { immediate: true },
+)
+
+watch(
+  () => searchResults.value.length,
+  (length) => {
+    if (!length) {
+      selectedIndex.value = 0
+      return
+    }
+
+    selectedIndex.value = Math.min(selectedIndex.value, length - 1)
+  },
+)
+
+watch(modelValue, async (value) => {
+  if (!value) return
+
+  await nextTick()
+  searchInput.value?.focus()
+})
+</script>
+
+<style scoped>
+.search-dialog__card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-dialog__input {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 0;
+  outline: none;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+}
+
+.search-dialog__input::placeholder {
+  color: rgb(var(--v-theme-on-surface), 0.6);
+}
+
+.search-dialog__mode-hint {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 16px 4px;
+}
+
+.search-dialog__mode-hint span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.search-dialog__mode-hint-current {
+  color: rgb(var(--v-theme-primary));
+}
+
+.search-dialog__results {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-dialog__scroll-container {
+  min-height: 0;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.search-dialog__virtual-scroll {
+  min-height: 0;
+  height: 0;
+  flex: 1 1 0;
+}
+
+.search-dialog__row {
+  box-sizing: border-box;
+  min-height: 48px;
+  width: 100%;
+  padding-left: 8px;
+  padding-right: 8px;
+  cursor: pointer;
+}
+
+.search-dialog__row--selected {
+  background-color: rgb(var(--v-theme-primary), 0.12);
+}
+
+.search-dialog__row-content {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  width: 100%;
+}
+
+.search-dialog__group-row {
+  cursor: default;
+}
+
+.search-dialog__group-title {
+  color: rgb(var(--v-theme-primary));
+  font-weight: 500;
+}
+
+.search-dialog__indent {
+  flex: 0 0 calc(var(--tree-depth, 0) * 20px);
+}
+
+.search-dialog__expand-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.search-dialog__expand-placeholder {
+  flex: 0 0 24px;
+  width: 24px;
+}
+
+.search-dialog__select-button {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  min-width: 0;
+  flex: 1;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.search-dialog__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 24px;
+  width: 24px;
+  margin-right: 4px;
+}
+
+.search-dialog__content {
+  display: block;
+  min-width: 0;
+  flex: 1;
+}
+
+.search-dialog__title {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-dialog__title--selected {
+  font-weight: 500;
+}
+
+.search-dialog__id-match {
+  margin-left: 8px;
+  color: rgb(var(--v-theme-on-surface), 0.6);
+  font-size: 0.8em;
+  font-style: italic;
+}
+
+.search-dialog__route-path {
+  display: block;
+  overflow: hidden;
+  color: rgb(var(--v-theme-on-surface), 0.6);
+  font-size: 0.8em;
+  font-style: italic;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-dialog__item-hint {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: rgb(var(--v-theme-on-surface), 0.6);
+  font-size: 0.8em;
+}
+
+.search-dialog__item-hint span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.search-dialog__location-marker {
+  flex-shrink: 0;
+}
+</style>

@@ -5,6 +5,9 @@
     :disable-thinning="isGridCoordinateMode"
     :elevation-chart-filter="elevationChartFilter"
     :locations-tooltip-filter="locationsTooltipFilter"
+    :dynamic-report-display-id="dynamicReportDisplayId"
+    :dynamic-report-location-ids="dynamicReportLocationIds"
+    :report-node-id="topologyNode?.id"
     :current-time="currentTime"
     :settings="settings"
   >
@@ -33,6 +36,7 @@ import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
+import type { EnsembleSelection } from '@/lib/ensemble'
 
 interface Props {
   layerName?: string
@@ -43,6 +47,7 @@ interface Props {
   settings?: ComponentSettings
   currentTime?: Date
   elevation?: number
+  ensembleSelection?: EnsembleSelection
   taskRunId?: string
 }
 
@@ -120,6 +125,8 @@ function getTimeSeriesGridActionsFilter(
     documentFormat: 'PI_JSON',
     useDisplayUnits: userSettings.useDisplayUnits,
     taskRunId: props.taskRunId,
+    ensembleId: props.ensembleSelection?.ensembleId,
+    ensembleMemberId: props.ensembleSelection?.ensembleMemberId,
     // Should be available according to the docs, but errors
     // convertDatum: settings.convertDatum,
   }
@@ -199,5 +206,17 @@ const locationsTooltipFilter = computed<LocationsTooltipFilter | undefined>(
       filterId: filterIds.value[0],
     }
   },
+)
+
+// The dynamic report display is only shown for locations from the filter,
+// not for grid coordinates.
+const dynamicReportDisplayId = computed(() => {
+  if (!props.settings.charts.dynamicReportDisplay.enabled) return
+  if (!props.locationIds) return
+  return props.topologyNode?.dynamicReportDisplay?.id
+})
+
+const dynamicReportLocationIds = computed(
+  () => props.locationIds?.split(',') ?? [],
 )
 </script>

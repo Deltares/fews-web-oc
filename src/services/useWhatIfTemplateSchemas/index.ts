@@ -6,6 +6,19 @@ import { MaybeRefOrGetter, toValue } from 'vue'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { generateJsonSchema } from '@/lib/whatif'
 
+async function getFile(
+  file: string,
+  allowNotFound = false,
+): Promise<Response | undefined> {
+  const url = getResourcesStaticUrl(file)
+  const response = await fetch(url)
+  if (allowNotFound && response.status === 404) return undefined
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${url}: ${response.status}`)
+  }
+  return response
+}
+
 export function useWhatIfTemplateSchemas(
   whatIfTemplate: MaybeRefOrGetter<WhatIfTemplate | undefined>,
 ) {
@@ -22,37 +35,19 @@ export function useWhatIfTemplateSchemas(
   })
 
   async function getJsonSchema(file: string): Promise<JsonSchema7 | undefined> {
-    try {
-      const schema = await getFile(file)
-      return schema.json()
-    } catch (error) {
+    const schema = await getFile(file, true)
+    if (!schema) {
       const properties = toValue(whatIfTemplate)?.properties
       return properties ? generateJsonSchema(properties) : undefined
     }
+    return schema.json()
   }
 
   async function getUISchema(
     file: string,
   ): Promise<UISchemaElement | undefined> {
-    try {
-      const schema = await getFile(file)
-      return schema.json()
-    } catch (error) {
-      return undefined
-    }
-  }
-
-  async function getFile(file: string) {
-    const url = getResourcesStaticUrl(file)
-    try {
-      const response = await fetch(url)
-      if (!response.ok) {
-        throw new Error(`Failed to fetch ${url}`)
-      }
-      return response
-    } catch (error) {
-      throw new Error(`Failed to fetch ${url}`)
-    }
+    const schema = await getFile(file, true)
+    return schema?.json()
   }
 
   return { jsonSchema, uiSchema }

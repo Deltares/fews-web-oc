@@ -1,5 +1,5 @@
 import { type FeatureCollection, type Geometry } from 'geojson'
-import { uniqBy } from 'lodash-es'
+import { uniqBy } from '../utils/uniq'
 import { Map } from 'maplibre-gl'
 
 import { type Location } from '@deltares/fews-pi-requests'
@@ -8,7 +8,7 @@ import { getResourcesIconsUrl } from '../fews-config'
 function getUniqueIconNames(
   locations: FeatureCollection<Geometry, Location>,
 ): string[] {
-  return uniqBy(locations.features, 'properties.iconName')
+  return uniqBy(locations.features, (feature) => feature.properties.iconName)
     .map((feature) => feature.properties.iconName)
     .filter((iconName) => iconName !== undefined) as string[]
 }
@@ -110,7 +110,7 @@ async function addCustomLocationIconsToMap(
 
   const locationIcons = getUniqueIconNames(locations)
   await Promise.allSettled(
-    locationIcons.flatMap(async (iconName) => {
+    locationIcons.flatMap((iconName) => {
       const url = getResourcesIconsUrl(iconName)
       return [
         addIconToMap(map, iconName, url),
@@ -127,8 +127,8 @@ async function addCustomLocationIconsToMap(
   )
 }
 
-async function addSprites(map: Map): Promise<void> {
-  if (map.getSprite().find((sprite) => sprite.id === 'overlay')) return
+function addSprites(map: Map): void {
+  if (map.getSprite().some((sprite) => sprite.id === 'overlay')) return
   const url = new URL(
     `${import.meta.env.BASE_URL}sprites/mdi-overlay-sdf`,
     window.location.href,
@@ -149,9 +149,9 @@ export async function addLocationIconsToMap(
   map: Map,
   locations: FeatureCollection<Geometry, Location>,
 ): Promise<void> {
+  addSprites(map)
   await Promise.allSettled([
     addDefaultIconsToMap(map),
-    addSprites(map),
     addCustomLocationIconsToMap(map, locations),
   ])
 }

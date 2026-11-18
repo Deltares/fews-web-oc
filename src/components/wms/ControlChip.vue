@@ -28,19 +28,14 @@ defineOptions({ inheritAttrs: false })
   backdrop-filter: blur(5px);
   background-color: rgba(var(--v-theme-surface), 0.8);
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-  /* border: 1px solid rgba(var(--v-border-color), 0.3); */
 }
 
 .control-chip__extension-slot {
   top: 28px;
   position: absolute;
   display: flex;
+  flex-direction: column;
   justify-content: center;
-}
-
-.control-chip__extension-slot:hover *,
-.control-chip__extension-slot *:hover,
-.control-chip__extension-slot:focus-within * {
-  display: inherit; /* visible */
+  align-items: start;
 }
 </style>

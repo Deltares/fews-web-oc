@@ -11,6 +11,6 @@ export interface PostResponse {
   relativePathMetaDataFile: string
   relativePathProducts: Array<string>
   sourceId: string
-  version: number
+  version: string
   timeZero: string
 }

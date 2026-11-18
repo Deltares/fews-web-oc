@@ -13,7 +13,8 @@ import {
   convertJsDateToFewsPiDateTime,
   convertJSDateToFewsPiParameter,
 } from '@/lib/date'
-import { MD5 } from 'crypto-js'
+import { sha256 } from '@noble/hashes/sha2.js'
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js'
 import { uid } from '@/lib/utils/uid'
 import { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { convertActionPeriodToDomain } from '@/lib/period'
@@ -171,7 +172,7 @@ function addPeriodIfNotSet(
 export function addIndexToKeys(results: ActionResult[]) {
   results.forEach((result) => {
     result.requests.forEach((request) => {
-      request.key = MD5(request.request).toString()
+      request.key = bytesToHex(sha256(utf8ToBytes(request.request)))
     })
     if (result.config?.timeSeriesDisplay?.subplots) {
       let i = 0
@@ -263,7 +264,7 @@ export function getSubplotWithDomain(
   if (!domain) return subplot
 
   const axis = subplot.xAxis?.[0]
-  const updatedAxis = { ...axis, domain }
+  const updatedAxis = { ...axis, kind: axis?.kind ?? 'time', domain }
 
   return {
     ...subplot,

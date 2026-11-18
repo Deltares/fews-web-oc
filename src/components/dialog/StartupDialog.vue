@@ -7,14 +7,14 @@
     v-else-if="splashSrc"
     v-model="showSplashDialog"
     :img-url="splashSrc"
-    :version="packageConfig.version"
+    :version="version"
   />
 </template>
 
 <script setup lang="ts">
 import SplashScreenDialog from '@/components/dialog/SplashScreenDialog.vue'
 import TermsOfUseDialog from '@/components/dialog/TermsOfUseDialog.vue'
-import packageConfig from '@/../package.json'
+import { version } from '@/../package.json'
 import { computed } from 'vue'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { useConfigStore } from '@/stores/config'
@@ -22,7 +22,7 @@ import { computedAsync, useStorage } from '@vueuse/core'
 
 const configStore = useConfigStore()
 
-const splashSrc = computedAsync(async () => {
+const splashSrc = computedAsync(() => {
   if (!configStore.general.splashScreen) return
 
   return getResourcesStaticUrl(configStore.general.splashScreen)

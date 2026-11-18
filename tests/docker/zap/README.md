@@ -22,4 +22,4 @@ Since the generated report files (report.html, report.json and report.xml) do no
 New entries to the ignore list, should be added to the zap2junit.xsl file as well.
 
 # zap2junit.xsl
-This can be used by teamcity to generate a test report and report to github all checks have passed.
+This can be used by teamcity to generate a test report and report all checks have passed.

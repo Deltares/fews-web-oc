@@ -1,10 +1,15 @@
 <template>
   <div class="table-container">
-    <table v-for="table in filteredTableData" class="data-table w-100">
+    <table
+      v-for="(table, index) in filteredTableData"
+      class="data-table w-100"
+      :key="index"
+    >
       <thead>
         <tr>
           <th
             v-for="column in table.filteredColumns"
+            :key="column.header"
             scope="col"
             class="font-weight-medium text-medium-emphasis"
           >
@@ -22,6 +27,7 @@
         <tr>
           <td
             v-for="column in table.filteredColumns"
+            :key="column.header"
             :style="{ width: column.width }"
           >
             {{ column.value }}

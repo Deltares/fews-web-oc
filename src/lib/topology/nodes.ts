@@ -1,4 +1,6 @@
 import type { ColumnItem } from '@/components/general/ColumnItem'
+import { isModuleFederationSupported } from '@weboc/module-federation'
+import { toResourceIcon } from '@/lib/icons'
 import type {
   TopologyNode,
   TopologyThresholdNode,
@@ -73,8 +75,10 @@ function getThresholdCount(
   return thresholds?.find((t) => t.id === node.id)?.filterLocationsCount
 }
 
-function getIcon(node: TopologyNode) {
-  return node.iconId
+export function getTopologyNodeIcon(node: TopologyNode) {
+  if (node.iconId) return node.iconId
+  if (node.icon) return toResourceIcon(node.icon)
+  return undefined
 }
 
 function getAppendIcon(node: TopologyNode) {
@@ -98,7 +102,7 @@ function getColumnItemFromTopologyNode(
   const result: ColumnItem = {
     id: node.id,
     name: node.name,
-    icon: getIcon(node),
+    icon: getTopologyNodeIcon(node),
     appendIcon: getAppendIcon(node),
     thresholdIcon: getThresholdIcon(node, thresholds),
     thresholdCount: showActiveTresholdsCount
@@ -119,7 +123,7 @@ function getColumnItemFromTopologyNode(
   return result
 }
 
-function topologyNodeIsVisible(node: TopologyNode): boolean {
+export function topologyNodeIsVisible(node: TopologyNode): boolean {
   if (node.url !== undefined) return true
   if (hasSupportedDisplay(node)) return true
   if (node.topologyNodes === undefined) return false
@@ -140,7 +144,8 @@ function hasSupportedDisplay(node: TopologyNode): boolean {
     nodeHasLogDisplay(node) ||
     nodeHasDynamicReportDisplay(node) ||
     nodeHasDataAnalysisDisplay(node) ||
-    nodeHasDocumentDisplay(node)
+    nodeHasDocumentDisplay(node) ||
+    nodeHasMF(node)
   )
 }
 
@@ -197,4 +202,8 @@ export function nodeHasDataAnalysisDisplay(node: TopologyNode) {
 
 export function nodeHasDocumentDisplay(node: TopologyNode) {
   return node.documentDisplayId !== undefined
+}
+
+export function nodeHasMF(node: TopologyNode) {
+  return isModuleFederationSupported && !!node.microFrontEnds?.length
 }

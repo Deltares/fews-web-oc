@@ -1,18 +1,20 @@
 import { DateTime, Duration, DurationLikeObject } from 'luxon'
+import {
+  getDisplayTimeZone,
+  toDisplayDateTime,
+  toDisplayDateTimeInputValue,
+} from './timeZone'
+
+type DateInput = Date | string | number | undefined | null
 
 /**
- * Converts a date to a string in the format 'YYYY-MM-DDTHH:MM'.
+ * Converts a date to a string in the format 'YYYY-MM-DDTHH:MM:SS', in the
+ * display time zone.
  * @param date - The date to convert.
- * @returns The date as a string in the format 'YYYY-MM-DDTHH:MM'.
+ * @returns The date as a string in the format 'YYYY-MM-DDTHH:MM:SS'.
  */
 export function toISOString(date: Date) {
-  const years = date.getFullYear()
-  const months = String(date.getMonth() + 1).padStart(2, '0')
-  const days = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  const seconds = String(date.getSeconds()).padStart(2, '0')
-  return `${years}-${months}-${days}T${hours}:${minutes}:${seconds}`
+  return toDisplayDateTimeInputValue(date, true)
 }
 
 /**
@@ -92,19 +94,7 @@ export function convertTimestampToFewsPiParameter(timestamp: number): string {
   return convertJSDateToFewsPiParameter(new Date(timestamp))
 }
 
-/**
- * Convert date to date time string for datetime-local input.
- *
- * @param date - The date to convert.
- * @returns The date as a string in the format 'YYYY-MM-DDTHH:MM'.
- */
-export function convertDateToDateTimeString(date: Date): string {
-  return date.toISOString().slice(0, 16)
-}
-
-export function toHumanReadableDate(
-  date: Date | string | number | undefined | null,
-): string {
+export function toHumanReadableDate(date: DateInput): string {
   if (date === undefined || date === null) {
     return '—'
   }
@@ -116,12 +106,11 @@ export function toHumanReadableDate(
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
+    timeZone: getDisplayTimeZone(),
   })
 }
 
-export function toHumanReadableDateTime(
-  date: Date | string | number | undefined | null,
-): string {
+export function toHumanReadableDateTime(date: DateInput): string {
   if (date === undefined || date === null) {
     return '—'
   }
@@ -137,12 +126,11 @@ export function toHumanReadableDateTime(
     minute: '2-digit',
     second: '2-digit',
     hour12: false,
+    timeZone: getDisplayTimeZone(),
   })
 }
 
-export function toHumanReadableTime(
-  date: Date | string | number | undefined | null,
-): string {
+export function toHumanReadableTime(date: DateInput): string {
   if (date === undefined || date === null) {
     return '—'
   }
@@ -154,12 +142,11 @@ export function toHumanReadableTime(
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
+    timeZone: getDisplayTimeZone(),
   })
 }
 
-export function toShortHumanReadableDate(
-  date: Date | string | number | undefined | null,
-): string {
+export function toShortHumanReadableDate(date: DateInput): string {
   if (date === undefined || date === null) {
     return '—'
   }
@@ -172,12 +159,13 @@ export function toShortHumanReadableDate(
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
+    timeZone: getDisplayTimeZone(),
   })
 }
 
 export function toDateRangeString(
-  startDate: Date | string | number | undefined | null,
-  endDate: Date | string | number | undefined | null,
+  startDate: DateInput,
+  endDate: DateInput,
 ): string {
   return `${toHumanReadableDateTime(startDate)} → ${toHumanReadableDateTime(endDate)}`
 }
@@ -197,8 +185,8 @@ export function toDateRangeString(
  *          or "—" if either date is invalid or missing
  */
 export function toDateAbsDifferenceString(
-  startDate: Date | string | number | undefined | null,
-  endDate: Date | string | number | undefined | null,
+  startDate: DateInput,
+  endDate: DateInput,
   options?: { excludeSeconds?: boolean; relativeFormat?: boolean },
 ): string {
   if (
@@ -226,11 +214,11 @@ export function toDateAbsDifferenceString(
     minutes % 60 ? `${minutes % 60}m` : '',
     !options?.excludeSeconds && seconds % 60 ? `${seconds % 60}s` : '',
   ]
-    .filter((part) => part)
+    .filter(Boolean)
     .slice(0, 2)
     .join(' ')
 
-  const result = differenceString ? differenceString : '0s'
+  const result = differenceString || '0s'
 
   if (options?.relativeFormat) {
     return endDateObj.getTime() - startDateObj.getTime() < 0
@@ -240,10 +228,7 @@ export function toDateAbsDifferenceString(
   return result
 }
 
-export function toDateSpanString(
-  startDate: Date | string | number | undefined | null,
-  endDate: Date | string | number | undefined | null,
-) {
+export function toDateSpanString(startDate: DateInput, endDate: DateInput) {
   return `${toDateRangeString(startDate, endDate)} (${toDateAbsDifferenceString(startDate, endDate)})`
 }
 
@@ -288,7 +273,7 @@ export function isInDatesRange(
   if (!date || !dates || dates.length < 2) {
     return false
   }
-  const [start, end] = [dates[0], dates[dates.length - 1]]
+  const [start, end] = [dates[0], dates[dates.length - 1]] // NOSONAR(S7755)
   return date >= start && date <= end
 }
 
@@ -298,4 +283,67 @@ export function isInDatesRange(
  */
 export function getFilenameTimestamp() {
   return DateTime.now().toFormat('yyyyMMddHHmmss')
+}
+
+/** Calendar units from finest to coarsest. */
+export const dateBoundaryUnits = [
+  'second',
+  'minute',
+  'hour',
+  'day',
+  'month',
+  'year',
+] as const
+
+export type DateBoundaryUnit = (typeof dateBoundaryUnits)[number]
+
+/**
+ * Returns the coarsest calendar unit at which a date is aligned, e.g. 'day'
+ * for midnight and 'month' for midnight on the first of a month, in the
+ * display time zone.
+ * @param date - The date to check.
+ * @returns The coarsest unit the date is a boundary of.
+ */
+export function getDateBoundaryUnit(date: Date): DateBoundaryUnit {
+  const dateTime = toDisplayDateTime(date)
+  if (dateTime.millisecond !== 0 || dateTime.second !== 0) return 'second'
+  if (dateTime.minute !== 0) return 'minute'
+  if (dateTime.hour !== 0) return 'hour'
+  if (dateTime.day !== 1) return 'day'
+  if (dateTime.month !== 1) return 'month'
+  return 'year'
+}
+
+const multiScaleFormatOptions: Record<
+  DateBoundaryUnit,
+  Intl.DateTimeFormatOptions
+> = {
+  second: { hour: '2-digit', minute: '2-digit', second: '2-digit' },
+  minute: { hour: '2-digit', minute: '2-digit' },
+  hour: { hour: '2-digit', minute: '2-digit' },
+  day: { day: 'numeric', month: 'short' },
+  month: { month: 'short' },
+  year: { year: 'numeric' },
+}
+
+/**
+ * Formats a date like the d3 multi-scale time format: only the coarsest unit
+ * at which the boundary date is aligned is shown, so e.g. midnight shows the
+ * day and other hours show the time, in the display time zone.
+ * @param date - The date to format.
+ * @param boundary - The date that determines the unit, e.g. a d3 tick.
+ * @param locale - The locale to format with, defaults to the browser locale.
+ * @returns The formatted date.
+ */
+export function toMultiScaleDateLabel(
+  date: Date,
+  boundary: Date = date,
+  locale?: string,
+): string {
+  const options = multiScaleFormatOptions[getDateBoundaryUnit(boundary)]
+  return date.toLocaleString(locale, {
+    ...options,
+    hourCycle: 'h23',
+    timeZone: getDisplayTimeZone(),
+  })
 }

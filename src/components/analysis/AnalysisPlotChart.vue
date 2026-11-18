@@ -5,24 +5,28 @@
     @edit="editing = true"
     @save-as-image="downloadChartImage"
   >
-    <TimeSeriesChart
-      v-model:domain="visibleDomain"
-      :config
-      :series
-      :zoomHandler
-      :panHandler
-      :settings="settings.charts.timeSeriesChart"
-      :forecast-legend="chart.forecastLegend"
-    >
-      <template #brush="{ margin }">
-        <slot name="brush" :margin />
-      </template>
-    </TimeSeriesChart>
+    <div class="plot-chart-container">
+      <TimeSeriesChartSwitch
+        v-model:domain="visibleDomain"
+        :config
+        :series
+        :group
+        :settings="settings.charts.timeSeriesChart"
+        :forecast-legend="chart.forecastLegend"
+      >
+        <template #brush="{ margin }">
+          <slot name="brush" :margin />
+        </template>
+      </TimeSeriesChartSwitch>
+      <div v-if="$slots.overlay" class="chart-overlay">
+        <slot name="overlay" />
+      </div>
+    </div>
     <!-- Used to render the chart for downloading as image. -->
     <!-- This is done to have the same chart size across different devices. -->
     <div v-if="renderingChart" class="render-chart-container">
       <div ref="render-chart-legend" />
-      <TimeSeriesChart
+      <TimeSeriesChartSwitch
         ref="render-chart"
         class="render-chart"
         :config="renderConfig"
@@ -30,23 +34,18 @@
         :settings="settings.charts.timeSeriesChart"
       />
     </div>
-    <AnalysisChartEdit v-model="editing" :chart />
+    <AnalysisChartEdit v-model="editing" :chart v-bind="$attrs" />
   </AnalysisChartCard>
 </template>
 
 <script setup lang="ts">
 import AnalysisChartCard from '@/components/analysis/AnalysisChartCard.vue'
 import AnalysisChartEdit from '@/components/analysis/AnalysisChartEdit.vue'
-import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
+import TimeSeriesChartSwitch from '@/components/charts/TimeSeriesChartSwitch.vue'
 import type { PlotChart } from '@/lib/analysis'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import {
-  Legend,
-  type ZoomHandler,
-  type PanHandler,
-} from '@deltares/fews-web-oc-charts'
 import {
   combineSvgParts,
   convertSvgElementToImage,
@@ -59,12 +58,15 @@ import { toSnakeCase } from '@/lib/utils/toSnakeCase'
 import { fetchAndInlineCssAndFonts } from '@/lib/css'
 import { getSeriesByLegend } from '@/lib/legend'
 import { getSubplotWithDomain } from '@/lib/display'
+import type {
+  ChartGroup,
+  TimeSeriesChartExpose,
+} from '@/lib/charts/types/TimeSeriesChartProps'
 
 interface Props {
   chart: PlotChart
   series: Record<string, Series>
-  zoomHandler?: ZoomHandler
-  panHandler?: PanHandler
+  group?: ChartGroup
   settings: ComponentSettings
   config: ChartConfig
   startTime?: Date
@@ -72,7 +74,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const chartRef = useTemplateRef('render-chart')
+const chartRef = useTemplateRef<TimeSeriesChartExpose>('render-chart')
 const legendRef = useTemplateRef('render-chart-legend')
 const configStore = useConfigStore()
 
@@ -103,15 +105,13 @@ async function downloadChartImage() {
   // legend for the first series.
   const series = Object.values(seriesByLegend).map((s) => s[0])
 
-  const legend = new Legend(
-    series.map((s) => ({
+  const legendSvg = chartRef.value.exportImage({
+    legend: series.map((s) => ({
       selector: s.id,
       label: s.name,
     })),
-    legendRef.value,
-  )
-  chartRef.value.axisAccept(legend)
-  const legendSvg = legendRef.value.children[0] as SVGSVGElement
+    container: legendRef.value,
+  })
   if (!legendSvg) return
 
   const legendSvgWithFont = createExportableSvgElement(
@@ -139,6 +139,23 @@ async function downloadChartImage() {
 </script>
 
 <style scoped>
+.plot-chart-container {
+  position: relative;
+}
+
+.chart-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+
+.chart-overlay :deep(> *) {
+  pointer-events: auto;
+}
+
 .render-chart-container {
   visibility: hidden;
   position: fixed;

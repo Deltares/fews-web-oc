@@ -75,15 +75,22 @@
     </SelectCard>
 
     <div class="d-flex pt-2 align-center">
-      <AnalysisDataDownload
-        :filters="filters"
+      <v-btn
+        variant="plain"
+        @click="showDownloadDialog = true"
+        :disabled="selectedFilters.length === 0"
+        icon="mdi-download"
+      />
+      <TimeSeriesFileDownloadComponent
+        v-model="showDownloadDialog"
+        :filter="selectedFilters"
         :startTime="startTime"
         :endTime="endTime"
       />
       <v-spacer />
       <AnalysisAddToButton
         :charts
-        :filters
+        :filters="selectedFilters"
         :loadingNewCharts="isLoadingNewCharts"
         :loadingAddToChart="isLoadingAddToChart"
         @addToChart="addFilter"
@@ -103,7 +110,7 @@ import SelectCard from '@/components/general/SelectCard.vue'
 import AnalysisMap from '@/components/analysis/AnalysisMap.vue'
 import AnalysisAddToButton from '@/components/analysis/AnalysisAddToButton.vue'
 import AnalysisAttributesFilter from '@/components/analysis/AnalysisAttributesFilter.vue'
-import AnalysisDataDownload from '@/components/analysis/AnalysisDataDownload.vue'
+import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import { computed, ref, watch } from 'vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
@@ -117,6 +124,7 @@ import {
 import { useFilterLocations } from '@/services/useFilterLocations'
 import { useTimeSeriesHeaders } from '@/services/useTimeSeries'
 import { configManager } from '@/services/application-config'
+import { createSelectionFilters } from '@/lib/analysis/selectionFilters'
 
 interface Props {
   charts: Chart[]
@@ -131,6 +139,7 @@ interface Props {
 const props = defineProps<Props>()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const showMap = ref(false)
+const showDownloadDialog = ref(false)
 
 const isLoadingNewCharts = ref(false)
 const isLoadingAddToChart = ref(false)
@@ -143,7 +152,7 @@ const { locations, geojson } = useFilterLocations(
   () => (filterId.value ? [filterId.value] : []),
   { showAttributes: true },
 )
-const { timeSeriesHeaders } = useTimeSeriesHeaders(baseUrl, filterId)
+const { timeSeriesHeaders } = useTimeSeriesHeaders(filterId)
 
 const filteredHeaders = computed(() => {
   if (selectedAttributeLocationIds.value.length === 0) {
@@ -194,46 +203,21 @@ const filteredLocations = computed(() =>
     filteredData.value.locationIds.includes(location.locationId),
   ),
 )
-const filters = computed(() => {
-  if (!filterId.value) return []
-  if (!selectedParameterIds.value.length) return []
-  if (!selectedLocationIds.value.length) return []
-
-  const parameters = selectedParameterIds.value
-    .map(parametersStore.byId)
-    .filter((parameter) => parameter !== undefined)
-
-  // Group by parameterGroup
-  const groupedParameters: Record<string, string[]> = {}
-  parameters.forEach((parameter) => {
-    const group = parameter?.parameterGroup
-    if (!group) return
-
-    if (!groupedParameters[group]) {
-      groupedParameters[group] = []
-    }
-    groupedParameters[group].push(parameter.id)
-  })
-
-  return Object.values(groupedParameters).map((parameterIds) => {
-    const moduleInstanceIds = selectedModuleInstanceIds.value
-    return {
-      filterId: filterId.value,
-      locationIds: selectedLocationIds.value.join(','),
-      parameterIds: parameterIds.join(','),
-      moduleInstanceIds: moduleInstanceIds.length
-        ? moduleInstanceIds.join(',')
-        : undefined,
-    }
-  })
-})
+const selectedFilters = computed(() =>
+  createSelectionFilters(
+    filterId.value,
+    selectedLocationIds.value,
+    selectedParameterIds.value.map((id) => parametersStore.byId(id)),
+    selectedModuleInstanceIds.value,
+  ),
+)
 
 async function addFilter(chart?: Chart) {
-  if (!filters.value.length) return
+  if (!selectedFilters.value.length) return
 
   if (chart === undefined) {
     isLoadingNewCharts.value = true
-    const charts = await createNewChartsForFilters(filters.value)
+    const charts = await createNewChartsForFilters(selectedFilters.value)
     isLoadingNewCharts.value = false
 
     charts.forEach((newChart) => emit('addChart', newChart))
@@ -242,7 +226,7 @@ async function addFilter(chart?: Chart) {
 
   if (chart.type !== 'filter') return
 
-  const promises = filters.value.map((filter) =>
+  const promises = selectedFilters.value.map((filter) =>
     addFilterToChart(chart, filter),
   )
 

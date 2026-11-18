@@ -2,9 +2,10 @@ import {
   defaultChartSettings,
   defaultMapSettings,
   defaultSchematicStatusDisplaySettings,
+  defaultSidePanelSettings,
   defaultReportSettings,
   type ChartsSettings,
-  type MapSettings,
+  type DeepRequiredMapSettings,
 } from '.'
 import { WebOCComponentSettingsClass } from '@deltares/fews-pi-requests'
 import { DeepRequired } from '@/lib/utils/types'
@@ -17,7 +18,7 @@ export type ComponentSettings = Omit<
   DeepRequiredComponentSettings,
   'map' | 'charts'
 > & {
-  map: MapSettings
+  map: DeepRequiredMapSettings
   charts: ChartsSettings
 }
 
@@ -25,6 +26,7 @@ export function getDefaultSettings(): ComponentSettings {
   return {
     id: '',
     map: defaultMapSettings,
+    sidePanel: defaultSidePanelSettings,
     ssd: defaultSchematicStatusDisplaySettings,
     charts: defaultChartSettings,
     report: defaultReportSettings,

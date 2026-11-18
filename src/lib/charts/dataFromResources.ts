@@ -87,15 +87,21 @@ export function dataFromResources(
         const result: any = { x: date }
         const values = new Array(dataResourceIds.length).fill(null)
         const flags = new Array(dataResourceIds.length).fill(undefined)
-        for (const j in dataResourceIds) {
-          const resourceId = dataResourceIds[j]
-          const s = series[resourceId]
-          if (s?.data) {
-            const event = s.data[pointers[j]] as TimeSeriesData
+        for (
+          let resourceIndex = 0;
+          resourceIndex < dataResourceIds.length;
+          resourceIndex++
+        ) {
+          const resourceId = dataResourceIds[resourceIndex]
+          const sourceSeries = series[resourceId]
+          if (sourceSeries?.data) {
+            const event = sourceSeries.data[
+              pointers[resourceIndex]
+            ] as TimeSeriesData
             if (date.getTime() === event?.x.getTime()) {
-              values[j] = event.y
-              flags[j] = event.flag
-              pointers[j]++
+              values[resourceIndex] = event.y
+              flags[resourceIndex] = event.flag
+              pointers[resourceIndex]++
             }
           }
         }

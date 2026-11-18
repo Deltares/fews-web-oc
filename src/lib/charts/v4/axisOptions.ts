@@ -1,0 +1,237 @@
+import {
+  type CartesianAxes,
+  type CartesianAxesOptions,
+  AxisPosition,
+  AxisType,
+} from '@deltares/fews-web-oc-charts'
+import { getDisplayTimeZone } from '@/lib/date/timeZone'
+import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
+import type {
+  ChartAxis,
+  ChartAxisKind,
+  ChartAxisPosition,
+} from '@/lib/charts/types/ChartAxis'
+import type { ChartsSettings } from '@/lib/topology/componentSettings'
+import { merge } from 'lodash-es'
+
+const axisTypes: Record<ChartAxisKind, AxisType> = {
+  time: AxisType.time,
+  value: AxisType.value,
+  degrees: AxisType.degrees,
+  band: AxisType.band,
+}
+
+const axisPositions: Record<ChartAxisPosition, AxisPosition> = {
+  left: AxisPosition.Left,
+  right: AxisPosition.Right,
+  bottom: AxisPosition.Bottom,
+  top: AxisPosition.Top,
+}
+
+function toV4AxisOptions(
+  axes?: ChartAxis[],
+): CartesianAxesOptions['x'] | undefined {
+  return axes?.map(({ kind, position, ...options }) => ({
+    ...options,
+    type: axisTypes[kind],
+    ...(position ? { position: axisPositions[position] } : {}),
+  }))
+}
+
+function getDefaultMargin() {
+  return {
+    top: 25,
+    left: 50,
+    right: 50,
+    bottom: 40,
+  }
+}
+
+function getDefaultOptions(): CartesianAxesOptions {
+  return {
+    x: [
+      {
+        type: AxisType.time,
+        position: AxisPosition.Bottom,
+        showGrid: true,
+        labelOffset: 7,
+      },
+    ],
+    y: [
+      {
+        position: AxisPosition.Left,
+        showGrid: true,
+        label: ' ',
+        unit: ' ',
+        nice: true,
+      },
+      {
+        position: AxisPosition.Right,
+        label: ' ',
+        unit: ' ',
+        nice: true,
+      },
+    ],
+    margin: getDefaultMargin(),
+    automargin: true,
+  }
+}
+
+function getVerticalProfileOptions(): Partial<CartesianAxesOptions> {
+  return {
+    margin: {
+      left: 70,
+      right: 30,
+    },
+    x: [
+      {
+        type: AxisType.value, // x-axis is never time for vertical profile
+        nice: true,
+      },
+    ],
+  }
+}
+
+function getNoYLabelOptions(): Partial<CartesianAxesOptions> {
+  return {
+    y: [
+      {
+        label: '',
+      },
+      {
+        label: '',
+      },
+    ],
+    margin: {
+      top: 20,
+    },
+  }
+}
+
+function getNoXLabelOptions(): Partial<CartesianAxesOptions> {
+  return {
+    x: [
+      {
+        label: '',
+      },
+      {
+        label: '',
+      },
+    ],
+  }
+}
+
+function getLegendBelowChartOptions(): Partial<CartesianAxesOptions> {
+  return {
+    margin: {
+      top: 40,
+      bottom: 25,
+    },
+  }
+}
+
+function getBrushOptions(): Partial<CartesianAxesOptions> {
+  return {
+    margin: { top: 5, bottom: 25 },
+    x: [
+      {
+        showGrid: false,
+      },
+    ],
+    y: [
+      { showAxis: false, showGrid: false, label: '', unit: '' },
+      { showAxis: false, showGrid: false, label: '', unit: '' },
+    ],
+  }
+}
+
+function getLocaleOptions(locale: string): Partial<CartesianAxesOptions> {
+  return {
+    x: [
+      {
+        locale,
+      },
+    ],
+  }
+}
+
+/**
+ * The time zone of time axes: the display time zone, or the browser's time
+ * zone, which is also the default of the charts library.
+ */
+export function getAxisTimeZone(): string {
+  return (
+    getDisplayTimeZone() ?? Intl.DateTimeFormat().resolvedOptions().timeZone
+  )
+}
+
+function getTimeZoneOptions(timeZone: string): Partial<CartesianAxesOptions> {
+  return {
+    x: [
+      {
+        timeZone,
+      },
+    ],
+  }
+}
+
+/**
+ * Changes the time zone of the x-axes of an existing chart. The axes copy
+ * their options when they are created, so update those copies as well.
+ */
+export function setAxisTimeZone(axis: CartesianAxes, timeZone: string): void {
+  for (const options of axis.options.x) {
+    options.timeZone = timeZone
+  }
+  for (const [key, handle] of Object.entries(axis.axisHandles)) {
+    if (key.startsWith('x')) handle.options.timeZone = timeZone
+  }
+  axis.redraw()
+}
+
+export function getAxisOptions(
+  config: ChartConfig,
+  settings:
+    ChartsSettings['timeSeriesChart'] | ChartsSettings['verticalProfileChart'],
+  options?: {
+    isVerticalProfile?: boolean
+    isBrush?: boolean
+    locale?: string
+    timeZone?: string
+  },
+): CartesianAxesOptions {
+  const configOptions: Partial<CartesianAxesOptions> = {
+    ...(config?.xAxis ? { x: toV4AxisOptions(config.xAxis) } : {}),
+    ...(config?.yAxis ? { y: toV4AxisOptions(config.yAxis) } : {}),
+  }
+
+  const extraOptions = [configOptions]
+
+  if (options?.isVerticalProfile) {
+    extraOptions.push(getVerticalProfileOptions())
+  }
+
+  if (!settings.yAxis.yLabel) {
+    extraOptions.push(getNoYLabelOptions())
+  }
+
+  if (!settings.xAxis.xLabel) {
+    extraOptions.push(getNoXLabelOptions())
+  }
+
+  if (settings.legend.placement.includes('under')) {
+    extraOptions.push(getLegendBelowChartOptions())
+  }
+
+  if (options?.isBrush) {
+    extraOptions.push(getBrushOptions())
+  }
+  if (options?.locale && !options?.isVerticalProfile) {
+    extraOptions.push(getLocaleOptions(options.locale))
+  }
+  if (options?.timeZone && !options?.isVerticalProfile) {
+    extraOptions.push(getTimeZoneOptions(options.timeZone))
+  }
+
+  return merge(getDefaultOptions(), ...extraOptions)
+}

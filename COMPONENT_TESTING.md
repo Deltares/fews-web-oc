@@ -74,6 +74,44 @@ test('Button should render with text', async ({ mount }) => {
 
 ## Testing Patterns
 
+### Chart heights
+
+`components/charts/TimeSeriesChart` provides `OneChart`, `TwoCharts`,
+`ThreeCharts`, `FourCharts`, and `FiveCharts` stories with mock data in an
+852px container. With default plot sizing, three or more charts retain the
+three-chart height and additional charts scroll rather than shrinking.
+A single chart uses `max(50%, 400px)` rather than filling the container.
+Explicit plot weights distribute the available canvas height proportionally,
+excluding axes and legend space, without the default chart-height limits.
+Vertical profiles retain their existing sizing.
+`FourWeightedCharts` covers plot weights `1, 2, 2, 1` with overlay legends in
+an 861px container. The layout test checks the heights of `.canvas > rect`,
+not the outer SVG, and whether the container scrolls.
+`FourWeightedChartsWithBrush` adds a 60px brush to each weighted chart. Its
+regression test also requires the main canvases to retain the weight ratio.
+
+Run the focused layout checks with:
+
+```bash
+npm run test:component -- timeSeriesChartLayout.spec.ts
+```
+
+### Shared elevation interactions (v5)
+
+`charts/v5/TimeSeriesChartV5/SharedElevation` renders two vertical profiles
+with independent x-scales and a shared elevation y-scale. The regression test
+checks synchronized elevation crosshairs, y-based tooltips, box zoom, panning,
+and double-click reset. Tooltip assertions require only the legend label and
+measured value with its unit, without depth, coordinate prefixes, or mark IDs.
+It also checks that delayed profile data and legend
+entries appear in both subplots when the first profile's x-values reverse
+with elevation. Profiles preserve point order rather than using the sorted
+x-values required by the time-series store.
+
+```bash
+npm run test:component -- timeSeriesChartV5Elevation.spec.ts
+```
+
 ### Callbacks and events
 Create state inside the story and record it for assertions:
 

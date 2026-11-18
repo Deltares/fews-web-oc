@@ -4,10 +4,16 @@ import vuetify from './plugins/vuetify.js'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { defineCustomElements } from '@deltares/fews-ssd-webcomponent/loader'
+
+import { setWorkerCount, setWorkerUrl } from 'maplibre-gl'
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import './assets/maplibre-override.css'
+import { runAppBootstrap } from './lib/startup/bootstrap.js'
 
-import { runAppBootstrap } from './lib/startup/app-startup.js'
+setWorkerUrl(workerUrl)
+// Large location GeoJSON must not monopolize the only map worker.
+setWorkerCount(Math.min(4, navigator.hardwareConcurrency))
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)

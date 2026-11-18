@@ -1,23 +1,26 @@
 <template>
   <BtnGroup class="me-2">
-    <template #persistent v-if="showActiveThresholdCrossingsForFilters">
-      <ThresholdsButton
-        :active="activeSidePanelType === 'thresholds'"
-        @click="toggleActiveSidePanel('thresholds')"
+    <template #persistent v-if="persistentSidePanels.length">
+      <component
+        v-for="sidePanel in persistentSidePanels"
+        :key="sidePanel.type"
+        :is="sidePanel.button"
+        :active="rootPanelType === sidePanel.type"
+        @click="toggleSidePanel(sidePanel.type)"
       />
     </template>
 
     <v-btn
-      v-if="currentGeneralSidePanel !== null"
-      :active="activeSidePanelType === currentGeneralSidePanel.type"
+      v-if="menuSidePanel !== null"
+      :active="rootPanelType === menuSidePanel.type"
       size="small"
       icon
-      @click="toggleActiveSidePanel(currentGeneralSidePanel.type)"
+      @click="toggleSidePanel(menuSidePanel.type)"
     >
-      <v-icon :icon="currentGeneralSidePanel.icon"></v-icon>
+      <v-icon :icon="menuSidePanel.icon"></v-icon>
     </v-btn>
 
-    <v-menu v-if="hasMultipleEnabledSidePanels" location="bottom right">
+    <v-menu v-if="menuSidePanels.length > 1" location="bottom right">
       <template #activator="{ isActive, props }">
         <v-btn
           icon
@@ -31,163 +34,280 @@
 
       <v-list>
         <v-list-item
-          v-for="generalSidePanel in enabledGeneralSidePanels"
-          :key="generalSidePanel.type"
-          :prepend-icon="generalSidePanel.icon"
-          :title="t(`sidePanel.${generalSidePanel.type}`)"
-          :active="activeSidePanelType === generalSidePanel.type"
-          @click="setCurrentGeneralSidePanel(generalSidePanel)"
+          v-for="sidePanel in menuSidePanels"
+          :key="sidePanel.type"
+          :prepend-icon="sidePanel.icon"
+          :title="getTitleForSidePanel(sidePanel.type)"
+          :active="rootPanelType === sidePanel.type"
+          @click="openSidePanel(sidePanel.type)"
         />
       </v-list>
     </v-menu>
   </BtnGroup>
 
-  <template v-for="sidePanel in enabledGeneralSidePanels" :key="sidePanel.type">
-    <component
-      v-if="activeSidePanelType === sidePanel.type"
-      :is="sidePanel.component"
-      :topology-node="topologyNode"
-      v-bind="
-        sidePanel.type === 'logDisplay'
-          ? { settings: settingsForSidePanel() }
-          : {}
-      "
-      @close="closeSidePanel()"
-    />
-  </template>
-
-  <ThresholdsSidePanel
-    v-if="activeSidePanelType === 'thresholds'"
-    :topologyNode="topologyNode"
-    :locationIds="locationIds"
-    @close="toggleActiveSidePanel('thresholds')"
-    @navigate="emit('navigate', $event)"
-  />
+  <SidePanelContent
+    v-if="activePanel !== null"
+    :title="getTitleForSidePanel(activePanel.type)"
+    :can-go-back="canGoBack"
+    :pinned="isPinned"
+    class="h-100"
+    @update:pinned="storedPinned = $event"
+    @back="popPanel()"
+    @close="closePanels()"
+  >
+    <div
+      v-for="(panel, index) in panelStack"
+      v-show="index === panelStack.length - 1"
+      :key="`${index}-${panel.type}`"
+      class="d-flex flex-column flex-1-1 overflow-hidden"
+    >
+      <component
+        :is="getComponentForSidePanel(panel.type)"
+        :topology-node="topologyNode"
+        v-bind="propsForSidePanel(panel)"
+        @open-side-panel="pushRequestedPanel"
+        @navigate="emit('navigate', $event)"
+      />
+    </div>
+  </SidePanelContent>
 </template>
 
 <script setup lang="ts">
-import type { SidePanelConfig, TopologyNode } from '@deltares/fews-pi-requests'
-import { type Component, computed, ref } from 'vue'
+import type {
+  SidePanelSettings,
+  TopologyNode,
+} from '@deltares/fews-pi-requests'
+import { useStorage } from '@vueuse/core'
+import { type Component, computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import {
+  isNavigationFailure,
+  NavigationFailureType,
+  useRoute,
+  useRouter,
+} from 'vue-router'
 
 import type { NavigateRoute } from '@/lib/router'
+import {
+  getEnabledSidePanels,
+  getSidePanelTypeForShowComponent,
+  type SidePanel,
+  type SidePanelType,
+} from '@/lib/sidepanel'
 
 import { useConfigStore } from '@/stores/config'
+import { useConfiguratorModeStore } from '@/stores/configuratorMode'
+import { useConfiguredSidePanel } from '@/services/useConfiguredSidePanel'
+import { useLogDisplay } from '@/services/useLogDisplay'
+import {
+  useSidePanelStack,
+  type OpenSidePanel,
+} from '@/services/useSidePanelStack'
 
 import BtnGroup from '@/components/general/BtnGroup.vue'
-import ThresholdsButton from '@/components/thresholds/ThresholdsButton.vue'
-
-import ImportStatusSidePanel from '@/components/sidepanel/ImportStatusSidePanel.vue'
-import LogSidePanel from '@/components/sidepanel/LogSidePanel.vue'
-import MoreInfoSidePanel from '@/components/sidepanel/MoreInfoSidePanel.vue'
-import NonCurrentDataSidePanel from '@/components/sidepanel/NonCurrentDataSidePanel.vue'
-import RunTasksSidePanel from '@/components/sidepanel/RunTasksSidePanel.vue'
-import ShareSidePanel from '@/components/sidepanel/ShareSidePanel.vue'
-import TaskOverviewSidePanel from '@/components/sidepanel/TaskOverviewSidePanel.vue'
-import ThresholdsSidePanel from '@/components/sidepanel/ThresholdsSidePanel.vue'
-
-const { t } = useI18n()
-const configStore = useConfigStore()
+import SidePanelContent from '@/components/sidepanel/SidePanelContent.vue'
 
 interface Props {
   topologyNode?: TopologyNode
   locationIds?: string
   showActiveThresholdCrossingsForFilters?: boolean
+  /** Panel configured in the component settings of the topology node. */
+  showComponent?: SidePanelSettings['showComponent']
+  /** Whether the component settings of the topology node have been loaded. */
+  componentSettingsReady?: boolean
+  /** Panel requested by the route when the topology display was opened. */
+  initialSidePanel?: string
 }
-defineProps<Props>()
+const props = defineProps<Props>()
 
 interface Emits {
   navigate: [to: NavigateRoute]
 }
 const emit = defineEmits<Emits>()
 
-// FIXME: Remove 'share' once SidePanel configuration is implemented for it.
-type GeneralSidePanelType = Exclude<
-  keyof SidePanelConfig | 'share',
-  'exportStatus'
->
-type SpecialSidePanelType = 'thresholds'
-type SidePanelType = GeneralSidePanelType | SpecialSidePanelType
+const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
+const configStore = useConfigStore()
+const configuratorMode = useConfiguratorModeStore()
 
-interface GeneralSidePanel {
-  type: GeneralSidePanelType
-  icon: string
-  component: Component
-}
-const generalSidePanels: GeneralSidePanel[] = [
-  {
-    type: 'taskOverview',
-    icon: 'mdi-clipboard-text-clock',
-    component: TaskOverviewSidePanel,
-  },
-  {
-    type: 'importStatus',
-    icon: 'mdi-database-import',
-    component: ImportStatusSidePanel,
-  },
-  {
-    type: 'nonCurrentData',
-    icon: 'mdi-chart-box-multiple',
-    component: NonCurrentDataSidePanel,
-  },
-  {
-    type: 'runTask',
-    icon: 'mdi-cog-play',
-    component: RunTasksSidePanel,
-  },
-  {
-    type: 'logDisplay',
-    icon: 'mdi-message-text-clock',
-    component: LogSidePanel,
-  },
-  {
-    type: 'documentFile',
-    icon: 'mdi-information-outline',
-    component: MoreInfoSidePanel,
-  },
-  {
-    type: 'share',
-    icon: 'mdi-share-variant',
-    component: ShareSidePanel,
-  },
-]
+const enabledSidePanels = computed<SidePanel[]>(() =>
+  getEnabledSidePanels(configStore.general.sidePanel, {
+    thresholds: props.showActiveThresholdCrossingsForFilters ?? false,
+    sharedRequests: configuratorMode.isEnabled,
+  }),
+)
+// Persistent panels have their own permanent button in the toolbar, the other
+// panels share a single button with a menu to select the panel to show.
+const persistentSidePanels = computed<SidePanel[]>(() =>
+  enabledSidePanels.value.filter((sidePanel) => sidePanel.persistent),
+)
+const menuSidePanels = computed<SidePanel[]>(() =>
+  enabledSidePanels.value.filter((sidePanel) => !sidePanel.persistent),
+)
 
-const enabledGeneralSidePanels = computed<GeneralSidePanel[]>(() => {
-  const sidePanelConfig = configStore.general.sidePanel
+const {
+  stack: panelStack,
+  activePanel,
+  rootPanelType,
+  canGoBack,
+  open: openPanel,
+  pushRequest: pushRequestedPanel,
+  pop: popPanel,
+  close: closePanels,
+} = useSidePanelStack(() =>
+  enabledSidePanels.value.map((sidePanel) => sidePanel.type),
+)
 
-  // FIXME: For now we always enable share, should be removed once SidePanel configuration is implemented for it.
-  return generalSidePanels.filter(
-    (sidePanel) =>
-      sidePanel.type === 'share' || sidePanelConfig?.[sidePanel.type]?.enabled,
+// Only one of the non-persistent panels is shown in the toolbar at a time.
+const menuSidePanelType = ref<SidePanelType | null>(
+  menuSidePanels.value[0]?.type ?? null,
+)
+const menuSidePanel = computed<SidePanel | null>(
+  () => findSidePanel(menuSidePanelType.value) ?? null,
+)
+// Fall back to the first panel when the selected panel is no longer enabled.
+watch(menuSidePanels, (sidePanels) => {
+  if (
+    sidePanels.some((sidePanel) => sidePanel.type === menuSidePanelType.value)
   )
+    return
+  menuSidePanelType.value = sidePanels[0]?.type ?? null
 })
 
-function settingsForSidePanel(): { logDisplayId: string } {
-  const sidePanelConfig = configStore.general.sidePanel
-  return { logDisplayId: sidePanelConfig?.logDisplay?.logDisplayId ?? '' }
-}
-
-const hasMultipleEnabledSidePanels = computed<boolean>(
-  () => enabledGeneralSidePanels.value.length > 1,
+const logDisplayId = computed(
+  () => configStore.general.sidePanel?.logDisplay?.logDisplayId,
 )
-// Only one "general" side panel is shown in the top bar at all times. "Special"
-// side panels (e.g. thresholds) have their own permanent button.
-const currentGeneralSidePanel = ref<GeneralSidePanel | null>(
-  enabledGeneralSidePanels.value[0] ?? null,
+const { logDisplay } = useLogDisplay(logDisplayId)
+
+function findSidePanel(type: SidePanelType | null): SidePanel | undefined {
+  if (type === null) return undefined
+  return enabledSidePanels.value.find((sidePanel) => sidePanel.type === type)
+}
+
+function getComponentForSidePanel(type: SidePanelType): Component | undefined {
+  return findSidePanel(type)?.component
+}
+
+function getTitleForSidePanel(type: SidePanelType): string {
+  const importStatusEnabled =
+    configStore.general.sidePanel?.importStatus?.enabled ?? false
+  const exportStatusEnabled =
+    configStore.general.sidePanel?.exportStatus?.enabled ?? false
+
+  if (type === 'importStatus' && importStatusEnabled && exportStatusEnabled) {
+    return t('sidePanel.importExportStatus')
+  }
+
+  if (type === 'exportStatus' && !importStatusEnabled && exportStatusEnabled) {
+    return t('sidePanel.exportStatus')
+  }
+
+  const title = t(`sidePanel.${type}`)
+
+  if (type === 'logDisplay') {
+    return logDisplay.value?.name ?? title
+  }
+
+  return title
+}
+
+function propsForSidePanel(panel: OpenSidePanel): Record<string, unknown> {
+  const importStatusEnabled =
+    configStore.general.sidePanel?.importStatus?.enabled ?? false
+  const exportStatusEnabled =
+    configStore.general.sidePanel?.exportStatus?.enabled ?? false
+
+  switch (panel.type) {
+    case 'logDisplay':
+      return { logDisplayId: logDisplayId.value, ...panel.props }
+    case 'thresholds':
+      return { locationIds: props.locationIds, ...panel.props }
+    case 'importStatus':
+    case 'exportStatus': {
+      const baseProps = {
+        showImport: importStatusEnabled,
+        showExport: exportStatusEnabled,
+      }
+
+      return panel.props ? { ...baseProps, ...panel.props } : baseProps
+    }
+    default:
+      return panel.props
+  }
+}
+
+function openSidePanel(type: SidePanelType): void {
+  if (!findSidePanel(type)?.persistent) menuSidePanelType.value = type
+  openPanel(type)
+}
+
+function toggleSidePanel(type: SidePanelType): void {
+  if (rootPanelType.value === type) {
+    closePanels()
+  } else {
+    openSidePanel(type)
+  }
+}
+
+const storedPinned = useStorage(
+  'weboc-side-panel-pinned-v1.0.0',
+  false,
+  globalThis.localStorage,
+  { mergeDefaults: true, writeDefaults: false },
 )
-// There can be only one active side panel, special or general, at a time.
-const activeSidePanelType = ref<SidePanelType | null>(null)
+// The pin button is part of the side panel, so without an open panel the pin
+// could not be released.
+const isPinned = computed(
+  () => storedPinned.value && rootPanelType.value !== null,
+)
+watch(rootPanelType, (type) => {
+  if (type === null) storedPinned.value = false
+})
 
-function setCurrentGeneralSidePanel(sidePanel: GeneralSidePanel): void {
-  currentGeneralSidePanel.value = sidePanel
-  activeSidePanelType.value = sidePanel.type
+const routeSidePanel = enabledSidePanels.value.find(
+  (sidePanel) => sidePanel.type === props.initialSidePanel,
+)
+if (routeSidePanel) openSidePanel(routeSidePanel.type)
+
+useConfiguredSidePanel({
+  nodeId: () => props.topologyNode?.id,
+  isReady: () => props.componentSettingsReady ?? false,
+  configuredPanelType: () =>
+    getSidePanelTypeForShowComponent(
+      props.showComponent,
+      enabledSidePanels.value.map((sidePanel) => sidePanel.type),
+    ),
+  isPinned,
+  rootPanelType,
+  open: openSidePanel,
+  close: closePanels,
+})
+
+// The route of the topology display, which contains the side panel.
+const topologyRouteRecord = route.matched[0]
+
+function syncSidePanelToRoute(): void {
+  const current = router.currentRoute.value
+  if (!current.matched.includes(topologyRouteRecord)) return
+
+  const type = rootPanelType.value
+  if ((current.query.sidePanel ?? null) === type) return
+
+  router.replace({
+    query: { ...current.query, sidePanel: type ?? undefined },
+    hash: current.hash,
+  })
 }
 
-function closeSidePanel(): void {
-  activeSidePanelType.value = null
-}
+watch(rootPanelType, syncSidePanelToRoute, { immediate: true })
 
-function toggleActiveSidePanel(type: SidePanelType): void {
-  activeSidePanelType.value = activeSidePanelType.value === type ? null : type
-}
+// The open panel is leading: navigating within the application does not always
+// preserve the query parameter, and an update of the route can be cancelled by
+// a concurrent navigation, so it is restored after each completed navigation.
+const removeAfterEach = router.afterEach((_to, _from, failure) => {
+  if (isNavigationFailure(failure, NavigationFailureType.cancelled)) return
+  syncSidePanelToRoute()
+})
+onUnmounted(removeAfterEach)
 </script>

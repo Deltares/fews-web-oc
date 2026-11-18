@@ -23,8 +23,9 @@ const emit = defineEmits<Emits>()
 let pendingNext: NavigationGuardNext | null = null
 
 // ---- Router navigation guard ----
-onBeforeRouteUpdate((_to, _from, next) => {
-  if (!when) {
+onBeforeRouteUpdate((to, from, next) => {
+  // A query update does not leave the current display.
+  if (!when || to.path === from.path) {
     next()
     return
   }

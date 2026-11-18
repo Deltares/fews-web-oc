@@ -24,13 +24,19 @@ export function provideSelectedDate(date: DateRefOrGetter) {
  * @param fallbackDate The fallback date.
  * @returns The selected date.
  */
-export function useSelectedDate(fallbackDate: DateRefOrGetter) {
-  const injectedDate = inject(SELECTED_DATE_KEY, fallbackDate)
+export function useSelectedDate(
+  fallbackDate: DateRefOrGetter,
+  inheritDate = true,
+) {
+  const injectedDate = inheritDate
+    ? inject(SELECTED_DATE_KEY, fallbackDate)
+    : fallbackDate
 
   const selectedDate = computed(() => toValue(injectedDate))
 
   const dateTimeSliderEnabled = computed(() => {
-    const hasInjectedDate = inject(SELECTED_DATE_KEY, null) !== null
+    const hasInjectedDate =
+      inheritDate && inject(SELECTED_DATE_KEY, null) !== null
     return !hasInjectedDate
   })
 

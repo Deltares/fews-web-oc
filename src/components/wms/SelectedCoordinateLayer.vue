@@ -8,16 +8,12 @@ import {
   type LngLat,
   Popup,
 } from 'maplibre-gl'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, watch } from 'vue'
 import { useMap } from '@/services/useMap'
 import { useLayer, useSource } from '@/services/useLayer'
 import { mapIds } from '@/lib/map'
 
-interface Props {
-  coordinate?: LngLat
-}
-
-const props = defineProps<Props>()
+const coordinate = defineModel<LngLat>('coordinate')
 const emit = defineEmits(['coordinate-moved'])
 
 const { map } = useMap()
@@ -41,15 +37,6 @@ const tooltipPopup = new Popup({
   maxWidth: 'none',
   anchor: 'bottom',
 })
-
-const coordinate = ref<LngLat>()
-watch(
-  () => props.coordinate,
-  () => {
-    coordinate.value = props.coordinate
-  },
-  { immediate: true },
-)
 
 watch(coordinate, () => {
   if (!coordinate.value) return
@@ -95,7 +82,7 @@ useLayer(
   source,
 )
 
-const onMove = (e: MapMouseEvent) => {
+const onMove = (e: MapMouseEvent | MapTouchEvent) => {
   coordinate.value = e.lngLat
   canvas.style.cursor = 'grabbing'
 }
@@ -166,7 +153,7 @@ onUnmounted(() => {
   --coordinate-tooltip-color-secondary: #fff;
 }
 
-.dark {
+.map--dark {
   --coordinate-tooltip-color-primary: #fff;
   --coordinate-tooltip-color-secondary: #000;
 }

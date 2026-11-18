@@ -6,6 +6,7 @@ export enum DisplayType {
   TimeSeriesTable = 'timeSeriesTable',
   ElevationChart = 'elevationChart',
   Information = 'information',
+  DynamicReport = 'dynamicReport',
   Unknown = '',
 }
 
