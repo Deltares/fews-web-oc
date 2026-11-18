@@ -1,5 +1,5 @@
 import { defineConfig, type Plugin } from 'vite'
-import { createWebOCConfig } from './webocConfig.shared.js'
+import { createWebOCConfig } from './vite.shared.js'
 
 export function forbidModuleFederation(): Plugin {
   function checkModule(id: string): void {

@@ -1,6 +1,9 @@
 import { defineConfig } from 'vitest/config'
-import { createWebOCConfig } from './webocConfig.shared.js'
+import {
+  createWebOCConfig,
+  federatedModuleFederationAdapter,
+} from './vite.shared.js'
 
 export default defineConfig(({ mode }) =>
-  createWebOCConfig(mode, './src/lib/moduleFederation/index.ts'),
+  createWebOCConfig(mode, federatedModuleFederationAdapter),
 )
