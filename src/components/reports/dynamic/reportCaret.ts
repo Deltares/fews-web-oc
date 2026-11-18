@@ -49,7 +49,7 @@ export const ReportCaret = Extension.create({
             default: null,
             keepOnSplit: false,
             parseHTML: (element: HTMLElement) => {
-              const value = element.getAttribute('data-editor-caret')?.trim()
+              const value = element.dataset.editorCaret?.trim()
               if (!value || !/^[+-]?\d+$/.test(value)) return null
               const priority = Number(value)
               return Number.isSafeInteger(priority) ? priority : null

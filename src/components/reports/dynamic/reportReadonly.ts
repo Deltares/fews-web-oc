@@ -31,7 +31,7 @@ export const ReportReadonly = Extension.create({
             default: false,
             keepOnSplit: false,
             parseHTML: (element: HTMLElement) =>
-              element.getAttribute('data-readonly') === 'true',
+              element.dataset.readonly === 'true',
             renderHTML: (attributes) =>
               attributes.reportReadonly
                 ? { 'data-readonly': 'true', contenteditable: 'false' }
