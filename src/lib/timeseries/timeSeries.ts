@@ -7,7 +7,8 @@ import {
   SeriesUrlRequest,
   SeriesDerived,
 } from './timeSeriesResource.js'
-import MD5 from 'crypto-js/md5'
+import { sha256 } from '@noble/hashes/sha2.js'
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js'
 import type { Domains } from '@deltares/fews-pi-requests'
 
 const timeSeriesResourceType = (resource: SeriesResource) => {
@@ -55,15 +56,15 @@ export class Series {
   ) {
     this.resource = resource
     this.header = {}
-    this.id = this.md5Hash
+    this.id = this.resourceHash
   }
 
-  get md5Hash(): string {
-    return MD5(JSON.stringify(this.resource)).toString()
+  get resourceHash(): string {
+    return bytesToHex(sha256(utf8ToBytes(JSON.stringify(this.resource))))
   }
 
   idIsValid(): boolean {
-    return this.id === this.md5Hash
+    return this.id === this.resourceHash
   }
 
   clone(): Series {

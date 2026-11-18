@@ -132,7 +132,7 @@ function createTableEditingStory(html: string) {
           h(
             'button',
             { onClick: () => (editing.value = !editing.value) },
-            editing.value ? 'Preview' : 'Edit',
+            editing.value ? 'Apply edits' : 'Edit',
           ),
           h(DynamicReportContent, {
             html: editing.value || !editedHtml.value ? html : editedHtml.value,
@@ -149,3 +149,34 @@ function createTableEditingStory(html: string) {
 export const GovernorateTableEditing =
   createTableEditingStory(governorateReport)
 export const DistrictTableEditing = createTableEditingStory(districtReport)
+
+const readonlyReportHtml = `<body>
+  <p id="intro">Editable introduction</p>
+  <div id="fixed" data-readonly="true">
+    <h2>Fixed report information</h2>
+    <p>Protected forecast: <strong>High</strong></p>
+    <p><span data-input-type="number" data-time-series-index="0"
+      data-time="2026-10-27T06:00:00Z">12.3</span></p>
+  </div>
+  <p id="commentary">Editable commentary</p>
+</body>`
+
+export const ReadonlyEditing = createTableEditingStory(readonlyReportHtml)
+export const ReadonlyWebOcEditing = createTableEditingStory(
+  `<head><meta name="fews-dynamic-report-styling" content="weboc"></head>${readonlyReportHtml}`,
+)
+
+const caretReportHtml = `<body>
+  <div data-readonly="true" data-editor-caret="0"><p>Fixed introduction</p></div>
+  <p data-editor-caret="5">Editable introduction</p>
+  <div data-editor-caret="0">
+    <p data-readonly="true">Fixed instructions</p>
+    <p id="commentary">Write commentary here.</p>
+  </div>
+  <p data-editor-caret="0">Later marker</p>
+</body>`
+
+export const CaretEditing = createTableEditingStory(caretReportHtml)
+export const CaretWebOcEditing = createTableEditingStory(
+  `<head><meta name="fews-dynamic-report-styling" content="weboc"></head>${caretReportHtml}`,
+)

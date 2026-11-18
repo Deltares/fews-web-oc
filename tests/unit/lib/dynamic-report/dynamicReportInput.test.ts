@@ -92,45 +92,56 @@ describe('dynamic report input node', () => {
     }
   })
 
-  it('updates the document from the Vue input and restores it on undo', async () => {
-    const editor = new Editor({
-      extensions: dynamicReportExtensions,
-      content:
-        '<p><span data-input-type="number" data-time-series-index="0" data-time="2026-10-27T06:00:00Z">12.3</span></p>',
-    })
-    const element = document.createElement('div')
-    document.body.appendChild(element)
-    const app = createApp({ render: () => h(EditorContent, { editor }) })
-    app.use(
-      createI18n({
-        legacy: false,
-        locale: 'en',
-        messages: {
-          en: {
-            dynamicReport: {
-              valueInputLabel: 'Value at {time}',
-              valueInputPlaceholder: 'Value',
+  it.each([false, true])(
+    'renders a value input with read-only=%s and undoes editable changes',
+    async (readonly) => {
+      const editor = new Editor({
+        extensions: dynamicReportExtensions,
+        content: `<p data-readonly="${readonly}"><span data-input-type="number" data-time-series-index="0" data-time="2026-10-27T06:00:00Z">12.3</span></p>`,
+      })
+      const element = document.createElement('div')
+      document.body.appendChild(element)
+      const app = createApp({ render: () => h(EditorContent, { editor }) })
+      app.use(
+        createI18n({
+          legacy: false,
+          locale: 'en',
+          messages: {
+            en: {
+              dynamicReport: {
+                valueInputLabel: 'Value at {time}',
+                valueInputPlaceholder: 'Value',
+              },
             },
           },
-        },
-      }),
-    )
-    try {
-      app.mount(element)
-      await vi.waitFor(() =>
-        expect(element.querySelector('input')).not.toBeNull(),
+        }),
       )
-      const input = element.querySelector('input')!
-      expect(input.value).toBe('12.3')
-      input.value = '42'
-      input.dispatchEvent(new Event('input', { bubbles: true }))
-      await vi.waitFor(() => expect(editor.getHTML()).toContain('>42</span>'))
-      expect(editor.commands.undo()).toBe(true)
-      await vi.waitFor(() => expect(input.value).toBe('12.3'))
-    } finally {
-      app.unmount()
-      editor.destroy()
-      element.remove()
-    }
-  })
+      try {
+        app.mount(element)
+        if (readonly) {
+          await vi.waitFor(() =>
+            expect(
+              element.querySelector('.dynamic-report-input-node')?.textContent,
+            ).toBe('12.3'),
+          )
+          expect(element.querySelector('input')).toBeNull()
+          return
+        }
+        await vi.waitFor(() =>
+          expect(element.querySelector('input')).not.toBeNull(),
+        )
+        const input = element.querySelector('input')!
+        expect(input.value).toBe('12.3')
+        input.value = '42'
+        input.dispatchEvent(new Event('input', { bubbles: true }))
+        await vi.waitFor(() => expect(editor.getHTML()).toContain('>42</span>'))
+        expect(editor.commands.undo()).toBe(true)
+        await vi.waitFor(() => expect(input.value).toBe('12.3'))
+      } finally {
+        app.unmount()
+        editor.destroy()
+        element.remove()
+      }
+    },
+  )
 })
