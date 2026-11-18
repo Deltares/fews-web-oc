@@ -191,6 +191,36 @@ for (const story of ['GovernorateTableEditing', 'DistrictTableEditing']) {
   })
 }
 
+for (const story of ['CaretEditing', 'CaretWebOcEditing']) {
+  test(`${story}: focuses the first usable caret marker and restores it on reopening`, async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(`reports/DynamicReportContent/${story}`)
+    await component.getByRole('button', { name: 'Edit', exact: true }).click()
+    const editor = component.locator('.tiptap')
+    await expect(editor).toBeFocused()
+    await page.keyboard.type('New ')
+    await expect(editor.locator('#commentary')).toHaveText(
+      'New Write commentary here.',
+    )
+    await expect(editor.locator('[data-readonly="true"]').first()).toHaveText(
+      'Fixed introduction',
+    )
+    await component.getByRole('button', { name: 'Apply edits' }).click()
+    await expect(component.locator('.tiptap')).toHaveCount(0)
+    await expect(component.locator('#commentary')).toHaveText(
+      'New Write commentary here.',
+    )
+    await component.getByRole('button', { name: 'Edit', exact: true }).click()
+    await expect(editor).toBeFocused()
+    await page.keyboard.type('Again ')
+    await expect(editor.locator('#commentary')).toHaveText(
+      'Again New Write commentary here.',
+    )
+  })
+}
+
 for (const story of ['ReadonlyEditing', 'ReadonlyWebOcEditing']) {
   test(`${story}: protects sections through keyboard edits, paste and preview`, async ({
     mount,
@@ -201,6 +231,12 @@ for (const story of ['ReadonlyEditing', 'ReadonlyWebOcEditing']) {
     await expect(component.locator('#fixed input')).toHaveCount(0)
     await component.getByRole('button', { name: 'Edit', exact: true }).click()
     const editor = component.locator('.tiptap')
+    await expect(editor).toBeFocused()
+    await page.keyboard.type('Start ')
+    await expect(editor.locator('#intro')).toHaveText(
+      'Start Editable introduction',
+    )
+    await page.keyboard.press('ControlOrMeta+z')
     const fixed = editor.locator('#fixed')
     const original = await fixed.innerHTML()
     await expect(fixed).toHaveAttribute('contenteditable', 'false')

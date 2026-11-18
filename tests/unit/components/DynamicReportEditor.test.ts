@@ -27,6 +27,19 @@ function stubShadowRootApis(): () => void {
   const sheets = new WeakMap<object, CSSStyleSheet[]>()
   const stubs: [object, PropertyKey, PropertyDescriptor][] = [
     [document, 'execCommand', { configurable: true, value: () => false }],
+    [
+      Range.prototype,
+      'getClientRects',
+      { configurable: true, value: () => [] },
+    ],
+    [
+      Range.prototype,
+      'getBoundingClientRect',
+      {
+        configurable: true,
+        value: () => new DOMRect(),
+      },
+    ],
     ...[document, ShadowRoot.prototype].map(
       (target): [object, PropertyKey, PropertyDescriptor] => [
         target,
@@ -69,6 +82,94 @@ function reportRoot(host: HTMLElement): HTMLElement | ShadowRoot {
 }
 
 describe('editable dynamic report content', () => {
+  it.each(['isolated', 'weboc'])(
+    'focuses the marked block on opening and reopening a %s report',
+    async (styling) => {
+      vi.stubGlobal('CSSStyleSheet', TestStyleSheet)
+      const restoreApis = stubShadowRootApis()
+      const report = ref<InstanceType<typeof DynamicReportContent>>()
+      const editable = ref(false)
+      const saved = ref('')
+      const updated = vi.fn((html: string) => {
+        saved.value = html
+      })
+      const host = document.createElement('div')
+      document.body.appendChild(host)
+      const app = createApp({
+        render: () =>
+          h(DynamicReportContent, {
+            html: `<head><meta name="fews-dynamic-report-styling" content="${styling}"></head><body><p data-editor-caret="5">Intro</p><p data-editor-caret="0">Commentary</p></body>`,
+            editable: editable.value,
+            initialEditorHtml: saved.value,
+            onUpdate: updated,
+            ref: report,
+          }),
+      })
+      try {
+        app.mount(host)
+        await vi.waitFor(() =>
+          expect(reportRoot(host).textContent).toContain('Commentary'),
+        )
+        expect(report.value?.editor).toBeUndefined()
+        editable.value = true
+        await vi.waitFor(
+          () => expect(report.value?.editor?.view.hasFocus()).toBe(true),
+          { timeout: 5000 },
+        )
+        const editor = report.value!.editor!
+        expect(editor.state.selection.$from.parent.textContent).toBe(
+          'Commentary',
+        )
+        expect(editor.state.selection.$from.parentOffset).toBe(0)
+        expect(updated).not.toHaveBeenCalled()
+        editor.commands.insertContent('New ')
+        expect(saved.value).toContain('data-editor-caret="0"')
+        editable.value = false
+        await vi.waitFor(() => expect(report.value?.editor).toBeUndefined())
+        editable.value = true
+        await vi.waitFor(
+          () => expect(report.value?.editor?.view.hasFocus()).toBe(true),
+          { timeout: 5000 },
+        )
+        expect(
+          report.value!.editor!.state.selection.$from.parent.textContent,
+        ).toBe('New Commentary')
+        expect(report.value!.editor!.state.selection.$from.parentOffset).toBe(0)
+        expect(updated).toHaveBeenCalledTimes(1)
+      } finally {
+        app.unmount()
+        host.remove()
+        restoreApis()
+      }
+    },
+  )
+
+  it('does not focus a report without editable text blocks', async () => {
+    vi.stubGlobal('CSSStyleSheet', TestStyleSheet)
+    const restoreApis = stubShadowRootApis()
+    const report = ref<InstanceType<typeof DynamicReportContent>>()
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    const app = createApp({
+      render: () =>
+        h(DynamicReportContent, {
+          html: '<div data-readonly="true"><p data-editor-caret="0">Fixed</p></div>',
+          editable: true,
+          ref: report,
+        }),
+    })
+    try {
+      app.mount(host)
+      await vi.waitFor(() => expect(report.value?.editor).toBeDefined())
+      await nextTick()
+      expect(report.value!.editor!.view.hasFocus()).toBe(false)
+    } finally {
+      app.unmount()
+      host.remove()
+      restoreApis()
+    }
+  })
+
   it('reports an error when screenshot insertion would change a protected section', async () => {
     vi.stubGlobal('CSSStyleSheet', TestStyleSheet)
     const restoreApis = stubShadowRootApis()

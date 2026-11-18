@@ -165,3 +165,18 @@ export const ReadonlyEditing = createTableEditingStory(readonlyReportHtml)
 export const ReadonlyWebOcEditing = createTableEditingStory(
   `<head><meta name="fews-dynamic-report-styling" content="weboc"></head>${readonlyReportHtml}`,
 )
+
+const caretReportHtml = `<body>
+  <div data-readonly="true" data-editor-caret="0"><p>Fixed introduction</p></div>
+  <p data-editor-caret="5">Editable introduction</p>
+  <div data-editor-caret="0">
+    <p data-readonly="true">Fixed instructions</p>
+    <p id="commentary">Write commentary here.</p>
+  </div>
+  <p data-editor-caret="0">Later marker</p>
+</body>`
+
+export const CaretEditing = createTableEditingStory(caretReportHtml)
+export const CaretWebOcEditing = createTableEditingStory(
+  `<head><meta name="fews-dynamic-report-styling" content="weboc"></head>${caretReportHtml}`,
+)

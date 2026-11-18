@@ -213,6 +213,36 @@ An ordinary `contenteditable="false"` attribute is not a substitute for this
 marker. This is an editor restriction, not server-side validation or protection
 against changing an exported HTML file outside Web OC.
 
+*Initial editor caret*
+
+Add a numeric `data-editor-caret` attribute to a supported report block to choose where
+typing starts when opening the editor:
+
+```html
+<p>Report introduction</p>
+<p data-editor-caret="0">Write commentary here.</p>
+<p data-editor-caret="1">Additional notes.</p>
+```
+
+The editor focuses the start of the first editable text block in the marked
+section and scrolls the caret into view. A marker on a wrapper such as a `div`
+or table targets its first editable paragraph or heading. Empty paragraphs
+are valid targets. Inline spans and elements without an editable text block
+are not caret targets.
+
+The lowest non-negative integer wins (`0` before `1`, then `2`, etc.),
+with document order breaking ties. Negative values are excluded from marker
+selection, like a negative `tabindex`; invalid values (including `"true"`) are
+ignored. Unlike `tabindex`, this attribute only controls initial caret
+placement and does not change keyboard Tab navigation. Markers in read-only sections
+are skipped, including those inside a read-only ancestor. Without a usable
+marker, the first editable text block is used. If no editable text block
+exists, the editor is not focused.
+
+This placement applies each time editing starts, including when reopening
+local edits. The marker survives preview and HTML export. Positioning the
+caret does not change report content or add a placeholder.
+
 *Styling a dynamic report*
 
 Style the report template with CSS classes. Put the CSS rules in a `<style>` element in the template, or in a style sheet in the FEWS static resources (`WebResourceFiles`) that is linked with a relative path:

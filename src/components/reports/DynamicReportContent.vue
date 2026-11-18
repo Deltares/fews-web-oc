@@ -34,6 +34,7 @@ import {
 import { useDark } from '@/services/useDark'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import { dynamicReportExtensions } from './dynamic/dynamicReportExtensions'
+import { findReportCaretPosition } from './dynamic/reportCaret'
 import { InlineReportImageStorage } from '@/lib/dynamic-report/imageStorage'
 import { checkScreenshotLimits } from '@/lib/dynamic-report/screenshotLimits'
 
@@ -233,6 +234,10 @@ watch(
       })
       editorTarget.value = container
       editor.value = nextEditor
+      await nextTick()
+      if (currentRenderId !== renderId || nextEditor.isDestroyed) return
+      const caret = findReportCaretPosition(nextEditor.state.doc)
+      if (caret !== undefined) nextEditor.commands.focus(caret)
     } else {
       container.replaceChildren(fragment)
       nodes.value = findDynamicReportNodes(container)
