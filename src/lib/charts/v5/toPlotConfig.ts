@@ -220,23 +220,28 @@ function getYScales(axes: ChartAxis[] = []): YScale[] {
   }))
 }
 
+function toNumberRange(
+  range: readonly unknown[] | undefined,
+): [number, number] | undefined {
+  return range ? [Number(range[0]), Number(range[1])] : undefined
+}
+
 function createScale(
   id: string,
   axisConfig: ChartAxis,
   options: ToPlotConfigOptions,
   handles: HandleCache,
-  domain?: [Date, Date],
+  zoomDomain?: [Date, Date],
 ): ScaleHandle {
-  const source = domain ?? axisConfig.domain
-  const scaleDomain: [number, number] | undefined = source
-    ? [Number(source[0]), Number(source[1])]
-    : undefined
   // A configured domain is the default domain, not a zoom, so a zoom reset
-  // shows it again
-  const defaultDomain = scaleDomain ?? axisConfig.defaultDomain ?? [0, 1]
+  // shows it again. A zoom is the explicit domain; the handle cache clears it
+  // when the zoom is left out again.
+  const configuredDomain = toNumberRange(axisConfig.domain)
+  const zoom = toNumberRange(zoomDomain)
   const common = {
-    defaultDomain,
-    ...(scaleDomain ? { autoscale: 'fixed' as const } : {}),
+    defaultDomain: configuredDomain ?? axisConfig.defaultDomain ?? [0, 1],
+    ...(configuredDomain ? { autoscale: 'fixed' as const } : {}),
+    ...(zoom ? { domain: zoom } : {}),
     includeZero: axisConfig.includeZero ?? false,
     nice: axisConfig.nice ?? true,
     reverse: axisConfig.reverse ?? false,

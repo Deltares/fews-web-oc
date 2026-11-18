@@ -67,6 +67,7 @@ import {
   onMounted,
   onBeforeUnmount,
   computed,
+  nextTick,
   useTemplateRef,
   type CSSProperties,
 } from 'vue'
@@ -121,7 +122,6 @@ import {
 } from '@/lib/charts/v4/timeSeriesChart'
 import { getThresholdValues, isUniqueThreshold } from '@/lib/charts/thresholds'
 import { toV4AlertLineOptions } from '@/lib/charts/v4/thresholds'
-import { isSameTimeRange } from '@/lib/charts/zoom'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 import { useI18n } from 'vue-i18n'
@@ -311,13 +311,25 @@ function updateView(update: () => void): void {
 
 function onUpdateXDomain(event: DomainChangeEvent): void {
   if (isUpdatingView || isChartHidden()) return
-  const newDomain = event.new as [Date, Date]
-  const defaultDomain = chartConfig.value.xAxis?.[0]?.domain
-  // Resetting the zoom to the default range follows that range again
-  const isReset =
-    event.fromZoomReset &&
-    (!defaultDomain || isSameTimeRange(newDomain, defaultDomain))
-  domain.value = isReset ? undefined : newDomain
+  if (!event.fromZoomReset) {
+    domain.value = event.new as [Date, Date]
+    return
+  }
+  // A zoom reset shows the data extent; show the default range instead and
+  // follow it again. Without a zoom the domain watcher does not run.
+  if (domain.value) {
+    domain.value = undefined
+  } else {
+    void nextTick(showDefaultView)
+  }
+}
+
+/** Show the default range of the chart, e.g. after selecting another period */
+function showDefaultView(): void {
+  if (!axis) return
+  // Take it from the config, as the axis options may still hold the previous one
+  updateView(() => redraw(axis, chartConfig.value))
+  onResetZoom()
 }
 
 function onCrossValueChange(value: Date) {
@@ -484,10 +496,7 @@ const beforeDestroy = () => {
 watch(domain, (newDomain) => {
   if (!axis) return
   if (!newDomain) {
-    // Show the default range again, e.g. after selecting another period. Take
-    // it from the config, as the axis options may still hold the previous one.
-    updateView(() => redraw(axis, chartConfig.value))
-    onResetZoom()
+    showDefaultView()
     return
   }
   updateView(() => axis.redraw({ x: { domain: newDomain } }))

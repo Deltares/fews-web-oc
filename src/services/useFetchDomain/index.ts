@@ -1,5 +1,13 @@
 import { debounce } from 'lodash-es'
-import { getCurrentScope, onScopeDispose, ref } from 'vue'
+import {
+  getCurrentScope,
+  onScopeDispose,
+  ref,
+  toValue,
+  watch,
+  type MaybeRefOrGetter,
+} from 'vue'
+import { overlapsTimeRange } from '@/lib/charts/zoom'
 
 // Ratio between old and new domain when zooming above which no refetch is
 // performed. Note: zooming out (i.e. zoom ratio > 1) will always refetch.
@@ -68,6 +76,76 @@ export function useFetchDomain() {
     domain,
     resetDomain,
   }
+}
+
+export interface ChartZoomOptions {
+  /** The whole period the charts show when they are not zoomed */
+  period: MaybeRefOrGetter<[Date, Date] | undefined>
+  /**
+   * Identifies the selected period. A change shows the whole period again.
+   * It changes when the user selects a period, also the current one again,
+   * but not when a running period moves with the time.
+   */
+  periodKey: MaybeRefOrGetter<unknown>
+}
+
+/**
+ * The zoom state of a group of charts and the time range to fetch for it.
+ *
+ * `visibleDomain` is the range the user zoomed, panned or brushed to, or
+ * undefined when the charts show the whole period. A zoom is kept while a
+ * running period moves, until it no longer overlaps the period or another
+ * period is selected.
+ */
+export function useChartZoom({ period, periodKey }: ChartZoomOptions) {
+  const { debouncedRefetchChartTimeSeries, domain, resetDomain } =
+    useFetchDomain()
+  const visibleDomain = ref<[Date, Date]>()
+
+  // Synchronous, so a period change does not first request the data of the
+  // previous zoom for the new period
+  watch(
+    visibleDomain,
+    (newDomain) => {
+      if (newDomain) {
+        debouncedRefetchChartTimeSeries(newDomain)
+      } else {
+        resetDomain()
+      }
+    },
+    { flush: 'sync' },
+  )
+
+  /** Show and fetch the whole period again */
+  function showWholePeriod() {
+    visibleDomain.value = undefined
+  }
+
+  watch(() => toKey(toValue(periodKey)), showWholePeriod, { flush: 'sync' })
+
+  watch(
+    () => toValue(period),
+    (newPeriod) => {
+      if (
+        visibleDomain.value &&
+        !overlapsTimeRange(visibleDomain.value, newPeriod)
+      ) {
+        showWholePeriod()
+      }
+    },
+    { flush: 'sync' },
+  )
+
+  return {
+    visibleDomain,
+    /** The time range to fetch, empty to fetch the whole period */
+    fetchDomain: domain,
+    showWholePeriod,
+  }
+}
+
+function toKey(value: unknown): string {
+  return JSON.stringify(value) ?? ''
 }
 
 function toDateDomain(domain: unknown): [Date, Date] | undefined {

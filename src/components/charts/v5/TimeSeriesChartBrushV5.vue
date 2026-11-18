@@ -15,10 +15,7 @@ import { usePlot } from '@/lib/charts/v5/usePlot'
 import { useSeriesStores } from '@/lib/charts/v5/useSeriesStores'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useChartHandlers } from '@/services/useChartHandlers'
-import {
-  initializeV5TimeScale,
-  updateTimeScaleDomain,
-} from '@/services/useChartHandlers/v5'
+import { initializeV5TimeScale } from '@/services/useChartHandlers/v5'
 
 interface Props {
   config: ChartConfig
@@ -29,7 +26,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const domain = defineModel<[Date, Date]>('domain')
+// The brush selection follows the main time scale, which the main chart keeps
+// in sync with this model; brushing writes to that scale directly
+defineModel<[Date, Date]>('domain')
 const chartGroup = props.group ?? useChartHandlers()
 const sync = chartGroup.v5
 const chartContainer = useTemplateRef<HTMLElement>('chartContainer')
@@ -91,14 +90,6 @@ watch(
       initializeV5TimeScale(sync, 'brushTimeScale', fullDomain)
     }
   },
-)
-
-watch(
-  domain,
-  (nextDomain) => {
-    if (sync) updateTimeScaleDomain(sync.timeScale, nextDomain)
-  },
-  { immediate: true },
 )
 </script>
 

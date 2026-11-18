@@ -107,7 +107,7 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
 import { addDuration } from '@/lib/date'
-import { useFetchDomain } from '@/services/useFetchDomain'
+import { useChartZoom } from '@/services/useFetchDomain'
 import { getBrushDomain } from '@/lib/charts/brush'
 
 interface Props {
@@ -218,12 +218,23 @@ const endTime = computed(() => {
   return settings.endTime
 })
 
-const visibleDomain = ref<[Date, Date]>()
-const { debouncedRefetchChartTimeSeries, domain } = useFetchDomain()
-
-watch(visibleDomain, (newDomain) => {
-  if (!newDomain) return
-  debouncedRefetchChartTimeSeries(newDomain)
+// The time range the user zoomed, panned or brushed to, or undefined to show
+// the whole date range. Another collection or date range shows the whole
+// range again; a live update range keeps the zoom while it moves.
+const { visibleDomain, fetchDomain: domain } = useChartZoom({
+  period: () =>
+    startTime.value && endTime.value
+      ? [startTime.value, endTime.value]
+      : undefined,
+  periodKey: () => {
+    const { startTime, endTime, liveUpdate } = selectedCollection.value.settings
+    return [
+      selectedCollectionName.value,
+      liveUpdate.enabled
+        ? liveUpdate
+        : [new Date(startTime).getTime(), new Date(endTime).getTime()],
+    ]
+  },
 })
 
 const timeSeriesOptions = computed(() => ({

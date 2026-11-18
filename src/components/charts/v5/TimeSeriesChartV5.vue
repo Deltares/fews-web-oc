@@ -386,6 +386,24 @@ watch(
       },
       { signal: controller.signal },
     )
+    // A reset that does not change the visible domain, e.g. of a zoom to the
+    // whole period, sends no domainchange. Only the user clears the explicit
+    // domain while the chart is zoomed, as the app only does it without zoom.
+    const sharedTimeScale = chartGroup.v5?.timeScale
+    if (!props.verticalProfile && sharedTimeScale) {
+      currentPlot.subscribe(
+        sharedTimeScale.options,
+        (options, previous) => {
+          if (
+            previous?.explicit.domain !== undefined &&
+            options.explicit.domain === undefined
+          ) {
+            domain.value = undefined
+          }
+        },
+        { signal: controller.signal },
+      )
+    }
     const updateMargin = ({ size, regions }: LayoutChangeDetail) => {
       margin.value = {
         left: regions.plot.x,
