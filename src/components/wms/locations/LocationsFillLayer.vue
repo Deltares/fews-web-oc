@@ -25,8 +25,6 @@ const paint = computed<FillLayerSpecification['paint']>(() => ({
   'fill-color': props.isDark ? 'darkgrey' : '#dfdfdf',
   'fill-opacity': [
     'case',
-    ['boolean', ['feature-state', 'selected'], false],
-    props.isDark ? 0.35 : 0.8,
     ['boolean', ['feature-state', 'hover'], false],
     props.isDark ? 0.3 : 0.6,
     0,
