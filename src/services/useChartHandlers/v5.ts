@@ -7,7 +7,7 @@ import {
 } from '@deltares/fews-web-oc-charts'
 import type { V5ChartGroup } from '@/lib/charts/types/TimeSeriesChartProps'
 import type { ChartAxis } from '@/lib/charts/types/ChartAxis'
-import { isSameTimeRange, shouldKeepVisibleTimeRange } from '@/lib/charts/zoom'
+import { isSameTimeRange } from '@/lib/charts/zoom'
 
 export function createV5ChartGroup(): V5ChartGroup {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -46,6 +46,12 @@ export function initializeV5ElevationScale(
   group.elevationScaleInitialized = true
 }
 
+/**
+ * Set the default domain of a shared time scale. The scale shows it until the
+ * user zooms, which sets an explicit domain; a reset clears that domain again.
+ * A user zoom is kept, e.g. when a running period moves with the system time.
+ * The brush overview always shows its default domain.
+ */
 export function initializeV5TimeScale(
   group: V5ChartGroup | undefined,
   scale: 'timeScale' | 'brushTimeScale',
@@ -60,16 +66,10 @@ export function initializeV5TimeScale(
     return
   }
 
-  // A moving period, e.g. a running period after a sync, keeps a zoom. The
-  // overview of the brush always shows its full period.
-  const current = group[scale].domain.get()
-  const keepZoom =
-    scale === 'timeScale' &&
-    group[initializedKey] &&
-    shouldKeepVisibleTimeRange(current, previousDefault, values)
   group[scale].update({
-    domain: keepZoom ? [Number(current[0]), Number(current[1])] : values,
+    autoscale: 'fixed',
     defaultDomain: values,
+    ...(scale === 'brushTimeScale' ? { domain: undefined } : {}),
   })
   group[initializedKey] = true
 }
@@ -88,10 +88,9 @@ export function updateTimeScaleDomain(
 
 /** Show the default domain of the scale again, e.g. after a period change */
 export function resetTimeScaleDomain(scale: V5ChartGroup['timeScale']): void {
-  const defaultDomain = scale.options.get().resolved.defaultDomain
-  if (isSameTimeRange(scale.domain.get(), defaultDomain)) return
+  if (scale.options.get().explicit.domain === undefined) return
 
-  scale.update({ domain: [Number(defaultDomain[0]), Number(defaultDomain[1])] })
+  scale.update({ domain: undefined })
 }
 
 export function updateBrushSelection(

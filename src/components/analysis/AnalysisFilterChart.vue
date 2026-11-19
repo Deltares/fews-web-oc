@@ -14,7 +14,8 @@
     <template #brush="{ margin }">
       <TimeSeriesChartBrush
         v-if="showBrush"
-        v-model:domain="visibleDomain"
+        :domain="visibleDomain ?? xDomain"
+        @update:domain="visibleDomain = $event"
         :fullDomain="fullBrushDomain"
         :config
         :series="brushSeries"

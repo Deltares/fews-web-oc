@@ -8,6 +8,8 @@ export function useSeriesUpdateChartData(
   series: MaybeRefOrGetter<Record<string, Series>>,
   config: MaybeRefOrGetter<ChartConfig>,
   axis: MaybeRefOrGetter<CartesianAxes | undefined>,
+  /** Runs each chart data update, e.g. to tell it apart from user changes */
+  runUpdate: (update: () => void) => void = (update) => update(),
 ) {
   let hasResetAxes = false
 
@@ -41,12 +43,14 @@ export function useSeriesUpdateChartData(
           s.dataResources.some((resourceId) => newSeriesIds.has(resourceId)),
       )
       if (requiredSeries.length > 0) {
-        hasResetAxes = updateChartData(
-          _axis,
-          requiredSeries,
-          _series,
-          hasResetAxes,
-        )
+        runUpdate(() => {
+          hasResetAxes = updateChartData(
+            _axis,
+            requiredSeries,
+            _series,
+            hasResetAxes,
+          )
+        })
       }
     },
   )

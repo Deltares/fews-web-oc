@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { handleCache } from '@deltares/fews-web-oc-charts'
 import { defaultChartSettings } from '@/lib/topology/componentSettings'
 import { getV5PlotMargins, toPlotConfig } from './toPlotConfig'
 import { createV5ChartGroup } from '@/services/useChartHandlers/v5'
@@ -261,5 +262,42 @@ describe('getV5PlotMargins', () => {
         isBrush: true,
       }),
     ).toMatchObject({ top: 5, bottom: 25 })
+  })
+})
+
+describe('toPlotConfig x scale without a shared time scale', () => {
+  const period: [Date, Date] = [new Date(1000), new Date(5000)]
+  const build = (
+    handles: ReturnType<typeof handleCache>,
+    zoom?: [Date, Date],
+  ) =>
+    toPlotConfig(
+      {
+        id: 'chart',
+        title: '',
+        series: [],
+        xAxis: [{ kind: 'time', position: 'bottom', domain: period }],
+      },
+      {},
+      defaultChartSettings.timeSeriesChart,
+      { domain: zoom, handles },
+    )
+
+  it('resets a zoom to the configured domain, not to the zoom', () => {
+    const handles = handleCache()
+    const x = build(handles, [new Date(2000), new Date(3000)]).scales?.x
+    expect(x?.domain.get()).toEqual([2000, 3000])
+    expect(x?.options.get().resolved.defaultDomain).toEqual([1000, 5000])
+
+    x?.update({ domain: undefined })
+    expect(x?.domain.get()).toEqual([1000, 5000])
+  })
+
+  it('clears the zoom when it is left out again', () => {
+    const handles = handleCache()
+    build(handles, [new Date(2000), new Date(3000)])
+    const x = build(handles).scales?.x
+    expect(x?.options.get().explicit.domain).toBeUndefined()
+    expect(x?.domain.get()).toEqual([1000, 5000])
   })
 })

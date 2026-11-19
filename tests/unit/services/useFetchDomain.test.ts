@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { effectScope, ref } from 'vue'
-import { useFetchDomain } from '@/services/useFetchDomain'
+import { nextTick, ref } from 'vue'
+import { useChartZoom, useFetchDomain } from '@/services/useFetchDomain'
 
 describe('useFetchDomain', () => {
   afterEach(() => {
@@ -47,109 +47,95 @@ describe('useFetchDomain', () => {
     expect(domain.value).toEqual({ startTime, endTime })
   })
 
-  it('clears the zoom override and pending requests when the configured period changes', () => {
+  it('clears the zoom override and pending requests on a reset', () => {
     vi.useFakeTimers()
-    const period = ref<[Date, Date]>([
-      new Date('2026-01-01T00:00:00Z'),
-      new Date('2026-02-01T00:00:00Z'),
-    ])
-    const scope = effectScope()
-    try {
-      const { debouncedRefetchChartTimeSeries, domain } = scope.run(() =>
-        useFetchDomain(period),
-      )!
-      const zoomed: [Date, Date] = [
-        new Date('2026-01-10T00:00:00Z'),
-        new Date('2026-01-20T00:00:00Z'),
-      ]
-      debouncedRefetchChartTimeSeries(zoomed)
-      vi.runAllTimers()
-      expect(domain.value).toEqual({
-        startTime: zoomed[0],
-        endTime: zoomed[1],
-      })
+    const { debouncedRefetchChartTimeSeries, domain, resetDomain } =
+      useFetchDomain()
+    const zoomed: [Date, Date] = [
+      new Date('2026-01-10T00:00:00Z'),
+      new Date('2026-01-20T00:00:00Z'),
+    ]
+    debouncedRefetchChartTimeSeries(zoomed)
+    vi.runAllTimers()
+    expect(domain.value).toEqual({ startTime: zoomed[0], endTime: zoomed[1] })
 
-      period.value = [
-        new Date('2026-01-01T00:00:00Z'),
-        new Date('2026-02-01T00:00:00Z'),
-      ]
-      expect(domain.value.startTime).toEqual(zoomed[0])
+    resetDomain()
+    expect(domain.value).toEqual({})
 
-      debouncedRefetchChartTimeSeries(zoomed)
-      period.value = [
-        new Date('2026-03-01T00:00:00Z'),
-        new Date('2026-03-01T06:00:00Z'),
-      ]
-      expect(domain.value).toEqual({})
-      vi.runAllTimers()
-      expect(domain.value).toEqual({})
+    debouncedRefetchChartTimeSeries(zoomed)
+    resetDomain()
+    vi.runAllTimers()
+    expect(domain.value).toEqual({})
+  })
+})
 
-      debouncedRefetchChartTimeSeries(period.value)
-      vi.runAllTimers()
-      expect(domain.value).toEqual({
-        startTime: period.value[0],
-        endTime: period.value[1],
-      })
-    } finally {
-      scope.stop()
-    }
+describe('useChartZoom', () => {
+  const day = 24 * 60 * 60 * 1000
+  const range = (start: number, end: number): [Date, Date] => [
+    new Date(start * day),
+    new Date(end * day),
+  ]
+
+  function setup() {
+    vi.useFakeTimers()
+    const period = ref(range(0, 10))
+    const key = ref(0)
+    const zoom = useChartZoom({ period, periodKey: key })
+    zoom.visibleDomain.value = range(2, 4)
+    vi.runAllTimers()
+    return { period, key, ...zoom }
+  }
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
-  it('keeps a zoom override that overlaps a moving period, and resets it on request', () => {
-    vi.useFakeTimers()
-    const period = ref<[Date, Date]>([
-      new Date('2026-01-01T00:00:00Z'),
-      new Date('2026-01-08T00:00:00Z'),
-    ])
-    const scope = effectScope()
-    try {
-      const { debouncedRefetchChartTimeSeries, domain, resetDomain } =
-        scope.run(() => useFetchDomain(period))!
-      const zoomed: [Date, Date] = [
-        new Date('2026-01-03T00:00:00Z'),
-        new Date('2026-01-04T00:00:00Z'),
-      ]
-      debouncedRefetchChartTimeSeries(zoomed)
-      vi.runAllTimers()
+  it('fetches the zoom and the whole period again after a reset', () => {
+    const { visibleDomain, fetchDomain } = setup()
+    expect(fetchDomain.value).toEqual({
+      startTime: range(2, 4)[0],
+      endTime: range(2, 4)[1],
+    })
 
-      // A running period one minute later
-      period.value = [
-        new Date('2026-01-01T00:01:00Z'),
-        new Date('2026-01-08T00:01:00Z'),
-      ]
-      expect(domain.value).toEqual({
-        startTime: zoomed[0],
-        endTime: zoomed[1],
-      })
-
-      resetDomain()
-      expect(domain.value).toEqual({})
-    } finally {
-      scope.stop()
-    }
+    visibleDomain.value = undefined
+    expect(fetchDomain.value).toEqual({})
   })
 
-  it('fetches a moving period again when the previous period was shown', () => {
-    vi.useFakeTimers()
-    const period = ref<[Date, Date]>([
-      new Date('2026-01-01T00:00:00Z'),
-      new Date('2026-01-08T00:00:00Z'),
-    ])
-    const scope = effectScope()
-    try {
-      const { debouncedRefetchChartTimeSeries, domain } = scope.run(() =>
-        useFetchDomain(period),
-      )!
-      debouncedRefetchChartTimeSeries(period.value)
-      vi.runAllTimers()
+  it('keeps the zoom while the period moves and overlaps it', () => {
+    const { period, visibleDomain, fetchDomain } = setup()
+    period.value = range(1, 11)
+    expect(visibleDomain.value).toEqual(range(2, 4))
+    expect(fetchDomain.value.startTime).toEqual(range(2, 4)[0])
+  })
 
-      period.value = [
-        new Date('2026-01-01T00:01:00Z'),
-        new Date('2026-01-08T00:01:00Z'),
-      ]
-      expect(domain.value).toEqual({})
-    } finally {
-      scope.stop()
-    }
+  it('shows the whole period when the zoom is outside the period', () => {
+    const { period, visibleDomain, fetchDomain } = setup()
+    period.value = range(5, 15)
+    expect(visibleDomain.value).toBeUndefined()
+    expect(fetchDomain.value).toEqual({})
+  })
+
+  it('shows the whole period when another period is selected', async () => {
+    const { key, visibleDomain, fetchDomain } = setup()
+    key.value++
+    expect(visibleDomain.value).toBeUndefined()
+    expect(fetchDomain.value).toEqual({})
+
+    visibleDomain.value = range(2, 4)
+    await nextTick()
+    expect(visibleDomain.value).toEqual(range(2, 4))
+  })
+
+  it('does not request a pending zoom after a period selection', () => {
+    vi.useFakeTimers()
+    const key = ref(0)
+    const { visibleDomain, fetchDomain } = useChartZoom({
+      period: range(0, 10),
+      periodKey: key,
+    })
+    visibleDomain.value = range(2, 4)
+    key.value++
+    vi.runAllTimers()
+    expect(fetchDomain.value).toEqual({})
   })
 })

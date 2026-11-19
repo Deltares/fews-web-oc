@@ -28,7 +28,8 @@
           <template #brush="{ margin: chartMargin }">
             <TimeSeriesChartBrush
               v-if="showBrush"
-              v-model:domain="visibleDomain"
+              :domain="visibleDomain ?? fullDomain"
+              @update:domain="visibleDomain = $event"
               :fullDomain="fullBrushDomain"
               :config="subplot"
               :series="brushChartSeries"
@@ -167,7 +168,7 @@ import {
   type ComponentSettings,
 } from '@/lib/topology/componentSettings'
 import { useChartHandlers } from '@/services/useChartHandlers'
-import { useFetchDomain } from '@/services/useFetchDomain/index.ts'
+import { useChartZoom } from '@/services/useFetchDomain/index.ts'
 import {
   getDomainWithConfigFallback,
   getSubplotWithDomain,
@@ -275,10 +276,22 @@ const tab = defineModel<DisplayType>('displayType', {
   required: true,
 })
 
-const visibleDomain = ref<[Date, Date]>()
 const fullDomain = computed(() =>
   getDomainWithConfigFallback(store.startTime, store.endTime, props.config),
 )
+// The time range the user zoomed, panned or brushed to, or undefined to show
+// the whole period. Selecting a period, also the current one again, shows the
+// whole period. So does a configured period of another length, e.g. of
+// another display; a running period keeps its length when it moves.
+const { visibleDomain, fetchDomain: domain } = useChartZoom({
+  period: fullDomain,
+  periodKey: () => [
+    store.periodSelectionCount,
+    fullDomain.value
+      ? fullDomain.value[1].getTime() - fullDomain.value[0].getTime()
+      : undefined,
+  ],
+})
 
 const fullBrushDomain = computed<[Date, Date]>(() => {
   const startDate = props.brushChartConfig?.period?.startDate
@@ -295,8 +308,6 @@ const showBrush = computed(
   () =>
     userSettings.get('charts.brush')?.value === true && !props.disableThinning,
 )
-const { debouncedRefetchChartTimeSeries, domain, resetDomain } =
-  useFetchDomain(fullDomain)
 const chartOptions = computed<PiTimeSeriesQueryOptions>(() => {
   if (props.disableThinning) {
     return {
@@ -475,22 +486,4 @@ function onConfirmationLeave() {
   confirmationDialog.value = false
   isEditing.value = false
 }
-
-watch(visibleDomain, (newDomain) => {
-  if (!newDomain) return
-  debouncedRefetchChartTimeSeries(newDomain)
-})
-
-// Selecting a period, also the current one again, shows the whole period. A
-// running period that moves with the system time keeps the zoom. Runs
-// synchronously, so the data of the previous zoom is not requested for the
-// new period first.
-watch(
-  () => store.periodSelectionCount,
-  () => {
-    resetDomain()
-    visibleDomain.value = undefined
-  },
-  { flush: 'sync' },
-)
 </script>
