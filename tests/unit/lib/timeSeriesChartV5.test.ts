@@ -52,6 +52,24 @@ function createResource(
   } as Series
 }
 
+function stubPlotObservers() {
+  class Observer {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  vi.stubGlobal('ResizeObserver', Observer)
+  vi.stubGlobal('IntersectionObserver', Observer)
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn(() => ({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })),
+  )
+}
+
 describe('v5 static chart config', () => {
   it('renders ensemble requests as native member plots with aligned gaps and metadata', () => {
     const item = createChartSeries('forecast', 'line', ['request'], 1)
@@ -564,6 +582,73 @@ describe('v5 static chart config', () => {
     })
   })
 
+  it('renders available bar layers when another layer has no reliable data', async () => {
+    const config = toPlotConfig(
+      {
+        id: 'water-balance',
+        title: '',
+        yAxis: [
+          { kind: 'value', position: 'left', reverse: true, nice: false },
+        ],
+        series: [
+          createChartSeries('inflow', 'bar', ['inflow']),
+          createChartSeries('unavailable', 'bar', ['unavailable']),
+          createChartSeries('outflow', 'bar', ['outflow']),
+          createChartSeries('other-inflow', 'bar', ['other-inflow']),
+        ],
+      },
+      {},
+      defaultChartSettings.timeSeriesChart,
+      {},
+      {
+        inflow: createResource([{ x: new Date(3600000), y: 4 }]),
+        unavailable: createResource([
+          { x: new Date(0), y: -999, flag: '8' },
+          { x: new Date(3600000), y: -999, flag: '8' },
+        ]),
+        outflow: createResource([{ x: new Date(3600000), y: -3 }]),
+        'other-inflow': createResource([{ x: new Date(3600000), y: 2 }]),
+      },
+    )
+    stubPlotObservers()
+    const container = document.createElement('div')
+    Object.defineProperties(container, {
+      clientWidth: { value: 640 },
+      clientHeight: { value: 320 },
+    })
+    document.body.append(container)
+    try {
+      const plot = createPlot(container, config)
+      try {
+        expect(plot.scales.y0.scale.domain.get()).toEqual([-3, 6])
+        await expect
+          .poll(
+            () =>
+              container.querySelectorAll('[data-mark="bar-segment"]').length,
+          )
+          .toBe(3)
+        const segments = [
+          ...container.querySelectorAll('[data-mark="bar-segment"]'),
+        ]
+        expect(
+          segments.map((segment) => segment.getAttribute('data-layer-id')),
+        ).toEqual(['0:inflow', '2:outflow', '3:other-inflow'])
+        expect(
+          segments.every(
+            (segment) =>
+              Number(segment.getAttribute('width')) > 0 &&
+              Number(segment.getAttribute('height')) > 0,
+          ),
+        ).toBe(true)
+      } finally {
+        plot.destroy()
+      }
+    } finally {
+      container.remove()
+      vi.unstubAllGlobals()
+    }
+  })
+
   it('gives time bars explicit preceding-sample intervals without bridging missing values', () => {
     const handles = handleCache()
     const config: ChartConfig = {
@@ -606,21 +691,7 @@ describe('v5 static chart config', () => {
       [3000, 6000, 4],
     ])
 
-    class Observer {
-      observe() {}
-      unobserve() {}
-      disconnect() {}
-    }
-    vi.stubGlobal('ResizeObserver', Observer)
-    vi.stubGlobal('IntersectionObserver', Observer)
-    vi.stubGlobal(
-      'matchMedia',
-      vi.fn(() => ({
-        matches: false,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-      })),
-    )
+    stubPlotObservers()
     const container = document.createElement('div')
     try {
       const plot = createPlot(container, plotConfig)
