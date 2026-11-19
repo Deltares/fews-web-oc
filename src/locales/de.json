@@ -44,6 +44,7 @@
   "configurator": {
     "mode": "Konfiguratormodus",
     "modeActive": "Konfiguratormodus aktiv",
+    "disabledSetting": "Für normale Benutzer deaktiviert",
     "systemDetail": "Systemdetail",
     "copy": "In die Zwischenablage kopieren",
     "copied": "Kopiert",

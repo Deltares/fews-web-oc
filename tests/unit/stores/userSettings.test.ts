@@ -4,10 +4,10 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { createApp, nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { useConfiguratorModeStore } from '@/stores/configuratorMode'
 
-vi.mock('vue-router', () => ({
-  useRoute: () => ({ query: {} }),
-}))
+const route = vi.hoisted(() => ({ query: {} as Record<string, string> }))
+vi.mock('vue-router', () => ({ useRoute: () => route }))
 
 vi.mock('@/lib/fews-config', () => ({
   getResourcesStaticUrl: (resource: string) =>
@@ -39,10 +39,15 @@ function storeLocalSettings(items: unknown[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ items }))
 }
 
+function storedItems() {
+  return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}').items
+}
+
 describe('userSettings store – restoreDefaults', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     localStorage.clear()
+    route.query = {}
   })
 
   afterEach(() => {
@@ -173,6 +178,108 @@ describe('userSettings store – restoreDefaults', () => {
   })
 })
 
+describe('userSettings store – configurator mode', () => {
+  function createStore() {
+    const pinia = createPinia()
+    pinia.use(piniaPluginPersistedstate)
+    createApp({}).use(pinia)
+    setActivePinia(pinia)
+    return useUserSettingsStore()
+  }
+
+  beforeEach(() => {
+    vi.stubEnv('DEV', true)
+    localStorage.clear()
+    route.query = {}
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
+  })
+
+  it('shows, edits, and resets disabled boolean and one-of settings', async () => {
+    mockFewsConfigFile({
+      settings: [
+        {
+          id: 'datum.verticalDatum',
+          value: false,
+          enabled: false,
+          favorite: true,
+        },
+        {
+          id: 'charts.scrollZoomMode',
+          value: 'y',
+          enabled: false,
+          favorite: false,
+        },
+      ],
+    })
+    const store = createStore()
+    await store.initializeWithWebResources()
+    const configuratorMode = useConfiguratorModeStore()
+
+    expect(store.listByGroup('Datum')).not.toContainEqual(
+      expect.objectContaining({ id: 'datum.verticalDatum' }),
+    )
+    expect(store.listByGroup('Charts')).not.toContainEqual(
+      expect.objectContaining({ id: 'charts.scrollZoomMode' }),
+    )
+
+    configuratorMode.setEnabled(true)
+    expect(store.listByGroup('Datum')).toContainEqual(
+      expect.objectContaining({ id: 'datum.verticalDatum' }),
+    )
+    expect(store.listByGroup('Charts')).toContainEqual(
+      expect.objectContaining({ id: 'charts.scrollZoomMode' }),
+    )
+
+    const verticalDatum = store.get('datum.verticalDatum')!
+    store.add({ ...verticalDatum, value: true, favorite: false })
+    const scrollZoomMode = store.get('charts.scrollZoomMode')!
+    store.add({ ...scrollZoomMode, value: 'xy', favorite: true })
+    await nextTick()
+
+    expect(store.convertDatum).toBe(true)
+    expect(store.get('charts.scrollZoomMode')?.value).toBe('xy')
+    expect(storedItems()).toEqual([])
+
+    configuratorMode.setEnabled(false)
+
+    expect(store.get('datum.verticalDatum')).toMatchObject({
+      value: false,
+      favorite: true,
+    })
+    expect(store.convertDatum).toBe(false)
+    expect(store.get('charts.scrollZoomMode')).toMatchObject({
+      value: 'y',
+      favorite: false,
+    })
+    expect(store.listByGroup('Datum')).not.toContainEqual(
+      expect.objectContaining({ id: 'datum.verticalDatum' }),
+    )
+  })
+
+  it('does not apply route query overrides to disabled settings', async () => {
+    mockFewsConfigFile({
+      settings: [{ id: 'datum.verticalDatum', value: false, enabled: false }],
+    })
+    route.query['datum.verticalDatum'] = 'true'
+    const store = createStore()
+    await store.initializeWithWebResources()
+    const configuratorMode = useConfiguratorModeStore()
+
+    configuratorMode.setEnabled(true)
+    const verticalDatum = store.get('datum.verticalDatum')!
+    store.add({ ...verticalDatum, value: true })
+
+    expect(store.get('datum.verticalDatum')?.value).toBe(true)
+
+    configuratorMode.setEnabled(false)
+    expect(store.get('datum.verticalDatum')?.value).toBe(false)
+  })
+})
+
 describe('userSettings store – persistence', () => {
   function createStore() {
     const pinia = createPinia()
@@ -181,10 +288,6 @@ describe('userSettings store – persistence', () => {
     createApp({}).use(pinia)
     setActivePinia(pinia)
     return useUserSettingsStore()
-  }
-
-  function storedItems() {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}').items
   }
 
   beforeEach(() => {
