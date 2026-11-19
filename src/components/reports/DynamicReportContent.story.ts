@@ -132,7 +132,7 @@ function createTableEditingStory(html: string) {
           h(
             'button',
             { onClick: () => (editing.value = !editing.value) },
-            editing.value ? 'Apply edits' : 'Edit',
+            editing.value ? 'Apply' : 'Edit',
           ),
           h(DynamicReportContent, {
             html: editing.value || !editedHtml.value ? html : editedHtml.value,

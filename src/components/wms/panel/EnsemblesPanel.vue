@@ -1,5 +1,5 @@
 <template>
-  <v-list-item prepend-icon="mdi-source-fork">
+  <v-list-item prepend-icon="mdi-source-fork mdi-rotate-90">
     <div class="d-flex align-center ga-2">
       <v-select
         v-if="selectableEnsembles.length > 1"
