@@ -44,6 +44,7 @@
   "configurator": {
     "mode": "Configurator mode",
     "modeActive": "Configurator mode active",
+    "disabledSetting": "Disabled for normal users",
     "systemDetail": "System detail",
     "copy": "Copy to clipboard",
     "copied": "Copied",

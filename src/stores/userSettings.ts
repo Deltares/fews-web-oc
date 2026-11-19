@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import DefaultUserSettings from '@/assets/DefaultUserSettings.json'
 import { LayerKind } from '@/lib/streamlines'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   deserializeUserSettings,
@@ -18,6 +18,7 @@ import type {
   ChartWheelMode,
 } from '@/lib/charts/types/TimeSeriesChartProps'
 import { ModifierKey } from '@deltares/fews-web-oc-charts'
+import { useConfiguratorModeStore } from '@/stores/configuratorMode'
 
 export interface UserSettingsWithIcon {
   value: string
@@ -111,6 +112,7 @@ export const useUserSettingsStore = defineStore(
     const runtimeOptions = new Map<string, UserSettingsWithIcon[]>()
 
     const route = useRoute()
+    const configuratorMode = useConfiguratorModeStore()
     const chartEngine = computed<ChartEngine>(() =>
       get('charts.engine')?.value === 'v5' ? 'v5' : 'v4',
     )
@@ -118,9 +120,11 @@ export const useUserSettingsStore = defineStore(
       get('charts.colorContrast')?.value === 'none' ? 'none' : 'auto',
     )
 
-    // Settings disabled in the FEWS config are hidden from the user.
+    // Settings disabled in the FEWS config are only available to configurators.
     const visibleItems = computed(() =>
-      items.value.filter((item) => !item.disabled),
+      items.value.filter(
+        (item) => !item.disabled || configuratorMode.isEnabled,
+      ),
     )
 
     const listFavorite = computed(() =>
@@ -261,6 +265,26 @@ export const useUserSettingsStore = defineStore(
       applySpecialActions()
     }
 
+    function resetDisabledItems(): void {
+      items.value = items.value.map((item) => {
+        if (!item.disabled) return item
+
+        const baselineItem = baselineItems.find(
+          (baseline) => baseline.id === item.id,
+        )
+        if (baselineItem === undefined) return item
+
+        if (
+          item.type === 'oneOfMultiple' &&
+          baselineItem.type === 'oneOfMultiple'
+        ) {
+          return { ...baselineItem, items: item.items }
+        }
+        return { ...baselineItem }
+      })
+      applySpecialActions()
+    }
+
     function applySpecialActions(): void {
       const specialActionIds = ['units.displayUnits', 'datum.verticalDatum']
       for (const id of specialActionIds) {
@@ -268,6 +292,14 @@ export const useUserSettingsStore = defineStore(
         if (item) add(item)
       }
     }
+
+    watch(
+      () => configuratorMode.isEnabled,
+      (isEnabled, wasEnabled) => {
+        if (wasEnabled && !isEnabled) resetDisabledItems()
+      },
+      { flush: 'sync' },
+    )
 
     return {
       groups,

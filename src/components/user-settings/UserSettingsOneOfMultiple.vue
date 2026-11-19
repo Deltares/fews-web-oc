@@ -1,9 +1,5 @@
 <template>
-  <v-list-item
-    :disabled="setting.disabled"
-    :subtitle="subtitle"
-    density="compact"
-  >
+  <v-list-item :disabled="isDisabled" :subtitle="subtitle" density="compact">
     <v-list-item-action>
       <v-btn-toggle
         v-if="setting.items.length < 4 && !inline"
@@ -11,6 +7,7 @@
         class="my-2 multi-line-toggle"
         v-model="modelValue"
         mandatory
+        :disabled="isDisabled"
         :aria-label="settingLabel"
       >
         <v-btn
@@ -36,6 +33,7 @@
         item-title="title"
         item-value="value"
         item-props
+        :disabled="isDisabled"
         flat
         hide-details
         :aria-label="settingLabel"
@@ -68,6 +66,15 @@
     </v-list-item-action>
 
     <template #append>
+      <v-icon
+        v-if="isConfiguratorOnly"
+        v-tooltip:top="disabledForNormalUsersLabel"
+        :aria-label="disabledForNormalUsersLabel"
+        color="warning"
+        data-test-id="disabled-user-setting-indicator"
+      >
+        mdi-eye-off-outline
+      </v-icon>
       <slot name="append" />
     </template>
   </v-list-item>
@@ -77,6 +84,8 @@
 import { type UserSettingsItemOneOf } from '@/stores/userSettings'
 import { useUserSettingTranslation } from '@/services/useUserSettingTranslation'
 import { computed } from 'vue'
+import { useConfiguratorModeStore } from '@/stores/configuratorMode'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   setting: UserSettingsItemOneOf
@@ -87,8 +96,19 @@ const props = defineProps<Props>()
 const modelValue = defineModel<string>({ required: true })
 
 const { label, optionTitle } = useUserSettingTranslation()
+const { t } = useI18n()
+const configuratorMode = useConfiguratorModeStore()
 
 const settingLabel = computed(() => label(props.setting))
+const isDisabled = computed(
+  () => props.setting.disabled && !configuratorMode.isEnabled,
+)
+const isConfiguratorOnly = computed(
+  () => props.setting.disabled && configuratorMode.isEnabled,
+)
+const disabledForNormalUsersLabel = computed(() =>
+  t('configurator.disabledSetting'),
+)
 
 const options = computed(() =>
   props.setting.items.map((item) => ({
