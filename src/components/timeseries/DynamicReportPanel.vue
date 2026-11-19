@@ -13,7 +13,13 @@
     @close-export="emit('close-export')"
   >
     <template #empty>
-      <v-alert v-if="error" type="error" variant="tonal" class="ma-2">
+      <v-alert
+        v-if="error"
+        type="error"
+        density="compact"
+        variant="tonal"
+        class="ma-2 flex-0-0"
+      >
         {{ t('reports.loadFailed') }}
       </v-alert>
       <div v-else-if="isReady || isMissingTime" class="text-center mt-2">

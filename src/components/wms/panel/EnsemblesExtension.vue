@@ -4,7 +4,7 @@
     :items="extensionItems"
     value-key="value"
     text-key="value"
-    active-prepend-icon="mdi-source-fork"
+    active-prepend-icon="mdi-source-fork mdi-rotate-90"
     :collapsed-text="collapsedText"
     :columns="10"
   >

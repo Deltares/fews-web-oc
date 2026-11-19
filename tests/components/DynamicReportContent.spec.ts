@@ -194,7 +194,7 @@ for (const story of ['GovernorateTableEditing', 'DistrictTableEditing']) {
     await page.keyboard.press('End')
     await page.keyboard.type('!')
     await expect(header).toContainText('!')
-    await component.getByRole('button', { name: 'Apply edits' }).click()
+    await component.getByRole('button', { name: 'Apply' }).click()
     await expect(component.locator('.tiptap')).toHaveCount(0)
     await expect(header).toContainText('!')
     await expectHeaderStyle()
@@ -217,7 +217,7 @@ for (const story of ['CaretEditing', 'CaretWebOcEditing']) {
     await expect(editor.locator('[data-readonly="true"]').first()).toHaveText(
       'Fixed introduction',
     )
-    await component.getByRole('button', { name: 'Apply edits' }).click()
+    await component.getByRole('button', { name: 'Apply' }).click()
     await expect(component.locator('.tiptap')).toHaveCount(0)
     await expect(component.locator('#commentary')).toHaveText(
       'New Write commentary here.',
@@ -307,7 +307,7 @@ for (const story of ['ReadonlyEditing', 'ReadonlyWebOcEditing']) {
     await expect(fixed).toBeVisible()
     await expect(editor).not.toContainText('Pasted replacement')
 
-    await component.getByRole('button', { name: 'Apply edits' }).click()
+    await component.getByRole('button', { name: 'Apply' }).click()
     await expect(component.locator('.tiptap')).toHaveCount(0)
     await expect(component.locator('#fixed')).toHaveAttribute(
       'data-readonly',

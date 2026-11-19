@@ -84,7 +84,7 @@ const displayActionItems = computed(() => {
       hidden: !dataDownloadEnabled,
     },
     {
-      icon: 'mdi-export-variant',
+      icon: 'mdi-file-export',
       label: t('dynamicReport.exportReport') + '...',
       action: () => emit('export-report'),
       disabled:
