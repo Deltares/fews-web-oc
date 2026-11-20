@@ -39,6 +39,9 @@ const localhostURLs = [
   `https://127.0.0.1:*`,
 ].join(' ')
 
+export const federatedModuleFederationAdapter =
+  './src/lib/moduleFederation/index.ts'
+
 // https://vitejs.dev/config/
 export function createWebOCConfig(
   mode: string,
@@ -164,11 +167,6 @@ export function createWebOCConfig(
     },
     test: {
       include: ['**/*.test.?(c|m)[jt]s?(x)'],
-      server: {
-        deps: {
-          inline: ['vuetify'],
-        },
-      },
     },
   }
 }

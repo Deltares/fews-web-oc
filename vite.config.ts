@@ -1,9 +1,12 @@
 import { defineConfig } from 'vite'
 import { federation } from '@module-federation/vite'
-import { createWebOCConfig } from './vite.config.shared.js'
+import {
+  createWebOCConfig,
+  federatedModuleFederationAdapter,
+} from './vite.shared.js'
 
 export default defineConfig(({ mode }) =>
-  createWebOCConfig(mode, './src/lib/moduleFederation/index.ts', [
+  createWebOCConfig(mode, federatedModuleFederationAdapter, [
     federation({
       name: 'delft-fews-weboc',
       shared: {
