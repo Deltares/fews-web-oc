@@ -93,6 +93,7 @@ import {
   initializeV5TimeScale,
   resetTimeScaleDomain,
   updateTimeScaleDomain,
+  watchTimeScaleReset,
 } from '@/services/useChartHandlers/v5'
 
 const props = defineProps<TimeSeriesChartProps>()
@@ -391,18 +392,10 @@ watch(
     // domain while the chart is zoomed, as the app only does it without zoom.
     const sharedTimeScale = chartGroup.v5?.timeScale
     if (!props.verticalProfile && sharedTimeScale) {
-      currentPlot.subscribe(
-        sharedTimeScale.options,
-        (options, previous) => {
-          if (
-            previous?.explicit.domain !== undefined &&
-            options.explicit.domain === undefined
-          ) {
-            domain.value = undefined
-          }
-        },
-        { signal: controller.signal },
-      )
+      const stopWatchingReset = watchTimeScaleReset(sharedTimeScale, () => {
+        domain.value = undefined
+      })
+      onCleanup(stopWatchingReset)
     }
     const updateMargin = ({ size, regions }: LayoutChangeDetail) => {
       margin.value = {

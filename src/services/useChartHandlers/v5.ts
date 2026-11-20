@@ -1,5 +1,6 @@
 import {
   alignGroup,
+  effect,
   linearScale,
   sharedPointer,
   sharedSelection,
@@ -91,6 +92,19 @@ export function resetTimeScaleDomain(scale: V5ChartGroup['timeScale']): void {
   if (scale.options.get().explicit.domain === undefined) return
 
   scale.update({ domain: undefined })
+}
+
+export function watchTimeScaleReset(
+  scale: V5ChartGroup['timeScale'],
+  onReset: () => void,
+): () => void {
+  let wasExplicit = scale.options.get().explicit.domain !== undefined
+  const watcher = effect(() => {
+    const isExplicit = scale.options.get().explicit.domain !== undefined
+    if (wasExplicit && !isExplicit) onReset()
+    wasExplicit = isExplicit
+  })
+  return () => watcher.dispose()
 }
 
 export function updateBrushSelection(
