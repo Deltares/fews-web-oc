@@ -30,7 +30,7 @@ function isVersionAtLeast(current: string, required: string): boolean {
 export function testFromVersion(
   version: FewsVersion,
   title: string,
-  callback: () => void,
+  callback: Parameters<typeof test>[1],
 ) {
   const currentVersion = getFewsVersion()
   if (!isVersionAtLeast(currentVersion, version)) {
