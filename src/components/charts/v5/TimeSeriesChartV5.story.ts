@@ -1,4 +1,4 @@
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, ref } from 'vue'
 import TimeSeriesChartV5 from './TimeSeriesChartV5.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { getDefaultSettings } from '@/lib/topology/componentSettings'
@@ -46,6 +46,7 @@ export const SharedElevation = defineComponent({
       }
       return { config, series: { profile: resource } }
     })
+
     return () => {
       const series = Object.fromEntries(
         profiles.flatMap((profile, index) => {
@@ -77,5 +78,54 @@ export const SharedElevation = defineComponent({
         ),
       )
     }
+  },
+})
+
+export const SharedTimeReset = defineComponent({
+  setup() {
+    const group = createChartHandlersGroup()
+    const settings = getDefaultSettings().charts.timeSeriesChart
+    const fullDomain: [Date, Date] = [new Date(0), new Date(10000)]
+    const domain = ref<[Date, Date]>()
+    const config: ChartConfig = {
+      id: 'time',
+      title: '',
+      xAxis: [{ kind: 'time', domain: fullDomain }],
+      series: [],
+    }
+
+    function selectDomain(next: [Date, Date]) {
+      group.v5!.timeScale.update({
+        domain: [next[0].getTime(), next[1].getTime()],
+      })
+      domain.value = next
+    }
+
+    return () =>
+      h('div', [
+        h('button', { onClick: () => selectDomain(fullDomain) }, 'Select full'),
+        h(
+          'button',
+          { onClick: () => selectDomain([new Date(2000), new Date(8000)]) },
+          'Select part',
+        ),
+        h('output', domain.value ? 'zoomed' : 'following'),
+        h(
+          'div',
+          { style: { display: 'flex', height: '500px', width: '1000px' } },
+          [0, 1].map(() =>
+            h(TimeSeriesChartV5, {
+              config,
+              series: {},
+              group,
+              settings,
+              domain: domain.value,
+              'onUpdate:domain': (next: [Date, Date] | undefined) => {
+                domain.value = next
+              },
+            }),
+          ),
+        ),
+      ])
   },
 })
