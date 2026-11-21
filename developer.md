@@ -20,6 +20,26 @@ If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has a
 
 
 
+## CSS overrides
+
+Vuetify declares its component, override, utility, and final cascade layers.
+WebOC component styles are unlayered, so normal declarations in those styles
+override Vuetify without `!important` or additional selector specificity.
+The shared focus outline in `public/vuetify-overrule.css` is unlayered and uses
+`:not(#focus-outline)` to get ID-level specificity, so it wins over class-based
+`outline` rules in components and third-party CSS without `!important`. A
+component that replaces the focus treatment, such as the log editor, must add the
+same `:not(#focus-outline)` to its selector. Preserve visible keyboard focus
+when doing so.
+
+MapLibre and the schematic status display also include unlayered styles.
+Keep overrides scoped to their owning component and use a selector specific
+enough to win regardless of stylesheet load order.
+
+Honor `prefers-reduced-motion: reduce` for decorative animation. The system-time
+status remains visible without blinking or sync pulses, and the startup error
+page disables its entrance animation and retry-button movement.
+
 ## Search data
 
 The search context stores its item tree in a `shallowRef`. Replace locations

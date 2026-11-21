@@ -179,7 +179,7 @@ function getSvgElement() {
 }
 
 .ssd {
-  pointer-events: auto !important;
+  pointer-events: auto;
   -webkit-user-drag: none;
   user-select: none;
   -moz-user-select: none;
@@ -188,6 +188,6 @@ function getSvgElement() {
 }
 
 :deep(.ssd > svg) {
-  pointer-events: auto !important;
+  pointer-events: auto;
 }
 </style>

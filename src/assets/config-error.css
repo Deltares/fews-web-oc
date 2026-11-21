@@ -180,6 +180,20 @@ p {
   outline-offset: 2px;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .error-card {
+    animation: none;
+  }
+
+  .retry-btn {
+    transition: none;
+  }
+
+  .retry-btn:hover {
+    transform: none;
+  }
+}
+
 .weboc-build-info {
   display: flex;
   align-items: center;

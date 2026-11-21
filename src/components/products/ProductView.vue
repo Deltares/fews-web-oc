@@ -480,7 +480,7 @@ img {
 }
 
 .no-hover {
-  --v-hover-opacity: 0 !important;
-  background-color: transparent !important;
+  --v-hover-opacity: 0;
+  background-color: transparent;
 }
 </style>

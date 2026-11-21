@@ -15,7 +15,7 @@ withDefaults(defineProps<Props>(), {
 
 <style scoped>
 .select-icon {
-  transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .select-icon.active {

@@ -190,7 +190,7 @@ function clearSelection() {
 }
 
 .menu-icon {
-  transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .active-menu-icon {
