@@ -1,5 +1,5 @@
 <template>
-  <v-layout id="app">
+  <v-layout class="weboc-layout">
     <v-app-bar
       ref="appBar"
       :color="appBarColor"
@@ -371,7 +371,8 @@ body {
   height: 100%;
 }
 
-#app {
+#app,
+.weboc-layout {
   height: 100%;
   overflow: hidden;
 }

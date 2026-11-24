@@ -54,4 +54,20 @@ test.describe('Page metadata', () => {
       '/images/favicon.ico',
     )
   })
+
+  for (const path of ['/', '/login']) {
+    test(`uses a unique app ID for ${path}`, async ({ page }) => {
+      await page.route('**/weboc/config?documentFormat=PI_JSON', (route) =>
+        route.fulfill({
+          headers: { 'Access-Control-Allow-Origin': '*' },
+          json: { general: {}, components: [] },
+        }),
+      )
+
+      await page.goto(path)
+      await expect(page.locator('.weboc-layout')).toBeVisible()
+      await expect(page.locator('#app')).toHaveCount(1)
+      await expect(page.locator('#app')).toHaveAttribute('data-v-app', '')
+    })
+  }
 })
