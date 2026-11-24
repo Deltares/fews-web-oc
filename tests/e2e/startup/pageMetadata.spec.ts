@@ -46,7 +46,7 @@ test.describe('Page metadata', () => {
     )
 
     await page.goto('/')
-    await expect(page.locator('#app')).not.toBeEmpty()
+    await expect(page.locator('body > #app[data-v-app]')).not.toBeEmpty()
 
     await expect(page).toHaveTitle('Delft-FEWS WebOC')
     await expect(page.locator("link[rel='icon']")).toHaveAttribute(
