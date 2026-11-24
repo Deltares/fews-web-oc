@@ -24,7 +24,6 @@ import DownloadDisclaimerDialog from '@/components/download/DownloadDisclaimerDi
 
 import { useRoute } from 'vue-router'
 import { useConfigStore } from '@/stores/config.ts'
-import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { setDisplayTimeZone, SYSTEM_TIME_ZONE } from '@/lib/date/timeZone'
 import { useUserSettingsStore } from './stores/userSettings'
 import { useTheme } from 'vuetify'
@@ -41,6 +40,7 @@ import {
 import { MapLayerConfig } from '@deltares/fews-pi-requests'
 import { usePermissionsStore } from './stores/permissions'
 import { configManager } from './services/application-config'
+import { usePageMetadata } from './services/usePageMetadata'
 import {
   i18n,
   loadWebResourcesTranslations,
@@ -87,23 +87,7 @@ const layoutComponent = computed(() => {
   }
 })
 
-watch(
-  () => configStore.general.title,
-  () => {
-    document.title = configStore.general.title ?? 'Delft-FEWS Web OC'
-  },
-)
-
-watch(
-  () => configStore.general.icons,
-  (icons) => {
-    if (icons?.favicon) {
-      const faviconUrl: string = getResourcesStaticUrl(icons.favicon).toString()
-      const currentFavicon = document.querySelector("link[rel='icon']")
-      currentFavicon?.setAttribute('href', faviconUrl.toString())
-    }
-  },
-)
+usePageMetadata(() => configStore.general)
 
 watch(
   () => configStore.general.mapLayerConfig,
