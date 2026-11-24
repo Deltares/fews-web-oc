@@ -254,10 +254,7 @@ const maxIndex = computed(() => {
   return Math.max(props.dates.length - 1, 0)
 })
 
-// Live clock used to position the current-time marker. Note that props.now is
-// not actual wall-clock time: it is the WMS layer's "default" time (e.g. the
-// latest available forecast step), used elsewhere for the follow/jump-to-now
-// behaviour, so it must not be used here.
+// Live clock used to position the current-time marker. 
 const CURRENT_TIME_REFRESH_INTERVAL = 10000
 const liveNow = ref(new Date())
 let currentTimeTimer: ReturnType<typeof setInterval> | null = null
