@@ -1,5 +1,5 @@
 <template>
-  <v-layout id="app">
+  <v-layout class="weboc-layout">
     <v-main id="main">
       <v-sheet class="w-100 h-100">
         <Suspense>
@@ -24,7 +24,7 @@ body {
   height: 100%;
 }
 
-#app {
+.weboc-layout {
   height: 100%;
   overflow: hidden;
 }
