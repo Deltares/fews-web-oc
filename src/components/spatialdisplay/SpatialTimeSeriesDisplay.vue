@@ -79,7 +79,8 @@ const currentTime = computed(() => {
   const lastValueTime = layerCapabilities.value?.lastValueTime
   if (!lastValueTime) return
 
-  return new Date(lastValueTime)
+  const date = new Date(lastValueTime)
+  return Number.isNaN(date.getTime()) ? undefined : date
 })
 
 function getFilterActionsFilter(

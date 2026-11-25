@@ -55,11 +55,17 @@ const props = withDefaults(defineProps<Props>(), { downloadReport: true })
 const emit = defineEmits<{ 'export-report': [] }>()
 const { t } = useI18n()
 const { selectedDate } = useSelectedDate(() => props.currentTime)
-const dynamicReportTime = computed(() =>
-  props.dynamicReport?.capabilities.dimension?.name === 'time'
-    ? selectedDate.value?.toISOString()
-    : undefined,
-)
+const dynamicReportTime = computed(() => {
+  const date = selectedDate.value
+  if (
+    props.dynamicReport?.capabilities.dimension?.name !== 'time' ||
+    !date ||
+    Number.isNaN(date.getTime())
+  ) {
+    return undefined
+  }
+  return date.toISOString()
+})
 
 const userSettings = useUserSettingsStore()
 const options = computed<
