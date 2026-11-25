@@ -1,0 +1,16 @@
+diff --git a/node_modules/@deltares/fews-web-oc-composables/dist/lib/timeseries/applyTimeSeriesQueryOptions.js b/node_modules/@deltares/fews-web-oc-composables/dist/lib/timeseries/applyTimeSeriesQueryOptions.js
+index da8b890..f80fad3 100644
+--- a/node_modules/@deltares/fews-web-oc-composables/dist/lib/timeseries/applyTimeSeriesQueryOptions.js
++++ b/node_modules/@deltares/fews-web-oc-composables/dist/lib/timeseries/applyTimeSeriesQueryOptions.js
+@@ -13,9 +13,9 @@ function estimateChartWidth() {
+ export function applyTimeSeriesQueryOptions(url, options) {
+     const result = new URL(url);
+     const params = result.searchParams;
+-    if (options.startTime)
++    if (options.startTime && !Number.isNaN(options.startTime.getTime()))
+         params.set('startTime', toPiDateTime(options.startTime));
+-    if (options.endTime)
++    if (options.endTime && !Number.isNaN(options.endTime.getTime()))
+         params.set('endTime', toPiDateTime(options.endTime));
+     if (options.thinning) {
+         const start = Date.parse(params.get('startTime') ?? '');
