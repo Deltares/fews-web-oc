@@ -194,17 +194,24 @@ export function addFilterPeriodToConfig(
 ) {
   if (!filter.startTime || !filter.endTime) return
 
-  const startDate = convertJsDateToFewsPiDateTime(new Date(filter.startTime))
-  const endDate = convertJsDateToFewsPiDateTime(new Date(filter.endTime))
+  const startTime = new Date(filter.startTime)
+  const endTime = new Date(filter.endTime)
+  if (Number.isNaN(startTime.getTime()) || Number.isNaN(endTime.getTime())) {
+    return
+  }
+
+  const startDate = convertJsDateToFewsPiDateTime(startTime)
+  const endDate = convertJsDateToFewsPiDateTime(endTime)
 
   results.forEach((result) => {
     if (!result.config) return
 
-    if (!result.config.timeSeriesDisplay?.period) return
-
-    result.config.timeSeriesDisplay.period = {
-      startDate,
-      endDate,
+    for (const config of [
+      result.config.timeSeriesDisplay,
+      result.config.scalar1DDisplay,
+    ]) {
+      if (!config || config.period) continue
+      config.period = { startDate, endDate }
     }
   })
 }

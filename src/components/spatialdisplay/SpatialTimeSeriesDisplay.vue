@@ -37,6 +37,7 @@ import {
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
 import type { EnsembleSelection } from '@/lib/ensemble'
+import { getValueTimeRangeFromCapabilities } from '@/lib/capabilities'
 
 interface Props {
   layerName?: string
@@ -71,16 +72,16 @@ const { layerCapabilities } = useWmsLayerCapabilities(
   undefined,
 )
 
+const layerValueTimeRange = computed(() =>
+  getValueTimeRangeFromCapabilities(layerCapabilities.value),
+)
+
 const currentTime = computed(() => {
   if (props.currentTime) {
     return props.currentTime
   }
 
-  const lastValueTime = layerCapabilities.value?.lastValueTime
-  if (!lastValueTime) return
-
-  const date = new Date(lastValueTime)
-  return Number.isNaN(date.getTime()) ? undefined : date
+  return layerValueTimeRange.value?.[1]
 })
 
 function getFilterActionsFilter(
@@ -102,8 +103,7 @@ function getTimeSeriesGridActionsFilter(
 ): TimeSeriesGridActionsFilter | undefined {
   if (!longitude || !latitude) return
   if (!layerCapabilities.value?.boundingBox) return
-  if (!layerCapabilities.value?.firstValueTime) return
-  if (!layerCapabilities.value?.lastValueTime) return
+  if (!layerValueTimeRange.value) return
 
   const coordinates = [+longitude, +latitude]
   const [x, y] = toMercator(coordinates)
@@ -113,15 +113,14 @@ function getTimeSeriesGridActionsFilter(
     ...toMercator(bboxArray.slice(0, 2)),
     ...toMercator(bboxArray.slice(-2)),
   ]
-  const startTime = layerCapabilities.value.firstValueTime
-  const endTime = layerCapabilities.value.lastValueTime
+  const [startDate, endDate] = layerValueTimeRange.value
 
   return {
     layers: props.layerName,
     x,
     y,
-    startTime,
-    endTime,
+    startTime: startDate.toISOString(),
+    endTime: endDate.toISOString(),
     bbox: mercatorBbox,
     documentFormat: 'PI_JSON',
     useDisplayUnits: userSettings.useDisplayUnits,
