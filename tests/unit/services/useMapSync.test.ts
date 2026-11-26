@@ -23,6 +23,29 @@ afterEach(() => {
 })
 
 describe('useMapSync', () => {
+  it('remembers bounds after the active map unmounts', async () => {
+    const bounds = new LngLatBounds([5, 6], [7, 8])
+    const currentMap = createMap(bounds)
+    let getSynchronizedMapBounds:
+      ReturnType<typeof useSynchronizedMapBounds> | undefined
+    const ActiveMap = defineComponent({
+      setup() {
+        getSynchronizedMapBounds = useSynchronizedMapBounds()
+        useMapSync(currentMap)
+        return () => h('div')
+      },
+    })
+    const host = document.createElement('div')
+    const app = createApp(ActiveMap)
+    mounts.push(app)
+    app.mount(host)
+    await nextTick()
+    app.unmount()
+    mounts.splice(mounts.indexOf(app), 1)
+
+    expect(getSynchronizedMapBounds?.()).toBe(bounds)
+  })
+
   it('returns the active bounds without a synchronization provider', async () => {
     const bounds = new LngLatBounds([1, 2], [3, 4])
     const currentMap = createMap(bounds)

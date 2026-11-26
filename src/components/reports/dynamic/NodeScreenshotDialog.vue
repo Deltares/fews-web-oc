@@ -73,7 +73,7 @@
               @navigate="onNavigate"
             >
               <template #map>
-                <MapCaptureTarget @change="map = $event" />
+                <MapCaptureTarget @change="onMapChange" />
               </template>
             </SpatialDisplay>
           </div>
@@ -223,6 +223,19 @@ function onNavigate(route: NavigateRoute) {
   selectionVersion++
   const params = route.params
   if (typeof params?.layerName === 'string') layerName.value = params.layerName
+}
+
+function onMapChange(newMap: Map | undefined) {
+  map.value = newMap
+  const bounds = initialBounds.value
+  if (!newMap || !bounds) return
+
+  newMap.fitBounds(bounds, { animate: false })
+  newMap.once('idle', () => {
+    if (map.value === newMap && initialBounds.value === bounds) {
+      newMap.fitBounds(bounds, { animate: false })
+    }
+  })
 }
 
 async function capture() {

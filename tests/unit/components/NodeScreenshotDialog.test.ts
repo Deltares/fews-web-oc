@@ -7,7 +7,12 @@ import { captureNodeScreenshot } from '@/lib/dynamic-report/screenshot'
 import { getLayerNameForNode } from '@/lib/topology/displayTabs'
 import { getDefaultSettings } from '@/lib/topology/componentSettings'
 
-const fakeMap = { name: 'map', resize: vi.fn() }
+const fakeMap = {
+  name: 'map',
+  fitBounds: vi.fn(),
+  once: vi.fn(),
+  resize: vi.fn(),
+}
 const mobile = ref(false)
 vi.mock('vuetify', () => ({
   useDisplay: () => ({ mobile }),
@@ -263,6 +268,12 @@ describe('node screenshot dialog', () => {
       expect(
         host.querySelector('[data-has-initial-bounds="true"]'),
       ).not.toBeNull()
+      expect(fakeMap.fitBounds).toHaveBeenCalledWith(bounds, {
+        animate: false,
+      })
+      expect(fakeMap.once).toHaveBeenCalledWith('idle', expect.any(Function))
+      vi.mocked(fakeMap.once).mock.calls[0][1]()
+      expect(fakeMap.fitBounds).toHaveBeenCalledTimes(2)
     } finally {
       app.unmount()
     }
