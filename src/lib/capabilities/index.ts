@@ -68,15 +68,34 @@ export function getTimesFromCapabilities(
 ): Date[] {
   if (!capabilities?.times) return []
 
-  const dates = capabilities.times.map((time) => new Date(time))
+  const dates = capabilities.times
+    .map((time) => new Date(time))
+    .filter((date) => !Number.isNaN(date.getTime()))
+  const valueTimeRange = getValueTimeRangeFromCapabilities(capabilities)
+  if (!valueTimeRange) return dates
 
-  const firstValueDate = capabilities.firstValueTime
-    ? new Date(capabilities.firstValueTime)
-    : dates[0]
+  const [firstValueDate, lastValueDate] = valueTimeRange
 
-  const lastValueDate = capabilities.lastValueTime
-    ? new Date(capabilities.lastValueTime)
-    : dates[dates.length - 1]
+  return dates.filter((date) => date >= firstValueDate && date <= lastValueDate)
+}
 
-  return dates.filter((d) => d >= firstValueDate && d <= lastValueDate)
+export function getValueTimeRangeFromCapabilities(
+  capabilities: Layer | undefined,
+): [Date, Date] | undefined {
+  if (!capabilities) return
+
+  const parseDate = (value: string | null | undefined) => {
+    if (!value) return
+    const date = new Date(value)
+    return Number.isNaN(date.getTime()) ? undefined : date
+  }
+  const dates = capabilities.times
+    ?.map((time) => new Date(time))
+    .filter((date) => !Number.isNaN(date.getTime()))
+  const firstValueDate = parseDate(capabilities.firstValueTime) ?? dates?.[0]
+  const lastValueDate = parseDate(capabilities.lastValueTime) ?? dates?.at(-1)
+
+  if (!firstValueDate || !lastValueDate) return
+
+  return [firstValueDate, lastValueDate]
 }

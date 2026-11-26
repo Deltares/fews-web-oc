@@ -113,9 +113,12 @@ const { selectedDate, dateTimeSliderEnabled } =
   useSelectedDate(selectedDateOfSlider)
 
 const filter = computed(() => {
+  const date = selectedDate.value
+  const time =
+    date && !Number.isNaN(date.getTime()) ? date.toISOString() : undefined
   return {
     locationId: selectedLocation.value?.id,
-    time: selectedDate.value?.toISOString(),
+    time,
   }
 })
 
