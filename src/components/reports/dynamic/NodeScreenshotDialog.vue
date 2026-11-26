@@ -72,7 +72,7 @@
               @navigate="onNavigate"
             >
               <template #map>
-                <MapCaptureTarget @change="map = $event" />
+                <MapCaptureTarget @change="onMapChange" />
               </template>
             </SpatialDisplay>
           </div>
@@ -113,6 +113,7 @@ import MapCaptureTarget from '@/components/map/MapCaptureTarget.vue'
 import type { NavigateRoute } from '@/lib/router'
 import { useElementSize } from '@vueuse/core'
 import { useDisplay } from 'vuetify'
+import { useSynchronizedMapBounds } from '@/services/useMapSync'
 
 interface Props {
   settings: ComponentSettings
@@ -133,6 +134,7 @@ const spatialDisplay =
   useTemplateRef<InstanceType<typeof SpatialDisplay>>('spatialDisplay')
 const selectedNodeId = ref<string>()
 const map = shallowRef<Map>()
+const getSynchronizedMapBounds = useSynchronizedMapBounds()
 const layerName = ref<string>()
 const busy = ref(false)
 const error = ref('')
@@ -217,6 +219,14 @@ function onNavigate(route: NavigateRoute) {
   selectionVersion++
   const params = route.params
   if (typeof params?.layerName === 'string') layerName.value = params.layerName
+}
+
+function onMapChange(newMap: Map | undefined) {
+  map.value = newMap
+  if (!newMap) return
+
+  const bounds = getSynchronizedMapBounds(newMap)
+  if (bounds) newMap.fitBounds(bounds, { animate: false })
 }
 
 async function capture() {

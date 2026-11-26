@@ -1,5 +1,6 @@
 import {
   ref,
+  toRaw,
   onUnmounted,
   onMounted,
   inject,
@@ -25,6 +26,15 @@ export function provideMapSync() {
   })
 }
 
+export function useSynchronizedMapBounds() {
+  const mapSync = inject(MAP_SYNC_KEY, undefined)
+
+  return (excludedMap?: MaplibreMap) =>
+    mapSync?.synchronizedMaps.value
+      .find((map) => toRaw(map) !== excludedMap)
+      ?.getBounds()
+}
+
 /**
  * Synchronize movements of multiple maps.
  *
@@ -44,11 +54,6 @@ export function useMapSync(mapInstance: MaplibreMap | undefined) {
 
   const addMapToSync = (map: MaplibreMap) => {
     const mapIndex = synchronizedMaps.value.length
-    const currentMap = synchronizedMaps.value[0]
-    if (currentMap) {
-      map.fitBounds(currentMap.getBounds(), { animate: false })
-    }
-
     // @ts-ignore: Type instantiation is excessively deep and possibly infinite.
     synchronizedMaps.value.push(map)
 
