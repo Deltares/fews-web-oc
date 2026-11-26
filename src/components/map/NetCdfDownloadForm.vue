@@ -241,14 +241,16 @@ watch(
   () => [props.defaultStartTime, props.defaultEndTime],
   () => {
     if (props.defaultStartTime && props.defaultStartTime !== null) {
-      startTimeInput.value = toDisplayDateTimeInputValue(
-        new Date(props.defaultStartTime),
-      )
+      const date = new Date(props.defaultStartTime)
+      if (!Number.isNaN(date.getTime())) {
+        startTimeInput.value = toDisplayDateTimeInputValue(date)
+      }
     }
     if (props.defaultEndTime && props.defaultEndTime !== null) {
-      endTimeInput.value = toDisplayDateTimeInputValue(
-        new Date(props.defaultEndTime),
-      )
+      const date = new Date(props.defaultEndTime)
+      if (!Number.isNaN(date.getTime())) {
+        endTimeInput.value = toDisplayDateTimeInputValue(date)
+      }
     }
   },
   { immediate: true },
@@ -273,10 +275,12 @@ function convertInputValue(
 }
 
 const canDownload = computed(() => {
+  const startTime = fromDisplayDateTimeInputValue(startTimeInput.value)
+  const endTime = fromDisplayDateTimeInputValue(endTimeInput.value)
   const basicRequirements =
     !!props.layerName &&
-    !!startTimeInput.value &&
-    !!endTimeInput.value &&
+    !Number.isNaN(startTime.getTime()) &&
+    !Number.isNaN(endTime.getTime()) &&
     !isDownloading.value &&
     (!downloadDisclaimerStore.isConfigured ||
       downloadDisclaimerStore.hasAccepted)
@@ -315,15 +319,17 @@ interface NetCdfFilter extends Omit<TimeSeriesGridFilter, 'documentFormat'> {
 }
 
 const url = computed(() => {
+  const startDate = fromDisplayDateTimeInputValue(startTimeInput.value)
+  const endDate = fromDisplayDateTimeInputValue(endTimeInput.value)
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return ''
+  }
+
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const piProvider = new PiWebserviceProvider(baseUrl)
 
-  const startTime = fromDisplayDateTimeInputValue(
-    startTimeInput.value,
-  ).toISOString()
-  const endTime = fromDisplayDateTimeInputValue(
-    endTimeInput.value,
-  ).toISOString()
+  const startTime = startDate.toISOString()
+  const endTime = endDate.toISOString()
 
   // Build the filter for the grid timeseries request
   const filter: NetCdfFilter = {
