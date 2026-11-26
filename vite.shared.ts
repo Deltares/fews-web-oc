@@ -56,6 +56,7 @@ export function createWebOCConfig(
       __BUILD_DATE__: JSON.stringify(buildDate),
     },
     build: {
+      emptyOutDir: true,
       rolldownOptions: {
         input: {
           main: resolve(import.meta.dirname, 'index.html'),
