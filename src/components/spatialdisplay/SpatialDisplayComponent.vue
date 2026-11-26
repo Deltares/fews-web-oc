@@ -301,6 +301,7 @@ interface Props {
   longitude?: string
   groupId?: string
   boundingBox?: BoundingBox
+  initialBounds?: LngLatBounds
   settings: ComponentSettings['map']
   independentContext?: boolean
 }
@@ -724,11 +725,11 @@ const { capabilities: staticCapabilities } = useWmsCapabilities(baseUrl, {
   layerType: 'static',
 })
 
-const bounds = ref<LngLatBounds>()
+const bounds = ref<LngLatBounds | undefined>(props.initialBounds)
 watch(
   () => props.boundingBox,
   (newBoundingBox) => {
-    if (!newBoundingBox) return
+    if (!newBoundingBox || props.initialBounds) return
 
     const newBounds = convertBoundingBoxToLngLatBounds(newBoundingBox)
 
@@ -738,6 +739,12 @@ watch(
     }
   },
   { immediate: true },
+)
+watch(
+  () => props.initialBounds,
+  (newBounds) => {
+    if (newBounds) bounds.value = newBounds
+  },
 )
 
 function onCoordinateClick(

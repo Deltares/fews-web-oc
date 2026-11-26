@@ -7,10 +7,21 @@ import { captureNodeScreenshot } from '@/lib/dynamic-report/screenshot'
 import { getLayerNameForNode } from '@/lib/topology/displayTabs'
 import { getDefaultSettings } from '@/lib/topology/componentSettings'
 
-const fakeMap = { name: 'map', resize: vi.fn() }
+const fakeMap = {
+  name: 'map',
+  fitBounds: vi.fn(),
+  once: vi.fn(),
+  resize: vi.fn(),
+}
 const mobile = ref(false)
 vi.mock('vuetify', () => ({
   useDisplay: () => ({ mobile }),
+}))
+const synchronizedMapBounds = vi.hoisted(() => ({
+  get: vi.fn(),
+}))
+vi.mock('@/services/useMapSync', () => ({
+  useSynchronizedMapBounds: () => synchronizedMapBounds.get,
 }))
 const screenshotContext = vi.hoisted(() => ({
   get: vi.fn(() => ({
@@ -39,6 +50,7 @@ vi.mock('@/components/spatialdisplay/SpatialDisplay.vue', () => ({
       locationIds: String,
       latitude: String,
       longitude: String,
+      initialBounds: Object,
     },
     emits: ['navigate'],
     setup(_props, { slots, emit, expose }) {
@@ -51,6 +63,7 @@ vi.mock('@/components/spatialdisplay/SpatialDisplay.vue', () => ({
             'data-location': _props.locationIds,
             'data-latitude': _props.latitude,
             'data-longitude': _props.longitude,
+            'data-has-initial-bounds': String(!!_props.initialBounds),
           },
           [
             slots.map?.(),
@@ -189,6 +202,7 @@ afterEach(() => {
     source: 'rainfall',
     validTime: '2026-11-13T06:00:00.000Z',
   })
+  synchronizedMapBounds.get.mockReturnValue(undefined)
 })
 
 function mountDialog() {
@@ -244,6 +258,27 @@ function mountDialog() {
 }
 
 describe('node screenshot dialog', () => {
+  it('applies the active synchronized map bounds to the screenshot preview', async () => {
+    const bounds = { west: 1, south: 2, east: 3, north: 4 }
+    synchronizedMapBounds.get.mockReturnValue(bounds)
+    const { app, host, addButton } = mountDialog()
+    try {
+      await vi.waitFor(() => expect(addButton().disabled).toBe(false))
+      expect(synchronizedMapBounds.get).toHaveBeenCalledWith()
+      expect(
+        host.querySelector('[data-has-initial-bounds="true"]'),
+      ).not.toBeNull()
+      expect(fakeMap.fitBounds).toHaveBeenCalledWith(bounds, {
+        animate: false,
+      })
+      expect(fakeMap.once).toHaveBeenCalledWith('idle', expect.any(Function))
+      vi.mocked(fakeMap.once).mock.calls[0][1]()
+      expect(fakeMap.fitBounds).toHaveBeenCalledTimes(2)
+    } finally {
+      app.unmount()
+    }
+  })
+
   it('uses the full mobile viewport and expands desktop dialog height', async () => {
     const { app, host, addButton } = mountDialog()
     try {

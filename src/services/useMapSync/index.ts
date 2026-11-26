@@ -1,5 +1,6 @@
 import {
   ref,
+  toRaw,
   onUnmounted,
   onMounted,
   inject,
@@ -8,6 +9,7 @@ import {
   type InjectionKey,
 } from 'vue'
 import type { Map as MaplibreMap } from 'maplibre-gl'
+import type { LngLatBounds } from 'maplibre-gl'
 
 type MoveHandler = Parameters<MaplibreMap['on']>[1]
 
@@ -17,12 +19,26 @@ interface MapSync {
 }
 
 const MAP_SYNC_KEY = Symbol('mapSync') as InjectionKey<MapSync>
+const standaloneMaps: MaplibreMap[] = []
+let lastMapBounds: LngLatBounds | undefined
 
 export function provideMapSync() {
   provide(MAP_SYNC_KEY, {
     synchronizedMaps: ref([]),
     moveHandlers: ref([]),
   })
+}
+
+export function useSynchronizedMapBounds() {
+  const mapSync = inject(MAP_SYNC_KEY, undefined)
+
+  return (excludedMap?: MaplibreMap) => {
+    const maps = mapSync?.synchronizedMaps.value ?? standaloneMaps
+    const sourceMap = maps.find((map) => toRaw(map) !== excludedMap)
+    return (
+      sourceMap?.getBounds() ?? (maps.length === 0 ? lastMapBounds : undefined)
+    )
+  }
 }
 
 /**
@@ -34,15 +50,28 @@ export function provideMapSync() {
  */
 export function useMapSync(mapInstance: MaplibreMap | undefined) {
   const mapSync = inject(MAP_SYNC_KEY, undefined)
-
-  if (!mapSync) {
-    // Do nothing if mapSync is not provided
-    return
+  const rememberBounds = () => {
+    if (mapInstance) lastMapBounds = mapInstance.getBounds()
   }
 
-  const { synchronizedMaps, moveHandlers } = mapSync
+  onMounted(() => {
+    if (!mapInstance) return
+    standaloneMaps.push(mapInstance)
+    rememberBounds()
+    mapInstance.on('move', rememberBounds)
+  })
+
+  onUnmounted(() => {
+    rememberBounds()
+    mapInstance?.off('move', rememberBounds)
+    const index = mapInstance ? standaloneMaps.indexOf(mapInstance) : -1
+    if (index !== -1) standaloneMaps.splice(index, 1)
+  })
+
+  if (!mapSync) return
 
   const addMapToSync = (map: MaplibreMap) => {
+    const { synchronizedMaps, moveHandlers } = mapSync
     const mapIndex = synchronizedMaps.value.length
     // @ts-ignore: Type instantiation is excessively deep and possibly infinite.
     synchronizedMaps.value.push(map)
@@ -76,18 +105,21 @@ export function useMapSync(mapInstance: MaplibreMap | undefined) {
   }
 
   const enableSync = () => {
+    const { synchronizedMaps, moveHandlers } = mapSync
     synchronizedMaps.value.forEach((map, index) => {
       map.on('move', moveHandlers.value[index])
     })
   }
 
   const disableSync = () => {
+    const { synchronizedMaps, moveHandlers } = mapSync
     synchronizedMaps.value.forEach((map, index) => {
       map.off('move', moveHandlers.value[index])
     })
   }
 
   const removeMapFromSync = (map: MaplibreMap) => {
+    const { synchronizedMaps, moveHandlers } = mapSync
     const mapIndex = synchronizedMaps.value.indexOf(map)
     if (mapIndex !== -1) {
       map.off('move', moveHandlers.value[mapIndex])

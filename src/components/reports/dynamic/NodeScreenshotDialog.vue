@@ -68,11 +68,12 @@
               :topology-node="selectedNode"
               :layer-name="layerName"
               :settings="settings"
+              :initial-bounds="initialBounds"
               independent-context
               @navigate="onNavigate"
             >
               <template #map>
-                <MapCaptureTarget @change="map = $event" />
+                <MapCaptureTarget @change="onMapChange" />
               </template>
             </SpatialDisplay>
           </div>
@@ -102,7 +103,7 @@
 import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
-import type { Map } from 'maplibre-gl'
+import type { LngLatBounds, Map } from 'maplibre-gl'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { nodeHasMap } from '@/lib/topology/nodes'
 import { getLayerNameForNode } from '@/lib/topology/displayTabs'
@@ -113,6 +114,7 @@ import MapCaptureTarget from '@/components/map/MapCaptureTarget.vue'
 import type { NavigateRoute } from '@/lib/router'
 import { useElementSize } from '@vueuse/core'
 import { useDisplay } from 'vuetify'
+import { useSynchronizedMapBounds } from '@/services/useMapSync'
 
 interface Props {
   settings: ComponentSettings
@@ -133,6 +135,8 @@ const spatialDisplay =
   useTemplateRef<InstanceType<typeof SpatialDisplay>>('spatialDisplay')
 const selectedNodeId = ref<string>()
 const map = shallowRef<Map>()
+const getSynchronizedMapBounds = useSynchronizedMapBounds()
+const initialBounds = shallowRef<LngLatBounds>()
 const layerName = ref<string>()
 const busy = ref(false)
 const error = ref('')
@@ -177,9 +181,11 @@ watch(open, (isOpen) => {
   if (!isOpen) {
     map.value = undefined
     layerName.value = undefined
+    initialBounds.value = undefined
     return
   }
   error.value = ''
+  initialBounds.value = getSynchronizedMapBounds()
   selectedNodeId.value = nodes.value.some(
     (node) => node.id === props.initialNodeId,
   )
@@ -217,6 +223,19 @@ function onNavigate(route: NavigateRoute) {
   selectionVersion++
   const params = route.params
   if (typeof params?.layerName === 'string') layerName.value = params.layerName
+}
+
+function onMapChange(newMap: Map | undefined) {
+  map.value = newMap
+  const bounds = initialBounds.value
+  if (!newMap || !bounds) return
+
+  newMap.fitBounds(bounds, { animate: false })
+  newMap.once('idle', () => {
+    if (map.value === newMap && initialBounds.value === bounds) {
+      newMap.fitBounds(bounds, { animate: false })
+    }
+  })
 }
 
 async function capture() {
