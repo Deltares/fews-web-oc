@@ -44,6 +44,11 @@ export function useMapSync(mapInstance: MaplibreMap | undefined) {
 
   const addMapToSync = (map: MaplibreMap) => {
     const mapIndex = synchronizedMaps.value.length
+    const currentMap = synchronizedMaps.value[0]
+    if (currentMap) {
+      map.fitBounds(currentMap.getBounds(), { animate: false })
+    }
+
     // @ts-ignore: Type instantiation is excessively deep and possibly infinite.
     synchronizedMaps.value.push(map)
 
