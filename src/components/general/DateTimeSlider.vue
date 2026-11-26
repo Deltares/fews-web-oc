@@ -44,6 +44,13 @@
           </v-theme-provider>
         </template>
       </v-slider>
+      <div class="current-time-marker-track">
+        <div
+          v-if="currentTimePercentage !== null"
+          class="current-time-marker"
+          :style="{ left: `${currentTimePercentage}%` }"
+        ></div>
+      </div>
       <slot name="below-track"></slot>
     </div>
     <div class="datetime-slider__actions">
@@ -245,6 +252,41 @@ const maxIndex = computed(() => {
     return 0
   }
   return Math.max(props.dates.length - 1, 0)
+})
+
+// Live clock used to position the current-time marker. 
+const CURRENT_TIME_REFRESH_INTERVAL = 10000
+const liveNow = ref(new Date())
+let currentTimeTimer: ReturnType<typeof setInterval> | null = null
+
+const currentTimeMarkerDate = computed(() => liveNow.value)
+
+// Fractional slider index (e.g. 2.5 is halfway between the dates at index 2
+// and 3) corresponding to the current time, or null if it falls outside the
+// range of available dates.
+const currentTimeIndex = computed(() => {
+  const dates = props.dates
+  const target = currentTimeMarkerDate.value.getTime()
+  if (!dates || dates.length === 0) return null
+
+  const first = dates[0].getTime()
+  const last = dates[dates.length - 1].getTime()
+  if (target < first || target > last) return null
+
+  for (let i = 0; i < dates.length - 1; i++) {
+    const t0 = dates[i].getTime()
+    const t1 = dates[i + 1].getTime()
+    if (target >= t0 && target <= t1) {
+      const fraction = t1 === t0 ? 0 : (target - t0) / (t1 - t0)
+      return i + fraction
+    }
+  }
+  return dates.length - 1
+})
+
+const currentTimePercentage = computed(() => {
+  if (currentTimeIndex.value === null || maxIndex.value === 0) return null
+  return (currentTimeIndex.value / maxIndex.value) * 100
 })
 
 // Now and play button styling is dependent on properties.
@@ -451,6 +493,10 @@ onMounted(() => {
   window.addEventListener('pointermove', onPointerMove)
   window.addEventListener('pointerup', onPointerUp)
   window.addEventListener('pointercancel', onPointerUp)
+
+  currentTimeTimer = setInterval(() => {
+    liveNow.value = new Date()
+  }, CURRENT_TIME_REFRESH_INTERVAL)
 })
 
 onUnmounted(() => {
@@ -461,6 +507,7 @@ onUnmounted(() => {
   stopDragGestureTracking()
   showSnapshotFrames.value = false
   stopFollowTimer()
+  if (currentTimeTimer) clearInterval(currentTimeTimer)
 })
 </script>
 
@@ -613,5 +660,29 @@ onUnmounted(() => {
   ) {
   opacity: 1;
   visibility: visible;
+}
+
+/*
+ * This track must be inset by the same horizontal padding as
+ * .slider-container so that 0%/100% line up with the edges of the
+ * vue-slider rail rather than the outer edges of the padded container.
+ */
+.current-time-marker-track {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 10px;
+  right: 10px;
+  pointer-events: none;
+}
+
+.current-time-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #a90061;
+  z-index: 1;
+  transform: translateX(-50%);
 }
 </style>
