@@ -18,6 +18,7 @@ interface MapSync {
 }
 
 const MAP_SYNC_KEY = Symbol('mapSync') as InjectionKey<MapSync>
+const standaloneMaps: MaplibreMap[] = []
 
 export function provideMapSync() {
   provide(MAP_SYNC_KEY, {
@@ -29,10 +30,10 @@ export function provideMapSync() {
 export function useSynchronizedMapBounds() {
   const mapSync = inject(MAP_SYNC_KEY, undefined)
 
-  return (excludedMap?: MaplibreMap) =>
-    mapSync?.synchronizedMaps.value
-      .find((map) => toRaw(map) !== excludedMap)
-      ?.getBounds()
+  return (excludedMap?: MaplibreMap) => {
+    const maps = mapSync?.synchronizedMaps.value ?? standaloneMaps
+    return maps.find((map) => toRaw(map) !== excludedMap)?.getBounds()
+  }
 }
 
 /**
@@ -45,14 +46,19 @@ export function useSynchronizedMapBounds() {
 export function useMapSync(mapInstance: MaplibreMap | undefined) {
   const mapSync = inject(MAP_SYNC_KEY, undefined)
 
-  if (!mapSync) {
-    // Do nothing if mapSync is not provided
-    return
-  }
+  onMounted(() => {
+    if (mapInstance) standaloneMaps.push(mapInstance)
+  })
 
-  const { synchronizedMaps, moveHandlers } = mapSync
+  onUnmounted(() => {
+    const index = mapInstance ? standaloneMaps.indexOf(mapInstance) : -1
+    if (index !== -1) standaloneMaps.splice(index, 1)
+  })
+
+  if (!mapSync) return
 
   const addMapToSync = (map: MaplibreMap) => {
+    const { synchronizedMaps, moveHandlers } = mapSync
     const mapIndex = synchronizedMaps.value.length
     // @ts-ignore: Type instantiation is excessively deep and possibly infinite.
     synchronizedMaps.value.push(map)
@@ -86,18 +92,21 @@ export function useMapSync(mapInstance: MaplibreMap | undefined) {
   }
 
   const enableSync = () => {
+    const { synchronizedMaps, moveHandlers } = mapSync
     synchronizedMaps.value.forEach((map, index) => {
       map.on('move', moveHandlers.value[index])
     })
   }
 
   const disableSync = () => {
+    const { synchronizedMaps, moveHandlers } = mapSync
     synchronizedMaps.value.forEach((map, index) => {
       map.off('move', moveHandlers.value[index])
     })
   }
 
   const removeMapFromSync = (map: MaplibreMap) => {
+    const { synchronizedMaps, moveHandlers } = mapSync
     const mapIndex = synchronizedMaps.value.indexOf(map)
     if (mapIndex !== -1) {
       map.off('move', moveHandlers.value[mapIndex])

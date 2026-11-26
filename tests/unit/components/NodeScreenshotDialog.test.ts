@@ -7,7 +7,7 @@ import { captureNodeScreenshot } from '@/lib/dynamic-report/screenshot'
 import { getLayerNameForNode } from '@/lib/topology/displayTabs'
 import { getDefaultSettings } from '@/lib/topology/componentSettings'
 
-const fakeMap = { name: 'map', fitBounds: vi.fn(), resize: vi.fn() }
+const fakeMap = { name: 'map', resize: vi.fn() }
 const mobile = ref(false)
 vi.mock('vuetify', () => ({
   useDisplay: () => ({ mobile }),
@@ -45,6 +45,7 @@ vi.mock('@/components/spatialdisplay/SpatialDisplay.vue', () => ({
       locationIds: String,
       latitude: String,
       longitude: String,
+      initialBounds: Object,
     },
     emits: ['navigate'],
     setup(_props, { slots, emit, expose }) {
@@ -57,6 +58,7 @@ vi.mock('@/components/spatialdisplay/SpatialDisplay.vue', () => ({
             'data-location': _props.locationIds,
             'data-latitude': _props.latitude,
             'data-longitude': _props.longitude,
+            'data-has-initial-bounds': String(!!_props.initialBounds),
           },
           [
             slots.map?.(),
@@ -254,13 +256,13 @@ describe('node screenshot dialog', () => {
   it('applies the active synchronized map bounds to the screenshot preview', async () => {
     const bounds = { west: 1, south: 2, east: 3, north: 4 }
     synchronizedMapBounds.get.mockReturnValue(bounds)
-    const { app, addButton } = mountDialog()
+    const { app, host, addButton } = mountDialog()
     try {
       await vi.waitFor(() => expect(addButton().disabled).toBe(false))
-      expect(synchronizedMapBounds.get).toHaveBeenCalledWith(fakeMap)
-      expect(fakeMap.fitBounds).toHaveBeenCalledWith(bounds, {
-        animate: false,
-      })
+      expect(synchronizedMapBounds.get).toHaveBeenCalledWith()
+      expect(
+        host.querySelector('[data-has-initial-bounds="true"]'),
+      ).not.toBeNull()
     } finally {
       app.unmount()
     }

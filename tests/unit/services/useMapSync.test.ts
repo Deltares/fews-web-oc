@@ -23,6 +23,29 @@ afterEach(() => {
 })
 
 describe('useMapSync', () => {
+  it('returns the active bounds without a synchronization provider', async () => {
+    const bounds = new LngLatBounds([1, 2], [3, 4])
+    const currentMap = createMap(bounds)
+    const previewMap = createMap()
+    let getSynchronizedMapBounds:
+      ReturnType<typeof useSynchronizedMapBounds> | undefined
+    const StandaloneMap = defineComponent({
+      setup() {
+        getSynchronizedMapBounds = useSynchronizedMapBounds()
+        useMapSync(currentMap)
+        return () => h('div')
+      },
+    })
+    const host = document.createElement('div')
+    const app = createApp(StandaloneMap)
+    mounts.push(app)
+    app.mount(host)
+    await nextTick()
+
+    expect(getSynchronizedMapBounds?.(previewMap)).toBe(bounds)
+    expect(getSynchronizedMapBounds?.(currentMap)).toBeUndefined()
+  })
+
   it('returns the active bounds while excluding the screenshot preview map', async () => {
     const bounds = new LngLatBounds([1, 2], [3, 4])
     const currentMap = createMap(bounds)

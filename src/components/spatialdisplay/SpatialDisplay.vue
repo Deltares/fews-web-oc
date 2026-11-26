@@ -18,6 +18,7 @@
         @changeLayer="onLayerChange"
         :layer-capabilities="layerCapabilities"
         :bounding-box="boundingBox"
+        :initial-bounds="initialBounds"
         :times="times"
         :settings="settings.map"
         :independent-context="independentContext"
@@ -66,6 +67,7 @@ import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayC
 import { configManager } from '@/services/application-config'
 import { useWmsLayerCapabilities } from '@/services/useWms'
 import type { TopologyNode, Location } from '@deltares/fews-pi-requests'
+import type { LngLatBounds } from 'maplibre-gl'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import {
@@ -95,6 +97,7 @@ interface Props {
   topologyNode?: TopologyNode
   settings?: ComponentSettings
   independentContext?: boolean
+  initialBounds?: LngLatBounds
 }
 
 const props = withDefaults(defineProps<Props>(), {
